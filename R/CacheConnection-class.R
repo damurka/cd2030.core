@@ -81,6 +81,10 @@ CacheConnection <- R6::R6Class(
         self$load_from_disk()
       }
 
+      if (is.null(rds_path)) {
+        private$initialize_survey_estimates()
+      }
+
       if (!is.null(countdown_data) && !is.null(data_path)) {
         tryCatch({
           self$set_cache_path(file.path(data_path, paste0(self$country, '_', format(Sys.time(), '%Y%m%d%H%M'), '.rds')))
@@ -413,7 +417,7 @@ CacheConnection <- R6::R6Class(
       factors <- if (get_selected_group() == 'vaccine') {
         c(common_factors, 'opv1', 'opv3')
       } else {
-        c(common_factors, 'anc4', 'ideliv', 'lbw', 'csection')
+        c(common_factors, 'anc4', 'instlivebirths', 'lbw', 'csection')
       }
       if (!is.numeric(value)) {
         cd_abort(c('x' = 'Survey must be a numeric vector.'))
@@ -737,9 +741,6 @@ CacheConnection <- R6::R6Class(
     #' @field survey_years Get survey years.
     survey_years = function(value) {
       survey <- private$getter('national_survey', value)
-      if (is.null(survey)) {
-        return(NULL)
-      }
       survey %>%
         distinct(year) %>%
         arrange(year) %>%
@@ -780,61 +781,50 @@ CacheConnection <- R6::R6Class(
     fpet_data = function(value) private$getter('fpet_data', value),
 
     #' @field un_estimates Gets UN estimates.
-    un_estimates = function(value) private$getter('un_estimates', value),
+    un_estimates = function(value) {
+      iso <- self$country_iso
+      private$getter('un_estimates', value) %||% un_estimates %>% filter(iso3 == iso)
+    },
 
     #' @field un_mortality_estimates Gets UN mortality estimates.
-    un_mortality_estimates = function(value) private$getter('un_mortality_estimates', value),
+    un_mortality_estimates = function(value) {
+      iso <- self$country_iso
+      private$getter('un_mortality_estimates', value) %||% un_mortality %>% filter(isocode == iso)
+    },
 
     #' @field wuenic_estimates Gets WUENIC estimates.
-    wuenic_estimates = function(value) private$getter('wuenic_estimates', value),
+    wuenic_estimates = function(value) {
+      iso <- self$country_iso
+      private$getter('wuenic_estimates', value) %||% wuenic %>% filter(iso == !!iso)
+    },
 
     #' @field national_survey Gets national survey.
     national_survey = function(value) {
-      survey <- private$getter('national_survey', value)
-      if (is.null(survey)) {
-        return(NULL)
-      }
-
+      survey <- private$getter('national_survey', value) %||% survey_data$all
       private$filter_survey(survey)
     },
 
     #' @field regional_survey Gets regional survey.
     regional_survey = function(value) {
-      survey <- private$getter('regional_survey', value)
-      if (is.null(survey)) {
-        return(NULL)
-      }
-
+      survey <- private$getter('regional_survey', value) %||% survey_data$gregion
       private$filter_survey(survey)
     },
 
     #' @field wiq_survey Gets WIQ survey.
     wiq_survey = function(value) {
-      survey <- private$getter('wiq_survey', value)
-      if (is.null(survey)) {
-        return(NULL)
-      }
-
+      survey <- private$getter('wiq_survey', value) %||% survey_data$wiq
       private$filter_survey(survey)
     },
 
     #' @field area_survey Gets area survey.
     area_survey = function(value) {
-      survey <- private$getter('area_survey', value)
-      if (is.null(survey)) {
-        return(NULL)
-      }
-
+      survey <- private$getter('area_survey', value) %||% survey_data$area
       private$filter_survey(survey)
     },
 
     #' @field education_survey Gets  education survey.
     education_survey = function(value) {
-      survey <- private$getter('education_survey', value)
-      if (is.null(survey)) {
-        return(NULL)
-      }
-
+      survey <- private$getter('education_survey', value) %||% survey_data$meduc
       private$filter_survey(survey)
     },
 
@@ -903,7 +893,7 @@ CacheConnection <- R6::R6Class(
       adjusted_flag = FALSE,
       adjusted_data = NULL,
 
-      survey_estimates = c(anc1 = NA, penta1 = NA, penta3 = NA, opv1 = NA, opv3 = NA, measles1 = NA, bcg = NA, anc4 = NA, ideliv = NA, lbw = NA, csection = NA),
+      survey_estimates = c(anc1 = NA, penta1 = NA, penta3 = NA, opv1 = NA, opv3 = NA, measles1 = NA, bcg = NA, anc4 = NA, instlivebirths = NA, lbw = NA, csection = NA),
       national_estimates = list(nmr = NA, pnmr = NA, twin_rate = 0.015, preg_loss = 0.03, sbr = NA),
       survey_year = NULL,
       indicator_coverage_national = NULL,
@@ -955,12 +945,6 @@ CacheConnection <- R6::R6Class(
 
       cd_abort(c('x' = '{.field field_name} is readonly'))
     },
-    filter_survey = function(survey) {
-      check_required(survey)
-      start_year <- self$start_survey_year
-      survey %>%
-        filter(if (is.null(start_year)) TRUE else year >= start_year)
-    },
     setter = function(field_name, value, validation_exp = NULL) {
       check_required(field_name)
       check_required(value)
@@ -980,6 +964,57 @@ CacheConnection <- R6::R6Class(
         cd_abort(c('x' = 'Invalid value for field {.field {field_name}}.'))
       }
       private$update_field(field_name, value)
+    },
+    filter_survey = function(survey) {
+      check_required(survey)
+      start_year <- self$start_survey_year
+      iso <- self$country_iso
+      survey %>%
+        filter(iso3 == iso, if (is.null(start_year)) TRUE else year >= start_year)
+    },
+    initialize_survey_estimates = function() {
+      iso <- self$country_iso
+      estimates <- survey_data$all %>%
+        filter(iso3 == iso) %>%
+        select(year, starts_with('r_'), -ends_with('24_35')) %>%
+        rename_with(~ str_remove(.x, 'r_'), starts_with('r_'))
+
+      group <- get_selected_group()
+      nat_est <- if (group == 'vaccine') {
+        estimates %>%
+          select(year, anc1, penta1, penta3, opv1, opv3, measles1, bcg, nmr, pnmr) %>%
+          pivot_longer(cols = -year) %>%
+          filter(!is.na(value)) %>%
+          slice_max(order_by = year, by = name)
+      } else {
+        estimates %>%
+          rename(lbw = low_bweight) %>%
+          select(year, anc1, penta1, penta3, measles1, bcg, anc4, instlivebirths, lbw, csection, nmr, pnmr) %>%
+          pivot_longer(cols = -year) %>%
+          filter(!is.na(value)) %>%
+          slice_max(order_by = year, by = name)
+      }
+
+      year <- max(nat_est$year)
+      survey_est <- nat_est %>%
+        filter(!name %in% c('nmr', 'pnmr'))
+      survey_est <- set_names(survey_est$value, survey_est$name)
+      nat_est <- nat_est %>%
+        filter(name %in% c('nmr', 'pnmr')) %>%
+        mutate(
+          value = case_when(
+            name == 'nmr'  ~ value / 100000,
+            name == 'pnmr' ~ value / 100000,
+            .default = value
+          )
+        )
+      print(nat_est)
+      nat_est <- set_names(nat_est$value, nat_est$name)
+
+      self$set_national_estimates(as.list(c(pnmr = NA, nmr = NA, sbr = NA, twin_rate = 0.015, preg_loss = 0.03, nat_est)))
+      self$set_survey_estimates(survey_est)
+      self$set_survey_year(year)
+
     },
     depend = function(field_name) {
       if (!is.null(private$.reactiveDep[[field_name]])) {

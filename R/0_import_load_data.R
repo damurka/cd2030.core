@@ -681,8 +681,8 @@ replace_special_chars <- function(text) {
 #'
 #' @noRd
 match_country <- function(country_name, call = caller_call()) {
-  country <- alternate <- country_dist <- alternate_dist <- total_dist <- countrycode <-
-    iso3 <- iso2 <- NULL
+  country = alternate = country_dist = alternate_dist = total_dist = countrycode =
+    iso3 = iso2 = NULL
 
   check_required(country_name)
 
