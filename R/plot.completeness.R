@@ -38,7 +38,9 @@ plot.cd_completeness_summary <- function(x,
     ggplot(x, aes(x = !!sym(admin_level_col), y = indicator, fill = value)) +
       geom_tile(color = 'white') +
       geom_text(aes(label = value), color = 'black', size = 3, vjust = 0.5) +
-      scale_fill_gradient(low = 'red3', high = 'forestgreen', limits = c(0, 100)) +
+      scale_fill_gradientn(
+        low = 'red3', high = 'forestgreen', limits = c(0, 100)
+      ) +
       labs(x = admin_level_col, y = 'Indicator', fill = 'Value') +
       theme_minimal() +
       theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 9))

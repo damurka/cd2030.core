@@ -740,8 +740,7 @@ CacheConnection <- R6::R6Class(
 
     #' @field survey_years Get survey years.
     survey_years = function(value) {
-      survey <- private$getter('national_survey', value)
-      survey %>%
+      self$national_survey %>%
         distinct(year) %>%
         arrange(year) %>%
         pull(year)
@@ -789,13 +788,13 @@ CacheConnection <- R6::R6Class(
     #' @field un_mortality_estimates Gets UN mortality estimates.
     un_mortality_estimates = function(value) {
       iso <- self$country_iso
-      private$getter('un_mortality_estimates', value) %||% un_mortality %>% filter(isocode == iso)
+      private$getter('un_mortality_estimates', value) %||% un_mortality %>% filter(iso3 == iso)
     },
 
     #' @field wuenic_estimates Gets WUENIC estimates.
     wuenic_estimates = function(value) {
       iso <- self$country_iso
-      private$getter('wuenic_estimates', value) %||% wuenic %>% filter(iso == !!iso)
+      private$getter('wuenic_estimates', value) %||% wuenic %>% filter(iso3 == !!iso)
     },
 
     #' @field national_survey Gets national survey.
@@ -997,21 +996,21 @@ CacheConnection <- R6::R6Class(
 
       year <- max(nat_est$year)
       survey_est <- nat_est %>%
-        filter(!name %in% c('nmr', 'pnmr'))
+        filter(!name %in% c('nmr', 'pnmr')) %>%
+        mutate(value = round(value, 1))
       survey_est <- set_names(survey_est$value, survey_est$name)
       nat_est <- nat_est %>%
         filter(name %in% c('nmr', 'pnmr')) %>%
         mutate(
           value = case_when(
-            name == 'nmr'  ~ value / 100000,
-            name == 'pnmr' ~ value / 100000,
+            name == 'nmr'  ~ value / 1000,
+            name == 'pnmr' ~ value / 1000,
             .default = value
           )
         )
-      print(nat_est)
       nat_est <- set_names(nat_est$value, nat_est$name)
 
-      self$set_national_estimates(as.list(c(pnmr = NA, nmr = NA, sbr = NA, twin_rate = 0.015, preg_loss = 0.03, nat_est)))
+      self$set_national_estimates(c(list(pnmr = NA, nmr = NA, sbr = NA, twin_rate = 0.015, preg_loss = 0.03), nat_est))
       self$set_survey_estimates(survey_est)
       self$set_survey_year(year)
 
