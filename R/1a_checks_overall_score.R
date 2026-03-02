@@ -34,116 +34,282 @@
 calculate_overall_score <- function(.data,
                                     threshold,
                                     ratio_pairs = NULL,
-                                    region = NULL) {
-
-  year = mean_rr = low_mean_rr = mean_mis_vacc_tracer = mean_out_vacc_tracer =
-    value = `Data Quality Metrics` = value = no = NULL
-
+                                    region = NULL,
+                                    labels = NULL) {
   check_cd_data(.data)
 
   selected_group <- get_selected_group()
 
-  avg_reporting_rate <- calculate_average_reporting_rate(.data, 'adminlevel_1', region = region) %>%
-    summarise(mean_rr = mean(mean_rr, na.rm = TRUE), .by = year) %>%
-    pivot_wider(names_from = year, values_from = mean_rr) %>%
-    mutate(
-      `Data Quality Metrics` = "% of expected monthly facility reports (national)",
-      no = "1a"
-    )
+  avg_reporting_rate <- calculate_average_reporting_rate(.data, "adminlevel_1", region = region) %>%
+    summarise(mean_rr = mean(mean_rr, na.rm = TRUE), .by = year)
 
-  district_reporting_rate <- calculate_district_reporting_rate(.data, threshold = threshold, region = region) %>%
-    select(year, low_mean_rr) %>%
-    pivot_wider(names_from = year, values_from = low_mean_rr) %>%
-    mutate(
-      `Data Quality Metrics` = paste0("% of districts with completeness of facility reporting >= ", threshold),
-      no = "1b"
-    )
+  district_reporting_rate <- calculate_district_reporting_rate(.data, threshold = threshold, region = region)
 
-  district_completeness_column <- switch (
-    selected_group,
-    vaccine = 'mean_mis_vacc_tracer',
-    rmncah = 'mean_mis_all'
+  district_completeness <- calculate_district_completeness_summary(.data, region = region)
+
+  outliers <- calculate_outliers_summary(.data, admin_level = "adminlevel_1", region = region) %>%
+    summarise(mean_out_all = mean(mean_out_all, na.rm = TRUE), .by = year)
+
+  outliersd <- calculate_district_outlier_summary(.data, region = region)
+
+  adeqratiosd <- calculate_ratios_and_adequacy(.data, ratio_pairs = ratio_pairs, region = region)
+
+  .generate_score_table(
+    average_reporting_rate = avg_reporting_rate,
+    district_reporting_rate = district_reporting_rate,
+    district_completeness = district_completeness,
+    outliers_summary = outliers,
+    district_outliers_summary = outliersd,
+    ratios_summary = adeqratiosd,
+    threshold = threshold,
+    labels = labels
   )
-  district_completeness_header <- switch (
-    selected_group,
-    vaccine = '% of districts with no missing values (mean for common vaccines)',
-    rmncah = '% of districts with no missing values for the 4 forms'
+}
+
+#' Calculate Overall Quality Score from Summaries
+#' @export
+calculate_overall_score1 <- function(average_reporting_rate,
+                                     district_reporting_rate,
+                                     district_completeness,
+                                     outliers_summary,
+                                     district_outliers_summary,
+                                     ratios_summary,
+                                     labels = NULL) {
+  check_cd_class(average_reporting_rate, "cd_average_reporting_rate")
+  check_cd_class(district_reporting_rate, "cd_district_reporting_rate")
+  check_cd_class(district_completeness, "cd_missing_district")
+  check_cd_class(outliers_summary, "cd_outlier")
+  check_cd_class(district_outliers_summary, "cd_district_outliers_summary")
+  check_cd_class(ratios_summary, "cd_ratios_and_adequacy")
+
+  threshold <- attr_or_abort(district_reporting_rate, "threshold")
+
+  .generate_score_table(
+    average_reporting_rate = average_reporting_rate,
+    district_reporting_rate = district_reporting_rate,
+    district_completeness = district_completeness,
+    outliers_summary = outliers_summary,
+    district_outliers_summary = district_outliers_summary,
+    ratios_summary = ratios_summary,
+    threshold = threshold,
+    labels = labels
   )
-  district_completeness <- calculate_district_completeness_summary(.data, region = region) %>%
-    select(year, !!sym(district_completeness_column)) %>%
-    pivot_wider(names_from = year, values_from = !!sym(district_completeness_column)) %>%
-    mutate(
-      `Data Quality Metrics` = district_completeness_header,
-      no = "1c"
-    )
+}
 
-  outliers <- calculate_outliers_summary(.data, admin_level = 'adminlevel_1', region = region) %>%
-    summarise(mean_out_all = mean(mean_out_all, na.rm = TRUE), .by = year) %>%
-    pivot_wider(names_from = year, values_from = mean_out_all) %>%
-    mutate(
-      `Data Quality Metrics` = "% of monthly values that are not extreme outliers (national)",
-      no = "2a"
-    )
+.generate_score_table <- function(average_reporting_rate,
+                                  district_reporting_rate,
+                                  district_completeness,
+                                  outliers_summary,
+                                  district_outliers_summary,
+                                  ratios_summary,
+                                  threshold,
+                                  labels = NULL) {
+  # 2. Setup: Determine Group & Columns
+  selected_group <- get_selected_group()
 
-  district_outliers_column <- switch (
-    selected_group,
-    vaccine = 'mean_out_vacc_only',
-    rmncah = 'mean_out_all'
+  col_completeness <- if (selected_group == "vaccine") "mean_mis_vacc_tracer" else "mean_mis_all"
+  col_outliers_dst <- if (selected_group == "vaccine") "mean_out_vacc_only" else "mean_out_all"
+
+  # Base IDs are always percentages
+  ids_to_average <- c("1a", "1b", "1c", "2a", "2b")
+
+  # Add group-specific percentage IDs from the Ratio section
+  if (selected_group == "vaccine") {
+    # Vaccine: 3a,3b,3c are Ratios. 3f,3g,3h are Percentages.
+    ids_to_average <- c(ids_to_average, "3f", "3g", "3h")
+  } else {
+    # RMNCAH: 3a,3b are Ratios. 3c,3d are Percentages.
+    ids_to_average <- c(ids_to_average, "3c", "3d")
+  }
+
+  lbl_completeness <- if (selected_group == "vaccine") {
+    "% of districts with no missing values (mean for common vaccines)"
+  } else {
+    "% of districts with no missing values for the 4 forms"
+  }
+
+  # 3. Setup: Define Labels
+  default_lbl <- list(
+    header = list(
+      h1 = "1. Completeness of monthly facility reporting (mean of ANC, delivery, immunization)",
+      h2 = "2. Extreme outliers (mean of ANC, delivery, immunization)",
+      h3 = "3. Consistency of annual reporting"
+    ),
+    section = list(
+      r1a = "% of expected monthly facility reports (national)",
+      r1b = paste0("% of districts with completeness of facility reporting >= ", threshold),
+      r1c = lbl_completeness,
+      r2a = "% of monthly values that are not extreme outliers (national)",
+      r2b = "% of districts with no extreme outliers in the year",
+      score = "Annual data quality score"
+    ),
+    metric = list(
+      r_anc1_penta1    = "Ratio anc1/penta1",
+      r_penta1_penta3  = "Ratio penta1/penta3",
+      r_opv1_opv3      = "Ratio opv1/opv3",
+      ok_anc1_penta1   = "% district with anc1/penta1 in expected ranged",
+      ok_penta1_penta3 = "% district with penta1/penta3 in expected ranged",
+      ok_opv1_opv3     = "% district with opv1/opv3 in expected ranged"
+    )
   )
-  outliersd <- calculate_district_outlier_summary(.data, region = region) %>%
-    select(year, !!sym(district_outliers_column)) %>%
-    pivot_wider(names_from = year, values_from = !!sym(district_outliers_column)) %>%
-    mutate(
-      `Data Quality Metrics` = "% of districts with no extreme outliers in the year",
-      no = "2b"
-    )
 
-  adeqratiosd <- calculate_ratios_and_adequacy(.data, ratio_pairs = ratio_pairs, region = region) %>%
+  if (!is.null(labels)) {
+    if (!is.null(labels$header)) default_lbl$header <- modifyList(default_lbl$header, as.list(labels$header))
+    if (!is.null(labels$section)) default_lbl$section <- modifyList(default_lbl$section, as.list(labels$section))
+    if (!is.null(labels$metric)) default_lbl$metric <- modifyList(default_lbl$metric, as.list(labels$metric))
+  }
+
+  # 4. Process Standard Sections
+  row_1a <- average_reporting_rate %>% process_metric_row("mean_rr", default_lbl$section$r1a, "1a")
+  row_1b <- district_reporting_rate %>% process_metric_row("low_mean_rr", default_lbl$section$r1b, "1b")
+  row_1c <- district_completeness %>% process_metric_row(col_completeness, default_lbl$section$r1c, "1c")
+  row_2a <- outliers_summary %>% process_metric_row("mean_out_all", default_lbl$section$r2a, "2a")
+  row_2b <- district_outliers_summary %>% process_metric_row(col_outliers_dst, default_lbl$section$r2b, "2b")
+
+  # 5. Process Ratios
+
+  # Map raw names -> short IDs
+  raw_to_id_map <- c(
+    "Ratio anc1/penta1"                                = "r_anc1_penta1",
+    "Ratio penta1/penta3"                              = "r_penta1_penta3",
+    "Ratio opv1/opv3"                                  = "r_opv1_opv3",
+    "% district with anc1/penta1 in expected ranged"   = "ok_anc1_penta1",
+    "% district with penta1/penta3 in expected ranged" = "ok_penta1_penta3",
+    "% district with opv1/opv3 in expected ranged"     = "ok_opv1_opv3"
+  )
+
+  # Map short IDs -> "no" codes
+  id_to_no_map <- if (selected_group == "vaccine") {
+    c(
+      r_anc1_penta1 = "3a", r_penta1_penta3 = "3b", r_opv1_opv3 = "3c",
+      ok_anc1_penta1 = "3f", ok_penta1_penta3 = "3g", ok_opv1_opv3 = "3h"
+    )
+  } else {
+    c(
+      r_anc1_penta1 = "3a", r_penta1_penta3 = "3b",
+      ok_anc1_penta1 = "3c", ok_penta1_penta3 = "3d"
+    )
+  }
+
+  metric_lbl_vec <- unlist(default_lbl$metric)
+
+  row_ratios <- ratios_summary %>%
     select(year, starts_with("Ratio"), starts_with("% district with")) %>%
-    pivot_longer(-year, names_to = "Data Quality Metrics", values_to = "value") %>%
-    pivot_wider(names_from = year, values_from = value) %>%
+    pivot_longer(-year, names_to = "raw_metric", values_to = "value") %>%
     mutate(
-      no = case_when(
-        selected_group == 'vaccine' ~ case_match(
-          `Data Quality Metrics`,
-          'Ratio anc1/penta1'~ '3a',
-          'Ratio penta1/penta3' ~ '3b',
-          'Ratio opv1/opv3' ~ '3c',
-          '% district with anc1/penta1 in expected ranged' ~ '3f',
-          '% district with penta1/penta3 in expected ranged' ~ '3g',
-          '% district with opv1/opv3 in expected ranged' ~ '3h'
-        ),
-        selected_group == 'rmncah' ~ case_match(
-          `Data Quality Metrics`,
-          "Ratio anc1/penta1" ~ "3a",
-          "Ratio penta1/penta3" ~ "3b",
-          "% district with anc1/penta1 in expected ranged" ~ "3c",
-          "% district with penta1/penta3 in expected ranged" ~ "3d"
-        )
-      )
-    )
+      short_id = raw_to_id_map[raw_metric],
+      label_lookup = metric_lbl_vec[short_id],
+      `Data Quality Metrics` = coalesce(label_lookup, raw_metric),
+      no = id_to_no_map[short_id]
+    ) %>%
+    filter(!is.na(no)) %>%
+    select(-raw_metric, -short_id, -label_lookup) %>%
+    pivot_wider(names_from = year, values_from = value)
 
-  final_data <- bind_rows(
-    avg_reporting_rate,
-    district_reporting_rate,
-    district_completeness,
-    outliers,
-    outliersd,
-    adeqratiosd
-  ) %>%
+  # 6. Final Combine
+  final_data <- bind_rows(row_1a, row_1b, row_1c, row_2a, row_2b, row_ratios) %>%
     relocate(no, `Data Quality Metrics`)
 
   mean_row <- final_data %>%
-    filter(no %in% c("1a", "1b", "2a", "2b", "3c", "3d", '3f', '3g', '3h')) %>%
-    summarise(across(starts_with("20"), mean, na.rm = TRUE)) %>%
+    filter(no %in% ids_to_average) %>%
+    summarise(across(starts_with("20"), ~ mean(.x, na.rm = TRUE))) %>%
     mutate(
-      `Data Quality Metrics` = "Annual data quality score",
+      `Data Quality Metrics` = default_lbl$section$score,
       no = "4"
     )
 
-  final_data <- final_data %>%
+  combined <- final_data %>%
     bind_rows(mean_row) %>%
     arrange(no)
 
-  return(final_data)
+  combined <- combined %>%
+    mutate(
+      type = case_when(
+        startsWith(no, "1") ~ default_lbl$header$h1,
+        startsWith(no, "2") ~ default_lbl$header$h2,
+        startsWith(no, "3") | no == "4" ~ default_lbl$header$h3,
+        TRUE ~ NA_character_
+      )
+    ) %>%
+    select(type, everything())
+
+  new_tibble(
+    combined,
+    class = "cd_overall_score",
+    threshold = threshold
+  )
+}
+
+#' Standardizes selecting, pivoting, and labeling
+#' @noRd
+process_metric_row <- function(.data, val_col, label_text, id_code) {
+  .data %>%
+    select(year, all_of(val_col)) %>%
+    pivot_wider(names_from = year, values_from = all_of(val_col)) %>%
+    mutate(
+      `Data Quality Metrics` = label_text,
+      no = id_code
+    )
+}
+
+
+#' Plot S3 method for Overall Score
+#'
+#' @param x The score dataframe (class cs_overall_score)
+#' @param years Vector of years to display
+#' @param threshold The performance threshold (e.g. 90)
+#' @param i18n Translator object
+#' @param file (Optional) File path to save as PNG/HTML. If NULL, returns the object.
+#' @param ... Additional arguments
+#'
+#' @export
+plot.cd_overall_score <- function(x, years = NULL, title = NULL, ...) {
+  if (!is_integerish(years)) {
+    cd_abort(c("x" = "{.arg years} cannot be null"))
+  }
+  threshold <- attr_or_abort(x, "threshold")
+  main_title <- title %||% "Data Quality Metrics"
+
+  dt_html <- x %>%
+    as_grouped_data(groups = "type") %>%
+    as_flextable() %>%
+    font(fontname = "sans", part = "all") %>%
+    bg(part = "all", bg = "white") %>%
+    set_header_labels(no = "", `Data Quality Metrics` = main_title) %>%
+    compose(
+      i = ~ !is.na(type),
+      j = 1,
+      value = as_paragraph(as_chunk(type))
+    ) %>%
+    bold(j = 1, i = ~ !is.na(type), bold = TRUE, part = "body") %>%
+    bg(i = ~ !is.na(type), part = "body", bg = "lightgoldenrodyellow") %>%
+    bold(i = ~ is.na(type) & no == "4", bold = TRUE, part = "body") %>%
+    bg(i = ~ is.na(type) & no == "4", part = "body", bg = "lightgoldenrodyellow") %>%
+    bold(part = "header", bold = TRUE) %>%
+    colformat_double(i = ~ is.na(type) & !no %in% c("3a", "3b", "3c"), j = as.character(years), digits = 0, big.mark = ",") %>%
+    colformat_double(i = ~ is.na(type) & no %in% c("3a", "3b", "3c"), j = as.character(years), digits = 2) %>%
+    bg(
+      i = ~ is.na(type) & !no %in% c("3a", "3b", "3c"),
+      j = as.character(years),
+      bg = function(x) {
+        result <- map_chr(as.list(x), ~ {
+          if (is.na(.x) || is.null(.x)) {
+            return("transparent")
+          } else if (.x >= threshold) {
+            return("seagreen")
+          } else if (.x >= 70 && .x < threshold) {
+            return("yellow")
+          } else if (.x < 70) {
+            return("red")
+          } else {
+            return("transparent")
+          }
+        })
+        return(result)
+      },
+      part = "body"
+    ) %>%
+    theme_vanilla() %>%
+    autofit() %>%
+  return(dt_html)
 }

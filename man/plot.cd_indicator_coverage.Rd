@@ -12,32 +12,40 @@
     "immunization_coverage_anc1", "anc_coverage_penta1", "delivery_coverage_penta1",
     "immunization_coverage_penta1"),
   admin_name = NULL,
+  title = NULL,
+  x_label = NULL,
+  y_label = NULL,
+  legend_labels = NULL,
   ...
 )
 }
 \arguments{
 \item{x}{A \code{cd_indicator_coverage} object containing the calculated indicators.}
 
-\item{plot_type}{Character. Type of plot to generate. Options include:
+\item{plot_type}{Character. The specific indicator set to plot. Valid options include:
 \itemize{
-\item \code{"population_dhis2"}: Population estimates from DHIS-2 data
-\item \code{"births_dhis2"}: Live birth estimates from DHIS-2
-\item \code{"population_un"}: Population estimates from UN data
-\item \code{"births_un"}: Live birth estimates from UN
-\item \code{"anc_coverage"}: ANC coverage indicators
-\item \code{"immunization_coverage_dhis2"}: DHIS-2 based immunization coverage indicators
-\item \code{"immunization_coverage_un"}: UN-based immunization coverage
-\item \code{"immunization_coverage_anc1"}: ANC-1 based immunization coverage
+\item \strong{DHIS2 Denominators}: \code{"anc_coverage_dhis2"}, \code{"delivery_coverage_dhis2"}, \code{"immunization_coverage_dhis2"}
+\item \strong{UN Denominators}: \code{"anc_coverage_un"}, \code{"delivery_coverage_un"}, \code{"immunization_coverage_un"}
+\item \strong{ANC1 Derived}: \code{"anc_coverage_anc1"}, \code{"delivery_coverage_anc1"}, \code{"immunization_coverage_anc1"}
+\item \strong{Penta1 Derived}: \code{"anc_coverage_penta1"}, \code{"delivery_coverage_penta1"}, \code{"immunization_coverage_penta1"}
 }}
 
-\item{admin_name}{Name of the area to plot}
+\item{admin_name}{Optional character. The specific admin area to filter by (required if data is subnational).}
 
-\item{...}{Additional arguments (currently not used).}
+\item{title}{Optional character. Custom plot title.}
+
+\item{x_label}{Optional character. Custom x-axis label (default "Year").}
+
+\item{y_label}{Optional character. Custom y-axis label (default "\%").}
+
+\item{legend_labels}{Optional character vector. Custom labels for the legend items. Must match the number of lines in the selected plot type.}
+
+\item{...}{Additional arguments passed to the plotting function.}
 }
 \value{
-A ggplot object for the selected plot type.
+A ggplot object.
 }
 \description{
-Generates specific plots for national denominators and health coverage indicators based on the
-calculated denominators in the \code{cd_indicator_coverage} object.
+Generates specific plots for national denominators and health coverage indicators.
+It supports dynamic customization of titles and labels.
 }

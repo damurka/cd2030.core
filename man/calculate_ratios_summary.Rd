@@ -70,14 +70,14 @@ the adequacy of each indicator's ratio.
 }
 \examples{
 \dontrun{
-  # Basic usage with default parameters
-  calculate_ratios_summary(cd_data)
+# Basic usage with default parameters
+calculate_ratios_summary(cd_data)
 
-  # Custom survey coverage and mortality adjustments for "ratioAP"
-  calculate_ratios_summary(cd_data,
-    survey_coverage = c(anc1 = 0.95, penta1 = 0.92, penta3 = 0.85),
-    anc1_penta1_mortality = 1.05
-  )
+# Custom survey coverage and mortality adjustments for "ratioAP"
+calculate_ratios_summary(cd_data,
+  survey_coverage = c(anc1 = 0.95, penta1 = 0.92, penta3 = 0.85),
+  anc1_penta1_mortality = 1.05
+)
 }
 
 }

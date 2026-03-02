@@ -4,7 +4,7 @@
 \alias{plot.cd_ratios_summary}
 \title{Plot Ratios Summary for Indicator Ratios Summary Object}
 \usage{
-\method{plot}{cd_ratios_summary}(x, ...)
+\method{plot}{cd_ratios_summary}(x, title = NULL, x_axis = NULL, y_axis = NULL, x_labels = NULL, ...)
 }
 \arguments{
 \item{x}{A \code{cd_ratios_summary} object created by the \code{calculate_ratios_summary} function.

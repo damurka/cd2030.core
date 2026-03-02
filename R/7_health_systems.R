@@ -10,14 +10,14 @@
 #'   beds, workforce, service use) and performance scores.
 #'
 #' @export
-calculate_health_system_metrics <- function(.data, admin_level = c('national', 'adminlevel_1', 'district')) {
+calculate_health_system_metrics <- function(.data, admin_level = c("national", "adminlevel_1", "district")) {
   check_cd_data(.data)
   admin_level <- arg_match(admin_level)
   admin_level_cols <- get_admin_columns(admin_level)
 
   last_year <- robust_max(.data$year)
 
-  allvars <- c('total_pop', 'total_facilities', 'total_hospitals', 'total_physicians', 'total_nonclinique_phys', 'total_nurses', 'total_beds', 'opd_total', 'ipd_total', 'under5_pop', 'opd_under5', 'ipd_under5')
+  allvars <- c("total_pop", "total_facilities", "total_hospitals", "total_physicians", "total_nonclinique_phys", "total_nurses", "total_beds", "opd_total", "ipd_total", "under5_pop", "opd_under5", "ipd_under5")
 
   metrics <- .data %>%
     filter(year == last_year) %>%
@@ -39,7 +39,7 @@ calculate_health_system_metrics <- function(.data, admin_level = c('national', '
       total_ipd_u5 = ipd_under5
     ) %>%
     mutate(total_healthstaff = rowSums(select(., total_physicians, total_nonclinique_phys, total_nursemidwife), na.rm = TRUE)) %>%
-    summarise(across(-any_of(c('adminlevel_1', 'district', 'year')), sum, na.rm = TRUE), .by = all_of(c(admin_level_cols, 'year'))) %>%
+    summarise(across(-any_of(c("adminlevel_1", "district", "year")), ~ sum(.x, na.rm = TRUE)), .by = all_of(c(admin_level_cols, "year"))) %>%
     mutate(
       # Ratios
       ratio_fac_pop = (total_facilities / total_pop) * 10000,
@@ -57,7 +57,6 @@ calculate_health_system_metrics <- function(.data, admin_level = c('national', '
       score_infrastructure = (((ratio_fac_pop / 2) + (ratio_bed_pop / 25)) / 2) * 100,
       score_workforce = (ratio_hstaff_pop / 23) * 100,
       score_utilization = (((ratio_opd_pop / 5) + (ratio_ipd_pop / 10)) / 2) * 100,
-
       score_infrastructure = if_else(score_infrastructure > 100, 100, score_infrastructure),
       score_workforce = if_else(score_workforce > 100, 100, score_workforce),
       score_utilization = if_else(score_utilization > 100, 100, score_utilization),
@@ -67,7 +66,7 @@ calculate_health_system_metrics <- function(.data, admin_level = c('national', '
 
   new_tibble(
     metrics,
-    class = 'cd_health_system_metric',
+    class = "cd_health_system_metric",
     admin_level = admin_level
   )
 }
@@ -101,7 +100,6 @@ calculate_health_system_comparison <- function(.data,
                                                survey_year = 2019,
                                                twin = 0.015,
                                                preg_loss = 0.03) {
-
   check_cd_data(.data)
 
   last_year <- robust_max(.data$year)
@@ -111,29 +109,31 @@ calculate_health_system_comparison <- function(.data,
   #   rename_with(~ paste0('nat_', .x), .cols = starts_with('cov_'))
 
   ad1_cov <- calculate_indicator_coverage(
-    .data, admin_level = 'adminlevel_1', sbr = sbr, nmr = nmr, pnmr = pnmr,
+    .data,
+    admin_level = "adminlevel_1", sbr = sbr, nmr = nmr, pnmr = pnmr,
     anc1survey = anc1survey, dpt1survey = dpt1survey,
     survey_year = survey_year, twin = twin, preg_loss = preg_loss
   ) %>%
-    select(year, adminlevel_1, matches('^cov_(anc1|sba|instdeliveries|csection|pnc48|penta3)_(anc1|dhis2|penta1)$')) %>%
-    rename_with(~ paste0('ad1_', .x), .cols = starts_with('cov_'))
+    select(year, adminlevel_1, matches("^cov_(anc1|sba|instdeliveries|csection|pnc48|penta3)_(anc1|dhis2|penta1)$")) %>%
+    rename_with(~ paste0("ad1_", .x), .cols = starts_with("cov_"))
 
   dis_cov <- calculate_indicator_coverage(
-    .data, admin_level = 'district',
+    .data,
+    admin_level = "district",
     sbr = sbr, nmr = nmr, pnmr = pnmr,
     anc1survey = anc1survey, dpt1survey = dpt1survey,
     survey_year = survey_year, twin = twin, preg_loss = preg_loss
   ) %>%
-    select(year, adminlevel_1, district, matches('^cov_(anc1|sba|instdeliveries|csection|pnc48|penta3)_(anc1|dhis2|penta1)$')) %>%
-    rename_with(~ paste0('dis_', .x), .cols = starts_with('cov_'))
+    select(year, adminlevel_1, district, matches("^cov_(anc1|sba|instdeliveries|csection|pnc48|penta3)_(anc1|dhis2|penta1)$")) %>%
+    rename_with(~ paste0("dis_", .x), .cols = starts_with("cov_"))
 
-  ad1_metric <- calculate_health_system_metrics(.data, admin_level = 'adminlevel_1') %>%
-    select(year, adminlevel_1, starts_with('ratio_')) %>%
-    rename_with(~ paste0('ad1_', .x), .cols = starts_with('ratio_'))
+  ad1_metric <- calculate_health_system_metrics(.data, admin_level = "adminlevel_1") %>%
+    select(year, adminlevel_1, starts_with("ratio_")) %>%
+    rename_with(~ paste0("ad1_", .x), .cols = starts_with("ratio_"))
 
-  dis_metric <- calculate_health_system_metrics(.data, admin_level = 'district') %>%
-    select(year, adminlevel_1, district, starts_with('ratio_')) %>%
-    rename_with(~ paste0('dis_', .x), .cols = starts_with('ratio_'))
+  dis_metric <- calculate_health_system_metrics(.data, admin_level = "district") %>%
+    select(year, adminlevel_1, district, starts_with("ratio_")) %>%
+    rename_with(~ paste0("dis_", .x), .cols = starts_with("ratio_"))
 
   metrics <- dis_cov %>%
     left_join(ad1_cov, join_by(adminlevel_1, year)) %>%
@@ -144,6 +144,6 @@ calculate_health_system_comparison <- function(.data,
 
   new_tibble(
     metrics,
-    class = 'cd_health_system_comparison'
+    class = "cd_health_system_comparison"
   )
 }

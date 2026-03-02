@@ -4,12 +4,23 @@
 \alias{plot.cd_outlier_list}
 \title{Plot Outlier Time Series for a Region}
 \usage{
-\method{plot}{cd_outlier_list}(x, region_name = NULL, ...)
+\method{plot}{cd_outlier_list}(
+  x,
+  indicator = NULL,
+  year = NULL,
+  region = NULL,
+  title = NULL,
+  x_axis = NULL,
+  y_axis = NULL,
+  legend = NULL,
+  label = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{A \code{cd_outlier_list} object from \code{list_outlier_units()}.}
 
-\item{region_name}{The name of the unit to plot.}
+\item{region}{The name of the unit to plot.}
 
 \item{...}{Not used.}
 }

@@ -1,34 +1,13 @@
-#' Calculate Dropout Coverage for Health Indicators Below a Threshold
+#' Calculate Coverage/Dropout Threshold Attainment
 #'
-#' This function filters health indicator data to identify the percentage of administrative
-#' regions where the coverage for a specified indicator falls below a 10% threshold for a given year.
-#' If no regions meet the criteria (i.e., all values are below the threshold), a default output is returned.
+#' Evaluates administrative regions to determine the percentage that meet specific
+#' coverage targets or fall below specific dropout thresholds for a given year.
 #'
-#' @param .data A tibble of class `cd_data`.
-#' @param survey_year Integer. The year of Penta-1 survey provided
-#' @param admin_level The level of analysis.
-#' @param indicator Character. The specific health indicator to evaluate. Options are:
-#'   - `"coverage"`:coverage indicators.
-#'   - `"dropout"`: dropout indicators.
-#' @param sbr Numeric. The stillbirth rate. Default is `0.02`.
-#' @param nmr Numeric. Neonatal mortality rate. Default is `0.025`.
-#' @param pnmr Numeric. Post-neonatal mortality rate. Default is `0.024`.
-#' @param anc1survey Numeric. Survey-derived coverage rate for ANC-1 (antenatal care, first visit). Default is `0.98`.
-#' @param dpt1survey Numeric. Survey-derived coverage rate for Penta-1 (DPT1 vaccination). Default is `0.97`.
-#' @param survey_year Integer. The year of Penta-1 survey provided
-#' @param preg_loss Numeric. Pregnancy loss rate
-#' @param twin Numeric. Twin birth rate. Default is `0.015`.
+#' @param .data A tibble of class `cd_indicator_coverage`.
+#' @param denominator Character. The denominator used (e.g., `'dhis2'`, `'anc1'`).
+#' @param indicator Character. The health indicator group to evaluate (`'anc4'`, `'instdeliveries'`, `'vaccine'`, `'dropout'`).
 #'
-#' @return A tibble with the selected administrative level and coverage value for regions
-#'   that do not meet the below-10% threshold for the specified indicator and year. If no regions
-#'   meet the criteria, a default row is returned with "None" and 0 as values.
-#'
-#' @examples
-#' \dontrun{
-#' # Example usage:
-#' result <- calculate_threshold(data, filter_year = 2023, indicator = "zerodose", source = "dhis2")
-#' result
-#' }
+#' @return A `cd_threshold` object summarizing the percentage of regions meeting the criteria by year.
 #'
 #' @export
 calculate_threshold <- function(.data,
@@ -50,9 +29,9 @@ calculate_threshold <- function(.data,
     indicator
   )
 
-  coverage <- switch (
+  coverage <- switch(
     indicator,
-    vaccine = 90,
+    vaccine = if (admin_level == "national") 90 else 80,
     anc4 = 70,
     instdeliveries = 80,
     dropout = 10
@@ -65,9 +44,9 @@ calculate_threshold <- function(.data,
         threshold_func <- if (grepl('dropout', cur_column())) {
           function(x) x < 10
         } else {
-          function(x) x >= 90
+          function(x) x >= coverage # Using the dynamic coverage variable instead of hardcoded 90
         }
-        mean(threshold_func(.x)) * 100
+        mean(threshold_func(.x), na.rm = TRUE) * 100
       }),
       .by = year
     )
@@ -78,7 +57,7 @@ calculate_threshold <- function(.data,
     admin_level = admin_level,
     indicator = indicator,
     region = region,
-    coverage = coverage
+    threshold = coverage
   )
 }
 
@@ -90,20 +69,8 @@ calculate_threshold <- function(.data,
 #' @param .data An object of class `cd_indicator_coverage`.
 #' @param indicator A string specifying the indicator.
 #' @param denominator A string. The denominator used in coverage calculation.
-#'   One of: `"dhis2"`, `"anc1"`, `"penta1"`, `"penta1derived"`.
-#' @param threshold A numeric threshold for filtering. Default is `90`.
 #'
-#' @return A filtered data frame with the following columns: `adminlevel_1`, `district`, `year`, and the selected coverage column.
-#'
-#' @examples
-#' \dontrun{
-#' filter_high_performers(
-#'   .data = survey_data,
-#'   indicator = "penta3",
-#'   denominator = "penta1",
-#'   threshold = 85
-#' )
-#' }
+#' @return A filtered data frame retaining regions meeting the threshold.
 #'
 #' @export
 filter_high_performers <- function(.data,

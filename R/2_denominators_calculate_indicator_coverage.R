@@ -94,25 +94,17 @@ calculate_indicator_coverage <- function(.data,
 #' @param .data A `cd_indicator_coverage` object.
 #' @param indicator A string. The target health indicator (e.g., `"penta3"`, `"bcg"`).
 #' @param survey_coverage A scalar numeric. The national survey coverage to include as a reference. Default is `88`.
+#' @param survey_year A scalar numeric. The year of the survey. Defaults to `2024`.
 #'
 #' @return A `tibble` of class `'cd_indicator_coverage_filtered'`, enriched with attributes for plotting.
-#'
-#' @details
-#' The function reshapes wide coverage data into long format, classifies each column by denominator type,
-#' and extracts the indicator name. It selects only data for the most recent available year.
-#'
-#' @examples
-#' \dontrun{
-#' filtered <- filter_indicator_coverage(df, indicator = "penta3", survey_coverage = 90)
-#' plot(filtered)
-#' }
-#'
-#' @seealso [plot.cd_indicator_coverage_filtered()]
 #'
 #' @export
 filter_indicator_coverage <- function(.data, indicator, survey_coverage = 88, survey_year = 2024) {
   check_cd_indicator_coverage(.data)
   indicator <- arg_match(indicator, get_analysis_indicators())
+  admin_level <- attr_or_abort(.data, 'admin_level')
+  region <- attr_or_null(.data, 'region')
+  admin_cols <- get_admin_columns(admin_level, region)
 
   if (!is_scalar_double(survey_coverage)) {
     cd_abort(c("x" = "A scalar numeric is required."))
@@ -125,16 +117,15 @@ filter_indicator_coverage <- function(.data, indicator, survey_coverage = 88, su
 
   # Prepare the data for plotting
   data <- .data %>%
-    pivot_longer(-any_of(c("country", "year", "iso3"))) %>%
+    pivot_longer(-any_of(c("country", "year", "iso3", admin_cols))) %>%
     mutate(
       category = case_when(
-        grepl("_dhis2$", name) ~ "DHIS2 projection",
-        grepl("_anc1$", name) ~ "ANC1-derived",
-        grepl("_penta1$", name) ~ "Penta1-derived",
-        grepl("_un$", name) ~ "UN projection",
-        grepl("_penta1derived$", name) ~ "Penta 1 population Growth"
+        grepl("_dhis2$", name) ~ "dhis2",
+        grepl("_anc1$", name) ~ "anc1",
+        grepl("_penta1$", name) ~ "penta1",
+        grepl("_un$", name) ~ "un",
+        grepl("_penta1derived$", name) ~ "penta1derived"
       ),
-      category = factor(category, levels = c("DHIS2 projection", "ANC1-derived", "Penta1-derived", "UN projection", "Penta 1 population Growth")),
       indicator_name = str_extract(name, "(?<=cov_)(.*)(?=_[^_]+$)")
     ) %>%
     filter(year == survey_year, indicator_name == indicator)
@@ -467,82 +458,117 @@ calculate_populations <- function(.data,
       )
   }
 
-  # Compute penta 1 derived values based on population growth
+  # =========================================================================
+  # CD2030 DTP1-DERIVED DENOMINATORS: Intelligent Envelope Fallback
+  # Implements Steps 1-7 with dynamic Admin 1 vs National fallback
+  # =========================================================================
   survey_year <- survey_year - 1
   survey_year <- robust_max(c(survey_year, min(output_data$year, na.rm = TRUE)), 2025)
   population_col <- sym(derivation_population)
   penta1_estimates <- c('totinftpenta_penta1', 'totinftmeasles_penta1', 'totmeasles2_penta1', 'totlbirths_penta1',
                         'totbirths_penta1', 'totdeliv_penta1', 'totpreg_penta1')
 
-  national_summary <- if (admin_level != 'national') {
-    output_data %>%
-      summarise(
-        across(any_of(c(derivation_population, penta1_estimates, get_all_indicators())), ~ sum(.x, na.rm = TRUE)),
-        .by = year
-      )
-  } else {
-    output_data
-  }
+  # ---------------------------------------------------------
+  # STEPS 1-3: Calculate National Envelope (The Ultimate Fallback)
+  # ---------------------------------------------------------
+  nat_summary <- output_data %>%
+    summarise(
+      across(any_of(c(derivation_population, penta1_estimates)), ~ sum(.x, na.rm = TRUE)),
+      .by = year
+    )
 
-  survey_population <- national_summary %>%
+  nat_survey_pop <- nat_summary %>%
     filter(year == survey_year) %>%
     pull(!!population_col)
 
-  national_summary <- national_summary %>%
-    rename(national_population = !!population_col) %>%
+  nat_summary <- nat_summary %>%
+    rename(nat_pop = !!population_col) %>%
     mutate(
-      population_yoy_change = (national_population - lag(national_population, order_by = year))/lag(national_population, order_by = year) * 100,
-      population_survey_change = (national_population - survey_population)/survey_population * 100,
+      nat_survey_change = (nat_pop - nat_survey_pop) / nat_survey_pop * 100,
+      across(any_of(penta1_estimates), ~ .x * (1 + nat_survey_change/100), .names = 'nat_{.col}derived')
+    )
 
-      across(any_of(penta1_estimates), ~ .x * (1 + population_survey_change/100), .names = '{.col}derived'),
+  # ---------------------------------------------------------
+  # Process Subnational (Admin 1 & Admin 2) or National
+  # ---------------------------------------------------------
+  if (admin_level == 'national') {
+    output_data <- output_data %>%
+      left_join(nat_summary, by = "year") %>%
+      select(-nat_pop) %>%
+      rename(population_survey_change = nat_survey_change) %>%
+      rename_with(~ str_remove(., "^nat_"), starts_with("nat_")) %>%
+      arrange(year) %>%
+      mutate(
+        population_yoy_change = (!!population_col - lag(!!population_col)) / lag(!!population_col) * 100
+      )
+  } else {
+    # Calculate the Admin 1 Envelope
+    admin1_summary <- output_data %>%
+      summarise(
+        across(any_of(c(derivation_population, penta1_estimates)), ~ sum(.x, na.rm = TRUE)),
+        .by = c(year, adminlevel_1)
+      )
 
+    admin1_survey_df <- admin1_summary %>%
+      filter(year == survey_year) %>%
+      select(adminlevel_1, admin1_survey_pop = !!population_col)
+
+    admin1_summary <- admin1_summary %>%
+      rename(admin1_pop = !!population_col) %>%
+      left_join(admin1_survey_df, by = "adminlevel_1") %>%
+      mutate(
+        admin1_survey_change = (admin1_pop - admin1_survey_pop) / admin1_survey_pop * 100,
+        across(any_of(penta1_estimates), ~ .x * (1 + admin1_survey_change/100), .names = 'admin1_{.col}derived')
+      )
+
+    # Extract Local Subnational Survey Population (for the specific unit)
+    local_survey_df <- output_data %>%
+      filter(year == survey_year) %>%
+      select(all_of(group_vars), local_survey_pop = !!population_col)
+
+    # Join everything and apply fallback logic (Steps 4-7)
+    output_data <- output_data %>%
+      left_join(nat_summary, by = "year") %>%
+      left_join(admin1_summary, by = c("year", "adminlevel_1")) %>%
+      left_join(local_survey_df, by = group_vars) %>%
+      group_by(across(any_of(group_vars))) %>%
+      arrange(year, .by_group = TRUE) %>%
+      mutate(
+        # FALLBACK RULE: Does this Admin 1 have a valid baseline in the survey year?
+        use_admin1 = !is.na(admin1_survey_pop) & admin1_survey_pop > 0,
+
+        # Determine the active envelope population based on the rule
+        envelope_pop = if_else(use_admin1, admin1_pop, nat_pop),
+
+        # CD2030 Step 4 & 6: Subnational share of the chosen envelope
+        population_proportion = !!population_col / envelope_pop,
+
+        # Standard population changes for the unit itself
+        population_yoy_change = (!!population_col - lag(!!population_col)) / lag(!!population_col) * 100,
+        population_survey_change = (!!population_col - local_survey_pop) / local_survey_pop * 100
+      ) %>%
+      ungroup() %>%
+      mutate(
+        across(
+          any_of(paste0("admin1_", penta1_estimates, "derived")),
+          ~ if_else(use_admin1, .x, get(sub("^admin1_", "nat_", cur_column()))) * population_proportion,
+          .names = "{sub('^admin1_', '', .col)}"
+        )
+      ) %>%
+      select(-starts_with("nat_"), -starts_with("admin1_"), -envelope_pop, -use_admin1, -local_survey_pop)
+  }
+
+  # ---------------------------------------------------------
+  # Calculate Final Coverage Percentages for Derived Denominators
+  # ---------------------------------------------------------
+  output_data <- output_data %>%
+    mutate(
       across(any_of(get_all_indicators()), ~ {
         pop_col <- get_population_column(cur_column(), "penta1derived")
         den <- get(pop_col)
         ifelse(den > 0, .x / den * 100, NA_real_)
       }, .names = 'cov_{.col}_penta1derived')
-    ) %>%
-    select(year, national_population, population_yoy_change, population_survey_change, ends_with('penta1derived'))
-
-  output_data <- if (admin_level != 'national') {
-
-    national_summary <- national_summary %>%
-      select(year, national_population, ends_with('penta1derived'), -starts_with('cov_')) %>% glimpse()
-
-    survey_population <- output_data %>%
-      filter(year == survey_year) %>%
-      rename(survey_population = !!population_col) %>%
-      select(all_of(group_vars), survey_population)
-
-    output_data %>%
-      left_join(national_summary, join_by(year)) %>%
-      left_join(survey_population, by = group_vars) %>%
-      mutate(
-        # Step 1: Compute population change
-        population_yoy_change = (!!population_col - lag(!!population_col, order_by = year)) / lag(!!population_col, order_by = year) * 100,
-        # .by = any_of(group_vars)
-      ) %>%
-      mutate(
-        population_survey_change = (!!population_col - survey_population)/survey_population * 100,
-
-        # Step 2: Compute subnational DHIS2 share of national population
-        population_proportion = !!population_col / national_population,
-
-        across(ends_with('penta1derived'), ~ .x * population_proportion),
-
-        across(any_of(get_all_indicators()), ~ {
-          pop_col <- get_population_column(cur_column(), "penta1derived")
-          den <- get(pop_col)
-          ifelse(den > 0, .x / den * 100, NA_real_)
-        }, .names = 'cov_{.col}_penta1derived'),
-        # .by =c(year)
-      ) %>%
-      select(-survey_population)
-  } else {
-    output_data %>%
-      left_join(national_summary, join_by(year)) %>%
-      select(-national_population)
-  }
+    )
 
   if (get_selected_group() == 'vaccine') {
 

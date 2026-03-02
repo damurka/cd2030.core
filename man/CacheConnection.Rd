@@ -51,6 +51,8 @@ from \code{.rds} files.
 
 \item{\code{indicator_coverage_admin1}}{Gets adjusted data.}
 
+\item{\code{indicator_coverage_district}}{Gets adjusted data.}
+
 \item{\code{survey_estimates}}{Gets survey estimates.}
 
 \item{\code{national_estimates}}{Gets national estimates.}
@@ -113,7 +115,43 @@ from \code{.rds} files.
 
 \item{\code{check_mortality_params}}{checks if inputs for mortality calculations are available}
 
-\item{\code{check_sector_params}}{checks if inputs for mortality calculations are available
+\item{\code{check_sector_params}}{checks if inputs for mortality calculations are available}
+
+\item{\code{reporting_rate_national}}{Get cached national reporting rates.}
+
+\item{\code{reporting_rate_admin1}}{Get cached admin1 reporting rates.}
+
+\item{\code{reporting_rate_district}}{Get cached district reporting rates.}
+
+\item{\code{district_reporting_rate}}{Get cached district reporting rates.}
+
+\item{\code{completeness_national}}{Get cached district reporting rates.}
+
+\item{\code{completeness_admin1}}{Get cached district reporting rates.}
+
+\item{\code{completeness_district}}{Get cached district reporting rates.}
+
+\item{\code{district_completeness}}{Get cached district reporting rates.}
+
+\item{\code{outliers_national}}{Get cached district reporting rates.}
+
+\item{\code{outliers_admin1}}{Get cached district reporting rates.}
+
+\item{\code{outliers_district}}{Get cached district reporting rates.}
+
+\item{\code{district_outliers_summary}}{Get cached district reporting rates.}
+
+\item{\code{list_outlier_units}}{Get cached district reporting rates.}
+
+\item{\code{ratios_summary}}{Get cached district reporting rates.}
+
+\item{\code{overall_score}}{Get cached national overall score.}
+
+\item{\code{denominator_metrics}}{Get cached national overall score.}
+
+\item{\code{inequality_admin1}}{Gets cached inequality data for admin level 1.}
+
+\item{\code{inequality_district}}{Gets cached inequality data for district level.
 Update a field (with change tracking)}
 }
 \if{html}{\out{</div>}}
@@ -175,6 +213,22 @@ Update a field (with change tracking)}
 \item \href{#method-CacheConnection-set_sector_area_estimates}{\code{CacheConnection$set_sector_area_estimates()}}
 \item \href{#method-CacheConnection-set_csection_national_estimates}{\code{CacheConnection$set_csection_national_estimates()}}
 \item \href{#method-CacheConnection-set_csection_area_estimates}{\code{CacheConnection$set_csection_area_estimates()}}
+\item \href{#method-CacheConnection-calculate_reporting_rate}{\code{CacheConnection$calculate_reporting_rate()}}
+\item \href{#method-CacheConnection-calculate_district_reporting_rate}{\code{CacheConnection$calculate_district_reporting_rate()}}
+\item \href{#method-CacheConnection-calculate_completeness_summary}{\code{CacheConnection$calculate_completeness_summary()}}
+\item \href{#method-CacheConnection-calculate_district_completeness_summary}{\code{CacheConnection$calculate_district_completeness_summary()}}
+\item \href{#method-CacheConnection-list_missing_units}{\code{CacheConnection$list_missing_units()}}
+\item \href{#method-CacheConnection-calculate_outliers_summary}{\code{CacheConnection$calculate_outliers_summary()}}
+\item \href{#method-CacheConnection-calculate_district_outlier_summary}{\code{CacheConnection$calculate_district_outlier_summary()}}
+\item \href{#method-CacheConnection-calculate_ratios_and_adequacy}{\code{CacheConnection$calculate_ratios_and_adequacy()}}
+\item \href{#method-CacheConnection-calculate_overall_score}{\code{CacheConnection$calculate_overall_score()}}
+\item \href{#method-CacheConnection-get_filtered_indicator_coverage}{\code{CacheConnection$get_filtered_indicator_coverage()}}
+\item \href{#method-CacheConnection-get_filtered_coverage}{\code{CacheConnection$get_filtered_coverage()}}
+\item \href{#method-CacheConnection-get_filtered_inequality}{\code{CacheConnection$get_filtered_inequality()}}
+\item \href{#method-CacheConnection-get_filtered_mapping_data}{\code{CacheConnection$get_filtered_mapping_data()}}
+\item \href{#method-CacheConnection-get_base_indicator_coverage}{\code{CacheConnection$get_base_indicator_coverage()}}
+\item \href{#method-CacheConnection-get_filtered_threshold}{\code{CacheConnection$get_filtered_threshold()}}
+\item \href{#method-CacheConnection-get_high_performers}{\code{CacheConnection$get_high_performers()}}
 \item \href{#method-CacheConnection-clone}{\code{CacheConnection$clone()}}
 }
 }
@@ -1073,6 +1127,324 @@ Set map overlay mapping.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{value}}{Data frame.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-calculate_reporting_rate"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-calculate_reporting_rate}{}}}
+\subsection{Method \code{calculate_reporting_rate()}}{
+Calculate reporting rates (Wrapper).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$calculate_reporting_rate(admin_level, region = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{admin_level}}{Administrative level.}
+
+\item{\code{region}}{Optional region filter.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-calculate_district_reporting_rate"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-calculate_district_reporting_rate}{}}}
+\subsection{Method \code{calculate_district_reporting_rate()}}{
+Calculate reporting rates (Wrapper).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$calculate_district_reporting_rate(region = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{region}}{Optional region filter.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-calculate_completeness_summary"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-calculate_completeness_summary}{}}}
+\subsection{Method \code{calculate_completeness_summary()}}{
+Calculate reporting rates (Wrapper).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$calculate_completeness_summary(admin_level, region = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{admin_level}}{Administrative level.}
+
+\item{\code{region}}{Optional region filter.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-calculate_district_completeness_summary"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-calculate_district_completeness_summary}{}}}
+\subsection{Method \code{calculate_district_completeness_summary()}}{
+Calculate reporting rates (Wrapper).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$calculate_district_completeness_summary(region = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{region}}{Optional region filter.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-list_missing_units"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-list_missing_units}{}}}
+\subsection{Method \code{list_missing_units()}}{
+Calculate reporting rates (Wrapper).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$list_missing_units(indicator, region = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{indicator}}{Administrative level.}
+
+\item{\code{region}}{Optional region filter.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-calculate_outliers_summary"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-calculate_outliers_summary}{}}}
+\subsection{Method \code{calculate_outliers_summary()}}{
+Calculate reporting rates (Wrapper).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$calculate_outliers_summary(admin_level, region = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{admin_level}}{Administrative level.}
+
+\item{\code{region}}{Optional region filter.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-calculate_district_outlier_summary"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-calculate_district_outlier_summary}{}}}
+\subsection{Method \code{calculate_district_outlier_summary()}}{
+Calculate reporting rates (Wrapper).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$calculate_district_outlier_summary(region = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{region}}{Optional region filter.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-calculate_ratios_and_adequacy"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-calculate_ratios_and_adequacy}{}}}
+\subsection{Method \code{calculate_ratios_and_adequacy()}}{
+Calculate reporting rates (Wrapper).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$calculate_ratios_and_adequacy(region = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{region}}{Optional region filter.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-calculate_overall_score"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-calculate_overall_score}{}}}
+\subsection{Method \code{calculate_overall_score()}}{
+Calculate overall score (Wrapper).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$calculate_overall_score(
+  admin_level = c("national", "adminlevel_1"),
+  region = NULL,
+  labels = NULL
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{admin_level}}{Administrative level ("national" or "adminlevel_1").}
+
+\item{\code{region}}{Optional region name (required if admin_level is "adminlevel_1").}
+
+\item{\code{labels}}{Optional region name (required if admin_level is "adminlevel_1").}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-get_filtered_indicator_coverage"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-get_filtered_indicator_coverage}{}}}
+\subsection{Method \code{get_filtered_indicator_coverage()}}{
+Get filtered indicator coverage responsive to admin level and survey year.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_filtered_indicator_coverage(
+  indicator,
+  admin_level,
+  region = NULL
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{indicator}}{Character. The target health indicator.}
+
+\item{\code{admin_level}}{Character. Level of aggregation ("national", "adminlevel_1", "district").}
+
+\item{\code{region}}{Character. Optional region or district name to filter by.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-get_filtered_coverage"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-get_filtered_coverage}{}}}
+\subsection{Method \code{get_filtered_coverage()}}{
+Get filtered coverage data responsive to admin level and indicator.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_filtered_coverage(indicator, admin_level, region = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{indicator}}{Character. The target health indicator.}
+
+\item{\code{admin_level}}{Character. Level of aggregation ("national", "adminlevel_1", "district").}
+
+\item{\code{region}}{Character. Optional region or district name to filter by.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-get_filtered_inequality"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-get_filtered_inequality}{}}}
+\subsection{Method \code{get_filtered_inequality()}}{
+Get filtered inequality data responsive to admin level and indicator.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_filtered_inequality(indicator, admin_level, region = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{indicator}}{Character. The target health indicator.}
+
+\item{\code{admin_level}}{Character. Level of aggregation ("adminlevel_1", "district").}
+
+\item{\code{region}}{Character. Optional region filter.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-get_filtered_mapping_data"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-get_filtered_mapping_data}{}}}
+\subsection{Method \code{get_filtered_mapping_data()}}{
+Get filtered mapping data responsive to indicator, palette, and years.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_filtered_mapping_data(indicator, admin_level, palette)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{indicator}}{Character. The target health indicator.}
+
+\item{\code{admin_level}}{Character. Level of aggregation (defaults to "adminlevel_1").}
+
+\item{\code{palette}}{Character. Color palette for mapping.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-get_base_indicator_coverage"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-get_base_indicator_coverage}{}}}
+\subsection{Method \code{get_base_indicator_coverage()}}{
+Get baseline indicator coverage data responsive to admin level and region.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_base_indicator_coverage(admin_level, region = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{admin_level}}{Character. Level of aggregation ("national", "adminlevel_1", "district").}
+
+\item{\code{region}}{Character. Optional region filter.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-get_filtered_threshold"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-get_filtered_threshold}{}}}
+\subsection{Method \code{get_filtered_threshold()}}{
+Get calculated threshold data responsive to admin level and indicator.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_filtered_threshold(indicator, admin_level, region = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{indicator}}{Character. The target health indicator group (e.g., "vaccine", "dropout").}
+
+\item{\code{admin_level}}{Character. Level of aggregation ("national", "adminlevel_1", "district").}
+
+\item{\code{region}}{Character. Optional region filter.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-get_high_performers"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-get_high_performers}{}}}
+\subsection{Method \code{get_high_performers()}}{
+Get high-performing regions based on indicator and threshold.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_high_performers(indicator, admin_level, region = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{indicator}}{Character. The specific health indicator (e.g., "penta3").}
+
+\item{\code{admin_level}}{Character. Level of aggregation ("national", "adminlevel_1", "district").}
+
+\item{\code{region}}{Character. Optional region filter.}
 }
 \if{html}{\out{</div>}}
 }

@@ -25,11 +25,16 @@
 #' }
 #'
 #' @export
-plot.cd_ratios_summary <- function(x, ...) {
-  year = name = value = NULL
+plot.cd_ratios_summary <- function(x, title = NULL,
+                                   x_axis = NULL,
+                                   y_axis = NULL,
+                                   x_labels = NULL,
+                                   ...) {
+  year <- name <- value <- NULL
 
   plot_data <- x %>%
     select(year, starts_with("Ratio ")) %>%
+    rename_with(~ str_replace(str_remove(.x, "Ratio "), "/", "_")) %>%
     pivot_longer(cols = -year) %>%
     mutate(year = factor(year, levels = sort(unique(year))))
 
@@ -50,6 +55,26 @@ plot.cd_ratios_summary <- function(x, ...) {
     NULL
   }
 
+  x_labels_default <- c(
+    "anc1_penta1"   = "Ratio ANC1 / Penta1",
+    "opv1_opv3"     = "Ratio OPV1 / OPV3",
+    "penta1_penta3" = "Ratio Penta1 / Penta3"
+  )
+
+  x_labels_used <- if (is.null(x_labels)) {
+    x_labels_default
+  } else {
+    # allow list or vector
+    x_labels <- unlist(x_labels)
+    out <- x_labels_default
+    out[names(x_labels)] <- x_labels
+    out
+  }
+
+  plot_title <- if (!is.null(title)) title else "Ratio of number of facility reported ANC1 to penta1, and penta1 to penta3 compared to expected ratios"
+  plot_x <- if (!is.null(x_axis)) x_axis else NULL
+  plot_y <- if (!is.null(y_axis)) y_axis else NULL
+
   color_mapping <- c(base_colors, extra_colors)
   names(color_mapping) <- years
 
@@ -66,12 +91,12 @@ plot.cd_ratios_summary <- function(x, ...) {
     geom_hline(yintercept = 1.5, linetype = "dashed", color = "blue") +
     scale_y_continuous(breaks = scales::pretty_breaks(n = 6)) +
     scale_fill_manual(values = color_mapping) +
-    labs(
-      title = "Ratio of number of facility reported ANC1 to penta1, and penta1 to penta3 compared to expected ratios",
-      x = NULL,
-      y = NULL
+    scale_x_discrete(labels = x_labels_used) +
+    cd_plot_theme(
+      title = plot_title,
+      x_axis = plot_x,
+      y_axis = plot_y
     ) +
-    cd_plot_theme() +
     theme(
       plot.title = element_text(size = 14, hjust = 0.5),
       panel.grid.major.y = element_line(colour = "lightblue1", linetype = "dashed"),

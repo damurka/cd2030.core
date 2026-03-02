@@ -53,104 +53,102 @@
 #' @export
 
 plot.cd_average_reporting_rate <- function(x,
-                                           plot_type = c('heat_map', 'bar'),
-                                           indicator = c('anc_rr', 'idelv_rr', 'vacc_rr', 'opd_rr', 'ipd_rr'),
+                                           plot_type = c("heat_map", "bar"),
+                                           indicator = c("anc_rr", "idelv_rr", "vacc_rr", "opd_rr", "ipd_rr"),
                                            threshold = 90,
+                                           title = NULL,
+                                           x_axis = NULL,
+                                           y_axis = NULL,
+                                           legend = NULL,
                                            ...) {
   check_scalar_integerish(threshold)
 
   plot_type <- arg_match(plot_type)
   indicator <- arg_match(indicator)
 
-  admin_level <- attr_or_abort(x, 'admin_level')
-  if (admin_level == 'national') {
-    cd_abort(c('x' = '{.fun plot.cd_average_reporting_ratee} does not support national-level data.'))
+  admin_level <- attr_or_abort(x, "admin_level")
+  if (admin_level == "national") {
+    cd_abort(c("x" = "{.fun plot.cd_average_reporting_ratee} does not support national-level data."))
   }
 
-  region <- attr_or_null(x, 'region')
+  region <- attr_or_null(x, "region")
   admin_level_col <- get_plot_admin_column(admin_level, region)
 
   labels <- list(
     heat_map = list(
-      legend = str_glue('{indicator} Category'),
-      x = if (admin_level_col == 'district') 'District' else 'Admin Level 1',
-      y = 'Year',
-      title = str_glue('Reporting rates by years and {str_to_title(admin_level_col)} in {region}')
+      legend = str_glue("{indicator} Category"),
+      x = if (admin_level_col == "district") "District" else "Admin Level 1",
+      y = "Year",
+      title = str_glue("Reporting rates by years and {str_to_title(admin_level_col)} in {region}")
     ),
     bar = list(
-      legend = 'Reporting Rate',
-      x = 'Year',
-      y = 'Reporting Rate',
-      title = str_glue('Reporting rates by years and {str_to_title(admin_level_col)} in {region}')
+      legend = "Reporting Rate",
+      x = "Year",
+      y = "Reporting Rate",
+      title = str_glue("Reporting rates by years and {str_to_title(admin_level_col)} in {region}")
     )
   )
-
   label <- labels[[plot_type]]
 
+  plot_title <- if (!is.null(title)) title else label$title
+  plot_x <- if (!is.null(x_axis)) x_axis else label$x
+  plot_y <- if (!is.null(y_axis)) y_axis else label$y
+  plot_leg <- if (!is.null(legend)) legend else label$legend
+
   all_years <- sort(unique(x$year))
+  color_vals <- c("red", "orange", "forestgreen")
 
-  if (plot_type == 'heat_map') {
-    greater <- paste0('>= ', threshold)
-    mid <- paste0(' >= 70 and < ', threshold)
-    low <- '< 70'
+  greater <- paste0("\u2265 ", threshold)
+  mid <- paste0("\u2265 70 and < ", threshold)
+  low <- "< 70"
 
-    dt <- x %>%
-      mutate(
-        year = factor(year, levels = all_years),
-        color_category = case_when(
-          !!sym(indicator) >= threshold ~ greater,
-          !!sym(indicator) >= 70 & !!sym(indicator) < threshold ~ mid,
-          !!sym(indicator) < 70 ~ low,
-          .ptype = factor(levels = c(low, mid, greater))
-        )
+  lvl <- c(low, mid, greater)
+
+  dt <- x %>%
+    mutate(
+      year = factor(year, levels = all_years),
+      color_category = case_when(
+        !!sym(indicator) >= threshold ~ greater,
+        !!sym(indicator) >= 70 & !!sym(indicator) < threshold ~ mid,
+        .default = low,
+        .ptype = factor(levels = lvl)
       )
+    )
 
+  if (plot_type == "heat_map") {
     ggplot(dt, aes(x = !!sym(admin_level_col), y = year, fill = color_category)) +
-      geom_tile(color = 'white') +
+      geom_tile(color = "white", show.legend = TRUE) +
       scale_fill_manual(
-        values = set_names(c('forestgreen', 'orange', 'red'), c(greater, mid, low)),
-        name = label$legend,
+        values = set_names(color_vals, lvl),
+        breaks = lvl,
+        limits = lvl,
         drop = FALSE
       ) +
-      geom_text(aes(label = !!sym(indicator)), color = 'black', size = 3, vjust = 0.5) +
-      labs(title = label$title, x = label$x, y = label$y, fill = 'Value') +
-      theme_minimal() +
-      theme(axis.text.x = element_text(angle = 45, size = 9, hjust = 1))
+      scale_x_discrete(expand = expansion(mult = 0)) +
+      scale_y_discrete(expand = expansion(mult = 0)) +
+      geom_text(aes(label = !!sym(indicator)), color = "black", size = 4, vjust = 0.5) +
+      cd_heatmap_theme(
+        title = plot_title,
+        x_axis = plot_x,
+        y_axis = plot_y,
+        legend = plot_leg
+      )
   } else {
-    low_value <- min(x[[indicator]], na.rm = TRUE)
-    high_value <- robust_max(x[[indicator]], fallback = 100)
-
-    color_vals <- c('red', 'orange', 'forestgreen')
-
-    # Define breakpoints dynamically
-    breaks_vals <- if (threshold >= 70) {
-      c(low_value, 70, threshold, 100)
-    } else {
-      c(low_value, mean(low_value, threshold, na.rm = TRUE), threshold, 100)
-    }
-
-    ggplot(x, aes(year, !!sym(indicator), fill = !!sym(indicator))) +
-      geom_col() +
-      facet_wrap(as.formula(paste0('~', admin_level_col))) +
-      scale_x_continuous(
-        breaks = all_years,
-        expand = expansion(mult = c(0, 0.05))
+    ggplot(dt, aes(year, !!sym(indicator), fill = color_category)) +
+      geom_col(show.legend = TRUE) +
+      facet_wrap(as.formula(paste0("~", admin_level_col))) +
+      scale_fill_manual(
+        values = set_names(color_vals, lvl),
+        breaks = lvl,
+        limits = lvl,
+        drop = FALSE
       ) +
-      labs(title = label$title, x = label$x, y = label$y) +
-      scale_fill_gradientn(
-        colors = color_vals,
-        values = scales::rescale(breaks_vals, to = c(0, 1)), # Ensures precise cutoffs
-        breaks = scales::pretty_breaks(n = 5)(c(low_value, 100)), # Uniformly spread breaks
-        labels = scales::pretty_breaks(n = 5)(c(low_value, 100)),
-        limits = c(low_value, 100), # Ensure full scale is covered
-        name = label$legend
-      ) +
-      theme(
-        panel.background = element_blank(),
-        strip.background = element_blank(),
-        # strip.text = element_text(size = 12)
-        panel.grid.major = element_line(colour = 'gray95'),
-        axis.ticks = element_blank()
+      scale_x_discrete( drop = FALSE, expand = expansion(mult = c(0, 0.05))) +
+      cd_bar_theme(
+        title = plot_title,
+        x_axis = plot_x,
+        y_axis = plot_y,
+        legend = plot_leg
       )
   }
 }
@@ -192,15 +190,21 @@ plot.cd_average_reporting_rate <- function(x,
 #' plot(cd_district_reporting_rate(data), threshold = 90)
 #' }
 #' @export
-plot.cd_district_reporting_rate <- function(x, ...) {
-  year <- value <- indicator <- low_mean_rr <- NULL
+plot.cd_district_reporting_rate <- function(x,
+                                            title = NULL,
+                                            x_axis = NULL,
+                                            y_axis = NULL,
+                                            caption = NULL,
+                                            indicator_labels = NULL,
+                                            ...) {
+  year = value = indicator = low_mean_rr = NULL
 
-  threshold <- attr(x, 'threshold')
+  threshold <- attr(x, "threshold")
 
   years <- x %>%
     distinct(year) %>%
     pull(year)
-  base_colors <- c('darkgreen', 'orangered', 'royalblue4', 'indianred4', 'darkslategray4')
+  base_colors <- c("darkgreen", "orangered", "royalblue4", "indianred4", "darkslategray4")
 
   extra_needed <- robust_max(c(0, length(years) - length(base_colors)), 0)
   extra_colors <- if (extra_needed > 0) {
@@ -212,44 +216,54 @@ plot.cd_district_reporting_rate <- function(x, ...) {
   colors <- c(base_colors, extra_colors)
   names(colors) <- years
 
+  plot_title <- if (!is.null(title)) title else paste("Percentage of districts with low reporting rate (<", threshold, "%) by service and by year")
+  plot_x <- if (!is.null(x_axis)) x_axis else NULL
+  plot_y <- if (!is.null(y_axis)) y_axis else "%"
+  plot_cap <- if (!is.null(caption)) caption else paste("Low reporting rate (<", threshold, "%)")
+
+  default_labels <- c(
+    anc   = "Antenatal Care",
+    idelv = "Institutional Delivery",
+    vacc  = "Vaccination",
+    pnc   = "Postnatal Care",
+    opd   = "OPD",
+    ipd   = "IPD"
+  )
+
+  labels_map <- default_labels
+  labels_map[names(indicator_labels)] <- indicator_labels
+
   # Invert the reporting rates and reshape for plotting
   x %>%
-    select(-starts_with('low_mean_')) %>%
-    mutate(across(starts_with('low_'), ~ 100 - ., .names = 'inv_{col}')) %>%
-    pivot_longer(cols = starts_with('inv_low_'), names_to = 'indicator') %>%
+    select(-starts_with("low_mean_")) %>%
+    mutate(across(starts_with("low_"), ~ 100 - ., .names = "inv_{col}")) %>%
+    pivot_longer(cols = starts_with("inv_low_"), names_to = "indicator") %>%
     # Define indicator names and corresponding titles
     mutate(
-      title = case_when(
-        indicator == 'inv_low_anc_rr' ~ 'Antenatal Care',
-        indicator == 'inv_low_idelv_rr' ~ 'Institutional Delivery',
-        indicator == 'inv_low_vacc_rr' ~ 'Vaccination',
-        indicator == 'inv_low_pnc_rr' ~ 'Postnatal Care',
-        indicator == 'inv_low_opd_rr' ~ 'OPD',
-        indicator == 'inv_low_ipd_rr' ~ 'IPD',
-        .default = indicator
-      )
+      short_indicator = str_remove(indicator, "^inv_low_"),
+      short_indicator = str_remove(short_indicator, "_rr$"),
+      title = recode(short_indicator, !!!labels_map, .default = short_indicator)
     ) %>%
     # Create the plot with facet_wrap
     ggplot(aes(x = as.factor(year), y = value, fill = as.factor(year))) +
-      geom_col(position = 'dodge') +
-      geom_text(aes(label = round(value, 0)), position = position_dodge(width = 0.9), vjust = -1.5, color = 'black', size = 3) +
-      facet_wrap(~title, scales = 'free_y', ncol = 3) +
-      labs(
-        title = paste('Percentage of districts with low reporting rate (<', threshold, '%) by service and by year'),
-        x = NULL, y = '%',
-        caption = paste('Low reporting rate (<', threshold, '%)')
-      ) +
-      # scale_x_continuous(labels = scales::label_number()) +
-      scale_y_continuous(
-        limits = c(0, 100),
-        breaks = scales::pretty_breaks(n = 6),
-        expand = c(0, 0)
-      ) +
-      cd_plot_theme() +
-      theme(
-        panel.grid.major.y = element_line(colour = 'gray90', size = 0.5),
-        axis.text.x = element_blank(),
-        axis.ticks = element_blank()
-      ) +
-      scale_fill_manual(values = colors)
+    geom_col(position = "dodge") +
+    geom_text(aes(label = round(value, 0)), position = position_dodge(width = 0.9), vjust = -1.5, color = "black", size = 3) +
+    facet_wrap(~title, scales = "free_y", ncol = 3) +
+    scale_fill_manual(values = colors) +
+    scale_y_continuous(
+      limits = c(0, 100),
+      breaks = scales::pretty_breaks(n = 6),
+      expand = c(0, 0)
+    ) +
+    cd_plot_theme(
+      title = plot_title,
+      x_axis = plot_x,
+      y_axis = plot_y,
+      caption = plot_cap
+    ) +
+    theme(
+      panel.grid.major.y = element_line(colour = "gray90", linewidth = 0.5),
+      axis.text.x = element_blank(),
+      axis.ticks = element_blank()
+    )
 }

@@ -33,42 +33,24 @@
 #' }
 #' @export
 calculate_coverage <- function(.data,
-                               admin_level = c("national", "adminlevel_1", "district"),
                                survey_data,
                                wuenic_data,
-                               region = NULL,
-                               un_estimates = NULL,
-                               sbr = 0.02,
-                               nmr = 0.025,
-                               pnmr = 0.024,
-                               anc1survey = 0.98,
-                               dpt1survey = 0.97,
-                               survey_year = 2019,
-                               twin = 0.015,
-                               preg_loss = 0.03,
                                subnational_map = NULL) {
-  year <- NULL
-
-  admin_level <- arg_match(admin_level)
-  admin_level_cols <- get_admin_columns(admin_level, region)
-  admin_level_cols <- c(admin_level_cols, 'year')
+  year = NULL
 
   # Validate inputs
-  check_cd_data(.data)
+  check_cd_indicator_coverage(.data)
   check_wuenic_data(wuenic_data)
+
+  admin_level <- attr_or_abort(.data, "admin_level")
   check_survey_data(survey_data, admin_level)
 
-  coverage <- calculate_indicator_coverage(.data,
-    admin_level = admin_level,
-    region = region,
-    un_estimates = un_estimates, sbr = sbr,
-    nmr = nmr, pnmr = pnmr, anc1survey = anc1survey,
-    dpt1survey = dpt1survey, survey_year = survey_year, twin = twin,
-    preg_loss = preg_loss
-  )
+  region <- attr_or_null(.data, "region")
+  admin_level_cols <- get_admin_columns(admin_level, region)
+  admin_level_cols <- c(admin_level_cols, "year")
 
   # Prepare DHIS2 data
-  dhis2_data <- coverage %>%
+  dhis2_data <- .data %>%
     select(any_of(admin_level_cols), matches("^cov_"))
 
   # Prepare survey data
@@ -81,18 +63,17 @@ calculate_coverage <- function(.data,
   wuenic_data <- wuenic_data %>%
     select(year, matches("^cov_"))
 
-  admin_level_c <- switch (
-    admin_level,
-    national = 'year',
-    adminlevel_1 = c('adminlevel_1', 'year'),
-    district = c('adminlevel_1', 'district', 'year')
+  admin_level_c <- switch(admin_level,
+    national = "year",
+    adminlevel_1 = c("adminlevel_1", "year"),
+    district = c("adminlevel_1", "district", "year")
   )
 
   # Join and Transform data
   combined_data <- dhis2_data %>%
     full_join(survey_data, by = admin_level_c, relationship = "many-to-many")
 
-  if (admin_level == 'national') {
+  if (admin_level == "national") {
     combined_data <- combined_data %>%
       left_join(wuenic_data, by = "year")
   }
@@ -136,22 +117,22 @@ filter_coverage <- function(.data,
 
   check_cd_coverage(.data)
 
-  admin_level <- attr_or_abort(.data, 'admin_level')
-  region_from_calc <- attr_or_null(.data, 'region')
+  admin_level <- attr_or_abort(.data, "admin_level")
+  region_from_calc <- attr_or_null(.data, "region")
 
   indicator <- arg_match(indicator, get_analysis_indicators())
   denominator <- arg_match(denominator)
 
-  if ((admin_level == 'national' || (admin_level == 'adminlevel_1' && !is.null(region_from_calc))) && !is.null(region)) {
+  if ((admin_level == "national" || (admin_level == "adminlevel_1" && !is.null(region_from_calc))) && !is.null(region)) {
     cd_abort(c("x" = "{.arg region} must be null."))
   }
 
-  if ((admin_level %in% c('adminlevel_1', 'district') && is.null(region_from_calc)) && is.null(region)) {
+  if ((admin_level %in% c("adminlevel_1", "district") && is.null(region_from_calc)) && is.null(region)) {
     cd_abort(c("x" = "{.arg region} must be provided required for subnational analyses."))
   }
 
   admin_col <- get_admin_columns(admin_level)
-  admin_col <- c(admin_col, 'year')
+  admin_col <- c(admin_col, "year")
   dhis2_col <- paste0("cov_", indicator, "_", denominator)
   survey_estimate_col <- paste0("r_", indicator)
   lower_ci_col <- paste0("ll_", indicator)
@@ -161,13 +142,13 @@ filter_coverage <- function(.data,
   data <- .data %>%
     select(any_of(c(admin_col, dhis2_col, survey_estimate_col, lower_ci_col, upper_ci_col, wuenic_col)))
 
-  data <- if (is.null(region_from_calc) && admin_level != 'national') {
+  data <- if (is.null(region_from_calc) && admin_level != "national") {
     data %>% filter(!!sym(admin_level) == region)
-  } else if (!is.null(region_from_calc) && admin_level != 'national') {
+  } else if (!is.null(region_from_calc) && admin_level != "national") {
     data %>%
       summarise(
-        across(any_of(c(dhis2_col, survey_estimate_col, lower_ci_col, upper_ci_col, wuenic_col)), mean, na.rm = TRUE),
-        .by = any_of(c(admin_col, 'year'))
+        across(any_of(c(dhis2_col, survey_estimate_col, lower_ci_col, upper_ci_col, wuenic_col)), ~ mean(.x, na.rm = TRUE)),
+        .by = any_of(c(admin_col, "year"))
       )
   } else {
     data
@@ -201,7 +182,7 @@ filter_coverage <- function(.data,
 
   new_tibble(
     data,
-    class = 'cd_coverage_filtered',
+    class = "cd_coverage_filtered",
     admin_level = admin_level,
     indicator = indicator,
     denominator = denominator,
@@ -221,7 +202,7 @@ validate_column_existence <- function(.data, column) {
 join_subnational_map <- function(.data, admin_level, map) {
   # admin_level_argument will be used once the district column is introduce in survey
 
-  adminlevel_1 = admin_level_1 = NULL
+  adminlevel_1 <- admin_level_1 <- NULL
 
   if (admin_level != "national") {
     if (!is.null(map)) {

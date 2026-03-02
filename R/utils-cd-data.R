@@ -79,8 +79,13 @@ get_country_iso3 <- function(.data) {
 #'
 #' @export
 is_maternal_indicator <- function(indicator) {
-  groups <- get_indicator_groups()
-  indicator %in% c(groups$anc, groups$idelv)
+  group <- get_selected_group()
+  if (group == 'rmncah') {
+    groups <- get_indicator_groups()
+    indicator %in% c(groups$anc, groups$idelv)
+  } else {
+    return(FALSE)
+  }
 }
 
 # small helper

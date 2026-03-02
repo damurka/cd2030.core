@@ -18,11 +18,13 @@
 #'
 #' @export
 calculate_completeness_summary <- function(.data,
-                                           admin_level = c('national', 'adminlevel_1', 'district'),
+                                           admin_level = c("national", "adminlevel_1", "district"),
+                                           threshold = 90,
                                            region = NULL) {
-  year =. = NULL
+  year <- . <- NULL
 
   check_cd_data(.data)
+  check_scalar_integerish(threshold)
   admin_level <- arg_match(admin_level)
   admin_level_cols <- get_admin_columns(admin_level, region)
 
@@ -30,28 +32,29 @@ calculate_completeness_summary <- function(.data,
 
   data <- .data %>%
     calculate_completeness_core(allindicators, region) %>%
-    summarise(across(starts_with("mis_"), mean, na.rm = TRUE), .by = c(admin_level_cols, "year")) %>%
+    summarise(across(starts_with("mis_"), ~ mean(.x, na.rm = TRUE)), .by = c(admin_level_cols, "year")) %>%
     mutate(
-      mean_mis_all = rowMeans(select(., any_of(starts_with('mis_'))), na.rm = TRUE),
-      across(c(starts_with('mis_'), starts_with('mean_mis_')), ~ round((1 - .x) * 100, 2))
+      mean_mis_all = rowMeans(select(., any_of(starts_with("mis_"))), na.rm = TRUE),
+      across(c(starts_with("mis_"), starts_with("mean_mis_")), ~ round((1 - .x) * 100, 2))
     )
 
-  if (get_selected_group() == 'vaccine') {
+  if (get_selected_group() == "vaccine") {
     vaccine_only <- list_vaccine_indicators()
     tracers <- list_tracer_vaccines()
 
     data <- data %>%
       mutate(
-        mean_mis_vacc_only = rowMeans(select(.,  any_of(paste0('mis_', vaccine_only))), na.rm = TRUE),
-        mean_mis_vacc_tracer = rowMeans(select(.,  any_of(paste0('mis_', tracers))), na.rm = TRUE)
+        mean_mis_vacc_only = rowMeans(select(., any_of(paste0("mis_", vaccine_only))), na.rm = TRUE),
+        mean_mis_vacc_tracer = rowMeans(select(., any_of(paste0("mis_", tracers))), na.rm = TRUE)
       )
   }
 
   new_tibble(
     data,
-    class = 'cd_completeness_summary',
+    class = "cd_completeness_summary",
     admin_level = admin_level,
-    region = region
+    region = region,
+    threshold = threshold
   )
 }
 
@@ -78,32 +81,32 @@ calculate_district_completeness_summary <- function(.data, region = NULL) {
   check_cd_data(.data)
 
   indicators <- get_all_indicators()
-  indicators <- indicators[which(indicators != 'ipd')]
+  indicators <- indicators[which(indicators != "ipd")]
 
   data <- .data %>%
     calculate_completeness_core(indicators, region) %>%
-    summarise(across(starts_with('mis_'), mean, na.rm = TRUE), .by = c(year, district)) %>%
-    summarise(across(starts_with('mis_'), ~ mean(.x != 0, na.rm = TRUE)), .by = year) %>%
+    summarise(across(starts_with("mis_"), ~ mean(.x, na.rm = TRUE)), .by = c(year, district)) %>%
+    summarise(across(starts_with("mis_"), ~ mean(.x != 0, na.rm = TRUE)), .by = year) %>%
     mutate(
-      mean_mis_all = rowMeans(select(., any_of(starts_with('mis_'))), na.rm = TRUE),
-      across(c(starts_with('mis_'), starts_with('mean_mis_')), ~ round((1 - .x) * 100, 2))
+      mean_mis_all = rowMeans(select(., any_of(starts_with("mis_"))), na.rm = TRUE),
+      across(c(starts_with("mis_"), starts_with("mean_mis_")), ~ round((1 - .x) * 100, 2))
     )
 
 
-  if (get_selected_group() == 'vaccine') {
+  if (get_selected_group() == "vaccine") {
     vaccine_only <- list_vaccine_indicators()
-    tracers <- list_tracer_vaccines ()
+    tracers <- list_tracer_vaccines()
 
     data <- data %>%
       mutate(
-        mean_mis_vacc_only = rowMeans(select(.,  any_of(paste0('mis_', vaccine_only))), na.rm = TRUE),
-        mean_mis_vacc_tracer = rowMeans(select(.,  any_of(paste0('mis_', tracers))), na.rm = TRUE)
+        mean_mis_vacc_only = rowMeans(select(., any_of(paste0("mis_", vaccine_only))), na.rm = TRUE),
+        mean_mis_vacc_tracer = rowMeans(select(., any_of(paste0("mis_", tracers))), na.rm = TRUE)
       )
   }
 
   new_tibble(
     data,
-    class = 'cd_missing_district'
+    class = "cd_missing_district"
   )
 }
 
@@ -120,20 +123,13 @@ list_missing_units <- function(.data,
 
   x <- .data %>%
     calculate_completeness_core(indicator, region) %>%
-    # summarise(
-    #   across(starts_with('mis_'), mean, na.rm  = TRUE),
-    #   .by = admin_level_cols
-    # ) %>%
-    # mutate(
-    #   across(starts_with('mis_'), ~ round((1 - .x) * 100, 0))
-    # ) %>%
-    filter(!!sym(paste0('mis_', indicator)) == 1) %>%
+    filter(!!sym(paste0("mis_", indicator)) == 1) %>%
     select(adminlevel_1, district, year, month)
 
 
   new_tibble(
     x,
-    class = 'cd_missing_list',
+    class = "cd_missing_list",
     indicator = indicator
   )
 }
@@ -159,4 +155,3 @@ calculate_completeness_core <- function(.data,
     add_missing_column(indicators) %>%
     filter(if (!is.null(region)) adminlevel_1 == region else TRUE)
 }
-

@@ -4,10 +4,30 @@
 \alias{plot.cd_indicator_coverage_filtered}
 \title{Plot Coverage by Denominator Source with Survey Reference}
 \usage{
-\method{plot}{cd_indicator_coverage_filtered}(x, ...)
+\method{plot}{cd_indicator_coverage_filtered}(
+  x,
+  title = NULL,
+  x_label = NULL,
+  y_label = NULL,
+  category_labels = list(),
+  legend_labels = list(),
+  ...
+)
 }
 \arguments{
 \item{x}{A data frame of class \code{'cd_indicator_coverage_filtered'} as returned by \code{\link[=filter_indicator_coverage]{filter_indicator_coverage()}}.}
+
+\item{title}{(Optional) A scalar character string to override the default plot title.}
+
+\item{x_label}{(Optional) A scalar character string to override the default x-axis label.}
+
+\item{y_label}{(Optional) A scalar character string to override the default y-axis label.}
+
+\item{category_labels}{(Optional) A named list to override the x-axis bar categories
+(keys: \code{dhis2}, \code{anc1}, \code{penta1}, \code{un}, \code{penta1derived}).}
+
+\item{legend_labels}{(Optional) A named list to override the legend keys
+(keys: \code{facility}, \code{survey}).}
 
 \item{...}{Additional arguments (not used).}
 }
@@ -17,12 +37,4 @@ A \code{ggplot2} object showing coverage by denominator type and national survey
 \description{
 Generates a bar plot comparing DHIS2-based coverage using various denominator sources
 against national survey coverage.
-}
-\details{
-The function visualizes discrepancies in coverage estimates derived from different denominators:
-DHIS2 population, ANC1, Penta1, UN projections, and optionally others. The horizontal line indicates
-national survey coverage for the selected year, aiding in identifying possible under- or over-estimation.
-}
-\seealso{
-\code{\link[=filter_indicator_coverage]{filter_indicator_coverage()}}
 }

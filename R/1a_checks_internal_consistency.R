@@ -31,8 +31,10 @@
 #' }
 #'
 #' @export
-plot_comparison.cd_data <- function(.data, x_var, y_var, title = NULL, x_label = NULL, y_label = NULL,
-                                    call = caller_env(), ...) {
+plot_comparison.cd_data <- function(
+    .data, x_var, y_var, title = NULL,
+    x_label = NULL, y_label = NULL, legend = NULL,
+    call = caller_env(), ...) {
   district <- year <- min_x <- max_x <- r_squared <- NULL
 
   check_cd_data(.data)
@@ -47,7 +49,7 @@ plot_comparison.cd_data <- function(.data, x_var, y_var, title = NULL, x_label =
   # Filter data and calculate yearly sums
   data_filtered <- .data %>%
     summarize(
-      across(all_of(c(x_var, y_var)), sum, na.rm = TRUE),
+      across(all_of(c(x_var, y_var)), ~ sum(.x, na.rm = TRUE)),
       .by = c(district, year)
     ) %>%
     # Add min and max for the diagonal line
@@ -60,32 +62,64 @@ plot_comparison.cd_data <- function(.data, x_var, y_var, title = NULL, x_label =
   # Calculate R-squared values by year
   r_squared_value <- data_filtered %>%
     summarize(
-      r_squared = round(summary(stats::lm(stats::as.formula(paste(y_var, "~", x_var)), data = cur_data()))$r.squared, 4)
+      r_squared = round(summary(stats::lm(stats::as.formula(paste(y_var, "~", x_var)), data = cur_data()))$r.squared, 4),
+      .by = year
     ) %>%
-    pull(r_squared)
+    mutate(label = paste0("R² = ", r_squared))
 
 
   # Set default title and labels if not provided
-  title <- title %||% paste("Comparison of", x_var, "and", y_var, "by Year")
-  x_label <- x_label %||% x_var
-  y_label <- y_label %||% y_var
+  plot_title <- title %||% paste("Comparison of", x_var, "and", y_var, "by Year")
+  plot_x <- x_label %||% x_var
+  plot_y <- y_label %||% y_var
+
+  legend_default <- c(
+    district = "District",
+    linear_fit = "Linear  Fit",
+    diagonale = "Diagonale"
+  )
+
+  legend_user <- if (is.null(legend)) NULL else unlist(legend)
+
+  # merge: user values override defaults
+  legend_labels <- utils::modifyList(as.list(legend_default), as.list(legend_user)) |> unlist()
+
+  # Ensure consistent order
+  legend_order <- c("district", "linear_fit", "diagonale")
+  legend_labels <- legend_labels[legend_order]
 
   # Create the plot
   plot <- data_filtered %>%
-    ggplot(aes(x = .data[[x_var]], y = .data[[y_var]])) +
-    geom_point(aes(colour = "District"), size = 1.5) +
-    geom_smooth(aes(color = "Linear fit"), method = "lm", formula = y ~ x, linetype = "solid", se = FALSE, size = 0.8) +
-    geom_segment(aes(x = min_x, y = min_x, xend = max_x, yend = max_x, colour = "Diagonale"),
+    ggplot(aes(x = !!sym(x_var), y = !!sym(y_var))) +
+    geom_point(aes(colour = "district"), size = 1.5) +
+    geom_smooth(aes(color = "linear_fit"), method = "lm", formula = y ~ x, linetype = "solid", se = FALSE, size = 0.8) +
+    geom_segment(aes(x = min_x, y = min_x, xend = max_x, yend = max_x, colour = "diagonale"),
       linetype = "dashed", size = 0.8
     ) +
     facet_wrap(~year, scales = "free_y", ncol = 3) +
-    labs(x = x_label, y = y_label, title = title, caption = paste("R-squared:", r_squared_value)) +
+    geom_text(
+      data = r_squared_value,
+      aes(x = Inf, y = Inf, label = label),
+      inherit.aes = FALSE,
+      hjust = 1.1, vjust = 1.1,
+      size = 3
+    ) +
+    coord_cartesian(clip = "off") +
     scale_x_continuous(labels = scales::label_number()) +
     scale_y_continuous(labels = scales::label_number()) +
-    cd_plot_theme() +
+    cd_plot_theme(
+      title = plot_title,
+      x_axis = plot_x,
+      y_axis = plot_y
+    ) +
     scale_color_manual(
-      values = c("District" = "navy", "Linear fit" = "black", "Diagonale" = "red"),
-      breaks = c("District", "Linear fit", "Diagonale")
+      values = c(
+        district = "navy",
+        linear_fit = "black",
+        diagonale = "red"
+      ),
+      breaks = legend_order,
+      labels = legend_labels
     )
 
   return(plot)
@@ -139,7 +173,7 @@ plot_comparison.cd_data <- function(.data, x_var, y_var, title = NULL, x_label =
 #' @rdname internal_consistency
 #' @export
 plot_comparison <- function(.data, x_var, y_var, title = NULL, x_label = NULL, y_label = NULL,
-                            call = caller_env(), ...) {
+                            legend = NULL, call = caller_env(), ...) {
   check_cd_data(.data, call = call)
   check_required(x_var, call = call)
   check_required(y_var, call = call)
@@ -153,14 +187,20 @@ plot_comparison <- function(.data, x_var, y_var, title = NULL, x_label = NULL, y
 #' @rdname internal_consistency
 #'
 #' @export
-plot_comparison_anc1_penta1 <- function(.data) {
+plot_comparison_anc1_penta1 <- function(
+    .data,
+    title = "Comparison of numbers of ANC1 and Penta1 by year",
+    x_label = "ANC1",
+    y_label = "Penta1",
+    legend = NULL) {
   .data %>%
     plot_comparison(
       x_var = "anc1",
       y_var = "penta1",
-      title = "Comparison of numbers of ANC1 and Penta1 by year",
-      x_label = "ANC1",
-      y_label = "Penta1"
+      title = title,
+      x_label = x_label,
+      y_label = y_label,
+      legend = legend
     )
 }
 
@@ -171,14 +211,20 @@ plot_comparison_anc1_penta1 <- function(.data) {
 #' @rdname internal_consistency
 #'
 #' @export
-plot_comparison_penta1_penta3 <- function(.data) {
+plot_comparison_penta1_penta3 <- function(
+    .data,
+    title = "Comparison of numbers of Penta1 and Penta3 by year",
+    x_label = "Penta1",
+    y_label = "Penta3",
+    legend = NULL) {
   .data %>%
     plot_comparison(
       x_var = "penta1",
       y_var = "penta3",
-      title = "Comparison of numbers of Penta1 and Penta3 by year",
-      x_label = "Penta1",
-      y_label = "Penta3"
+      title = title,
+      x_label = x_label,
+      y_label = y_label,
+      legend = legend
     )
 }
 
@@ -189,13 +235,19 @@ plot_comparison_penta1_penta3 <- function(.data) {
 #' @rdname internal_consistency
 #'
 #' @export
-plot_comparison_opv1_opv3 <- function(.data) {
+plot_comparison_opv1_opv3 <- function(
+    .data,
+    title = "Comparison of numbers of Penta1 and Penta3 by year",
+    x_label = "Penta1",
+    y_label = "Penta3",
+    legend = NULL) {
   .data %>%
     plot_comparison(
       x_var = "opv1",
       y_var = "opv3",
-      title = "Comparison of numbers of opv1 and opv3 by year",
-      x_label = "OPV1",
-      y_label = "OPV3"
+      title = title,
+      x_label = x_label,
+      y_label = y_label,
+      legend = legend
     )
 }

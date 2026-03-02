@@ -117,8 +117,8 @@ check_fpet_data <- function(.data, arg = caller_arg(.data), call = caller_env())
 check_wuenic_data <- function(.data, arg = caller_arg(.data), call = caller_env()) {
   check_cd_class(.data, "cd_wuenic_data", arg = arg, call = call)
 
-  if (!all(c("iso", "year") %in% colnames(.data))) {
-    cd_abort(c("x" = "WUENIC data must contain {.field iso} and {.field year} columns."), call = call)
+  if (!all(c("iso3", "year") %in% colnames(.data))) {
+    cd_abort(c("x" = "WUENIC data must contain {.field iso3} and {.field year} columns."), call = call)
   }
 
   invisible(TRUE)

@@ -4,35 +4,55 @@
 \alias{plot.cd_derived_coverage}
 \title{Plot Derived vs Traditional Coverage Over Time}
 \usage{
-\method{plot}{cd_derived_coverage}(x, region = NULL, ...)
+\method{plot}{cd_derived_coverage}(
+  x,
+  region = NULL,
+  title = NULL,
+  x_label = NULL,
+  y_label = NULL,
+  legend_labels = list(),
+  ...
+)
 }
 \arguments{
-\item{x}{A \code{cd_coverage_trends} object returned by \code{\link[=generate_coverage_data]{generate_coverage_data()}}.}
+\item{x}{A \code{cd_coverage_trends} object.}
 
-\item{region}{(Optional) A region or district name. Required for subnational data,
-must be \code{NULL} for national data.}
+\item{region}{(Optional) A character string of the region or district name.
+Required for subnational data, must be \code{NULL} for national data.}
+
+\item{title}{(Optional) A scalar character string to override the default plot title. Defaults to \code{NULL}.}
+
+\item{x_label}{(Optional) A scalar character string to override the default x-axis label. Defaults to \code{NULL}.}
+
+\item{y_label}{(Optional) A scalar character string to override the default y-axis label. Defaults to \code{NULL}.}
+
+\item{legend_labels}{(Optional) A named list of character strings to override specific
+default legend labels (e.g., \code{list(penta1derived = "Custom Penta1")}).}
 
 \item{...}{Additional arguments passed to \code{ggplot2} layers (not used).}
 }
 \value{
-A ggplot object showing coverage trends.
+A \code{ggplot} object showing coverage trends over time.
 }
 \description{
 This function generates a line plot comparing traditional (\code{coverage_old})
 and derived (\code{coverage_new}) coverage estimates over time for a single indicator.
 It supports both national and subnational views.
 }
-\details{
-The plot title and y-axis labels are automatically generated from the
-indicator metadata stored in the input object attributes.
-}
 \examples{
 \dontrun{
+# Basic usage (uses all defaults)
 generate_coverage_data(dhis_data, "penta1", 2019) \%>\%
   plot(region = "Nairobi")
 
-generate_coverage_data(dhis_data, "rota1", 2019) \%>\%
-  plot()
+# Customizing title, axes, and specific legend labels
+generate_coverage_data(dhis_data, "penta1", 2019) \%>\%
+  plot(
+    region = "Nairobi",
+    title = "Nairobi: Penta1 Coverage Trends",
+    x_label = "Reporting Year",
+    legend_labels = list(penta1derived = "Penta1 (Derived Estimate)")
+  )
 }
 
 }

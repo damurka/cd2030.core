@@ -44,14 +44,14 @@
 #'
 #' @examples
 #' \dontrun{
-#'   # Basic usage with default parameters
-#'   calculate_ratios_summary(cd_data)
+#' # Basic usage with default parameters
+#' calculate_ratios_summary(cd_data)
 #'
-#'   # Custom survey coverage and mortality adjustments for "ratioAP"
-#'   calculate_ratios_summary(cd_data,
-#'     survey_coverage = c(anc1 = 0.95, penta1 = 0.92, penta3 = 0.85),
-#'     anc1_penta1_mortality = 1.05
-#'   )
+#' # Custom survey coverage and mortality adjustments for "ratioAP"
+#' calculate_ratios_summary(cd_data,
+#'   survey_coverage = c(anc1 = 0.95, penta1 = 0.92, penta3 = 0.85),
+#'   anc1_penta1_mortality = 1.05
+#' )
 #' }
 #'
 #' @export
@@ -61,7 +61,7 @@ calculate_ratios_summary <- function(.data,
                                      ratio_pairs = NULL,
                                      adequate_range = c(1, 1.5),
                                      region = NULL) {
-  year = NULL
+  year <- NULL
 
   if (is.null(ratio_pairs)) {
     ratio_pairs <- default_ratio_pair()
@@ -223,11 +223,11 @@ calculate_district_ratios_summary <- function(.data,
 #' }
 #'
 #' @noRd
- calculate_ratios_and_adequacy <- function(.data,
+calculate_ratios_and_adequacy <- function(.data,
                                           ratio_pairs = NULL,
                                           adequate_range = c(1, 1.5),
                                           region = NULL) {
-  district = year = NULL
+  district <- year <- NULL
 
   check_cd_data(.data)
   check_required(adequate_range)
@@ -246,10 +246,10 @@ calculate_district_ratios_summary <- function(.data,
   all_pairs <- list_c(ratio_pairs)
 
   data_summary <- .data %>%
-    filter(if(!is.null(region)) adminlevel_1 == region else TRUE) %>%
+    filter(if (!is.null(region)) adminlevel_1 == region else TRUE) %>%
     # Calculate the average of indicators by district and year
     summarise(
-      across(all_of(all_pairs), sum, na.rm = TRUE),
+      across(all_of(all_pairs), ~ sum(.x, na.rm = TRUE)),
       .by = c(adminlevel_1, district, year)
     )
 
@@ -261,8 +261,8 @@ calculate_district_ratios_summary <- function(.data,
     mutate(across(names(ratio_pairs), ~ as.integer(.x >= adequate_range[1] & .x <= adequate_range[2]), .names = "adeq_{.col}")) %>%
     # Summarize adequacy checks by year
     summarise(
-      across(all_of(all_pairs), sum, na.rm = TRUE),
-      across(c(starts_with("adeq_"), starts_with("ratio")), mean, na.rm = TRUE),
+      across(all_of(all_pairs), ~ sum(.x, na.rm = TRUE)),
+      across(c(starts_with("adeq_"), starts_with("ratio")), ~ mean(.x, na.rm = TRUE)),
       .by = year
     ) %>%
     mutate(
@@ -285,5 +285,8 @@ calculate_district_ratios_summary <- function(.data,
       starts_with("ratio")
     )
 
-  return(data_summary)
+  new_tibble(
+    data_summary,
+    class = "cd_ratios_and_adequacy"
+  )
 }

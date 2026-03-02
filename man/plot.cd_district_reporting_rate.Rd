@@ -4,7 +4,15 @@
 \alias{plot.cd_district_reporting_rate}
 \title{Plot District Reporting Rate Summary}
 \usage{
-\method{plot}{cd_district_reporting_rate}(x, ...)
+\method{plot}{cd_district_reporting_rate}(
+  x,
+  title = NULL,
+  x_axis = NULL,
+  y_axis = NULL,
+  caption = NULL,
+  indicator_labels = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{A \code{cd_district_reporting_rate} data frame containing reporting rate data,

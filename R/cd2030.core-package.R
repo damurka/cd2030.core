@@ -1,5 +1,6 @@
 #' @keywords internal
 #' @import dplyr
+#' @import flextable
 #' @import ggplot2
 #' @import rlang
 #' @import khisr
@@ -12,6 +13,7 @@
 #' @importFrom haven is.labelled
 #' @importFrom haven read_dta
 #' @importFrom haven write_dta
+#' @importFrom htmltools HTML
 #' @importFrom janitor make_clean_names
 #' @importFrom khisr %.d%
 #' @importFrom khisr get_analytics

@@ -14,15 +14,34 @@ plot_comparison(
   title = NULL,
   x_label = NULL,
   y_label = NULL,
+  legend = NULL,
   call = caller_env(),
   ...
 )
 
-plot_comparison_anc1_penta1(.data)
+plot_comparison_anc1_penta1(
+  .data,
+  title = "Comparison of numbers of ANC1 and Penta1 by year",
+  x_label = "ANC1",
+  y_label = "Penta1",
+  legend = NULL
+)
 
-plot_comparison_penta1_penta3(.data)
+plot_comparison_penta1_penta3(
+  .data,
+  title = "Comparison of numbers of Penta1 and Penta3 by year",
+  x_label = "Penta1",
+  y_label = "Penta3",
+  legend = NULL
+)
 
-plot_comparison_opv1_opv3(.data)
+plot_comparison_opv1_opv3(
+  .data,
+  title = "Comparison of numbers of Penta1 and Penta3 by year",
+  x_label = "Penta1",
+  y_label = "Penta3",
+  legend = NULL
+)
 }
 \arguments{
 \item{.data}{A data frame of class \code{cd_data} that includes the relevant indicators for comparison.}

@@ -27,21 +27,21 @@ calculate_average_reporting_rate <- function(.data,
 
   admin_level <- arg_match(admin_level)
   admin_level_cols <- get_admin_columns(admin_level, region)
-  if (admin_level != 'adminlevel_1' && !is.null(region)) {
-    cd_abort(c('x' = 'Region can only be specified for {.arg adminlevel_1}'))
+  if (admin_level != "adminlevel_1" && !is.null(region)) {
+    cd_abort(c("x" = "Region can only be specified for {.arg adminlevel_1}"))
   }
 
   group_name <- get_indicator_group_names()
   # indicators <- paste0(group_name, "_rr")
-  indicators <- paste0(group_name[which(group_name != 'ipd')], "_rr")
+  indicators <- paste0(group_name[which(group_name != "ipd")], "_rr")
 
   reporting_rate <- .data %>%
     filter(if (!is.null(region)) adminlevel_1 == region else TRUE) %>%
-    summarise(across(all_of(indicators), mean, na.rm = TRUE), .by = c(admin_level_cols, "year")) %>%
+    summarise(across(all_of(indicators), ~ mean(.x, na.rm = TRUE)), .by = c(admin_level_cols, "year")) %>%
     mutate(
       mean_rr = rowMeans(select(., indicators), na.rm = TRUE)
     ) %>%
-    mutate(across(ends_with("_rr"), round, 0))
+    mutate(across(ends_with("_rr"), ~ round(.x, 0)))
 
   new_tibble(
     reporting_rate,
@@ -66,8 +66,8 @@ calculate_average_reporting_rate <- function(.data,
 #'
 #' @examples
 #' \dontrun{
-#'   calculate_district_reporting_rate(data, threshold = 90)
-#'   calculate_district_reporting_rate(data, threshold = 85, region = "Eastern")
+#' calculate_district_reporting_rate(data, threshold = 90)
+#' calculate_district_reporting_rate(data, threshold = 85, region = "Eastern")
 #' }
 #'
 #' @export
@@ -77,17 +77,16 @@ calculate_district_reporting_rate <- function(.data, threshold = 90, region = NU
   check_cd_data(.data)
 
   group_name <- get_indicator_group_names()
-  # indicators <- paste0(group_name, "_rr")
-  indicators <- paste0(group_name[which(group_name != 'ipd')], '_rr')
+  indicators <- paste0(group_name[which(group_name != "ipd")], "_rr")
 
   reporting_rate <- .data %>%
-    filter(if(is.null(region)) TRUE else adminlevel_1 == region) %>%
-    summarise(across(all_of(indicators), mean, na.rm = TRUE), .by = c(district, year)) %>%
+    filter(if (is.null(region)) TRUE else adminlevel_1 == region) %>%
+    summarise(across(all_of(indicators), ~ mean(.x, na.rm = TRUE)), .by = c(district, year)) %>%
     summarise(across(all_of(indicators), ~ mean(.x >= threshold, na.rm = TRUE) * 100, .names = "low_{.col}"), .by = year) %>%
     mutate(
       low_mean_rr = rowMeans(select(., starts_with("low_")), na.rm = TRUE)
     ) %>%
-    mutate(across(starts_with("low_"), round, 0))
+    mutate(across(starts_with("low_"), ~ round(.x, 0)))
 
   new_tibble(
     reporting_rate,

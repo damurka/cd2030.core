@@ -27,32 +27,32 @@
 #'
 #' @examples
 #' \dontrun{
-#'   calculate_outliers_summary(data, admin_level = "district")
+#' calculate_outliers_summary(data, admin_level = "district")
 #' }
 #'
 #' @export
-calculate_outliers_summary <- function(.data, admin_level = c('national', 'adminlevel_1', 'district'), region = NULL) {
-  year = . = NULL
+calculate_outliers_summary <- function(.data, admin_level = c("national", "adminlevel_1", "district"), region = NULL) {
+  year <- . <- NULL
 
   check_cd_data(.data)
   admin_level <- arg_match(admin_level)
   admin_level_cols <- get_admin_columns(admin_level, region)
 
   all_indicators <- get_all_indicators()
-  ipd <- get_indicator_groups()[['ipd']]
-  outlier_cols <- paste0(setdiff(all_indicators, ipd), '_outlier5std')
+  ipd <- get_indicator_groups()[["ipd"]]
+  outlier_cols <- paste0(setdiff(all_indicators, ipd), "_outlier5std")
 
   data <- .data %>%
     calculate_outlier_core(indicators = all_indicators, admin_level = admin_level, region = region) %>%
-    summarise(across(any_of(outlier_cols), mean, na.rm = TRUE), .by =c(admin_level_cols, 'year')) %>%
+    summarise(across(any_of(outlier_cols), ~ mean(.x, na.rm = TRUE)), .by = c(admin_level_cols, "year")) %>%
     mutate(
       mean_out_all = rowMeans(pick(any_of(outlier_cols)), na.rm = TRUE),
-      across(c(any_of(outlier_cols), starts_with('mean_out_')), ~ round((1 - .x) * 100, 0))
+      across(c(any_of(outlier_cols), starts_with("mean_out_")), ~ round((1 - .x) * 100, 0))
     )
 
   new_tibble(
     data,
-    class = 'cd_outlier',
+    class = "cd_outlier",
     admin_level = admin_level,
     region = region
   )
@@ -85,38 +85,38 @@ calculate_outliers_summary <- function(.data, admin_level = c('national', 'admin
 #'
 #' @export
 calculate_district_outlier_summary <- function(.data, region = NULL) {
-  district = year = . = NULL
+  district <- year <- . <- NULL
 
   check_cd_data(.data)
 
   all_indicators <- get_all_indicators()
-  ipd <- get_indicator_groups()[['ipd']]
-  outlier_cols <- paste0(setdiff(all_indicators, ipd), '_outlier5std')
+  ipd <- get_indicator_groups()[["ipd"]]
+  outlier_cols <- paste0(setdiff(all_indicators, ipd), "_outlier5std")
 
   data <- .data %>%
-    calculate_outlier_core(indicators = all_indicators, admin_level = 'district') %>%
-    filter(if(!is.null(region)) adminlevel_1 == region else TRUE) %>%
-    summarise(across(all_of(outlier_cols), robust_max), .by = c(district, year)) %>%
-    summarise(across(all_of(outlier_cols), mean, na.rm = TRUE), .by = year) %>%
+    calculate_outlier_core(indicators = all_indicators, admin_level = "district") %>%
+    filter(if (!is.null(region)) adminlevel_1 == region else TRUE) %>%
+    summarise(across(all_of(outlier_cols), ~ robust_max(.x)), .by = c(district, year)) %>%
+    summarise(across(all_of(outlier_cols), ~ mean(.x, na.rm = TRUE)), .by = year) %>%
     mutate(
       mean_out_all = rowMeans(select(., outlier_cols), na.rm = TRUE),
-      across(all_of(c(outlier_cols, 'mean_out_all')), ~ round((1 - .x) * 100, 2))
+      across(all_of(c(outlier_cols, "mean_out_all")), ~ round((1 - .x) * 100, 2))
     )
 
-  if (get_selected_group() == 'vaccine') {
+  if (get_selected_group() == "vaccine") {
     vaccine_only <- list_vaccine_indicators()
-    tracers <- list_tracer_vaccines ()
+    tracers <- list_tracer_vaccines()
 
     data <- data %>%
       mutate(
-        mean_out_vacc_only = rowMeans(select(., paste0(vaccine_only, '_outlier5std')), na.rm = TRUE),
-        mean_out_vacc_tracer = rowMeans(select(., paste0(tracers, '_outlier5std')), na.rm = TRUE)
+        mean_out_vacc_only = rowMeans(select(., paste0(vaccine_only, "_outlier5std")), na.rm = TRUE),
+        mean_out_vacc_tracer = rowMeans(select(., paste0(tracers, "_outlier5std")), na.rm = TRUE)
       )
   }
 
   new_tibble(
     data,
-    class = 'cd_district_outliers_summary'
+    class = "cd_district_outliers_summary"
   )
 }
 
@@ -143,31 +143,24 @@ calculate_district_outlier_summary <- function(.data, region = NULL) {
 #'
 #' @examples
 #' \dontrun{
-#' list_outlier_units(cd_data, indicator = 'penta1', admin_level = 'district')
+#' list_outlier_units(cd_data)
 #' }
 #'
 #' @export
-list_outlier_units <- function(.data,
-                               indicator,
-                               admin_level = c('adminlevel_1', 'district'),
-                               region = NULL) {
+list_outlier_units <- function(.data) {
   check_cd_data(.data)
-  indicator <- arg_match(indicator, get_all_indicators())
-  admin_level <- arg_match(admin_level)
 
-  admin_level_cols <- get_admin_columns(admin_level, region)
-  admin_level_cols <- c(admin_level_cols, 'year', 'month')
+  admin_level <- "district"
+  admin_level_cols <- get_admin_columns(admin_level)
+  admin_level_cols <- c(admin_level_cols, "year", "month")
 
   x <- .data %>%
-    calculate_outlier_core(indicators = indicator, admin_level = admin_level, region) %>%
-    select(any_of(c(admin_level_cols, indicator, paste0(indicator, c('_med', '_mad', '_outlier5std')))))
+    calculate_outlier_core(indicators = get_all_indicators(), admin_level = admin_level)
 
   new_tibble(
     x,
-    class = 'cd_outlier_list',
-    indicator = indicator,
-    admin_level = admin_level,
-    region = region
+    class = "cd_outlier_list",
+    admin_level = admin_level
   )
 }
 
@@ -191,7 +184,7 @@ list_outlier_units <- function(.data,
 #'   - Logical flags marking outliers based on the 5-standard-deviation rule
 #'
 #' @noRd
-calculate_outlier_core <- function(.data, indicators, admin_level = c('national', 'adminlevel_1', 'district'), region = NULL) {
+calculate_outlier_core <- function(.data, indicators, admin_level = c("national", "adminlevel_1", "district"), region = NULL) {
   check_cd_data(.data)
   check_required(indicators)
 
@@ -200,6 +193,6 @@ calculate_outlier_core <- function(.data, indicators, admin_level = c('national'
 
   .data %>%
     filter(if (!is.null(region)) adminlevel_1 == region else TRUE) %>%
-    summarise(across(any_of(indicators), sum, na.rm = TRUE), .by = c(group_vars, 'year', 'month')) %>%
+    summarise(across(any_of(indicators), ~ sum(.x, na.rm = TRUE)), .by = c(group_vars, "year", "month")) %>%
     add_outlier5std_column(indicators = indicators, group_by = group_vars)
 }

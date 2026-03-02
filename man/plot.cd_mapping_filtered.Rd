@@ -4,13 +4,19 @@
 \alias{plot.cd_mapping_filtered}
 \title{Plot Subnational Coverage Maps by Indicator}
 \usage{
-\method{plot}{cd_mapping_filtered}(x, ...)
+\method{plot}{cd_mapping_filtered}(x, title = NULL, caption = NULL, legend = NULL, ...)
 }
 \arguments{
 \item{x}{A \code{cd_mapping_filtered} object. Created using \code{\link[=filter_mapping_data]{filter_mapping_data()}}, and must
 include spatial geometry and metadata attributes (\code{indicator}, \code{palette}, \code{column}).}
 
+\item{title}{(Optional) A scalar character string to override the default plot title. Defaults to \code{NULL}.}
+
+\item{caption}{(Optional) A scalar character string to override the default plot caption. Defaults to \code{NULL}.}
+
 \item{...}{Additional arguments (currently unused).}
+
+\item{legend_title}{(Optional) A scalar character string to override the default legend title. Defaults to \code{NULL}.}
 }
 \value{
 A \code{ggplot} object visualizing the spatial distribution of the selected indicator by region and year.
@@ -23,7 +29,12 @@ object, typically filtered for a specific indicator and denominator.
 \examples{
 \dontrun{
 # Assuming `map_data` is filtered with filter_mapping_data()
-plot(map_data)
+plot(
+  map_data,
+  title = "Penta 1 Coverage by Region",
+  legend_title = "Coverage (\%)",
+  caption = "Source: DHIS2 2024"
+)
 }
 
 }

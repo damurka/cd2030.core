@@ -9,6 +9,10 @@
   plot_type = c("heat_map", "bar"),
   indicator = c("anc_rr", "idelv_rr", "vacc_rr", "opd_rr", "ipd_rr"),
   threshold = 90,
+  title = NULL,
+  x_axis = NULL,
+  y_axis = NULL,
+  legend = NULL,
   ...
 )
 }

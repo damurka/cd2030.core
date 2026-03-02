@@ -11,6 +11,7 @@
   title = NULL,
   x_label = NULL,
   y_label = NULL,
+  legend = NULL,
   call = caller_env(),
   ...
 )

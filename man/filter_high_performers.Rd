@@ -16,26 +16,12 @@ filter_high_performers(
 
 \item{indicator}{A string specifying the indicator.}
 
-\item{denominator}{A string. The denominator used in coverage calculation.
-One of: \code{"dhis2"}, \code{"anc1"}, \code{"penta1"}, \code{"penta1derived"}.}
-
-\item{threshold}{A numeric threshold for filtering. Default is \code{90}.}
+\item{denominator}{A string. The denominator used in coverage calculation.}
 }
 \value{
-A filtered data frame with the following columns: \code{adminlevel_1}, \code{district}, \code{year}, and the selected coverage column.
+A filtered data frame retaining regions meeting the threshold.
 }
 \description{
 Filters a dataset to retain administrative areas with coverage values
 above a specified threshold for a given indicator and denominator.
-}
-\examples{
-\dontrun{
-filter_high_performers(
-  .data = survey_data,
-  indicator = "penta3",
-  denominator = "penta1",
-  threshold = 85
-)
-}
-
 }

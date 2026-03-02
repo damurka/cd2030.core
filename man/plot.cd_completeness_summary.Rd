@@ -4,7 +4,16 @@
 \alias{plot.cd_completeness_summary}
 \title{Plot Missing Summary}
 \usage{
-\method{plot}{cd_completeness_summary}(x, indicator = NULL, ...)
+\method{plot}{cd_completeness_summary}(
+  x,
+  plot_type = c("heat_map", "trend"),
+  indicator = NULL,
+  title = NULL,
+  x_axis = NULL,
+  y_axis = NULL,
+  legend = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{A \code{cd_outlier} object containing pre-processed outlier data.}
@@ -23,7 +32,7 @@ This method visualizes missing results for immunization indicators
 \examples{
 \dontrun{
 # Region-level summary
-plot(missing_data, indicator = 'penta3')
+plot(missing_data, indicator = "penta3")
 }
 
 }

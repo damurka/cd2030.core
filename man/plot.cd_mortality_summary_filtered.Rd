@@ -7,7 +7,7 @@
 \method{plot}{cd_mortality_summary_filtered}(x, ...)
 }
 \arguments{
-\item{x}{A \code{cd_mortality_summary_filtered} object returned by \code{\link[=filter_mortality_rate]{filter_mortality_rate()}}.}
+\item{x}{A \code{cd_mortality_summary_filtered} object.}
 
 \item{...}{Additional arguments (not used).}
 }

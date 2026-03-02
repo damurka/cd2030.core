@@ -4,12 +4,7 @@
 \alias{list_outlier_units}
 \title{Identify Monthly Outliers for a Single Indicator}
 \usage{
-list_outlier_units(
-  .data,
-  indicator,
-  admin_level = c("adminlevel_1", "district"),
-  region = NULL
-)
+list_outlier_units(.data)
 }
 \arguments{
 \item{.data}{A \code{cd_data} object with monthly data.}
@@ -42,7 +37,7 @@ Flags extreme monthly values for a given immunization indicator using the Hampel
 }
 \examples{
 \dontrun{
-list_outlier_units(cd_data, indicator = 'penta1', admin_level = 'district')
+list_outlier_units(cd_data)
 }
 
 }

@@ -4,50 +4,58 @@
 \alias{plot.cd_population_metrics}
 \title{Plot National Population or Births Metrics}
 \usage{
-\method{plot}{cd_population_metrics}(x, metric = c("population", "births", "under1"), ...)
+\method{plot}{cd_population_metrics}(
+  x,
+  metric = c("population", "births", "under1"),
+  title = NULL,
+  x_label = NULL,
+  y_label = NULL,
+  legend_labels = NULL,
+  ...
+)
 }
 \arguments{
-\item{x}{A \code{cd_population_metrics} object containing national-level demographic
-data.}
+\item{x}{A \code{cd_population_metrics} object containing national-level demographic data.}
 
-\item{metric}{A character string specifying the type of data to plot. It must
-be one of:
+\item{metric}{A character string specifying the type of data to plot. Must be one of:
 \itemize{
-\item \strong{'population'}: Plots total population estimates in thousands from DHIS-2 and UN sources.
-\item \strong{'births'}: Plots total live births in thousands from DHIS-2 and UN sources.
+\item \strong{'population'}: Total population estimates (in thousands).
+\item \strong{'births'}: Total live births (in thousands).
+\item \strong{'under1'}: Population under 1 year of age (in thousands).
 }}
 
-\item{...}{Additional arguments (not used in this function).}
+\item{title}{Optional. A custom title for the plot. If \code{NULL}, a default title based on the metric is used.}
+
+\item{x_label}{Optional. Custom label for the x-axis. Defaults to "Year".}
+
+\item{y_label}{Optional. Custom label for the y-axis. Defaults to "population".}
+
+\item{legend_labels}{Optional. A character vector of custom labels for the legend items.
+Must match the number of lines plotted for the selected metric:
+\itemize{
+\item 'population': 2 labels
+\item 'births': 3 labels
+\item 'under1': 2 labels
+}}
+
+\item{...}{Additional arguments passed to the plotting function.}
 }
 \value{
-A ggplot object visualizing the selected demographic data over time.
+A ggplot object.
 }
 \description{
-This function generates a plot to visualize national-level demographic data
-for total population or live births over time.It compares DHIS-2 and UN
-projections for the specified metric, limited to national-level data due to
-the availability of UN estimates.
+Generates a line graph to visualize national-level demographic data, comparing
+DHIS-2 data/projections against UN estimates. This function is restricted to
+national-level data.
 }
 \details{
-The \code{plot_population_metrics} function provides visualizations based on the
-selected \code{metric}:
+The function compares local Health Management Information System (DHIS-2) data
+with United Nations (UN) estimates.
+
+\strong{Default Configuration:}
 \itemize{
-\item \strong{Population Plot}: Shows total population (in thousands) by year, with
-separate lines for DHIS-2 and UN projections.
-\item \strong{Live Births Plot}: Displays total live births (in thousands) by year,
-comparing DHIS-2 and UN projections.
+\item \strong{Population}: Compares \code{un_population} vs \code{totpop_dhis2}.
+\item \strong{Births}: Compares \code{un_births} vs \code{totlivebirths_dhis2} vs \code{totbirths_dhis2}.
+\item \strong{Under 1}: Compares \code{un_under1} vs \code{totunder1_dhis2}.
 }
-
-This function supports only national-level data as UN estimates are not available
-at subnational levels. Attempting to plot subnational data will result in an error.
-}
-\examples{
-\dontrun{
-# Plot total population estimates at the national level
-plot(population_metrics_data, metric = "population")
-
-# Plot total live births estimates at the national level
-plot(population_metrics_data, metric = "births")
-}
-
 }

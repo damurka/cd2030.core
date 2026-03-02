@@ -116,7 +116,7 @@ plot.cd_mortality_ratio_summarised <- function(x, ...) {
 #' Visualizes institutional mortality rates (`MMR` or `SBR`) across regions using filled
 #' geographic polygons. Facets the map by year and applies a color gradient by value.
 #'
-#' @param x A `cd_mortality_summary_filtered` object returned by [filter_mortality_rate()].
+#' @param x A `cd_mortality_summary_filtered` object.
 #' @param ... Additional arguments (not used).
 #'
 #' @return A `ggplot2` object. This function is called for its side effect of rendering a map.

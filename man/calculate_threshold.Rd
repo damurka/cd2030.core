@@ -2,7 +2,7 @@
 % Please edit documentation in R/calculate_threshold.R
 \name{calculate_threshold}
 \alias{calculate_threshold}
-\title{Calculate Dropout Coverage for Health Indicators Below a Threshold}
+\title{Calculate Coverage/Dropout Threshold Attainment}
 \usage{
 calculate_threshold(
   .data,
@@ -11,47 +11,16 @@ calculate_threshold(
 )
 }
 \arguments{
-\item{.data}{A tibble of class \code{cd_data}.}
+\item{.data}{A tibble of class \code{cd_indicator_coverage}.}
 
-\item{indicator}{Character. The specific health indicator to evaluate. Options are:
-\itemize{
-\item \code{"coverage"}:coverage indicators.
-\item \code{"dropout"}: dropout indicators.
-}}
+\item{denominator}{Character. The denominator used (e.g., \code{'dhis2'}, \code{'anc1'}).}
 
-\item{admin_level}{The level of analysis.}
-
-\item{sbr}{Numeric. The stillbirth rate. Default is \code{0.02}.}
-
-\item{nmr}{Numeric. Neonatal mortality rate. Default is \code{0.025}.}
-
-\item{pnmr}{Numeric. Post-neonatal mortality rate. Default is \code{0.024}.}
-
-\item{anc1survey}{Numeric. Survey-derived coverage rate for ANC-1 (antenatal care, first visit). Default is \code{0.98}.}
-
-\item{dpt1survey}{Numeric. Survey-derived coverage rate for Penta-1 (DPT1 vaccination). Default is \code{0.97}.}
-
-\item{survey_year}{Integer. The year of Penta-1 survey provided}
-
-\item{preg_loss}{Numeric. Pregnancy loss rate}
-
-\item{twin}{Numeric. Twin birth rate. Default is \code{0.015}.}
+\item{indicator}{Character. The health indicator group to evaluate (\code{'anc4'}, \code{'instdeliveries'}, \code{'vaccine'}, \code{'dropout'}).}
 }
 \value{
-A tibble with the selected administrative level and coverage value for regions
-that do not meet the below-10\% threshold for the specified indicator and year. If no regions
-meet the criteria, a default row is returned with "None" and 0 as values.
+A \code{cd_threshold} object summarizing the percentage of regions meeting the criteria by year.
 }
 \description{
-This function filters health indicator data to identify the percentage of administrative
-regions where the coverage for a specified indicator falls below a 10\% threshold for a given year.
-If no regions meet the criteria (i.e., all values are below the threshold), a default output is returned.
-}
-\examples{
-\dontrun{
-# Example usage:
-result <- calculate_threshold(data, filter_year = 2023, indicator = "zerodose", source = "dhis2")
-result
-}
-
+Evaluates administrative regions to determine the percentage that meet specific
+coverage targets or fall below specific dropout thresholds for a given year.
 }

@@ -4,44 +4,38 @@
 \alias{plot.cd_coverage_filtered}
 \title{Plot National Coverage Data}
 \usage{
-\method{plot}{cd_coverage_filtered}(x, ...)
+\method{plot}{cd_coverage_filtered}(
+  x,
+  title = NULL,
+  x_axis = NULL,
+  y_axis = NULL,
+  caption = NULL,
+  labels = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{A data frame of type \code{cd_coverage_filtered}, containing year-wise
-national coverage data for the specified country and indicator.}
+coverage data for the specified indicator.}
 
-\item{...}{Additional arguments passed to or from other methods (currently
-unused).}
+\item{title}{(Optional) A scalar character string to override the default plot title. Defaults to \code{NULL}.}
+
+\item{x_axis}{(Optional) A scalar character string to override the default x-axis label. Defaults to \code{NULL}.}
+
+\item{y_axis}{(Optional) A scalar character string to override the default y-axis label. Defaults to \code{NULL}.}
+
+\item{caption}{(Optional) A scalar character string to override the default denominator caption. Defaults to \code{NULL}.}
+
+\item{labels}{(Optional) A named list or vector to override the legend keys for translation.
+Valid keys: \code{dhis2}, \code{wuenic}, \code{survey}, \code{ci}. Defaults to \code{NULL}.}
+
+\item{...}{Additional arguments passed to or from other methods (currently unused).}
 }
 \value{
-A ggplot object displaying a line plot of the national coverage data
-by year, with lines and points representing different estimate types.
+A \code{ggplot} object displaying a line plot of the coverage data.
 }
 \description{
-This function generates a line plot to visualize national immunization coverage
+This function generates a line plot to visualize immunization coverage
 data across years, allowing comparison between different estimates (e.g., DHIS2
 estimates, WUENIC estimates, and Survey estimates).
-}
-\details{
-This plot function transforms the coverage data into a long format suitable for
-plotting with ggplot2, and extracts the denominator information for display in
-the plot caption. It shows coverage values for each year, with different lines
-and points for each estimate type.
-
-The plot includes:
-\itemize{
-\item \strong{Y-axis}: Coverage percentage.
-\item \strong{X-axis}: Year.
-\item \strong{Line color}: Represents different estimates (e.g., DHIS2, Survey).
-\item \strong{Caption}: Indicates the denominator used in the coverage calculation.
-}
-
-This function is meant to be used with the \code{cd_coverage_filtered} class, which
-contains coverage values for different indicators and estimates.
-}
-\examples{
-\dontrun{
-  plot(filter_coverage(dt_adj, indicator = "bcg", denominator = "anc1"))
-}
-
 }

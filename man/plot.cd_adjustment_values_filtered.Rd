@@ -4,7 +4,7 @@
 \alias{plot.cd_adjustment_values_filtered}
 \title{Plot Adjusted vs. Unadjusted Data for Health Indicators}
 \usage{
-\method{plot}{cd_adjustment_values_filtered}(x, title = NULL, legend_labels = NULL, ...)
+\method{plot}{cd_adjustment_values_filtered}(x, title = NULL, x_axis = NULL, y_axis = NULL, legend_labels = NULL, ...)
 }
 \arguments{
 \item{x}{A data frame containing the \code{year} column and columns for the raw

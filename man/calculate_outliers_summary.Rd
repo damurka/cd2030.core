@@ -47,7 +47,7 @@ Values are expressed as percentages (0–100).
 }
 \examples{
 \dontrun{
-  calculate_outliers_summary(data, admin_level = "district")
+calculate_outliers_summary(data, admin_level = "district")
 }
 
 }

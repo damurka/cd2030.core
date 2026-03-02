@@ -44,42 +44,52 @@
 #' @export
 plot.cd_adjustment_values_filtered <- function(x,
                                                title = NULL,
+                                               x_axis = NULL,
+                                               y_axis = NULL,
                                                legend_labels = NULL,
                                                ...) {
-  year = perc_diff = type = value = NULL
+  year <- perc_diff <- type <- value <- NULL
 
-  indicator <- attr_or_abort(x, 'indicator')
+  indicator <- attr_or_abort(x, "indicator")
+  raw_col <- paste0(indicator, "_raw")
+  adj_col <- paste0(indicator, "_adj")
+
+  default_labels <- list(
+    raw = paste("N of", indicator, "before adjustment"),
+    adjusted = paste("N of", indicator, "after adjustment")
+  )
+
+  final_labels <- default_labels
+  if (!is.null(legend_labels)) {
+    # Merge: Convert to list (if vector) and merge into defaults
+    # modifyList updates the values in 'default_labels' with those in 'legend_labels' by name
+    final_labels <- modifyList(default_labels, as.list(legend_labels))
+  }
 
   # Set default title if not provided
   if (is.null(title)) {
     title <- paste("Comparison of number of", indicator, "before and after adjustment for completeness and outliers")
   }
 
-  # Set default legend labels if not provided
-  if (is.null(legend_labels)) {
-    legend_labels <- c(
-      paste("N of", indicator, "before adjustment"),
-      paste("N of", indicator, "after adjustment")
-    )
-  }
+  fill_colors <- c(
+    raw = "darkgreen",
+    adjusted = "darkgoldenrod3"
+  )
+
 
   # Prepare data with absolute and percentage difference columns
   x %>%
     pivot_longer(-year, names_to = "type", values_to = "value") %>%
     mutate(
-      type = factor(type,
-        levels = c(paste0(indicator, "_raw"), paste0(indicator, "_adj")),
-        labels = legend_labels
-      )
+      type = factor(type, levels = c(raw_col, adj_col), labels = c("raw", "adjusted"))
     ) %>%
     ggplot(aes(x = year, y = value, fill = type)) +
-    geom_col(position = "dodge") +
-    labs(
-      title = title,
-      x = NULL,
-      y = NULL
-    ) +
+    geom_col(position = "dodge", width = 0.6) +
     scale_y_continuous(labels = scales::number_format(), breaks = scales::pretty_breaks(n = 10)) +
-    scale_fill_manual(values = c("darkgreen", "darkgoldenrod3"), name = "Data Type") +
-    cd_plot_theme()
+    scale_fill_manual(values = fill_colors, label = unlist(final_labels), name = "Data Type") +
+    cd_plot_theme(
+      title = title,
+      x_axis = x_axis,
+      y_axis = y_axis
+    )
 }

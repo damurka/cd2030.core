@@ -22,9 +22,11 @@ URL: https://aphrcwaro.github.io/cd2030.core/, https://github.com/aphrcwaro/cd20
 Imports: 
     cli (>= 3.6.2),
     dplyr (>= 1.1.4),
+    flextable,
     forcats (>= 1.0.0),
     ggplot2 (>= 3.5.1),
     haven (>= 2.5.4),
+    htmltools,
     janitor (>= 2.2.1),
     khisr (>= 1.0.6),
     lubridate (>= 1.9.4),
@@ -48,7 +50,7 @@ Suggests:
     testthat (>= 3.0.0)
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Depends: 
     R (>= 4.1)
 LazyData: true

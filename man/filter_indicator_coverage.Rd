@@ -17,6 +17,8 @@ filter_indicator_coverage(
 \item{indicator}{A string. The target health indicator (e.g., \code{"penta3"}, \code{"bcg"}).}
 
 \item{survey_coverage}{A scalar numeric. The national survey coverage to include as a reference. Default is \code{88}.}
+
+\item{survey_year}{A scalar numeric. The year of the survey. Defaults to \code{2024}.}
 }
 \value{
 A \code{tibble} of class \code{'cd_indicator_coverage_filtered'}, enriched with attributes for plotting.
@@ -24,18 +26,4 @@ A \code{tibble} of class \code{'cd_indicator_coverage_filtered'}, enriched with 
 \description{
 Prepares a long-form data frame of coverage values across denominator sources for a specific indicator
 and year, including a user-defined national survey coverage value.
-}
-\details{
-The function reshapes wide coverage data into long format, classifies each column by denominator type,
-and extracts the indicator name. It selects only data for the most recent available year.
-}
-\examples{
-\dontrun{
-filtered <- filter_indicator_coverage(df, indicator = "penta3", survey_coverage = 90)
-plot(filtered)
-}
-
-}
-\seealso{
-\code{\link[=plot.cd_indicator_coverage_filtered]{plot.cd_indicator_coverage_filtered()}}
 }

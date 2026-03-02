@@ -4,33 +4,20 @@
 \alias{calculate_coverage}
 \title{Combine Immunization Coverage Data}
 \usage{
-calculate_coverage(
-  .data,
-  admin_level = c("national", "adminlevel_1", "district"),
-  survey_data,
-  wuenic_data,
-  region = NULL,
-  un_estimates = NULL,
-  sbr = 0.02,
-  nmr = 0.025,
-  pnmr = 0.024,
-  anc1survey = 0.98,
-  dpt1survey = 0.97,
-  survey_year = 2019,
-  twin = 0.015,
-  preg_loss = 0.03,
-  subnational_map = NULL
-)
+calculate_coverage(.data, survey_data, wuenic_data, subnational_map = NULL)
 }
 \arguments{
 \item{.data}{A \code{cd_data} data frame with DHIS2 coverage metrics.}
 
-\item{admin_level}{Character. Specifies the administrative level for calculations.
-Options include:\verb{"national", "adminlevel_1"}, and \code{"district"}.}
-
 \item{survey_data}{A data frame containing survey-based immunization estimates.}
 
 \item{wuenic_data}{A data frame containing WHO-UNICEF (WUENIC) coverage estimates.}
+
+\item{subnational_map}{(Optional) A data frame mapping subnational regions to
+parent regions, required for subnational-level analyses. Default is \code{NULL}.}
+
+\item{admin_level}{Character. Specifies the administrative level for calculations.
+Options include:\verb{"national", "adminlevel_1"}, and \code{"district"}.}
 
 \item{un_estimates}{Optional. A tibble containing UN population estimates. Required
 for national-level calculations.}
@@ -47,12 +34,9 @@ for national-level calculations.}
 
 \item{survey_year}{Integer. The year of Penta-1 survey provided}
 
-\item{twin}{Numeric. Twin birth rate. Default is \code{0.015}.}
-
 \item{preg_loss}{Numeric. Pregnancy loss rate}
 
-\item{subnational_map}{(Optional) A data frame mapping subnational regions to
-parent regions, required for subnational-level analyses. Default is \code{NULL}.}
+\item{twin}{Numeric. Twin birth rate. Default is \code{0.015}.}
 }
 \value{
 A \code{cd_coverage} data frame containing harmonized coverage estimates

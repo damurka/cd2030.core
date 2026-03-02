@@ -24,8 +24,8 @@ Also computes a yearly average across all indicators.
 }
 \examples{
 \dontrun{
-  calculate_district_reporting_rate(data, threshold = 90)
-  calculate_district_reporting_rate(data, threshold = 85, region = "Eastern")
+calculate_district_reporting_rate(data, threshold = 90)
+calculate_district_reporting_rate(data, threshold = 85, region = "Eastern")
 }
 
 }

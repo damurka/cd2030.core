@@ -136,7 +136,7 @@ summarised_data <- function(.data, admin_level = c('national', 'adminlevel_1', '
 
   .data %>%
     summarise(
-      across(c(instlivebirths, total_stillbirth, maternal_deaths, neonatal_deaths), sum, na.rm = TRUE),
+      across(c(instlivebirths, total_stillbirth, maternal_deaths, neonatal_deaths), ~ sum(.x, na.rm = TRUE)),
       .by = all_of(c(admin_level_col, 'year'))
     ) %>%
     mutate(

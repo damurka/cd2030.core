@@ -181,7 +181,7 @@ load_cache_data <- function(path,
   }
 
   out <- read_dta(path) %>%
-    mutate(across(where(is.labelled), as_factor))
+    mutate(across(where(is.labelled), ~ as_factor(.x)))
 
   new_countdown(out, indicator_group = indicator_group, profile = profile, profile_name = profile_name)
 }
@@ -558,7 +558,7 @@ standardize_data <- function(.data, call = caller_env()) {
           ends_with("_rate"), "total_population", "population_under_5years",
           "population_under_1year", "live_births", "total_births"
         )),
-        round, 0
+        ~ round(.x, 0)
       )
     ) %>%
     mutate(

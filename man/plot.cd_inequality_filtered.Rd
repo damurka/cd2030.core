@@ -4,10 +4,32 @@
 \alias{plot.cd_inequality_filtered}
 \title{Plot Subnational Health Coverage Analysis}
 \usage{
-\method{plot}{cd_inequality_filtered}(x, ...)
+\method{plot}{cd_inequality_filtered}(
+  x,
+  title = NULL,
+  subtitle = NULL,
+  x_axis = NULL,
+  y_axis = NULL,
+  caption = NULL,
+  legend_labels = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{A \code{cd_inequality_filtered} object returned by \code{\link[=filter_inequality]{filter_inequality()}}.}
+
+\item{title}{(Optional) A scalar character string to override the default plot title. Defaults to \code{NULL}.}
+
+\item{subtitle}{(Optional) A scalar character string to override the default plot subtitle. Defaults to \code{NULL}.}
+
+\item{x_axis}{(Optional) A scalar character string to override the default x-axis label. Defaults to \code{NULL}.}
+
+\item{y_axis}{(Optional) A scalar character string to override the default y-axis label. Defaults to \code{NULL}.}
+
+\item{caption}{(Optional) A scalar character string to override the default denominator caption. Defaults to \code{NULL}.}
+
+\item{legend_labels}{(Optional) A named list or vector to override the legend keys and MADM label for translation.
+Valid keys: \code{subnational}, \code{national}, \code{madm}. Defaults to \code{NULL}.}
 
 \item{...}{Additional arguments passed to the plotting function.}
 }
@@ -19,14 +41,4 @@ Generates a plot to visualize health coverage data across subnational units,
 distinguishing between the national mean and subnational coverage. The Mean
 Absolute Difference to the Mean (MADM) is displayed as an indicator on the
 y-axis.
-}
-\examples{
-\dontrun{
-data <- filter_inequality(.data, "Kenya",
-  admin_level = "district",
-  indicator = "measles1", denominator = "penta1"
-)
-plot(data)
-}
-
 }

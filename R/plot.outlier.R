@@ -28,10 +28,16 @@
 plot.cd_outlier <- function(x,
                             selection_type = c("region", "indicator", "heat_map"),
                             indicator = NULL,
+                            threshold = 90,
+                            title = NULL,
+                            x_axis = NULL,
+                            y_axis = NULL,
+                            legend = NULL,
                             ...) {
+  check_scalar_integerish(threshold)
 
   admin_level <- attr_or_abort(x, "admin_level")
-  region <- attr_or_null(x, 'region')
+  region <- attr_or_null(x, "region")
   admin_level_col <- get_plot_admin_column(admin_level, region)
 
   indicator <- if (is.null(indicator) || indicator == "") {
@@ -42,17 +48,42 @@ plot.cd_outlier <- function(x,
 
   selection_type <- arg_match(selection_type)
 
+  default_title <- switch(selection_type,
+    region = paste("Percent non-outliers by year and", admin_level_col),
+    indicator = "Percent non-outliers by year and indicator",
+    heat_map = if (is.null(indicator)) {
+      paste("Average percent non-outliers by", admin_level_col)
+    } else {
+      paste("Percent non-outliers for", indicator, "by year and", admin_level_col)
+    }
+  )
+
+  plot_title <- if (!is.null(title)) title else default_title
+  plot_x <- if (!is.null(x_axis)) x_axis else "Year"
+  plot_y <- if (!is.null(y_axis)) y_axis else "Percent non-outliers (%)"
+  plot_leg <- if (!is.null(legend)) legend else "Percent non-outliers (%)"
+
   if (selection_type %in% c("region", "indicator")) {
+    cut_low <- 70
+    cut_high <- threshold
+
+    low <- paste0("< ", cut_low)
+    mid <- paste0("\u2265 ", cut_low, " and < ", threshold)
+    greater <- paste0("\u2265 ", threshold)
+    lvl <- c(low, mid, greater)
+
+
     data_prepared <- if (selection_type == "region") {
-      if (is.null(indicator) || indicator == '') return(NULL)
+      if (is.null(indicator) || !nzchar(indicator)) {
+        cd_abort(c("indicator" = "Indicator must be provided for region view."))
+      }
+
       x %>%
         mutate(
           category = !!sym(admin_level_col),
           value = !!sym(paste0(indicator, "_outlier5std"))
         )
     } else {
-      # TODO: To review later
-      # cols <- intersect(c("year", "category"), names(x))
       x %>%
         pivot_longer(
           cols = ends_with("_outlier5std"),
@@ -62,51 +93,83 @@ plot.cd_outlier <- function(x,
         summarise(value = mean(value, na.rm = TRUE), .by = c(year, category))
     }
 
-    min_rr <- min(data_prepared$value, na.rm = TRUE)
-    low_threshold <- ifelse(min_rr < 80, min_rr, 70)
-    breaks_vals <- c(low_threshold, 70, 80, 90, 100)
+    data_prepared <- data_prepared %>%
+      mutate(
+        value_round = round(value),
+        color_category = case_when(
+          value <= cut_low ~ low,
+          value > cut_low & value <= cut_high ~ mid,
+          .default = greater,
+          .ptype = factor(levels = lvl)
+        )
+      )
 
-    ggplot(data_prepared, aes(x = factor(year), y = value, fill = value)) +
-      geom_col() +
+    ggplot(data_prepared, aes(x = factor(year), y = value, fill = color_category)) +
+      geom_col(show.legend = TRUE) +
       facet_wrap(~category) +
-      labs(
-        title = paste("Percent Non-Outliers by Year and", str_to_title(selection_type)),
-        x = "Year", y = "% Non-Outliers", fill = "% Non-Outliers"
+      scale_fill_manual(
+        values = set_names(c("red", "orange", "forestgreen"), lvl),
+        limits = lvl,
+        breaks = lvl,
+        drop = FALSE
       ) +
-      scale_fill_gradientn(
-        colors = c("red", "red", "orange", "yellowgreen", "forestgreen"),
-        values = scales::rescale(breaks_vals),
-        limits = c(low_threshold, 100)
+      cd_plot_theme(
+        title = plot_title,
+        x_axis = plot_x,
+        y_axis = plot_y,
+        legend = plot_leg
       ) +
-      theme_minimal() +
+      # theme_minimal() +
       theme(
+        panel.background = element_blank(),
+        plot.background = element_blank(),
+        panel.border = element_blank(),
+        axis.line = element_blank(),
         panel.grid.major = element_line(color = "gray95"),
+        panel.grid.minor = element_blank(),
         axis.ticks = element_blank(),
-        strip.background = element_blank()
+        strip.background = element_blank(),
+        strip.placement = "outside",
+        legend.title = element_text(size = 13)
       )
   } else if (selection_type == "heat_map") {
     if (is.null(indicator)) {
-      x <- x %>%
-        summarise(across(ends_with('_outlier5std'), ~ round(mean(.x, na.rm = TRUE))), .by = all_of(admin_level_col)) %>%
+      hm <- x %>%
+        summarise(across(ends_with("_outlier5std"), ~ round(mean(.x, na.rm = TRUE))), .by = all_of(admin_level_col)) %>%
         pivot_longer(cols = ends_with("_outlier5std"), names_to = "indicator") %>%
         mutate(indicator = str_remove(indicator, "_outlier5std"))
 
-      ggplot(x, aes(x = !!sym(admin_level_col), y = indicator, fill = value)) +
-        geom_tile(color = "white") +
-        geom_text(aes(label = value), color = "black", size = 3, vjust = 0.5) +
-        scale_fill_gradient2(low = "red3", mid = "orange", high = "forestgreen", midpoint = 80) +
-        labs(x = admin_level_col, y = "Indicator", fill = "Value") +
-        theme_minimal() +
-        theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 9))
+      cd_categorized_heatmap(
+        data = hm,
+        x_col = admin_level_col,
+        y_col = "indicator",
+        value_col = "value",
+        threshold = threshold,
+        title = plot_title,
+        x_lab = plot_x,
+        y_lab = plot_y,
+        legend_lab = plot_leg,
+      )
     } else {
       column_name <- paste0(indicator, "_outlier5std")
-      ggplot(x, aes(x = !!sym(admin_level_col), y = factor(year), fill = !!sym(column_name))) +
-        geom_tile(color = "white") +
-        geom_text(aes(label = !!sym(column_name)), color = "black", size = 3, vjust = 0.5) +
-        scale_fill_gradient2(low = "red3", mid = "orange", high = "forestgreen", midpoint = 80) +
-        labs(x = admin_level_col, y = "Year", fill = paste0(indicator, " Value")) +
-        theme_minimal() +
-        theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 9))
+
+      hm <- x %>%
+        mutate(
+          year = factor(year, levels = sort(unique(year))),
+          value = round(!!sym(column_name))
+        )
+
+      cd_categorized_heatmap(
+        data = hm,
+        x_col = admin_level_col,
+        y_col = "year",
+        value_col = "value",
+        threshold = threshold,
+        title = plot_title,
+        x_lab = plot_x,
+        y_lab = plot_y,
+        legend_lab = plot_leg
+      )
     }
   }
 }
@@ -117,7 +180,7 @@ plot.cd_outlier <- function(x,
 #' with outlier highlights.
 #'
 #' @param x A `cd_outlier_list` object from `list_outlier_units()`.
-#' @param region_name The name of the unit to plot.
+#' @param region The name of the unit to plot.
 #' @param ... Not used.
 #'
 #' @details
@@ -132,51 +195,101 @@ plot.cd_outlier <- function(x,
 #'   plot(region_name = "Nakuru")
 #' }
 #' @export
-plot.cd_outlier_list <- function(x, region_name = NULL, ...) {
-
+plot.cd_outlier_list <- function(x,
+                                 indicator = NULL,
+                                 year = NULL,
+                                 region = NULL,
+                                 title = NULL,
+                                 x_axis = NULL,
+                                 y_axis = NULL,
+                                 legend = NULL,
+                                 label = NULL,
+                                 ...) {
   admin_level <- attr_or_abort(x, "admin_level")
-  indicator <- attr_or_abort(x, "indicator")
-  region <- attr_or_null(x, 'region')
-
-  if (is.null(region_name) || !is_scalar_character(region_name)) {
-    cd_abort(c('x' = "{.arg region} must be a scalar string"))
+  indicator <- arg_match(indicator, get_all_indicators())
+  year_val <- if (!is.null(year)) {
+    check_scalar_integerish(year)
+    year
+  } else {
+    NULL
   }
 
-  admin_level_col <- get_plot_admin_column(admin_level, region)
+  if (is.null(region) || !nzchar(region)) {
+    cd_abort(c("x" = "{.arg region} must be a scalar string"))
+  }
+
+  admin_level_col <- get_plot_admin_column(admin_level)
 
   med <- paste0(indicator, "_med")
   mad <- paste0(indicator, "_mad")
 
-  year = robust_max(x$year)
+  default_title <- if (is.null(year_val)) {
+    str_glue("{indicator} trend for {region}")
+  } else {
+    str_glue("{indicator} trend for {region} in {year_val}")
+  }
+
+  plot_title <- title %||% default_title
+  plot_x <- x_axis %||% "Month"
+  plot_y <- y_axis %||% indicator
+  plot_leg <- legend %||% NULL
+
+  default_labels <- c(
+    reported = "Reported value",
+    median   = "Median",
+    bounds   = "Median ± 5×MAD",
+    outliers = "Outliers"
+  )
+
+  labels_map <- default_labels
+  if (!is.null(label)) {
+    # label should be a named character vector, e.g.
+    # c(reported="Valeur rapportée", median="Médiane", bounds="Médiane ± 5×MAD", outliers="Valeurs extrêmes")
+    labels_map[names(label)] <- label
+  }
 
   x %>%
-    filter(!!sym(admin_level_col) == region_name) %>%
+    select(any_of(c(admin_level_col, "year", "month", indicator, paste0(indicator, c("_med", "_mad", "_outlier5std"))))) %>%
+    filter(district == region, if (is.null(year_val)) TRUE else year == year_val) %>%
     mutate(
-      date = ym(paste0(year, month, sep = "-")),
+      date = ym(paste(year, month, sep = "-")),
       upper_bound = !!sym(med) + !!sym(mad) * 5,
       lower_bound = !!sym(med) - !!sym(mad) * 5,
       outlier_flag = !!sym(indicator) > upper_bound | !!sym(indicator) < lower_bound
     ) %>%
     ggplot(aes(date)) +
-      geom_line(aes(y = !!sym(indicator)), colour = "forestgreen") +
-      geom_point(aes(y = !!sym(indicator)), colour = "forestgreen") +
-      geom_line(aes(y = !!sym(med)), colour = "cyan", linetype = "dashed") +
-      geom_ribbon(aes(ymin = lower_bound, ymax = upper_bound), fill = "gray80", alpha = 0.5) +
-      geom_point(
-        data = function(df) filter(df, outlier_flag),
-        aes(y = !!sym(indicator)), color = "red", size = 2
-      ) +
-      labs(
-        title = str_glue('{indicator} trend for {region_name} in {year}'),
-        y = indicator,
-        x = "Month"
-      ) +
-      scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
-      scale_x_date(date_breaks = "1 months", date_labels = "%b") +
-      cd_plot_theme() +
-      # theme_minimal() +
-      theme(
-        axis.text.x = element_text(angle = 45, hjust = 1),
-        plot.title = element_text(hjust = 0.5, size = 16)
-      )
+    geom_ribbon(aes(ymin = lower_bound, ymax = upper_bound, fill = "bounds"), alpha = 0.5) +
+    geom_line(aes(y = !!sym(indicator), colour = "reported")) +
+    geom_point(aes(y = !!sym(indicator), colour = "reported")) +
+    geom_line(aes(y = !!sym(med), colour = "median"), linetype = "dashed") +
+    geom_point(
+      data = function(df) filter(df, outlier_flag),
+      aes(y = !!sym(indicator), color = "outliers"), size = 2
+    ) +
+    scale_y_continuous(breaks = scales::pretty_breaks(n = 10), expand = expansion(mult = c(0, 0.05))) +
+    coord_cartesian(ylim = c(0, NA)) +
+    scale_x_date(date_breaks = if (is.null(year_val)) "3 months" else "1 months", date_labels = if (is.null(year_val)) "%b-%Y" else "%b") +
+    scale_colour_manual(
+      name = plot_leg,
+      values = c(reported = "forestgreen", median = "cyan", outliers = "red"),
+      breaks = c("reported", "median", "outliers"),
+      labels = labels_map[c("reported", "median", "outliers")]
+    ) +
+    scale_fill_manual(
+      name = plot_leg,
+      values = c(bounds = "gray80"),
+      breaks = "bounds",
+      labels = labels_map["bounds"]
+    ) +
+    cd_plot_theme(
+      title = plot_title,
+      x_axis = plot_x,
+      y_axis = plot_y,
+      legend = plot_leg
+    ) +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      plot.title = element_text(hjust = 0.5, size = 16),
+      legend.title = element_text(size = 13)
+    )
 }

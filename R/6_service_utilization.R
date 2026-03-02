@@ -34,14 +34,14 @@ compute_service_utilization <- function(.data, admin_level = c('national', 'admi
       .by = all_of(admin_level_cols)
     ) %>%
     summarise(
-      across(all_of(vars), sum, na.rm = TRUE),
-      across(all_of(pop_vars), robust_max),
-      across(starts_with('year_'), robust_max, .names = "{sub('^year_', '', .col)}"),
+      across(all_of(vars), ~ sum(.x, na.rm = TRUE)),
+      across(all_of(pop_vars), ~ robust_max(.x)),
+      across(starts_with('year_'), ~ robust_max(.x), .names = "{sub('^year_', '', .col)}"),
       .by = c(adminlevel_1, district, year),
     ) %>%
     summarise(
-      across(all_of(c(vars, pop_vars)), sum, na.rm = TRUE),
-      across(ends_with('_rr'), robust_max),
+      across(all_of(c(vars, pop_vars)), ~ sum(.x, na.rm = TRUE)),
+      across(ends_with('_rr'), ~ robust_max(.x)),
       .by = all_of(admin_level_cols)
     ) %>%
     mutate(

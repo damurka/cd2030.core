@@ -4,30 +4,39 @@
 #' and derived (`coverage_new`) coverage estimates over time for a single indicator.
 #' It supports both national and subnational views.
 #'
-#' The plot title and y-axis labels are automatically generated from the
-#' indicator metadata stored in the input object attributes.
-#'
-#' @param x A `cd_coverage_trends` object returned by [generate_coverage_data()].
-#' @param region (Optional) A region or district name. Required for subnational data,
-#'   must be `NULL` for national data.
+#' @param x A `cd_coverage_trends` object.
+#' @param region (Optional) A character string of the region or district name.
+#'   Required for subnational data, must be `NULL` for national data.
+#' @param title (Optional) A scalar character string to override the default plot title. Defaults to `NULL`.
+#' @param x_label (Optional) A scalar character string to override the default x-axis label. Defaults to `NULL`.
+#' @param y_label (Optional) A scalar character string to override the default y-axis label. Defaults to `NULL`.
+#' @param legend_labels (Optional) A named list of character strings to override specific
+#'   default legend labels (e.g., `list(penta1derived = "Custom Penta1")`).
 #' @param ... Additional arguments passed to `ggplot2` layers (not used).
 #'
-#' @return A ggplot object showing coverage trends.
+#' @return A `ggplot` object showing coverage trends over time.
 #'
 #' @examples
 #' \dontrun{
+#' # Basic usage (uses all defaults)
 #' generate_coverage_data(dhis_data, "penta1", 2019) %>%
 #'   plot(region = "Nairobi")
 #'
-#' generate_coverage_data(dhis_data, "rota1", 2019) %>%
-#'   plot()
+#' # Customizing title, axes, and specific legend labels
+#' generate_coverage_data(dhis_data, "penta1", 2019) %>%
+#'   plot(
+#'     region = "Nairobi",
+#'     title = "Nairobi: Penta1 Coverage Trends",
+#'     x_label = "Reporting Year",
+#'     legend_labels = list(penta1derived = "Penta1 (Derived Estimate)")
+#'   )
 #' }
 #'
 #' @export
-plot.cd_derived_coverage <- function(x, region = NULL, ...) {
+plot.cd_derived_coverage <- function(x, region = NULL, title = NULL, x_label = NULL, y_label = NULL, legend_labels = list(), ...) {
   admin_level <- attr_or_abort(x, "admin_level")
   indicator <- attr_or_abort(x, "indicator")
-  indicator_label <- str_to_title(indicator)
+  indicator_title <- str_to_title(indicator) # Makes the default y_label look nicer (e.g., "Penta1" instead of "penta1")
 
   # Validate region input logic
   if (admin_level == "national" && !is.null(region)) {
@@ -36,6 +45,17 @@ plot.cd_derived_coverage <- function(x, region = NULL, ...) {
 
   if (admin_level != "national" && is.null(region)) {
     cd_abort("x" = "{.arg region} must not be null in subnational data.")
+  }
+
+  # Validate scalar character inputs for custom labels
+  if (!is.null(title) && (!is.character(title) || length(title) != 1)) {
+    cd_abort("x" = "{.arg title} must be a scalar character or NULL.")
+  }
+  if (!is.null(x_label) && (!is.character(x_label) || length(x_label) != 1)) {
+    cd_abort("x" = "{.arg x_label} must be a scalar character or NULL.")
+  }
+  if (!is.null(y_label) && (!is.character(y_label) || length(y_label) != 1)) {
+    cd_abort("x" = "{.arg y_label} must be a scalar character or NULL.")
   }
 
   # Filter for specified region if applicable
@@ -47,30 +67,34 @@ plot.cd_derived_coverage <- function(x, region = NULL, ...) {
 
   # Dynamic title based on admin level
   title_text <- if (admin_level == "national") {
-    str_glue("National Coverage Over Time by Denominator")
+    "National Coverage Over Time by Denominator"
   } else {
-    str_glue("{region} Coverage Over Time for  by Denominator")
+    str_glue("{region} Coverage Over Time by Denominator")
   }
 
-  # suffix -> pretty name map (your list)
-  suffix_map <- c(
-    "penta1derived" = "Penta1-derived",
-    "penta1"        = "Penta1",
-    "anc1"          = "ANC1",
+  final_title <- title %||% title_text
+  final_x_label <- x_label %||% "Year"
+  final_y_label <- y_label %||% str_glue("{indicator_title} Coverage (%)")
+
+  # suffix -> pretty name map
+  default_legend <- list(
+    "un"            = "UN",
     "dhis2"         = "DHIS2",
-    "un"            = "UN"
+    "anc1"          = "ANC1",
+    "penta1"        = "Penta1",
+    "penta1derived" = "Penta1-derived"
   )
+  final_legend <- modifyList(default_legend, as.list(unlist(legend_labels)))
 
-  # coverage_old <- paste0("cov_", indicator, "_penta1")
-  # coverage_new <- paste0(coverage_old, "derived")
   cov_indicator <- paste0('cov_', indicator)
+  legend_map <- unlist(final_legend)
 
-  cols <- x %>%
+  cols <- data %>%
     select(year, starts_with(cov_indicator)) %>%
     pivot_longer(cols = -year, names_to = "series", values_to = "value") %>%
     mutate(
       suffix = gsub(paste0("^", cov_indicator, "_?"), "", series),
-      series_label = factor(suffix_map[suffix], levels = suffix_map)
+      series_label = factor(legend_map[suffix], levels = unique(legend_map))
     )
 
   present_labels <- unique(cols$series_label)
@@ -79,8 +103,9 @@ plot.cd_derived_coverage <- function(x, region = NULL, ...) {
   max_val <- robust_max(cols$value, fallback = 100)
   y_max <- ceiling(max_val / 10) * 10
   y_max <- max(100, y_max)   # ensure at least 100
+
   base_pal <- c("#009E73","#E69F00","#0072B2","#8A2BE2","#D55E00","#CC79A7","#F0E442","#000000")
-  pal <- setNames(base_pal[seq_along(present_labels)], present_labels)
+  pal <- set_names(base_pal[seq_along(present_labels)], present_labels)
 
   ggplot(cols, aes(x = year, y = value, colour = series_label, group = series_label)) +
     geom_line(linewidth = 1) +
@@ -93,10 +118,9 @@ plot.cd_derived_coverage <- function(x, region = NULL, ...) {
       labels = scales::label_number(accuracy = 1)
     ) +
     scale_color_manual(values = pal, name = NULL) +
-    labs(
-      title = title_text,
-      y = str_glue("{indicator_label} Coverage (%)"),
-      x = "Year"
-    ) +
-    cd_plot_theme()
+    cd_plot_theme(
+      title = final_title,
+      x_axis = final_x_label, # Assuming cd_plot_theme takes x_axis
+      y_axis = final_y_label  # Assuming cd_plot_theme takes y_axis
+    )
 }

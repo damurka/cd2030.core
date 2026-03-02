@@ -55,14 +55,14 @@ generate_adjustment_values <- function(.data,
 
   unadjusted_data <- .data %>%
     summarise(
-      across(all_of(all_indicators), sum, na.rm = TRUE),
+      across(all_of(all_indicators), ~ sum(.x, na.rm = TRUE)),
       .by = year
     ) %>%
     rename_with(~ paste0(.x, "_raw"), all_of(all_indicators))
 
   adjusted_data <- adjust_service_data(.data, adjustment, k_factors) %>%
     summarise(
-      across(all_of(all_indicators), sum, na.rm = TRUE),
+      across(all_of(all_indicators), ~ sum(.x, na.rm = TRUE)),
       .by = year
     ) %>%
     rename_with(~ paste0(.x, "_adj"), all_of(all_indicators))

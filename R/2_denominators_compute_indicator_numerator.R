@@ -54,6 +54,6 @@ compute_indicator_numerator <- function(.data,
   # Summarize data
   .data %>%
     filter(if (is.null(region)) TRUE else adminlevel_1 == region) %>%
-    summarise(across(all_of(all_indicators), sum, na.rm = TRUE), .by = c(group_vars, "year")) %>%
+    summarise(across(all_of(all_indicators), ~ sum(.x, na.rm = TRUE)), .by = c(group_vars, "year")) %>%
     arrange(year)
 }
