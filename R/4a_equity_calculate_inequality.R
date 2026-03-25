@@ -1,94 +1,78 @@
 #' Analyze Subnational Health Coverage Data with Inequality Metrics
 #'
 #' `calculate_inequality` computes subnational health coverage metrics and evaluates
-#' disparities compared to national averages. The function provides metrics such as:
+#' disparities compared to reference averages (either national or regional).
 #'
-#' - **Mean Absolute Difference to the Mean (MADM)**: Average absolute deviation
-#'   from the national mean.
-#' - **Weighted MADM**: MADM weighted by population share.
-#' - **Mean Relative Difference to the Mean (MRDM)**: MADM as a percentage of
-#'   the national mean.
-#' - **Weighted MRDM**: MRDM weighted by population share.
-#' - **Relative Difference Max (RD Max)**: Adjusted maximum difference metric.
-#'
-#' The function allows analysis of specific health indicators at subnational levels
-#' (`adminlevel_1` or `district`) and compares them with national-level data.
-#'
-#' @param .data A data frame containing subnational health coverage data.
-#' @param admin_level A character string specifying the administrative level for analysis.
-#'   Options: `"adminlevel_1"` (e.g., regions) or `"district"`.
-#' @param un_estimates (Optional) A data frame with UN population estimates for national
-#'   population-level calculations. Required if using population-based metrics.
-#' @param sbr Numeric. The stillbirth rate (default: 0.02).
-#' @param nmr Numeric. The neonatal mortality rate (default: 0.025).
-#' @param pnmr Numeric. The post-neonatal mortality rate (default: 0.024).
-#' @param anc1survey Numeric. Survey-based ANC-1 coverage rate (default: 0.98).
-#' @param dpt1survey Numeric. Survey-based Penta-1 coverage rate (default: 0.97).
-#' @param survey_year Integer. The year of Penta-1 survey provided
-#' @param twin Numeric. The twin birth rate (default: 0.015).
-#' @param preg_loss Numeric. The pregnancy loss rate (default: 0.03).
+#' @param subnational_data A data frame containing pre-calculated subnational health coverage data.
+#' @param reference_data A data frame containing pre-calculated reference health coverage data
+#'   (e.g., national data if analyzing `adminlevel_1`, or `adminlevel_1` data if analyzing `district`).
 #'
 #' @return A tibble (`cd_inequality` object) containing:
 #'   - Subnational health coverage metrics.
 #'   - Population shares.
 #'   - MADM, MRDM, and related disparity metrics.
 #'
-#' @examples
-#' \dontrun{
-#' # Example analysis for district-level data
-#' inequality_metrics <- calculate_inequality(
-#'   .data = health_data,
-#'   admin_level = "district",
-#'   un_estimates = un_data
-#' )
-#' }
-#'
 #' @export
-calculate_inequality <- function(.data,
-                                 admin_level = c("adminlevel_1", "district"),
-                                 un_estimates,
-                                 region = NULL,
-                                 sbr = 0.02,
-                                 nmr = 0.025,
-                                 pnmr = 0.024,
-                                 anc1survey = 0.98,
-                                 dpt1survey = 0.97,
-                                 survey_year = 2019,
-                                 twin = 0.015,
-                                 preg_loss = 0.03) {
-  year <- NULL
+calculate_inequality <- function(subnational_data,
+                                 reference_data) {
+  year = NULL
 
   # Validation
-  check_cd_data(.data)
-  admin_level <- arg_match(admin_level)
-  admin_level_col <- get_admin_columns(admin_level, region)
+  check_cd_indicator_coverage(subnational_data)
+  check_cd_indicator_coverage(reference_data)
+
+  sub_admin_level <- attr_or_abort(subnational_data, 'admin_level')
+  sub_region <- attr_or_null(subnational_data, 'region')
+
+  ref_admin_level <- attr_or_abort(reference_data, 'admin_level')
+
+  if (!ref_admin_level %in% c('national', 'adminlevel_1')) {
+    cd_abort(c('x' = 'Subnational data must be {.val adminlevel_1} or {.val district}.'))
+  }
+
+  if (!sub_admin_level %in% c('district', 'adminlevel_1')) {
+    cd_abort(c('x' = 'Subnational data must be {.val adminlevel_1} or {.val district}.'))
+  }
+
+  print(paste0(sub_admin_level, ' ', sub_region, ': ', ref_admin_level))
+
+  if (sub_admin_level == 'adminlevel_1' && is.null(sub_region) && ref_admin_level != 'national') {
+    cd_abort(c('x' = 'Reference data must be {.val national} when subnational data is {.val adminlevel_1} and {.val region} is null.'))
+  }
+
+  if (sub_admin_level == 'adminlevel_1' && !is.null(sub_region) && ref_admin_level != 'adminlevel_1') {
+    cd_abort(c('x' = 'Reference data must be {.val adminlevel_1} when subnational data is {.val adminlevel_1} and {.val region} is not null.'))
+  }
+
+  if (sub_admin_level == 'district' && ref_admin_level != 'adminlevel_1') {
+    cd_abort(c('x' = 'Reference data must be {.val adminlevel_1} when subnational data is {.val district}.'))
+  }
+
+  if (!is.null(sub_region)) {
+    if (!sub_region %in% unique(subnational_data$adminlevel_1)) {
+      cd_warn(c('!' = 'Region {.val sub_region} not found in subnational data.'))
+      return(NULL)
+    }
+  }
+
+  admin_level_col <- get_admin_columns(sub_admin_level, sub_region)
   admin_level_col <- c(admin_level_col, 'year')
 
-  level <- if (admin_level == 'adminlevel_1' && !is.null(region)) {
+  level <- if (sub_admin_level == 'adminlevel_1' && !is.null(sub_region)) {
     'adminlevel_1'
   } else {
     'national'
   }
 
-  national_data <- calculate_indicator_coverage(.data,
-    admin_level = level,
-    un_estimates = un_estimates,
-    sbr = sbr, nmr = nmr, pnmr = pnmr,
-    anc1survey = anc1survey, dpt1survey = dpt1survey,
-    survey_year = survey_year, twin = twin, preg_loss = preg_loss
-  ) %>%
-    filter(if (is.null(region)) TRUE else adminlevel_1 == region) %>%
-    select(any_of(admin_level_col), matches("^cov_|^tot"), -ends_with("_un")) %>%
+  indicators <- get_analysis_indicators()
+  cov_indicator_pattern <- paste0("cov_(", paste(indicators, collapse = "|"), ")")
+
+  national_data <- reference_data %>%
+    select(any_of(admin_level_col), matches("^tot_|"), matches(cov_indicator_pattern), -ends_with("_un")) %>%
     rename_with(~ paste0("nat_", .x), matches("^cov_|^tot"))
 
-  subnational_data <- calculate_indicator_coverage(.data,
-    admin_level = admin_level,
-    region = region,
-    sbr = sbr, nmr = nmr, pnmr = pnmr,
-    anc1survey = anc1survey, dpt1survey = dpt1survey,
-    survey_year = survey_year, twin = twin, preg_loss = preg_loss
-  ) %>%
-    select(any_of(admin_level_col), matches("^cov_|^tot"))
+  sub_data <- subnational_data %>%
+    select(any_of(admin_level_col), matches("^tot"), matches(cov_indicator_pattern))
 
   join_keys <- switch (
     level,
@@ -96,7 +80,7 @@ calculate_inequality <- function(.data,
     adminlevel_1 = c('adminlevel_1', 'year')
   )
 
-  combined_data <- subnational_data %>%
+  combined_data <- sub_data %>%
     left_join(national_data, by = join_keys) %>%
     mutate(
       across(starts_with("cov_"), ~ abs(.x - get(paste0("nat_", cur_column()))), .names = "diff_{.col}"),
@@ -147,8 +131,8 @@ calculate_inequality <- function(.data,
   new_tibble(
     combined_data,
     class = "cd_inequality",
-    admin_level = admin_level,
-    region = region
+    admin_level = sub_admin_level,
+    region = sub_region
   )
 }
 

@@ -4,20 +4,18 @@
 \alias{plot.cd_overall_score}
 \title{Plot S3 method for Overall Score}
 \usage{
-\method{plot}{cd_overall_score}(x, years = NULL, title = NULL, ...)
+\method{plot}{cd_overall_score}(x, years = NULL, title = NULL, width = NULL, ...)
 }
 \arguments{
 \item{x}{The score dataframe (class cs_overall_score)}
 
 \item{years}{Vector of years to display}
 
+\item{title}{(Optional) Custom title for the table}
+
+\item{width}{(Optional) Total width in inches. If NULL, autofit is used.}
+
 \item{...}{Additional arguments}
-
-\item{threshold}{The performance threshold (e.g. 90)}
-
-\item{i18n}{Translator object}
-
-\item{file}{(Optional) File path to save as PNG/HTML. If NULL, returns the object.}
 }
 \description{
 Plot S3 method for Overall Score

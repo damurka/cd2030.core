@@ -381,7 +381,7 @@ read_and_clean_sheet <- function(path, sheet_name, sheet_ids, start_year = NULL,
         across(any_of("year"), ~ as.integer(.)), # Convert year column to integer
         across(-any_of(required_columns), ~ suppressWarnings(as.numeric(.))) # Convert other columns to numeric
       ) %>%
-      filter(if_any(matches("year"), ~ is.null(start_year) || .x >= start_year)),
+      filter(if_all(matches("year"), ~ is.null(start_year) || .x >= start_year)),
     error = function(e) {
       clean_message <- clean_error_message(e)
       cd_abort(c("x" = paste0(clean_message), " in ", sheet_name), call = call)

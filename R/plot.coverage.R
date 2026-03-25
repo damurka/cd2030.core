@@ -133,3 +133,148 @@ plot.cd_coverage_filtered <- function(x, title = NULL, x_axis = NULL, y_axis = N
       panel.grid.major.x = element_line(colour = "gray90", linetype = "dashed")
     )
 }
+
+
+#' Plot Coverage by Region
+#'
+#' Generates a bar chart comparing indicator coverage across regions, highlighting
+#' a specific region and categorizing performance as lower, average, or higher.
+#'
+#' @param x Data frame containing the coverage data.
+#' @param indicator Character string specifying the indicator (e.g., 'penta1').
+#' @param denominator Character string specifying the denominator ('penta1', 'anc1', 'dhis2', 'penta1derived').
+#' @param year Integer representing the year to plot.
+#' @param region Character string for the specific region to highlight in yellow.
+#' @param title (Optional) Scalar character for a custom plot title.
+#' @param x_axis (Optional) Scalar character for a custom x-axis label.
+#' @param y_axis (Optional) Scalar character for a custom y-axis label.
+#' @param caption (Optional) Scalar character for a custom plot caption.
+#' @param labels (Optional) Named list to override the default category labels
+#'   (e.g., `list(lower = "Low", average = "Avg", higher = "High")`).
+#' @param ... Additional arguments.
+#'
+#' @export
+plot.cd_coverage <- function(x, indicator = NULL, denominator = NULL, year = NULL, region = NULL,
+                             title = NULL, x_axis = NULL, y_axis = NULL, caption = NULL, labels = NULL, ...) {
+
+  # 1. Input Validation
+  check_required(region)
+  check_required(year)
+
+  indicator <- arg_match(indicator, get_analysis_indicators())
+  denominator <- arg_match(denominator, c('penta1', 'anc1', 'dhis2', 'penta1derived'))
+
+  if (!is.null(title) && !is_scalar_character(title)) {
+    cd_abort(c("x" = "{.arg title} must be a scalar character or NULL."))
+  }
+  if (!is.null(x_axis) && !is_scalar_character(x_axis)) {
+    cd_abort(c("x" = "{.arg x_axis} must be a scalar character or NULL."))
+  }
+  if (!is.null(y_axis) && !is_scalar_character(y_axis)) {
+    cd_abort(c("x" = "{.arg y_axis} must be a scalar character or NULL."))
+  }
+  if (!is.null(caption) && !is_scalar_character(caption)) {
+    cd_abort(c("x" = "{.arg caption} must be a scalar character or NULL."))
+  }
+
+  indicator_col <- paste0('cov_', indicator, '_', denominator)
+  admin_level <- attr_or_abort(x, 'admin_level')
+  admin_level_cols <- get_admin_columns(admin_level, region)
+  selected_year <- year
+
+  # 2. Resolve Text and Labels (Allows for Translation/Customization)
+  default_labels <- list(
+    lower = "Lower than average",
+    average = "Average",
+    higher = "Higher than average"
+  )
+
+  user_labels <- if (is.null(labels)) list() else as.list(labels)
+  final_labels <- utils::modifyList(default_labels, user_labels)
+
+  lbl_lower <- final_labels$lower
+  lbl_avg <- final_labels$average
+  lbl_higher <- final_labels$higher
+
+  indicator_pretty <- str_to_title(indicator)
+  default_title <- str_glue("{indicator_pretty} immunization, by region, {selected_year} (HMIS)")
+
+  final_title <- title %||% default_title
+  final_x_axis <- x_axis %||% NULL
+  final_y_axis <- y_axis %||% NULL
+  final_caption <- caption %||% NULL
+
+  # 3. Map Colors to the Dynamic Labels
+  category_colors <- set_names(
+    c("#145374", "#45A9E3", "#A9DCFA"),
+    c(lbl_lower, lbl_avg, lbl_higher)
+  )
+
+  # 4. Process Data
+  df <- x %>%
+    filter(year == selected_year) %>%
+    select(any_of(c(admin_level_cols, indicator_col))) %>%
+    arrange(!!sym(indicator_col)) %>%
+    mutate(
+      category = case_when(
+        !!sym(indicator_col) <= quantile(!!sym(indicator_col), 0.33, na.rm = TRUE) ~ lbl_lower,
+        !!sym(indicator_col) <= quantile(!!sym(indicator_col), 0.66, na.rm = TRUE) ~ lbl_avg,
+        .default = lbl_higher
+      ),
+      # Enforce factor levels so they plot in the correct order even with custom names
+      category = factor(category, levels = c(lbl_lower, lbl_avg, lbl_higher))
+    )
+
+  # Calculate x-axis label placement based on the sorted order
+  cat_positions <- df %>%
+    mutate(x = as.numeric(factor(!!sym(admin_level), levels = unique(!!sym(admin_level))))) %>%
+    summarise(x = mean(x, na.rm = TRUE), .by = category)
+
+  # 5. Build the Plot
+  df %>%
+    ggplot(aes(x = factor(!!sym(admin_level), levels = unique(!!sym(admin_level))),
+               y = !!sym(indicator_col),
+               fill = category)) +
+    geom_col(width = 1) +
+
+    # Highlight the specific region
+    geom_col(
+      data = filter(df, !!sym(admin_level) == region),
+      aes(x = !!sym(admin_level), y = !!sym(indicator_col)),
+      fill = "yellow", color = "black", width = 1
+    ) +
+
+    # Add vertical text for the highlighted region
+    geom_text(
+      data = filter(df, !!sym(admin_level) == region),
+      aes(x = !!sym(admin_level), y = !!sym(indicator_col) / 2, label = region),
+      vjust = 0.5, angle = 90, hjust = 0.5,
+      fontface = "bold", color = "black",
+      size = 3
+    ) +
+
+    # Add the lower/average/higher labels at the bottom of the bars
+    geom_label(
+      data = cat_positions,
+      aes(x = x, y = 10, label = category),
+      inherit.aes = FALSE,
+      size = 3,
+      fill = "white",
+      color = "black",
+      label.size = 0
+    ) +
+
+    scale_fill_manual(values = category_colors) +
+    scale_y_continuous(limits = c(0, 105), expand = c(0, 0)) +
+    cd_plot_theme(
+      title = final_title,
+      x_axis = final_x_axis,
+      y_axis = final_y_axis,
+      caption = final_caption
+    ) +
+    theme(
+      axis.text.x = element_blank(),
+      axis.ticks.x = element_blank(),
+      legend.position = "none"
+    )
+}

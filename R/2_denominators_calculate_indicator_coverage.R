@@ -486,7 +486,8 @@ calculate_populations <- function(.data,
     mutate(
       nat_survey_change = (nat_pop - nat_survey_pop) / nat_survey_pop * 100,
       across(any_of(penta1_estimates), ~ .x * (1 + nat_survey_change/100), .names = 'nat_{.col}derived')
-    )
+    ) %>%
+    select(-any_of(penta1_estimates))
 
   # ---------------------------------------------------------
   # Process Subnational (Admin 1 & Admin 2) or National
@@ -519,7 +520,8 @@ calculate_populations <- function(.data,
       mutate(
         admin1_survey_change = (admin1_pop - admin1_survey_pop) / admin1_survey_pop * 100,
         across(any_of(penta1_estimates), ~ .x * (1 + admin1_survey_change/100), .names = 'admin1_{.col}derived')
-      )
+      ) %>%
+      select(-any_of(penta1_estimates))
 
     # Extract Local Subnational Survey Population (for the specific unit)
     local_survey_df <- output_data %>%
@@ -563,7 +565,7 @@ calculate_populations <- function(.data,
   # ---------------------------------------------------------
   output_data <- output_data %>%
     mutate(
-      across(any_of(get_all_indicators()), ~ {
+      across(any_of(get_coverage_indicators()), ~ {
         pop_col <- get_population_column(cur_column(), "penta1derived")
         den <- get(pop_col)
         ifelse(den > 0, .x / den * 100, NA_real_)

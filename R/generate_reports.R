@@ -32,9 +32,9 @@ generate_report <- function(cache,
   check_required(report_name)
 
   format <- arg_match(output_format)
-  format <- switch(output_format,
+  format <- switch(format,
     word_document = "officedown::rdocx_document",
-    output_format
+    format
   )
 
   # If output_file is just a file name, save it in the working directory
@@ -48,9 +48,11 @@ generate_report <- function(cache,
   temp_dir <- tempfile("report_render_")
   dir.create(temp_dir)
 
+  analysis_type <- get_selected_group()
+
   render(
-    input = file.path(system.file(package = "cd2030.core"), "rmd", paste0(report_name, "_template.Rmd")),
-    output_format = format,
+    input = file.path(system.file(package = "cd2030.core"), "rmd", paste0(report_name, "_", analysis_type, "_template.Rmd")),
+    # output_format = format,
     output_file = output_path,
     params = list(cache = cache, country = cache$country, adminlevel_1 = adminlevel_1),
     encoding = "UTF-8",
@@ -66,11 +68,13 @@ generate_report <- function(cache,
       if (format == "html_document") {
         utils::browseURL(output_path)
       }
-      showNotification("Report generation Succeeded.", type = "message")
+      # showNotification("Report generation Succeeded.", type = "message")
+      cd_info(c('i' = 'Report generation Succeeded.'))
     },
     error = function(e) {
       error <- clean_error_message(e)
-      showNotification(paste0("Report generation failed: ", error), type = "error")
+      # showNotification(paste0("Report generation failed: ", error), type = "error")
+      cd_error(c('x' = paste0("Report generation failed: ", error)))
     }
   )
 }

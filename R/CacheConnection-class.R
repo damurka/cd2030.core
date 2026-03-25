@@ -147,6 +147,11 @@ CacheConnection <- R6::R6Class(
       }
 
       rates <- self$national_estimates
+      rates <- if (admin_level %in% c("adminlevel_1", "district") && !is.null(region)) {
+        self$get_regional_estimates(admin_level, region)
+      } else {
+        self$national_estimates
+      }
 
       calculate_indicator_coverage(
         .data = self$adjusted_data,
@@ -169,28 +174,21 @@ CacheConnection <- R6::R6Class(
     #' @param admin_level Administrative level ("adminlevel_1" or "district").
     #' @param region Optional region filter.
     calculate_inequality = function(admin_level, region = NULL) {
-      check_required(admin_level)
+      admin_level <- arg_match(admin_level, c('adminlevel_1', 'district'))
 
       if (!self$check_inequality_params) {
         cd_abort(c("x" = "One or more parameters is missing for {.fun calculate_inequality}"))
       }
 
-      rates <- self$national_estimates
+      reference_data <- if (admin_level == 'adminlevel_1' && is.null(region)) {
+        self$indicator_coverage_national
+      } else if ((admin_level == 'adminlevel_1' && !is.null(region)) || admin_level == 'district') {
+        self$indicator_coverage_admin1
+      }
 
-      calculate_inequality(
-        .data = self$adjusted_data,
-        admin_level = admin_level,
-        un_estimates = self$un_estimates,
-        region = region,
-        sbr = rates$sbr,
-        nmr = rates$nmr,
-        pnmr = rates$pnmr,
-        anc1survey = rates$anc1,
-        dpt1survey = rates$penta1,
-        survey_year = self$survey_year,
-        twin = rates$twin_rate,
-        preg_loss = rates$preg_loss
-      )
+      subnational_coverage <- self$get_base_indicator_coverage(admin_level, region)
+
+      calculate_inequality(subnational_coverage, reference_data)
     },
 
     #' @description Run coverage calculation using stored model parameters.
@@ -204,7 +202,7 @@ CacheConnection <- R6::R6Class(
 
       survey_data <- if (admin_level == "national") self$national_survey else self$regional_survey
 
-      self$calculate_indicator_coverage(admin_level) %>%
+      self$get_base_indicator_coverage(admin_level) %>%
         calculate_coverage(
           survey_data = survey_data,
           wuenic_data = self$wuenic_estimates,
@@ -227,46 +225,6 @@ CacheConnection <- R6::R6Class(
         )
     },
 
-    #' @description Run coverage calculation using stored model parameters.
-    calculate_health_system_comparison = function() {
-      if (!self$check_inequality_params) {
-        cd_abort(c("x" = "One or more parameters is missing for {.fun calculate_indicator_coverage}"))
-      }
-
-      rates <- self$national_estimates
-
-      calculate_health_system_comparison(
-        .data = self$adjusted_data,
-        sbr = rates$sbr,
-        nmr = rates$nmr,
-        pnmr = rates$pnmr,
-        anc1survey = rates$anc1,
-        dpt1survey = rates$penta1,
-        survey_year = self$survey_year,
-        twin = rates$twin_rate,
-        preg_loss = rates$preg_loss
-      )
-    },
-
-    #' @description Creates mortality summary
-    create_mortality_summary = function() {
-      if (!self$check_mortality_params) {
-        cd_abort(c("x" = "One or more parameters is missing for {.fun create_mortality_summary}"))
-      }
-      create_mortality_summary(self$adjusted_data)
-    },
-
-    #' @description creates mortality ratios from the mortality summary
-    #' @param .data A `cd_mortality_summary` object
-    create_mortality_ratios = function(.data) {
-      if (!self$check_mortality_params) {
-        cd_abort(c("x" = "One or more parameters is missing for {.fun create_mortality_summary}"))
-      }
-      check_cd_class(.data, expected_class = "cd_mortality_summary")
-      .data %>%
-        create_mortality_ratios(self$un_mortality_estimates)
-    },
-
     #' @description generates the mean institutional livebirths
     lbr_mean = function() {
       indicator <- paste0("cov_instlivebirths_", self$maternal_denominator)
@@ -277,23 +235,19 @@ CacheConnection <- R6::R6Class(
     },
 
     #' @description creates mortality ratios completeness summary
-    #' @param .data A `cd_mortality_ratio` object
     #' @param indicator The indicator to generate the summary
-    summarise_completeness_ratio = function(.data, indicator) {
-      check_cd_class(.data, expected_class = "cd_mortality_ratio")
-      .data %>%
+    summarise_completeness_ratio = function(indicator) {
+      self$mortality_ratios %>%
         summarise_completeness_ratio(indicator, self$lbr_mean())
     },
 
     #' @description Return the appropriate summary based on the indicator type to plot.
-    #' @param .data A `cd_mortality_summary` object.
     #' @param indicator Character. Indicator name.
     #' @param map_years the years to include in a map
     #' @return Character. Either the maternal or vaccination denominator.
-    filter_mortality_summary = function(.data, indicator, map_years = NULL) {
-      check_cd_class(.data, expected_class = "cd_mortality_summary")
+    filter_mortality_summary = function(indicator, map_years = NULL) {
       years <- if (is.null(map_years)) self$mortality_mapping_years else map_years
-      .data %>%
+      self$mortality_summary %>%
         filter_mortality_summary(self$country_iso, indicator, years, self$map_mapping)
     },
 
@@ -310,14 +264,36 @@ CacheConnection <- R6::R6Class(
     },
 
     #' @description Return the appropriate summary based on the indicator type to plot.
-    #' @param .data A `cd_service_utilization` object.
+    #' @param admin_level The admin level
+    #' @param indicator Character. Indicator name.
+    #' @param region the years to include in a map
+    filter_service_utilization = function(admin_level, indicator, region = NULL) {
+
+      if (is.null(self$adjusted_data)) {
+        return(NULL)
+      }
+
+      service_data <- if (admin_level == 'national') {
+        self$service_utilization_national
+      } else if (admin_level == 'adminlevel_1') {
+        self$service_utilization_admin1
+      } else {
+        compute_service_utilization(admin_level)
+      }
+      service_data %>%
+        filter_service_utilization(indicator, region)
+    },
+
+    #' @description Return the appropriate summary based on the indicator type to plot.
     #' @param indicator Character. Indicator name.
     #' @param map_years the years to include in a map
-    filter_service_utilization = function(.data, indicator, map_years = NULL) {
-      check_cd_class(.data, expected_class = "cd_service_utilization")
+    prepare_mapping_service_utlization = function(indicator, map_years = NULL) {
+
+      indicator <- arg_match(indicator, c('ipd', 'opd'))
       years <- if (is.null(map_years)) self$utilization_mapping_years else map_years
-      .data %>%
-        filter_service_utilization(self$country_iso, indicator, years, self$map_mapping)
+
+      self$service_utilization_admin1 %>%
+        prepare_mapping_service_utlization(indicator, years, self$map_mapping)
     },
 
     #' @description Return the appropriate denominator based on the indicator type.
@@ -426,7 +402,7 @@ CacheConnection <- R6::R6Class(
       factors <- if (get_selected_group() == "vaccine") {
         c(common_factors, "opv1", "opv3")
       } else {
-        c(common_factors, "anc4", "lbw", "csection")
+        c(common_factors, "anc4", "low_bweight", "csection")
       }
       if (!is.numeric(value)) {
         cd_abort(c("x" = "Survey must be a numeric vector."))
@@ -821,29 +797,24 @@ CacheConnection <- R6::R6Class(
         cd_abort(c("x" = "One or more parameters is missing for {.fun get_base_indicator_coverage}"))
       }
 
-      data <- if (admin_level == "national") {
+      data <- if (admin_level == "national" && is.null(region)) {
         self$indicator_coverage_national
-      } else if (admin_level == "adminlevel_1") {
+      } else if (admin_level == "adminlevel_1" && is.null(region)) {
         self$indicator_coverage_admin1
-      } else if (admin_level == "district") {
+      } else if (admin_level == "district"  && is.null(region)) {
         self$indicator_coverage_district
       } else {
-        NULL
+        self$calculate_indicator_coverage(admin_level, region)
       }
 
-      if (admin_level %in% c("adminlevel_1", "district") && !is.null(region)) {
-        data %>%
-          filter(!!sym(admin_level) == region)
-      } else {
-        data
-      }
+      data
     },
     #' @description Get calculated threshold data responsive to admin level and indicator.
     #' @param indicator Character. The target health indicator group (e.g., "vaccine", "dropout").
     #' @param admin_level Character. Level of aggregation ("national", "adminlevel_1", "district").
     #' @param region Character. Optional region filter.
     get_filtered_threshold = function(indicator, admin_level, region = NULL) {
-      indicator <- arg_match(indicator,  c("vaccine", "dropout"))
+      indicator <- arg_match(indicator, c('anc4', 'instdeliveries', 'vaccine', 'dropout'))
       admin_level <- arg_match(admin_level, c("national", "adminlevel_1", "district"))
 
       if (!self$check_inequality_params) {
@@ -909,6 +880,84 @@ CacheConnection <- R6::R6Class(
           denominator = denom,
           threshold = threshold
         )
+    },
+
+    #' @description Get the regional estimate.
+    #' @param admin_level description
+    #' @param region Character. .
+    get_regional_estimates = function(admin_level, region) {
+      iso <- self$country_iso
+      rates <- self$national_estimates
+
+      if (is.null(region)) return(rates)
+
+      target_admin1 <- region
+
+      # 1. Look up parent region if district
+      if (admin_level == "district") {
+        target_admin1 <- self$adjusted_data %>%
+          filter(district == region) %>%
+          pull(adminlevel_1) %>%
+          na.omit() %>%
+          unique() %>%
+          first()
+
+        if (is.null(target_admin1) || is.na(target_admin1)) {
+          return(rates)
+        }
+      }
+
+      message(paste0(iso, ': ', target_admin1))
+
+      # 2. Extract regional data safely
+      reg_data <- survey_data$gregion %>%
+        filter(iso3 == iso, adminlevel_1 == target_admin1) %>%
+        select(year, starts_with("r_"), -ends_with("24_35")) %>%
+        rename_with(~ str_remove(.x, "r_"), starts_with("r_"))
+
+      # 3. Check if rows survived the filter
+      if (nrow(reg_data) == 0) {
+        return(rates)
+      }
+
+      # 4. Determine columns based on group
+      group <- get_selected_group()
+      cols_to_keep <- if (group == "vaccine") {
+        c("anc1", "instlivebirths", "bcg", "penta1", "penta3", "opv1", "opv3", "measles1", "nmr", "pnmr", "sbr")
+      } else {
+        c("anc1", "anc4", "instlivebirths", "bcg", "penta1", "penta3", "measles1", "low_bweight", "csection", "nmr", "pnmr", "sbr")
+      }
+
+      # Safely intersect to ensure we only pivot columns that actually exist
+      cols_to_keep <- intersect(cols_to_keep, names(reg_data))
+
+      if (length(cols_to_keep) == 0) {
+        return(rates)
+      }
+
+      # 5. Process and scale the rates
+      reg_est <- reg_data %>%
+        select(year, any_of(cols_to_keep)) %>%
+        pivot_longer(cols = -year) %>%
+        filter(!is.na(value)) %>%
+        slice_max(order_by = year, by = name, with_ties = FALSE) %>%
+        mutate(
+          value = case_when(
+            name %in% c("nmr", "pnmr", "sbr") ~ value / 1000,
+            # Safely convert percentage values (like 96.7) to proportions (0.967)
+            !name %in% c("nmr", "pnmr", "sbr") & value > 1 ~ value / 100,
+            TRUE ~ value # Uses TRUE instead of .default to guarantee older dplyr compatibility
+          )
+        )
+
+      reg_named <- set_names(reg_est$value, reg_est$name)
+
+      # 6. Override the national rates with the successful regional rates
+      for (ind in names(reg_named)) {
+        rates[[ind]] <- reg_named[[ind]]
+      }
+
+      return(rates)
     }
   ),
   active = list(
@@ -940,7 +989,7 @@ CacheConnection <- R6::R6Class(
         regions <- self$countdown_data %>%
           distinct(adminlevel_1, district) %>%
           arrange(adminlevel_1, district)
-        private$update_field("adminlevel_1, district", regions)
+        private$update_field("subnational_regions", regions)
       }
       return(regions)
     },
@@ -969,19 +1018,6 @@ CacheConnection <- R6::R6Class(
       }
 
       cd_abort(c("x" = "{.field iso3} is readonly."))
-    },
-
-    #' @field default_national_estimates Get the national rates.
-    default_national_estimates = function(value) {
-      if (missing(value)) {
-        if (is.null(self$countdown_data)) {
-          return(NULL)
-        }
-
-        return(attr_or_abort(self$countdown_data, "national_rates"))
-      }
-
-      cd_abort(c("x" = "{.field default_national_estimates} is readonly."))
     },
 
     #' @field adjusted_data Gets adjusted data.
@@ -1165,13 +1201,13 @@ CacheConnection <- R6::R6Class(
     #' @field un_estimates Gets UN estimates.
     un_estimates = function(value) {
       iso <- self$country_iso
-      private$getter("un_estimates", value) %||% un_estimates %>% filter(iso3 == iso)
+      private$getter("un_estimates", value) %||% (un_estimates %>% filter(iso3 == iso))
     },
 
     #' @field un_mortality_estimates Gets UN mortality estimates.
     un_mortality_estimates = function(value) {
       iso <- self$country_iso
-      private$getter("un_mortality_estimates", value) %||% un_mortality %>% filter(iso3 == iso)
+      private$getter("un_mortality_estimates", value) %||% (un_mortality %>% filter(iso3 == iso))
     },
 
     #' @field wuenic_estimates Gets WUENIC estimates.
@@ -1200,19 +1236,64 @@ CacheConnection <- R6::R6Class(
 
     #' @field wiq_survey Gets WIQ survey.
     wiq_survey = function(value) {
-      survey <- private$getter("wiq_survey", value) %||% survey_data$wiq
+      survey <- private$getter("wiq_survey", value)
+      if (is.null(survey)) {
+        survey <- survey_data$wiq %>%
+          pivot_longer(
+            cols = matches('q[1-5]$'),
+            names_pattern = '(.*)(q[1-5])$',
+            names_to = c('.value', 'level')
+          ) %>%
+          mutate(level = str_to_upper(level)) %>%
+          new_tibble(class = 'cd_equity_data')
+      }
       private$filter_survey(survey)
     },
 
     #' @field area_survey Gets area survey.
     area_survey = function(value) {
-      survey <- private$getter("area_survey", value) %||% survey_data$area
+      survey <- private$getter("area_survey", value)
+      if (is.null(survey)) {
+        survey <- survey_data$area %>%
+          select(-matches('_[12]$')) %>%
+          pivot_longer(
+            cols = matches('_area[12]$'),
+            names_pattern = '(.*)_(area[12])$',
+            names_to = c('.value', 'level')
+          ) %>%
+          mutate(
+            level = case_match(
+              level,
+              'area1' ~ 'urban',
+              'area2' ~ 'rural'
+            )
+          ) %>%
+          new_tibble(class = 'cd_equity_data')
+      }
       private$filter_survey(survey)
     },
 
     #' @field education_survey Gets  education survey.
     education_survey = function(value) {
-      survey <- private$getter("education_survey", value) %||% survey_data$meduc
+      survey <- private$getter("education_survey", value)
+      if (is.null(survey)) {
+        survey <- survey_data$meduc %>%
+          pivot_longer(
+            cols = matches('_me[1-3]$'),
+            names_pattern = '(.*)_(me[1-3])$',
+            names_to = c('.value', 'level')
+          ) %>%
+          mutate(
+            level = case_match(
+              level,
+              'me1' ~ 'none',
+              'me2' ~ 'primary',
+              'me3' ~ 'secondary+',
+              .ptype = factor(levels = c('none', 'primary', 'secondary+'))
+            )
+          ) %>%
+          new_tibble(class = 'cd_equity_data')
+      }
       private$filter_survey(survey)
     },
 
@@ -1506,7 +1587,7 @@ CacheConnection <- R6::R6Class(
       data <- private$getter("denominator_metrics", value)
 
       # 2. If cache is empty, calculate (Defaults to National) and save
-      if (is.null(data)) {
+      if (is.null(data) && !is.null(self$adjusted_data)) {
         data <- self$calculate_overall_score(admin_level = "national")
         data <- self$adjusted_data %>%
           prepare_population_metrics(un_estimates = self$un_estimates)
@@ -1550,6 +1631,116 @@ CacheConnection <- R6::R6Class(
         return(data)
       }
       cd_abort(c("x" = "{.field inequality_district} is readonly."))
+    },
+
+    #' @field mortality_summary Creates the mortality summary.
+    mortality_summary = function(value) {
+      if (missing(value)) {
+        private$depend("adjusted_data")
+        summary <- private$getter("mortality_summary", value)
+        if (is.null(summary) && !is.null(self$adjusted_data)) {
+          summary <- create_mortality_summary(self$adjusted_data)
+          private$update_field("mortality_summary", summary)
+        }
+        return(summary)
+      }
+
+      cd_abort(c("x" = "{.field mortality_summary} is readonly."))
+    },
+
+    #' @field mortality_ratios Creates the mortality summary.
+    mortality_ratios = function(value) {
+      if (missing(value)) {
+        private$depend("mortality_summary")
+        ratios <- private$getter("mortality_ratios", value)
+        if (is.null(ratios)) {
+          ratios <- self$mortality_summary %>% create_mortality_ratios(self$un_mortality_estimates)
+          private$update_field("mortality_ratios", ratios)
+        }
+        return(ratios)
+      }
+
+      cd_abort(c("x" = "{.field mortality_ratios} is readonly."))
+    },
+
+    #' @field service_utilization_national Gets adjusted data.
+    service_utilization_national = function(value) {
+      if (missing(value)) {
+        private$depend("adjusted_data")
+        cov <- private$getter("service_utilization_national", value)
+        if (is.null(cov)) {
+          cov <- self$compute_service_utilization("national")
+          private$update_field("service_utilization_national", cov)
+        }
+        return(cov)
+      }
+
+      cd_abort(c("x" = "{.field service_utilization_national} is readonly."))
+    },
+
+    #' @field service_utilization_admin1 Gets adjusted data.
+    service_utilization_admin1 = function(value) {
+      if (missing(value)) {
+        private$depend("adjusted_data")
+        cov <- private$getter("service_utilization_admin1", value)
+        if (is.null(cov)) {
+          cov <- self$compute_service_utilization("adminlevel_1")
+          private$update_field("service_utilization_admin1", cov)
+        }
+        return(cov)
+      }
+
+      cd_abort(c("x" = "{.field service_utilization_admin1} is readonly."))
+    },
+
+    #' @field health_system_comparison coverage calculation using stored model parameters.
+    health_system_comparison = function(value) {
+      if (missing(value)) {
+        private$depend("adjusted_data")
+        private$depend("indicator_coverage_admin1")
+        private$depend("indicator_coverage_district")
+        cov <- private$getter("health_system_comparison", value)
+        if (is.null(cov) && !is.null(self$adjusted_data)) {
+          cov <- self$adjusted_data %>%
+            calculate_health_system_comparison(self$indicator_coverage_admin1, self$indicator_coverage_district)
+          private$update_field("health_system_comparison", cov)
+        }
+        return(cov)
+      }
+
+      cd_abort(c("x" = "{.field health_system_comparison} is readonly."))
+    },
+
+    #' @field health_system_metrics_national coverage calculation using stored model parameters.
+    health_system_metrics_national = function(value) {
+      if (missing(value)) {
+        private$depend("adjusted_data")
+        cov <- private$getter("health_system_metrics_national", value)
+        if (is.null(cov) && !is.null(self$adjusted_data)) {
+          cov <- self$adjusted_data %>%
+            calculate_health_system_metrics('national')
+          private$update_field("health_system_metrics_national", cov)
+        }
+        return(cov)
+      }
+
+      cd_abort(c("x" = "{.field health_system_metrics_national} is readonly."))
+    },
+
+    #' @field health_system_metrics_admin1 coverage calculation using stored model parameters.
+    health_system_metrics_admin1 = function(value) {
+      if (missing(value)) {
+        private$depend("adjusted_data")
+        cov <- private$getter("health_system_metrics_admin1", value)
+        if (is.null(cov) && !is.null(self$adjusted_data)) {
+          cov <- self$adjusted_data %>%
+            calculate_health_system_metrics('adminlevel_1')
+          private$update_field("health_system_metrics_admin1", cov)
+        }
+        return(cov)
+      }
+
+      cd_abort(c("x" = "{.field health_system_metrics_admin1} is readonly."))
     }
   ),
   private = list(
@@ -1567,7 +1758,7 @@ CacheConnection <- R6::R6Class(
       derivation_population = "totlivebirths_dhis2",
       adjusted_flag = FALSE,
       adjusted_data = NULL,
-      survey_estimates = c(anc1 = NA, penta1 = NA, penta3 = NA, opv1 = NA, opv3 = NA, measles1 = NA, bcg = NA, anc4 = NA, instlivebirths = NA, lbw = NA, csection = NA),
+      survey_estimates = c(anc1 = NA, penta1 = NA, penta3 = NA, opv1 = NA, opv3 = NA, measles1 = NA, bcg = NA, anc4 = NA, instlivebirths = NA, low_bweight = NA, csection = NA),
       national_estimates = list(nmr = NA, pnmr = NA, twin_rate = 0.015, preg_loss = 0.03, sbr = NA),
       survey_year = NULL,
       indicator_coverage_national = NULL,
@@ -1613,7 +1804,14 @@ CacheConnection <- R6::R6Class(
       overall_score = NULL,
       denominator_metrics = NULL,
       inequality_admin1 = NULL,
-      inequality_district = NULL
+      inequality_district = NULL,
+      mortality_summary = NULL,
+      mortality_ratios = NULL,
+      service_utilization_national = NULL,
+      service_utilization_admin1 = NULL,
+      health_system_comparison = NULL,
+      health_system_metrics_national = NULL,
+      health_system_metrics_admin1 = NULL
     ),
     .in_memory_data = NULL,
     .invalidate_coverage = FALSE,
@@ -1659,9 +1857,8 @@ CacheConnection <- R6::R6Class(
     filter_survey = function(survey) {
       check_required(survey)
       start_year <- self$start_survey_year
-      iso <- self$country_iso
-      survey %>%
-        filter(iso3 == iso, if (is.null(start_year)) TRUE else year >= start_year)
+      load_data_or_file(.data = survey, country_iso = self$country_iso) %>%
+        filter(if (is.null(start_year)) TRUE else year >= start_year)
     },
     initialize_survey_estimates = function() {
       iso <- self$country_iso
@@ -1679,8 +1876,7 @@ CacheConnection <- R6::R6Class(
           slice_max(order_by = year, by = name)
       } else {
         estimates %>%
-          rename(lbw = low_bweight) %>%
-          select(year, anc1, anc4, instlivebirths, bcg, penta1, penta3, measles1, lbw, csection, nmr, pnmr) %>%
+          select(year, anc1, anc4, instlivebirths, bcg, penta1, penta3, measles1, low_bweight, csection, nmr, pnmr) %>%
           pivot_longer(cols = -year) %>%
           filter(!is.na(value)) %>%
           slice_max(order_by = year, by = name)

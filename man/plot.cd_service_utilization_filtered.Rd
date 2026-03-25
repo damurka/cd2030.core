@@ -2,35 +2,24 @@
 % Please edit documentation in R/plot.service_utlization.R
 \name{plot.cd_service_utilization_filtered}
 \alias{plot.cd_service_utilization_filtered}
-\title{Plot Filtered Service Utilization Indicators}
+\title{Plot Service Utilization Indicators}
 \usage{
 \method{plot}{cd_service_utilization_filtered}(x, ...)
 }
 \arguments{
-\item{x}{A \code{cd_service_utilization_filtered} object returned by \code{\link[=filter_service_utilization]{filter_service_utilization()}}.}
+\item{x}{A \code{cd_service_utilization_filtered} object created by \code{\link[=filter_service_utilization]{filter_service_utilization()}}.}
 
-\item{...}{Additional arguments (currently unused).}
+\item{...}{not used}
 }
 \value{
-A \code{ggplot2} object representing faceted service utilization maps by year.
+A \code{ggplot2} plot object.
 }
 \description{
-Generates a faceted map of service utilization metrics across subnational units
-(admin level 1) for each available year. Uses spatial polygons filled by the selected indicator.
-}
-\details{
-This function:
-\itemize{
-\item Extracts the appropriate indicator (\code{mean_opd_under5} or \code{mean_ipd_under5})
-\item Projects the data to WGS84 for map consistency
-\item Renders the spatial data using \code{geom_sf()} with a sequential purple color scale
-\item Facets by year and applies the package's custom plot theme
-}
+Visualizes service utilization over time from a \code{cd_service_utilization_filtered} object.
 }
 \examples{
 \dontrun{
-filtered <- filter_service_utilization(service_data, "UGA", indicator = "opd", plot_years = 2019:2022)
-plot(filtered)
+plot(filter_service_utilization(dat, indicator = 'opd'))
 }
 
 }

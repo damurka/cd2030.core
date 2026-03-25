@@ -1,19 +1,19 @@
 #' Plot Service Utilization Indicators
 #'
-#' Visualizes service utilization over time from a `cd_service_utilization_map` object.
+#' Visualizes service utilization over time from a `cd_service_utilization_filtered` object.
 #'
-#' @param x A `cd_service_utilization_map` object created by [filter_service_utilization_map()].
+#' @param x A `cd_service_utilization_filtered` object created by [filter_service_utilization()].
 #' @param ... not used
 #'
 #' @return A `ggplot2` plot object.
 #'
 #' @examples
 #' \dontrun{
-#' plot(filter_service_utilization_map(dat, indicator = 'opd'))
+#' plot(filter_service_utilization(dat, indicator = 'opd'))
 #' }
 #'
 #' @export
-plot.cd_service_utilization_map <- function(x, ...) {
+plot.cd_service_utilization_filtered <- function(x, ...) {
 
   indicator <- attr_or_abort(x, 'indicator')
 
@@ -69,12 +69,15 @@ plot.cd_service_utilization_map <- function(x, ...) {
   x %>%
     ggplot(aes(x = year)) +
     geom_point(aes(y = !!sym(labels_val$y1), color = labels_val$y1_label), size = 2) +
-    geom_line(aes(y = !!sym(labels_val$y1), color = labels_val$y1_label), size = 1) +
+    geom_line(aes(y = !!sym(labels_val$y1), color = labels_val$y1_label), linewidth = 1) +
     geom_point(aes(y = !!sym(labels_val$y2), color = labels_val$y2_label), size = 2) +
-    geom_line(aes(y = !!sym(labels_val$y2), color = labels_val$y2_label), size = 1) +
-    labs(title = labels_val$title, y = labels_val$y_label, x = 'Year') +
+    geom_line(aes(y = !!sym(labels_val$y2), color = labels_val$y2_label), linewidth = 1) +
     scale_y_continuous(limits = limits, breaks = breaks, expand = expansion(mult = c(0, 0.1))) +
-    cd_plot_theme()
+    cd_plot_theme(
+      title = labels_val$title,
+      x_axis = 'Year',
+      y_axis = labels_val$y_label
+    )
 }
 
 #' Plot Filtered Service Utilization Indicators
@@ -82,7 +85,7 @@ plot.cd_service_utilization_map <- function(x, ...) {
 #' Generates a faceted map of service utilization metrics across subnational units
 #' (admin level 1) for each available year. Uses spatial polygons filled by the selected indicator.
 #'
-#' @param x A `cd_service_utilization_filtered` object returned by [filter_service_utilization()].
+#' @param x A `cd_service_utilization_prepared` object returned by [prepare_mapping_service_utlization()].
 #' @param ... Additional arguments (currently unused).
 #'
 #' @return A `ggplot2` object representing faceted service utilization maps by year.
@@ -96,12 +99,11 @@ plot.cd_service_utilization_map <- function(x, ...) {
 #'
 #' @examples
 #' \dontrun{
-#' filtered <- filter_service_utilization(service_data, "UGA", indicator = "opd", plot_years = 2019:2022)
 #' plot(filtered)
 #' }
 #'
 #' @export
-plot.cd_service_utilization_filtered <- function(x, ...) {
+plot.cd_service_utilization_prepared <- function(x, ...) {
 
   indicator <- attr_or_abort(x, 'indicator')
 
@@ -128,7 +130,7 @@ plot.cd_service_utilization_filtered <- function(x, ...) {
       na.value = "grey90",
       name =  legend
     ) +
-    cd_plot_theme() +
+    cd_plot_theme(title = title) +
     labs(title = title) +
     theme(
       panel.border = element_blank(),

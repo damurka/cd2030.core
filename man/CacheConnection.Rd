@@ -31,8 +31,6 @@ from \code{.rds} files.
 
 \item{\code{country_iso}}{Get country ISO3 code.}
 
-\item{\code{default_national_estimates}}{Get the national rates.}
-
 \item{\code{adjusted_data}}{Gets adjusted data.}
 
 \item{\code{data_with_excluded_years}}{Get data with excluded years removed.}
@@ -151,7 +149,15 @@ from \code{.rds} files.
 
 \item{\code{inequality_admin1}}{Gets cached inequality data for admin level 1.}
 
-\item{\code{inequality_district}}{Gets cached inequality data for district level.
+\item{\code{inequality_district}}{Gets cached inequality data for district level.}
+
+\item{\code{mortality_summary}}{Creates the mortality summary.}
+
+\item{\code{mortality_ratios}}{Creates the mortality summary.}
+
+\item{\code{service_utilization_national}}{Gets adjusted data.}
+
+\item{\code{service_utilization_admin1}}{Gets adjusted data.
 Update a field (with change tracking)}
 }
 \if{html}{\out{</div>}}
@@ -168,13 +174,12 @@ Update a field (with change tracking)}
 \item \href{#method-CacheConnection-calculate_coverage}{\code{CacheConnection$calculate_coverage()}}
 \item \href{#method-CacheConnection-get_mapping_data}{\code{CacheConnection$get_mapping_data()}}
 \item \href{#method-CacheConnection-calculate_health_system_comparison}{\code{CacheConnection$calculate_health_system_comparison()}}
-\item \href{#method-CacheConnection-create_mortality_summary}{\code{CacheConnection$create_mortality_summary()}}
-\item \href{#method-CacheConnection-create_mortality_ratios}{\code{CacheConnection$create_mortality_ratios()}}
 \item \href{#method-CacheConnection-lbr_mean}{\code{CacheConnection$lbr_mean()}}
 \item \href{#method-CacheConnection-summarise_completeness_ratio}{\code{CacheConnection$summarise_completeness_ratio()}}
 \item \href{#method-CacheConnection-filter_mortality_summary}{\code{CacheConnection$filter_mortality_summary()}}
 \item \href{#method-CacheConnection-compute_service_utilization}{\code{CacheConnection$compute_service_utilization()}}
 \item \href{#method-CacheConnection-filter_service_utilization}{\code{CacheConnection$filter_service_utilization()}}
+\item \href{#method-CacheConnection-prepare_mapping_service_utlization}{\code{CacheConnection$prepare_mapping_service_utlization()}}
 \item \href{#method-CacheConnection-get_denominator}{\code{CacheConnection$get_denominator()}}
 \item \href{#method-CacheConnection-reactive}{\code{CacheConnection$reactive()}}
 \item \href{#method-CacheConnection-set_language}{\code{CacheConnection$set_language()}}
@@ -229,6 +234,7 @@ Update a field (with change tracking)}
 \item \href{#method-CacheConnection-get_base_indicator_coverage}{\code{CacheConnection$get_base_indicator_coverage()}}
 \item \href{#method-CacheConnection-get_filtered_threshold}{\code{CacheConnection$get_filtered_threshold()}}
 \item \href{#method-CacheConnection-get_high_performers}{\code{CacheConnection$get_high_performers()}}
+\item \href{#method-CacheConnection-get_regional_estimates}{\code{CacheConnection$get_regional_estimates()}}
 \item \href{#method-CacheConnection-clone}{\code{CacheConnection$clone()}}
 }
 }
@@ -372,33 +378,6 @@ Run coverage calculation using stored model parameters.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-create_mortality_summary"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-create_mortality_summary}{}}}
-\subsection{Method \code{create_mortality_summary()}}{
-Creates mortality summary
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$create_mortality_summary()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-create_mortality_ratios"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-create_mortality_ratios}{}}}
-\subsection{Method \code{create_mortality_ratios()}}{
-creates mortality ratios from the mortality summary
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$create_mortality_ratios(.data)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{.data}}{A \code{cd_mortality_summary} object}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-lbr_mean"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-lbr_mean}{}}}
 \subsection{Method \code{lbr_mean()}}{
@@ -414,14 +393,12 @@ generates the mean institutional livebirths
 \subsection{Method \code{summarise_completeness_ratio()}}{
 creates mortality ratios completeness summary
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$summarise_completeness_ratio(.data, indicator)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$summarise_completeness_ratio(indicator)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{.data}}{A \code{cd_mortality_ratio} object}
-
 \item{\code{indicator}}{The indicator to generate the summary}
 }
 \if{html}{\out{</div>}}
@@ -433,14 +410,12 @@ creates mortality ratios completeness summary
 \subsection{Method \code{filter_mortality_summary()}}{
 Return the appropriate summary based on the indicator type to plot.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$filter_mortality_summary(.data, indicator, map_years = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$filter_mortality_summary(indicator, map_years = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{.data}}{A \code{cd_mortality_summary} object.}
-
 \item{\code{indicator}}{Character. Indicator name.}
 
 \item{\code{map_years}}{the years to include in a map}
@@ -474,14 +449,37 @@ Computed service utilization for various indicators.
 \subsection{Method \code{filter_service_utilization()}}{
 Return the appropriate summary based on the indicator type to plot.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$filter_service_utilization(.data, indicator, map_years = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$filter_service_utilization(
+  admin_level,
+  indicator,
+  region = NULL
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{.data}}{A \code{cd_service_utilization} object.}
+\item{\code{admin_level}}{The admin level}
 
+\item{\code{indicator}}{Character. Indicator name.}
+
+\item{\code{region}}{the years to include in a map}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-prepare_mapping_service_utlization"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-prepare_mapping_service_utlization}{}}}
+\subsection{Method \code{prepare_mapping_service_utlization()}}{
+Return the appropriate summary based on the indicator type to plot.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$prepare_mapping_service_utlization(indicator, map_years = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
 \item{\code{indicator}}{Character. Indicator name.}
 
 \item{\code{map_years}}{the years to include in a map}
@@ -1445,6 +1443,25 @@ Get high-performing regions based on indicator and threshold.
 \item{\code{admin_level}}{Character. Level of aggregation ("national", "adminlevel_1", "district").}
 
 \item{\code{region}}{Character. Optional region filter.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-get_regional_estimates"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-get_regional_estimates}{}}}
+\subsection{Method \code{get_regional_estimates()}}{
+Get the regional estimate.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_regional_estimates(admin_level, region)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{admin_level}}{description}
+
+\item{\code{region}}{Character. .}
 }
 \if{html}{\out{</div>}}
 }

@@ -336,6 +336,18 @@ resolve_indicator_group <- function(indicators, group = c('auto', 'rmncah', 'vac
 #' @export
 get_all_indicators <- function() sort(list_c(get_indicator_groups()))
 
+#' @title Get Indicators for coverage calculation
+#' @description Flatten all indicators from all groups
+#' @return Character vector of all indicators
+#' @export
+get_coverage_indicators <- function() {
+  if (get_selected_group() == 'vaccine') {
+    return(get_all_indicators())
+  }
+
+  return(get_analysis_indicators())
+}
+
 #' @title Get Indicators excluding indicators without denominator
 #' @description Flatten all indicators from all groups
 #' @return Character vector of all indicators
@@ -344,10 +356,10 @@ get_analysis_indicators <- function()  {
   groups <- get_indicator_groups()
   indicators <- sort(list_c(groups[!names(groups) %in% c("ipd", "opd")]))
 
-  if (get_selected_group() == 'vaccine') {
-    indicators <- c(indicators,'dropout_penta13','dropout_penta3mcv1','dropout_penta1mcv1', 'dropout_measles12', 'undervax','zerodose')
+  indicators <- if (get_selected_group() == 'vaccine') {
+    c(indicators,'dropout_penta13','dropout_penta3mcv1','dropout_penta1mcv1', 'dropout_measles12', 'undervax','zerodose')
   } else if (get_selected_group() == 'rmncah') {
-    indicators <- indicators[!indicators %in% c('sba', "total_stillbirth", "stillbirth_f", "stillbirth_m", "maternal_deaths", "neonatal_deaths", 'under5_deaths', 'total_deaths')]
+    indicators[!indicators %in% c('sba', "total_stillbirth", "stillbirth_f", "stillbirth_m", "maternal_deaths", "neonatal_deaths", 'under5_deaths', 'total_deaths')]
   }
 
   indicators

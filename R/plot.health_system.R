@@ -72,17 +72,16 @@ plot.cd_health_system_comparison <- function(x,
       scale_y_continuous(limits = c(0, NA), expand = expansion(mult = c(0, 0.1))) +
       # scale_colour_manual(values = c('District' = '#045a8d', 'Linear fit' = 'black', 'Diagonale' = 'red')) +
       scale_colour_manual(values = c('Admin1 units' = '#045a8d', 'Linear fit' = 'black')) +
-      labs(
+      # theme_minimal(base_size = 12) +
+      cd_plot_theme(
         title = labels_prop$title,
-        x = labels_prop$x_label,
-        y = labels_prop$y_label,
+        x_axis = labels_prop$x_label,
+        y_axis = labels_prop$y_label,
         caption = paste0(
           paste0("R-squared = ", round(r2, 4)),
           if (!is.null(labels_prop$caption)) paste0("\n", labels_prop$caption) else ""
         )
       ) +
-      # theme_minimal(base_size = 12) +
-      cd_plot_theme() +
       theme(
         plot.title = element_text(face = "bold", hjust = 0.5),
         plot.caption = element_text(size = 9, color = "gray40"),
@@ -172,13 +171,12 @@ plot.cd_health_system_metric <- function(x,
       c('#2c7fb8', 'maroon', 'green4'),
       c('Admin 1evel 1 Density', nat_density, target_label)
     )) +
-    labs(
+    cd_plot_theme(
       title = lab_options$title,
-      x = NULL,
-      y = lab_options$ylab,
+      x_axis = NULL,
+      y_axis = lab_options$ylab,
       caption = lab_options$caption
     ) +
-    cd_plot_theme() +
     theme(
       plot.title = element_text(face = "bold", hjust = 0.5),
       plot.caption = element_text(size = 9, color = "gray40"),
@@ -240,6 +238,5 @@ plot_national_health_metric <- function(.data, metric = c('performance', 'densit
     coord_flip() +
     geom_text(aes(label = sprintf("%.1f", value)), hjust = -0.1, size = 4) +
     scale_y_continuous(limits = limits, breaks = breaks, expand = expansion(mult = c(0, 0.1))) +
-    labs(title = labels$title, y = NULL, x = NULL, caption = labels$caption) +
-    cd_plot_theme()
+    cd_plot_theme(title = labels$title, y_axis = NULL, x_axis = NULL, caption = labels$caption)
 }

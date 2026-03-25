@@ -31,6 +31,7 @@ Imports:
     khisr (>= 1.0.6),
     lubridate (>= 1.9.4),
     openxlsx (>= 4.2.8),
+    officer,
     purrr,
     RColorBrewer (>= 1.1.3),
     readr,

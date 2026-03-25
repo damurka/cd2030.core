@@ -113,7 +113,7 @@ equiplot_area <- function(.data, indicator,
   indicator_col <- paste0("r_", indicator_arg)
 
   .data %>%
-    select(year, level, contains(indicator_col)) %>%
+    select(year, level, !!sym(indicator_col)) %>%
     mutate(level = str_to_title(level)) %>%
     pivot_wider(names_from = level, values_from = !!sym(indicator_col)) %>%
     equiplot(
@@ -143,7 +143,7 @@ equiplot_education <- function(.data, indicator,
   indicator_col <- paste0("r_", indicator_arg)
 
   .data %>%
-    select(year, level, contains(indicator_col)) %>%
+    select(year, level, !!sym(indicator_col)) %>%
     mutate(
       level = case_match(
         level,
@@ -180,7 +180,7 @@ equiplot_wealth <- function(.data, indicator,
   indicator_col <- paste0("r_", indicator_arg)
 
   .data %>%
-    select(year, level, contains(indicator_col)) %>%
+    select(year, level, !!sym(indicator_col)) %>%
     mutate(level = str_to_title(level)) %>%
     pivot_wider(names_from = level, values_from = !!sym(indicator_col)) %>%
     equiplot(

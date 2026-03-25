@@ -1,0 +1,182 @@
+---
+title: "Sub-National Statistical Profile: `r params$adminlevel_1`"
+output: 
+  officedown::rdocx_document:
+    reference_docx: subnational-one-pager-template.docx
+    page_margins:
+      bottom: 0.5
+      top: 0.5
+      right: 0.5
+      left: 0.5
+      gutter: 0
+      header: 0
+      footer: 0
+    page_size:
+      height: 17.0
+      width: 22.0
+      orient: "landscape"
+      unit: "in"
+params:
+  cache: NULL
+  country: NULL
+  adminlevel_1: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  error = TRUE,
+  dpi=300
+)
+
+library(cd2030.core)
+library(dplyr)
+library(purrr)
+library(flextable)
+library(reactable)
+library(officedown)
+library(officer)
+
+cache <- params$cache
+adminlevel_1 <- params$adminlevel_1
+last_year <- robust_max(cache$data_years)
+
+# --- INITIALIZE POSTER LAYOUT (Landscape 22 x 17) ---
+layout <- cd_multicol_factory(
+  width = 22.0, 
+  height = 17.0, 
+  orient = "landscape", 
+  margins = c(0.5, 0.5, 0.5, 0.5)
+)
+
+my_multicol_start <- layout$start
+my_multicol_stop <- layout$stop
+```
+
+`r my_multicol_start()`
+
+```{r, fig.width=6.8, fig.height=7.0}
+# =========================================================
+# TOP LEFT: DATA QUALITY TABLE (Fixed Height)
+# =========================================================
+cache$calculate_overall_score("adminlevel_1", adminlevel_1) %>% 
+  plot(cache$data_years, width = 6.8)
+```
+
+`r run_columnbreak()`
+
+```{r, fig.width=6.8, fig.height=3.5}
+# =========================================================
+# TOP CENTER: PENTA 3 CHARTS
+# =========================================================
+# 1. Trend Line
+cache$calculate_coverage('adminlevel_1') %>% 
+  plot('penta3', denominator = cache$get_denominator('penta3'), year = last_year, region = adminlevel_1) +
+  theme(text = element_text(size = 12))
+```
+
+```{r, fig.width=6.8, fig.height=3.5}
+# 2. Bar Chart
+cache$get_filtered_coverage('penta3', 'adminlevel_1', adminlevel_1) %>% 
+  plot() +
+  cd_report_theme(base_size = 12) +
+  theme(plot.margin = margin(10, 0, 0, 0))
+```
+
+`r run_columnbreak()`
+
+```{r, fig.width=6.8, fig.height=3.5}
+# =========================================================
+# TOP RIGHT: INST DELIVERIES CHARTS
+# =========================================================
+# 1. Trend Line
+cache$calculate_coverage('adminlevel_1') %>% 
+  plot('instdeliveries', denominator = cache$get_denominator('instdeliveries'), year = last_year, region = adminlevel_1) +
+  theme(text = element_text(size = 12))
+```
+
+```{r, fig.width=6.8, fig.height=3.5}
+# 2. Bar Chart
+cache$get_filtered_coverage('instdeliveries', 'adminlevel_1', adminlevel_1) %>% 
+  plot() +
+  cd_report_theme(base_size = 12)
+```
+
+`r my_multicol_stop(widths = c(6.8, 6.8, 6.8), space = 0.3, sep = FALSE)`
+
+```{r, fig.width=21.0}
+# =========================================================
+# BOTTOM SECTION ("THIRD ROW"): COMBINED MASTER TABLE
+# =========================================================
+
+# 1. Extract Population Data
+cov <- cache$indicator_coverage_district %>% 
+  filter(adminlevel_1 == !!adminlevel_1, year == last_year) 
+
+pop_cov <- cov %>% select(district, totunder1_dhis2)
+
+pop_data <- cache$countdown_data %>%
+  filter(adminlevel_1 == !!adminlevel_1, year == last_year) %>%
+  distinct(district, total_pop, live_births) %>%
+  left_join(pop_cov, by = "district") %>%
+  mutate(across(where(is.numeric), ~ round(.x)))
+
+# 2. Extract Coverage Data
+anc1_cov <- paste0('cov_anc1_', cache$get_denominator('anc1'))
+births_cov <- paste0('cov_instlivebirths_', cache$get_denominator('instlivebirths'))
+penta1_cov <- paste0('cov_penta1_', cache$get_denominator('penta1'))
+penta3_cov <- paste0('cov_penta3_', cache$get_denominator('penta3'))
+mcv1_cov <- paste0('cov_measles1_', cache$get_denominator('measles1'))
+mcv3_cov <- paste0('cov_measles3_', cache$get_denominator('measles3'))
+
+cov_data <- cov %>% 
+  select(district, any_of(c(anc1_cov, births_cov, penta1_cov, penta3_cov, mcv1_cov, mcv3_cov))) %>% 
+  mutate(across(-district, ~ round(.x, digits = 1)))
+
+# 3. Merge both into a single Master Table
+master_table <- left_join(pop_data, cov_data, by = "district") %>%
+  arrange(district)
+
+# 4. Calculate proper totals and averages across all columns
+totals <- master_table %>%
+  summarise(
+    total_pop = sum(total_pop, na.rm = TRUE),
+    live_births = sum(live_births, na.rm = TRUE),
+    totunder1_dhis2 = sum(totunder1_dhis2, na.rm = TRUE),
+    across(any_of(c(anc1_cov, births_cov, penta1_cov, penta3_cov, mcv1_cov, mcv3_cov)), ~ mean(.x, na.rm = TRUE))
+  ) %>%
+  mutate(
+    across(where(is.numeric), ~ round(.x, digits = 1)),
+    district = !!adminlevel_1
+  )
+
+# 5. Render the combined table spanning the full width
+bind_rows(totals, master_table) %>%
+  relocate(district) %>% 
+  flextable() %>%
+  set_header_labels(
+    values = list2(
+      district = "District",
+      total_pop = "Population",
+      live_births = "Live Births",
+      totunder1_dhis2 = 'Under 1',
+      !!anc1_cov := "ANC 1",
+      !!births_cov := "Inst. Births",
+      !!penta1_cov := "Penta 1",
+      !!penta3_cov := "Penta 3",
+      !!mcv1_cov := "MCV 1",
+      !!mcv3_cov := "MCV 3"
+    )
+  ) %>%
+  fontsize(part = 'body', size = 11) %>%
+  bold(part = "header", bold = TRUE) %>%
+  fontsize(part = 'header', size = 11) %>%
+  bold(i = 1, part = "body") %>% 
+  bg(i = 1, part = "body", bg = "grey90") %>% 
+  autofit() %>%
+  # Forces the table to expand to exactly 100% of the available horizontal space
+  set_table_properties(layout = "autofit", width = 1)
+```

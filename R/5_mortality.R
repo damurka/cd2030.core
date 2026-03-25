@@ -48,7 +48,7 @@ create_mortality_ratios <- function(.data, mortality_data) {
 
   un_national %>%
     select(-contains('mean')) %>%
-    pivot_longer(cols = -year, names_to = 'indicator', values_to = 'values') %>%
+    pivot_longer(cols = -any_of(c('year', 'country', 'iso3')), names_to = 'indicator', values_to = 'values') %>%
     group_by(indicator) %>%
     filter(!is.na(values)) %>%
     slice_tail(n = 1) %>%

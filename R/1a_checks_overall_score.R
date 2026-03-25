@@ -257,23 +257,31 @@ process_metric_row <- function(.data, val_col, label_text, id_code) {
 #'
 #' @param x The score dataframe (class cs_overall_score)
 #' @param years Vector of years to display
-#' @param threshold The performance threshold (e.g. 90)
-#' @param i18n Translator object
-#' @param file (Optional) File path to save as PNG/HTML. If NULL, returns the object.
+#' @param title (Optional) Custom title for the table
+#' @param width (Optional) Total width in inches. If NULL, autofit is used.
 #' @param ... Additional arguments
 #'
 #' @export
-plot.cd_overall_score <- function(x, years = NULL, title = NULL, ...) {
+plot.cd_overall_score <- function(x, years = NULL, title = NULL, width = NULL, ...) {
   if (!is_integerish(years)) {
     cd_abort(c("x" = "{.arg years} cannot be null"))
   }
   threshold <- attr_or_abort(x, "threshold")
   main_title <- title %||% "Data Quality Metrics"
 
-  dt_html <- x %>%
+  num_years <- length(years)
+
+  base_font <- if (!is.null(width) && width < 5) {
+    8
+  } else {
+    9
+  }
+
+ ft <- x %>%
     as_grouped_data(groups = "type") %>%
     as_flextable() %>%
     font(fontname = "sans", part = "all") %>%
+    fontsize(size = base_font, part = "all") %>%
     bg(part = "all", bg = "white") %>%
     set_header_labels(no = "", `Data Quality Metrics` = main_title) %>%
     compose(
@@ -309,7 +317,30 @@ plot.cd_overall_score <- function(x, years = NULL, title = NULL, ...) {
       },
       part = "body"
     ) %>%
-    theme_vanilla() %>%
-    autofit() %>%
-  return(dt_html)
+   theme_vanilla()
+
+ if (!is.null(width)) {
+   if (width < 5) {
+     w_col1 <- 0.25
+     w_year <- 0.25
+   } else {
+     w_col1 <- 0.40
+     w_year <- 0.55
+   }
+
+   # Calculate remaining width for the text description column
+   w_col2 <- max(1.0, width - w_col1 - (num_years * w_year))
+
+   ft <- ft %>%
+     width(j = 1, width = w_col1) %>%
+     width(j = 2, width = w_col2) %>%
+     width(j = as.character(years), width = w_year) %>%
+     set_table_properties(layout = "fixed")
+ } else {
+   # FOR HTML/WEB: Let the browser organically size the columns
+   ft <- ft %>%
+     autofit()
+ }
+
+ return(ft)
 }

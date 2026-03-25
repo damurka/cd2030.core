@@ -44,14 +44,11 @@ plot.cd_mortality_summary <- function(x, indicator = c('mmr_inst', 'ratio_md_sb'
       aes(x = year, y = !!sym(indicator), label = round(!!sym(indicator), 1)),
       color = 'black', vjust = -0.5, hjust = -0.1, size = 3
     ) +
-    labs(
-      title = title,
-      x = NULL,
-      y = NULL
-    ) +
     scale_y_continuous(limits = limits, breaks = breaks, expand = expansion(mult = c(0, 0.05))) +
     scale_color_manual(values = set_names(c('forestgreen', 'orangered'), c('Regions', label))) +
-    cd_plot_theme()
+    cd_plot_theme(
+      title = title
+    )
 }
 
 
@@ -103,12 +100,11 @@ plot.cd_mortality_ratio_summarised <- function(x, ...) {
     geom_point(size = 13) +
     geom_text(aes(label = rat), color = "black", size = 4) +
     scale_y_continuous(limits = c(0, max_y), breaks = scales::pretty_breaks(n = 10), expand = expansion(mult = c(0,0.05))) +
-    labs(
+    cd_plot_theme(
       title = label_values$title,
-      x = label_values$x,
-      y = label_values$y
-    ) +
-    cd_plot_theme()
+      x_axis = label_values$x,
+      y_axis = label_values$y
+    )
 }
 
 #' Plot Filtered Institutional Mortality Rates
@@ -163,8 +159,7 @@ plot.cd_mortality_summary_filtered <- function(x, ...) {
         na.value = 'gray90',
         name = legend
       ) +
-      labs(title = title) +
-      cd_plot_theme() +
+      cd_plot_theme(title = title) +
       theme(
         panel.border = element_blank(),
         panel.spacing = unit(1, "lines"),

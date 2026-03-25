@@ -20,6 +20,7 @@
 #' @export
 compute_service_utilization <- function(.data, admin_level = c('national', 'adminlevel_1', 'district')) {
   check_cd_data(.data)
+  iso3 <- attr_or_abort(.data, 'iso3')
   admin_level <- arg_match(admin_level)
   admin_level_cols <- get_admin_columns(admin_level)
   admin_level_cols <- c(admin_level_cols, 'year')
@@ -60,7 +61,8 @@ compute_service_utilization <- function(.data, admin_level = c('national', 'admi
   new_tibble(
     result,
     class = 'cd_service_utilization',
-    admin_level = admin_level
+    admin_level = admin_level,
+    iso3 = iso3
   )
 }
 
@@ -70,12 +72,11 @@ compute_service_utilization <- function(.data, admin_level = c('national', 'admi
 #' Joins spatial data for subnational mapping and renames geometry for use with `ggplot2::geom_sf()`.
 #'
 #' @param .data A `cd_service_utilization` object returned by [compute_service_utilization()].
-#' @param country_iso Character. ISO3 country code.
 #' @param indicator Character. Service indicator to map, either `"ipd"` or `"opd"`. Defaults to `"ipd"`.
 #' @param plot_years Optional. Integer or vector of years to include.
 #' @param subnational_map Optional. A mapping data frame to link `NAME_1` from the shapefile to internal admin labels.
 #'
-#' @return A tibble of class `cd_service_utilization_filtered`, ready for faceted spatial plotting.
+#' @return A tibble of class `cd_service_utilization_prepared`, ready for faceted spatial plotting.
 #'
 #' @details
 #' This function:
@@ -88,18 +89,17 @@ compute_service_utilization <- function(.data, admin_level = c('national', 'admi
 #'
 #' @examples
 #' \dontrun{
-#' filtered <- filter_service_utilization(service_data, "UGA", indicator = "opd", plot_years = 2019:2022)
-#' plot(filtered)
+#' prepare_service_utlization_mapping(service_data, "UGA", indicator = "opd", plot_years = 2019:2022)
 #' }
 #'
 #' @export
-filter_service_utilization <- function(.data, country_iso, indicator = c('ipd', 'opd'), plot_years = NULL, subnational_map = NULL) {
+prepare_mapping_service_utlization <- function(.data, indicator = c('ipd', 'opd'), plot_years = NULL, subnational_map = NULL) {
 
   check_cd_class(.data, expected_class = 'cd_service_utilization')
-  check_required(country_iso)
   indicator <- arg_match(indicator)
   indicator <- paste0('mean_', indicator, '_under5')
   admin_level <- attr_or_abort(.data, 'admin_level')
+  country_iso <- attr_or_abort(.data, 'iso3')
 
   if (admin_level != 'adminlevel_1') {
     cd_abort(c('x' = 'only {.arg adminlevel_1} is supported for mapping.'))
@@ -123,7 +123,7 @@ filter_service_utilization <- function(.data, country_iso, indicator = c('ipd', 
 
   new_tibble(
     merged_data,
-    class = 'cd_service_utilization_filtered',
+    class = 'cd_service_utilization_prepared',
     indicator = indicator
   )
 }
@@ -138,23 +138,23 @@ filter_service_utilization <- function(.data, country_iso, indicator = c('ipd', 
 #' `"under5"` (proportion under 5), `"cfr"` (case fatality rate), or `"deaths"` (proportion of under-5 deaths).
 #' @param region Optional. A single region name to filter when data is subnational (`adminlevel_1` or `district`).
 #'
-#' @return A tibble of class `cd_service_utilization_map`, with an attached `indicator` attribute for plotting.
+#' @return A tibble of class `cd_service_utilization_filtered`, with an attached `indicator` attribute for plotting.
 #'
 #' @details
 #' This function:
 #' - Validates the `.data` class and `indicator` input
 #' - If data is subnational, filters it by the specified `region`
 #' - If data is national, ensures `region` is not provided
-#' - Returns a filtered tibble tagged with `cd_service_utilization_map` class for downstream plotting
+#' - Returns a filtered tibble tagged with `cd_service_utilization_filtered` class for downstream plotting
 #'
 #' @examples
 #' \dontrun{
 #' # Filter IPD indicator for Central region
-#' filtered <- filter_service_utilization_map(service_data, indicator = "ipd", region = "Central")
+#' filtered <- filter_service_utilization(service_data, indicator = "ipd", region = "Central")
 #' }
 #'
 #' @export
-filter_service_utilization_map <- function(.data, indicator = c('opd', 'ipd', 'under5', 'cfr', 'deaths'), region = NULL) {
+filter_service_utilization <- function(.data, indicator = c('opd', 'ipd', 'under5', 'cfr', 'deaths'), region = NULL) {
   check_cd_class(.data, expected_class = 'cd_service_utilization')
   indicator <- arg_match(indicator)
 
@@ -177,7 +177,7 @@ filter_service_utilization_map <- function(.data, indicator = c('opd', 'ipd', 'u
 
   new_tibble(
     data,
-    class = 'cd_service_utilization_map',
+    class = 'cd_service_utilization_filtered',
     indicator = indicator
   )
 }

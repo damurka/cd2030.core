@@ -2,49 +2,42 @@
 % Please edit documentation in R/6_service_utilization.R
 \name{filter_service_utilization}
 \alias{filter_service_utilization}
-\title{Filter and Prepare Service Utilization Data for Mapping}
+\title{Filter Service Utilization Data for a Specific Region and Indicator}
 \usage{
 filter_service_utilization(
   .data,
-  country_iso,
-  indicator = c("ipd", "opd"),
-  plot_years = NULL,
-  subnational_map = NULL
+  indicator = c("opd", "ipd", "under5", "cfr", "deaths"),
+  region = NULL
 )
 }
 \arguments{
-\item{.data}{A \code{cd_service_utilization} object returned by \code{\link[=compute_service_utilization]{compute_service_utilization()}}.}
+\item{.data}{A \code{cd_service_utilization} object created by \code{\link[=compute_service_utilization]{compute_service_utilization()}}.}
 
-\item{country_iso}{Character. ISO3 country code.}
+\item{indicator}{Character. The indicator to visualize. Options include \code{"opd"}, \code{"ipd"},
+\code{"under5"} (proportion under 5), \code{"cfr"} (case fatality rate), or \code{"deaths"} (proportion of under-5 deaths).}
 
-\item{indicator}{Character. Service indicator to map, either \code{"ipd"} or \code{"opd"}. Defaults to \code{"ipd"}.}
-
-\item{plot_years}{Optional. Integer or vector of years to include.}
-
-\item{subnational_map}{Optional. A mapping data frame to link \code{NAME_1} from the shapefile to internal admin labels.}
+\item{region}{Optional. A single region name to filter when data is subnational (\code{adminlevel_1} or \code{district}).}
 }
 \value{
-A tibble of class \code{cd_service_utilization_filtered}, ready for faceted spatial plotting.
+A tibble of class \code{cd_service_utilization_filtered}, with an attached \code{indicator} attribute for plotting.
 }
 \description{
-Filters a \code{cd_service_utilization} object by country, indicator, and year.
-Joins spatial data for subnational mapping and renames geometry for use with \code{ggplot2::geom_sf()}.
+Prepares a \code{cd_service_utilization} object for non-spatial plotting (e.g., time series)
+by filtering by administrative region and indicator type.
 }
 \details{
 This function:
 \itemize{
-\item Selects the under-five service indicator (\code{mean_opd_under5} or \code{mean_ipd_under5})
-\item Joins the appropriate admin level 1 shapefile using the specified country ISO
-\item Filters to specified \code{plot_years} if provided
-\item Renames the geometry column for compatibility with \code{geom_sf()}
+\item Validates the \code{.data} class and \code{indicator} input
+\item If data is subnational, filters it by the specified \code{region}
+\item If data is national, ensures \code{region} is not provided
+\item Returns a filtered tibble tagged with \code{cd_service_utilization_filtered} class for downstream plotting
 }
-
-Only \code{adminlevel_1} data is currently supported for mapping.
 }
 \examples{
 \dontrun{
-filtered <- filter_service_utilization(service_data, "UGA", indicator = "opd", plot_years = 2019:2022)
-plot(filtered)
+# Filter IPD indicator for Central region
+filtered <- filter_service_utilization(service_data, indicator = "ipd", region = "Central")
 }
 
 }

@@ -202,7 +202,6 @@ reference:
     contents:
       - compute_service_utilization
       - filter_service_utilization
-      - filter_service_utilization_map
       - prepare_private_sector_plot_data
       - get_excel_version
       - plot.cd_service_utilization_map

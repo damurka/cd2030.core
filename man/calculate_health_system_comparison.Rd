@@ -6,14 +6,8 @@
 \usage{
 calculate_health_system_comparison(
   .data,
-  sbr = 0.02,
-  nmr = 0.025,
-  pnmr = 0.024,
-  anc1survey = 0.98,
-  dpt1survey = 0.97,
-  survey_year = 2019,
-  twin = 0.015,
-  preg_loss = 0.03
+  admin1_coverage_data,
+  admin2_coverage_data
 )
 }
 \arguments{

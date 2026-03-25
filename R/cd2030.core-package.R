@@ -2,6 +2,7 @@
 #' @import dplyr
 #' @import flextable
 #' @import ggplot2
+#' @import officer
 #' @import rlang
 #' @import khisr
 #' @import tidyr
@@ -71,6 +72,7 @@
 #' @importFrom stringr str_starts
 #' @importFrom stringr str_to_lower
 #' @importFrom stringr str_to_title
+#' @importFrom stringr str_to_upper
 #' @importFrom tibble new_tibble
 #' @importFrom tibble tbl_sum
 ## usethis namespace: end

@@ -91,39 +91,20 @@ calculate_health_system_metrics <- function(.data, admin_level = c("national", "
 #'   comparison.
 #'
 #' @export
-calculate_health_system_comparison <- function(.data,
-                                               sbr = 0.02,
-                                               nmr = 0.025,
-                                               pnmr = 0.024,
-                                               anc1survey = 0.98,
-                                               dpt1survey = 0.97,
-                                               survey_year = 2019,
-                                               twin = 0.015,
-                                               preg_loss = 0.03) {
+calculate_health_system_comparison <- function(.data, admin1_coverage_data, admin2_coverage_data) {
   check_cd_data(.data)
 
-  last_year <- robust_max(.data$year)
+  last_year <- robust_max(admin1_coverage_data$year)
 
   # nat <- calculate_indicator_coverage(.data, un_estimates = un_est) %>%
   #   select(year, matches('^cov_(anc1|sba|instdeliveries|csection|pnc48|penta3)_(anc1|dhis2|penta1)$')) %>%
   #   rename_with(~ paste0('nat_', .x), .cols = starts_with('cov_'))
 
-  ad1_cov <- calculate_indicator_coverage(
-    .data,
-    admin_level = "adminlevel_1", sbr = sbr, nmr = nmr, pnmr = pnmr,
-    anc1survey = anc1survey, dpt1survey = dpt1survey,
-    survey_year = survey_year, twin = twin, preg_loss = preg_loss
-  ) %>%
+  ad1_cov <- admin1_coverage_data %>%
     select(year, adminlevel_1, matches("^cov_(anc1|sba|instdeliveries|csection|pnc48|penta3)_(anc1|dhis2|penta1)$")) %>%
     rename_with(~ paste0("ad1_", .x), .cols = starts_with("cov_"))
 
-  dis_cov <- calculate_indicator_coverage(
-    .data,
-    admin_level = "district",
-    sbr = sbr, nmr = nmr, pnmr = pnmr,
-    anc1survey = anc1survey, dpt1survey = dpt1survey,
-    survey_year = survey_year, twin = twin, preg_loss = preg_loss
-  ) %>%
+  dis_cov <- admin2_coverage_data %>%
     select(year, adminlevel_1, district, matches("^cov_(anc1|sba|instdeliveries|csection|pnc48|penta3)_(anc1|dhis2|penta1)$")) %>%
     rename_with(~ paste0("dis_", .x), .cols = starts_with("cov_"))
 
