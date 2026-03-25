@@ -180,9 +180,9 @@ CacheConnection <- R6::R6Class(
         cd_abort(c("x" = "One or more parameters is missing for {.fun calculate_inequality}"))
       }
 
-      reference_data <- if (admin_level == 'adminlevel_1' && is.null(region)) {
+      reference_data <- if ((admin_level == 'adminlevel_1'  || admin_level == 'district') && is.null(region)) {
         self$indicator_coverage_national
-      } else if ((admin_level == 'adminlevel_1' && !is.null(region)) || admin_level == 'district') {
+      } else if (admin_level == 'adminlevel_1' && !is.null(region)) {
         self$indicator_coverage_admin1
       }
 
@@ -357,7 +357,7 @@ CacheConnection <- R6::R6Class(
       private$update_field("outliers_district", NULL)
       private$update_field("district_outliers_summary", NULL)
 
-      private$update_field("ratios_summary", NULL)
+      private$update_field("adequacy_ratios", NULL)
     },
 
     #' @description Set adjusted data.
@@ -626,7 +626,7 @@ CacheConnection <- R6::R6Class(
           district_completeness     = self$district_completeness,
           outliers_summary          = self$outliers_national,
           district_outliers_summary = self$district_outliers_summary,
-          ratios_summary            = self$ratios_summary,
+          ratios_summary            = self$adequacy_ratios,
           labels                    = labels
         )
       } else {
@@ -1548,8 +1548,28 @@ CacheConnection <- R6::R6Class(
 
       # Recompute if empty OR threshold changed
       if (is.null(data)) {
-        data <- self$calculate_ratios_and_adequacy()
+        data <- self$adequacy_ratios %>%
+          calculate_ratios_summary(self$survey_estimates)
         private$update_field("ratios_summary", data)
+      }
+
+      data
+    },
+
+    #' @field adequacy_ratios Get cached district reporting rates.
+    adequacy_ratios = function(value) {
+      if (!missing(value)) {
+        cd_abort(c("x" = "Read-only field."))
+      }
+
+      private$depend("countdown_data")
+
+      data <- private$getter("adequacy_ratios", value)
+
+      # Recompute if empty OR threshold changed
+      if (is.null(data)) {
+        data <- self$calculate_ratios_and_adequacy()
+        private$update_field("adequacy_ratios", data)
       }
 
       data
@@ -1801,6 +1821,7 @@ CacheConnection <- R6::R6Class(
       district_outliers_summary = NULL,
       list_outlier_units = NULL,
       ratios_summary = NULL,
+      adequacy_ratios = NULL,
       overall_score = NULL,
       denominator_metrics = NULL,
       inequality_admin1 = NULL,

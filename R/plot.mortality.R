@@ -96,7 +96,7 @@ plot.cd_mortality_ratio_summarised <- function(x, ...) {
 
   data %>%
     ggplot(aes(x = ciratio, y = rat, colour = name)) +
-    geom_line(size = 2) +
+    geom_line(linewidth = 2) +
     geom_point(size = 13) +
     geom_text(aes(label = rat), color = "black", size = 4) +
     scale_y_continuous(limits = c(0, max_y), breaks = scales::pretty_breaks(n = 10), expand = expansion(mult = c(0,0.05))) +

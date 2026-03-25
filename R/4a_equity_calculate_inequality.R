@@ -34,18 +34,12 @@ calculate_inequality <- function(subnational_data,
     cd_abort(c('x' = 'Subnational data must be {.val adminlevel_1} or {.val district}.'))
   }
 
-  print(paste0(sub_admin_level, ' ', sub_region, ': ', ref_admin_level))
-
-  if (sub_admin_level == 'adminlevel_1' && is.null(sub_region) && ref_admin_level != 'national') {
-    cd_abort(c('x' = 'Reference data must be {.val national} when subnational data is {.val adminlevel_1} and {.val region} is null.'))
+  if (sub_admin_level %in% c('adminlevel_1', 'district')  && is.null(sub_region) && ref_admin_level != 'national') {
+    cd_abort(c('x' = 'Reference data must be {.val national} when subnational data is {.val adminlevel_1} or {.val district} and {.val region} is null.'))
   }
 
   if (sub_admin_level == 'adminlevel_1' && !is.null(sub_region) && ref_admin_level != 'adminlevel_1') {
     cd_abort(c('x' = 'Reference data must be {.val adminlevel_1} when subnational data is {.val adminlevel_1} and {.val region} is not null.'))
-  }
-
-  if (sub_admin_level == 'district' && ref_admin_level != 'adminlevel_1') {
-    cd_abort(c('x' = 'Reference data must be {.val adminlevel_1} when subnational data is {.val district}.'))
   }
 
   if (!is.null(sub_region)) {
@@ -58,7 +52,7 @@ calculate_inequality <- function(subnational_data,
   admin_level_col <- get_admin_columns(sub_admin_level, sub_region)
   admin_level_col <- c(admin_level_col, 'year')
 
-  level <- if (sub_admin_level == 'adminlevel_1' && !is.null(sub_region)) {
+  level <- if ((sub_admin_level == 'adminlevel_1' && !is.null(sub_region))) {
     'adminlevel_1'
   } else {
     'national'

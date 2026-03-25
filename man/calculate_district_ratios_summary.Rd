@@ -4,32 +4,11 @@
 \alias{calculate_district_ratios_summary}
 \title{Calculate District Adequacy Summary}
 \usage{
-calculate_district_ratios_summary(
-  .data,
-  ratio_pairs = list(ratioAP = c("anc1", "penta1"), ratioPP = c("penta1", "penta3"),
-    ratioOO = c("opv1", "opv3"), ratioPPcv = c("penta1", "pcv1"), ratioPR = c("penta1",
-    "rota1")),
-  adequate_range = c(1, 1.5),
-  region = NULL
-)
+calculate_district_ratios_summary(.data)
 }
 \arguments{
 \item{.data}{A data frame containing indicator data by district and year.
 The data frame should include all indicators specified in \code{ratio_pairs}.}
-
-\item{ratio_pairs}{A named list where each element represents a pair of indicators
-for ratio calculation. The default pairs are:
-\itemize{
-\item \code{"ratioAP"}: ANC1 to PENTA1 (i.e., \code{anc1/penta1})
-\item \code{"ratioPP"}: PENTA1 to PENTA3 (i.e., \code{penta1/penta3})
-\item \code{"ratioOO"}: OPV1 to OPV3 (i.e., \code{opv1/opv3})
-}}
-
-\item{adequate_range}{A numeric vector of length 2 that specifies the lower
-and upper bounds for adequacy. Ratios within this range will be flagged as adequate.
-Default is \code{c(1, 1.5)}.}
-
-\item{region}{Optional. Restrict analysis to one region (\code{adminlevel_1}).}
 }
 \value{
 A tibble of class \code{cd_district_ratios_summary}, containing the summary of

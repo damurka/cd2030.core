@@ -92,7 +92,7 @@ plot_comparison.cd_data <- function(
   plot <- data_filtered %>%
     ggplot(aes(x = !!sym(x_var), y = !!sym(y_var))) +
     geom_point(aes(colour = "district"), size = 1.5) +
-    geom_smooth(aes(color = "linear_fit"), method = "lm", formula = y ~ x, linetype = "solid", se = FALSE, size = 0.8) +
+    geom_smooth(aes(color = "linear_fit"), method = "lm", formula = y ~ x, linetype = "solid", se = FALSE, linewidth = 0.8) +
     geom_segment(aes(x = min_x, y = min_x, xend = max_x, yend = max_x, colour = "diagonale"),
       linetype = "dashed", size = 0.8
     ) +

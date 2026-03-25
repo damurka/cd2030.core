@@ -143,6 +143,8 @@ from \code{.rds} files.
 
 \item{\code{ratios_summary}}{Get cached district reporting rates.}
 
+\item{\code{adequacy_ratios}}{Get cached district reporting rates.}
+
 \item{\code{overall_score}}{Get cached national overall score.}
 
 \item{\code{denominator_metrics}}{Get cached national overall score.}
@@ -157,7 +159,13 @@ from \code{.rds} files.
 
 \item{\code{service_utilization_national}}{Gets adjusted data.}
 
-\item{\code{service_utilization_admin1}}{Gets adjusted data.
+\item{\code{service_utilization_admin1}}{Gets adjusted data.}
+
+\item{\code{health_system_comparison}}{coverage calculation using stored model parameters.}
+
+\item{\code{health_system_metrics_national}}{coverage calculation using stored model parameters.}
+
+\item{\code{health_system_metrics_admin1}}{coverage calculation using stored model parameters.
 Update a field (with change tracking)}
 }
 \if{html}{\out{</div>}}
@@ -173,7 +181,6 @@ Update a field (with change tracking)}
 \item \href{#method-CacheConnection-calculate_inequality}{\code{CacheConnection$calculate_inequality()}}
 \item \href{#method-CacheConnection-calculate_coverage}{\code{CacheConnection$calculate_coverage()}}
 \item \href{#method-CacheConnection-get_mapping_data}{\code{CacheConnection$get_mapping_data()}}
-\item \href{#method-CacheConnection-calculate_health_system_comparison}{\code{CacheConnection$calculate_health_system_comparison()}}
 \item \href{#method-CacheConnection-lbr_mean}{\code{CacheConnection$lbr_mean()}}
 \item \href{#method-CacheConnection-summarise_completeness_ratio}{\code{CacheConnection$summarise_completeness_ratio()}}
 \item \href{#method-CacheConnection-filter_mortality_summary}{\code{CacheConnection$filter_mortality_summary()}}
@@ -366,16 +373,6 @@ Run coverage calculation using stored model parameters.
 }
 \if{html}{\out{</div>}}
 }
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-calculate_health_system_comparison"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-calculate_health_system_comparison}{}}}
-\subsection{Method \code{calculate_health_system_comparison()}}{
-Run coverage calculation using stored model parameters.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$calculate_health_system_comparison()}\if{html}{\out{</div>}}
-}
-
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-lbr_mean"></a>}}

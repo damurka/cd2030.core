@@ -8,10 +8,7 @@ calculate_ratios_summary(
   .data,
   survey_coverage = c(anc1 = 0.98, penta1 = 0.97, penta3 = 0.89, opv1 = 0.97, opv3 =
     0.78, pcv1 = 0.97, rota1 = 0.96),
-  anc1_penta1_mortality = 1.07,
-  ratio_pairs = NULL,
-  adequate_range = c(1, 1.5),
-  region = NULL
+  anc1_penta1_mortality = 1.07
 )
 }
 \arguments{
@@ -25,23 +22,6 @@ Default is \code{c(anc1 = 0.98, penta1 = 0.97, penta3 = 0.89, opv1 = 0.97, opv3 
 \item{anc1_penta1_mortality}{A numeric multiplier applied specifically to the \code{"ratioAP"}
 ratio of \code{anc1} to \code{penta1}, to account for assumed mortality between \code{anc1} and \code{penta1}.
 Default is \code{1.07}.}
-
-\item{ratio_pairs}{A named list specifying indicator pairs for which ratios
-should be calculated. Format: \code{list("ratioName" = c("numerator", "denominator"))}.
-Default pairs include:
-\itemize{
-\item \code{"ratioAP"}: Ratio of \code{anc1} to \code{penta1}, adjusted with \code{anc1_penta1_mortality}.
-\item \code{"ratioPP"}: Ratio of \code{penta1} to \code{penta3}.
-\item \code{"ratioOO"}: Ratio of \code{opv1} to \code{opv3}.
-\item \code{"ratioPPcv"}: Ratio of \code{penta1} to \code{pcv1}.
-\item \code{"ratioPR"}: Ratio of \code{penta1} to \code{rota1}.
-}}
-
-\item{adequate_range}{A numeric vector of length 2 defining the acceptable
-range for adequacy checks. Ratios within this range are marked adequate;
-outside this range, inadequate. Default is \code{c(1, 1.5)}.}
-
-\item{region}{Optional. Restrict analysis to one region (\code{adminlevel_1}).}
 }
 \value{
 A \code{cd_ratios_summary} object, a data frame containing:

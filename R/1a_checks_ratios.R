@@ -15,18 +15,6 @@
 #' @param anc1_penta1_mortality A numeric multiplier applied specifically to the `"ratioAP"`
 #'   ratio of `anc1` to `penta1`, to account for assumed mortality between `anc1` and `penta1`.
 #'   Default is `1.07`.
-#' @param ratio_pairs A named list specifying indicator pairs for which ratios
-#'   should be calculated. Format: `list("ratioName" = c("numerator", "denominator"))`.
-#'   Default pairs include:
-#'   - `"ratioAP"`: Ratio of `anc1` to `penta1`, adjusted with `anc1_penta1_mortality`.
-#'   - `"ratioPP"`: Ratio of `penta1` to `penta3`.
-#'   - `"ratioOO"`: Ratio of `opv1` to `opv3`.
-#'   - `"ratioPPcv"`: Ratio of `penta1` to `pcv1`.
-#'   - `"ratioPR"`: Ratio of `penta1` to `rota1`.
-#' @param adequate_range A numeric vector of length 2 defining the acceptable
-#'   range for adequacy checks. Ratios within this range are marked adequate;
-#'   outside this range, inadequate. Default is `c(1, 1.5)`.
-#' @param region Optional. Restrict analysis to one region (`adminlevel_1`).
 #'
 #' @return A `cd_ratios_summary` object, a data frame containing:
 #'   - **`year`**: Year of each calculated ratio, with an additional row `"Expected Ratio"`
@@ -57,11 +45,12 @@
 #' @export
 calculate_ratios_summary <- function(.data,
                                      survey_coverage = c(anc1 = 0.98, penta1 = 0.97, penta3 = 0.89, opv1 = 0.97, opv3 = 0.78, pcv1 = 0.97, rota1 = 0.96),
-                                     anc1_penta1_mortality = 1.07,
-                                     ratio_pairs = NULL,
-                                     adequate_range = c(1, 1.5),
-                                     region = NULL) {
-  year <- NULL
+                                     anc1_penta1_mortality = 1.07) {
+  year = NULL
+
+  check_cd_class(.data, 'cd_ratios_and_adequacy')
+
+  ratio_pairs <- attr_or_null(.data, 'ratio_pairs')
 
   if (is.null(ratio_pairs)) {
     ratio_pairs <- default_ratio_pair()
@@ -104,7 +93,7 @@ calculate_ratios_summary <- function(.data,
       year = "Expected Ratio"
     )
 
-  data_summary <- calculate_ratios_and_adequacy(.data, ratio_pairs, adequate_range, region = region) %>%
+  data_summary <- .data %>%
     select(-starts_with("%")) %>%
     mutate(
       year = as.character(year)
@@ -123,15 +112,6 @@ calculate_ratios_summary <- function(.data,
 #'
 #' @param .data A data frame containing indicator data by district and year.
 #'   The data frame should include all indicators specified in `ratio_pairs`.
-#' @param ratio_pairs A named list where each element represents a pair of indicators
-#'   for ratio calculation. The default pairs are:
-#'   - `"ratioAP"`: ANC1 to PENTA1 (i.e., `anc1/penta1`)
-#'   - `"ratioPP"`: PENTA1 to PENTA3 (i.e., `penta1/penta3`)
-#'   - `"ratioOO"`: OPV1 to OPV3 (i.e., `opv1/opv3`)
-#' @param adequate_range A numeric vector of length 2 that specifies the lower
-#'   and upper bounds for adequacy. Ratios within this range will be flagged as adequate.
-#'   Default is `c(1, 1.5)`.
-#' @param region Optional. Restrict analysis to one region (`adminlevel_1`).
 #'
 #' @return A tibble of class `cd_district_ratios_summary`, containing the summary of
 #'   adequacy checks by year. Each column represents the percentage of districts
@@ -152,17 +132,10 @@ calculate_ratios_summary <- function(.data,
 #' }
 #'
 #' @export
-calculate_district_ratios_summary <- function(.data,
-                                              ratio_pairs = list(
-                                                "ratioAP" = c("anc1", "penta1"),
-                                                "ratioPP" = c("penta1", "penta3"),
-                                                "ratioOO" = c("opv1", "opv3"),
-                                                "ratioPPcv" = c("penta1", "pcv1"),
-                                                "ratioPR" = c("penta1", "rota1")
-                                              ),
-                                              adequate_range = c(1, 1.5),
-                                              region = NULL) {
-  data_summary <- calculate_ratios_and_adequacy(.data, ratio_pairs, adequate_range, region = region) %>%
+calculate_district_ratios_summary <- function(.data) {
+  check_cd_class(.data, 'cd_ratios_and_adequacy')
+
+  data_summary <- .data %>%
     select(-starts_with("Ratio"))
 
   new_tibble(data_summary, class = "cd_district_ratios_summary")
@@ -287,6 +260,9 @@ calculate_ratios_and_adequacy <- function(.data,
 
   new_tibble(
     data_summary,
-    class = "cd_ratios_and_adequacy"
+    class = "cd_ratios_and_adequacy",
+    ratio_pairs = ratio_pairs,
+    adequate_range = adequate_range,
+    region = region
   )
 }
