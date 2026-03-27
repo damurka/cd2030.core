@@ -1,0 +1,636 @@
+---
+title: "`r params$country`"
+output: 
+  officedown::rdocx_document:
+    reference_docx: synthesis-template.docx
+params:
+  cache: NULL
+  adminlevel_1: NULL
+  country: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  error = TRUE,
+  # fig.width=7, 
+  # fig.height=5, 
+  dpi=300
+)
+
+library(cd2030.core)
+library(dplyr)
+library(purrr)
+library(reactable)
+library(officedown)
+library(officer)
+
+cache <- params$cache
+data <- cache$countdown_data
+country <- cache$country
+data_years <- cache$data_years
+years_range <- paste0(min(data_years, na.rm = TRUE), '-', max(data_years, na.rm = TRUE))
+
+layout <- cd_multicol_factory(width = 13.93, height = 22.0, orient = "portrait", margins = c(0.5, 0.5, 0.5, 0.5))
+
+my_multicol_start <- layout$start
+my_multicol_stop <- layout$stop
+```
+
+### Análise dos indicadores de saúde reprodutiva, materna, neonatal, infantil e adolescente para `r years_range`: caderno de síntese
+### Countdown to 2030 em parceria com o Ministério da Saúde de `r country`, Global Financing Facility, OMS, WAHO e UNICEF
+
+> Nomes e afiliações da equipa analítica do país
+
+# PRINCIPAIS ACHADOS
+
+## 1. Avaliação da qualidade dos dados das unidades sanitárias: numeradores e denominadores
+
+**NUMERADORES:** Os dados das unidades sanitárias reportados rotineiramente são uma importante fonte de informação para os indicadores de saúde. Esses dados reportam eventos como vacinas administradas ou nados-vivos assistidos. Como acontece com qualquer dado, a qualidade é uma questão importante. Os dados são avaliados quanto à completude da notificação pelas unidades sanitárias, valores atípicos extremos e consistência interna. Ajustes apropriados são feitos antes do uso dos dados para calcular estatísticas.
+
+#### Resumo da qualidade dos dados reportados pelas unidades sanitárias, DHIS2, `r years_range`
+
+`r my_multicol_start()`
+
+```{r, fig.width=8}
+overall_score <- if (is.null(adminlevel_1)) {
+  cache$calculate_overall_score("national")
+} else {
+  cache$calculate_overall_score("adminlevel_1", region())
+}
+
+overall_score %>% plot(data_years, width = 8)
+```
+
+`r run_columnbreak()`
+
+::: {custom-style="Style1"}
+
+**Interpretação**
+
+- Qual é a qualidade global dos dados conforme avaliada pela pontuação anual global de qualidade dos dados?
+- Existe algum padrão de qualidade dos dados por ano que possa ser explicado?
+- Existem regiões ou outras unidades subnacionais particularmente problemáticas?
+- Existem formulários ou serviços de reporte (por exemplo, cuidados pré-natais, trabalho de parto e parto, imunização) que sejam problemáticos? Foi feito algum ajuste para reporte incompleto (indique o valor de k)?
+- Existe boa consistência entre os números reportados de ANC1 e penta1? Se não, qual poderia ser a explicação?
+
+:::
+
+`r my_multicol_stop(widths = c(8, 4), space = 0.2, sep = TRUE)`
+
+`r my_multicol_start()`
+
+Numerador: qualidade dos dados das unidades sanitárias - exemplo 1
+Explique a observação sobre a qualidade dos dados (um ponto)
+
+```{r, fig.width=6.3, fig.height=3.5}
+plot_comparison_anc1_penta1(data) +
+  cd_report_theme()
+
+run_columnbreak()
+```
+Numerador: qualidade dos dados das unidades sanitárias - exemplo 2
+Explique a observação sobre a qualidade dos dados (um ponto)
+
+```{r , fig.width=6.3, fig.height=3.5}
+plot(cache$calculate_district_reporting_rate(region = adminlevel_1)) +
+  cd_report_theme()
+```
+
+`r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
+
+**DENOMINADORES:** A cobertura dos serviços é definida como a população que recebeu o serviço (numerador) dividida pela população que necessita do serviço (denominador). Testamos quatro opções de denominadores usando nados-vivos institucionais e a cobertura vacinal de Penta-3 (Figuras 2c e 2d). A qualidade das projeções populacionais no DHIS2 é avaliada por meio da consistência ao longo do tempo e da comparação com as projeções das Nações Unidas. Dois denominadores também são derivados a partir de serviços quase universais, como ANC-1 e Penta-1. O denominador mais plausível é selecionado para gerar as outras estatísticas.
+
+`r my_multicol_start()`
+
+**Total de nados-vivos**
+```{r, fig.width=4.2}
+cache$denominator_metrics %>% 
+  plot(metric = "births") + cd_report_theme()
+```
+**Partos institucionais**
+```{r, fig.width=4.2}
+cache$get_filtered_indicator_coverage('instdeliveries', 'national') %>% 
+  plot() + cd_report_theme()
+```
+**Penta 3**
+```{r, fig.width=4.2}
+cache$get_filtered_indicator_coverage('penta3', 'national') %>% 
+  plot() + cd_report_theme()
+```
+
+`r my_multicol_stop(widths = c(4.243, 4.243, 4.243), space = 0.2, sep = FALSE)`
+
+::: {custom-style="Style1"}
+
+**Interpretação**
+
+- Até que ponto a projeção nacional de nascimentos está alinhada com a projeção das Nações Unidas?
+- Quais métodos de denominador tiveram melhor desempenho ao nível nacional para a cobertura de nados-vivos e para a cobertura de penta3? E ao nível subnacional para os dois indicadores?
+- Quais denominadores são selecionados para os indicadores maternos (instdeliveries) e de vacinação (penta3) nas análises de cobertura?
+
+:::
+
+`r run_pagebreak()`
+
+## 2. Tendências nacionais de cobertura: dados das unidades sanitárias e inquéritos
+
+#### Cuidados pré-natais: ANC4, visita precoce de ANC, primeiro trimestre da gravidez
+
+`r my_multicol_start()`
+
+**ANC 4**
+```{r, fig.width=6.3, fig.height=3}
+cache$get_filtered_coverage('anc4', 'national') %>%
+  plot() + cd_report_theme()
+```
+
+**Visita precoce de ANC**
+```{r, fig.width=6.3, fig.height=3}
+cache$get_filtered_coverage('anc_1trimester', 'national') %>%
+  plot() + cd_report_theme()
+```
+
+`r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
+
+::: {custom-style="Style1"}
+
+**Interpretação**
+
+- Os níveis e as tendências são plausíveis? Existe boa consistência entre os dados das unidades sanitárias e os dados de inquérito?
+
+:::
+
+#### Parto institucional
+
+`r my_multicol_start()`
+
+```{r, fig.width=6.3, fig.height=3}
+cache$get_filtered_coverage('instdeliveries', 'national') %>%
+  plot() + cd_report_theme()
+```
+
+::: {custom-style="Style1"}
+
+**Interpretação**
+
+- Os níveis e as tendências são plausíveis? Existe boa consistência entre os dados das unidades sanitárias e os dados de inquérito?
+- Como a cobertura se comporta em comparação com as metas? Esta é uma tendência positiva?
+
+:::
+
+`r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
+
+#### Imunização: Penta 3, Sarampo 1
+
+`r my_multicol_start()`
+
+```{r, fig.width=6.3, fig.height=3}
+cache$get_filtered_coverage('penta3', 'national') %>%
+  plot() + cd_report_theme()
+
+cache$get_filtered_coverage('measles1', 'national') %>%
+  plot() + cd_report_theme()
+
+run_columnbreak()
+```
+
+::: {custom-style="Style1"}
+
+**Interpretação**
+
+- Os níveis e as tendências são plausíveis? Existe boa consistência entre os dados das unidades sanitárias e os dados de inquérito? Como os resultados se comparam com as estimativas das Nações Unidas (WUENIC)?
+- Como a cobertura se comporta em comparação com as metas? Esta é uma tendência positiva?
+
+:::
+
+`r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
+
+#### Percentagem de distritos que atingem metas elevadas de cobertura
+
+`r my_multicol_start()`
+
+**ANC 4**
+```{r, fig.width=4.2, fig.height=3}
+cache$get_filtered_threshold('anc4', 'national') %>% 
+   plot() + cd_report_theme()
+```
+
+**Indicadores de saúde infantil**
+```{r, fig.width=4.2, fig.height=3}
+cache$get_filtered_threshold('vaccine', 'national') %>% 
+   plot() + cd_report_theme()
+```
+
+::: {custom-style="Style1"}
+
+**Interpretação**
+
+- A proporção de distritos que atingiram a meta variou ao longo do tempo?
+
+:::
+
+`r my_multicol_stop(widths = c(4.243,4.243,4.243), space = 0.2, sep = FALSE)`
+
+`r run_pagebreak()`
+
+## 3. Equidade
+
+#### Equidade por riqueza, educação e residência rural-urbana (a partir de inquéritos)
+
+**Partos institucionais**
+
+`r my_multicol_start()`
+
+```{r, fig.width=4.2}
+equiplot_area(cache$area_survey, 'instlivebirths') +
+  cd_report_theme()
+```
+
+```{r, fig.width=4.2}
+equiplot_wealth(cache$wiq_survey, 'instlivebirths') +
+  cd_report_theme()
+```
+
+```{r, fig.width=4.2}
+equiplot_education(cache$education_survey, 'instlivebirths') +
+  cd_report_theme()
+```
+
+`r my_multicol_stop(widths = c(4.243, 4.243, 4.243), space = 0.2, sep = FALSE)`
+
+**Terceira dose de pentavalente**
+
+`r my_multicol_start()`
+
+```{r, fig.width=4.2}
+equiplot_area(cache$area_survey, 'penta3') +
+  cd_report_theme()
+```
+
+```{r, fig.width=4.2}
+equiplot_wealth(cache$wiq_survey, 'penta3') +
+  cd_report_theme()
+```
+
+```{r, fig.width=4.2}
+equiplot_education(cache$education_survey, 'penta3') +
+  cd_report_theme()
+```
+
+`r my_multicol_stop(widths = c(4.243, 4.243, 4.243), space = 0.2, sep = FALSE)`
+
+::: {custom-style="Style1"}
+
+**Interpretação**
+
+- É possível observar diferenças sistemáticas, como grupos específicos que ficam consistentemente para trás?
+- Existem padrões observáveis de desigualdade (por exemplo, lineares, concentrados no topo ou na base)? Em caso afirmativo, que estratégias poderiam ser implementadas para reduzir essas desigualdades?
+- Todos os subgrupos estão a experimentar aumentos ou diminuições de cobertura/prevalência ao mesmo ritmo?
+- As desigualdades estão a mudar ao longo do tempo?
+
+:::
+
+#### Desigualdades geográficas: dados das unidades sanitárias
+
+`r my_multicol_start()`
+
+**Partos institucionais**
+```{r, fig.width=6.3}
+cache$get_filtered_inequality('instdeliveries', 'adminlevel_1') %>% 
+  plot() + cd_report_theme()
+```
+
+**Terceira dose de pentavalente**
+
+```{r, fig.width=6.3}
+cache$get_filtered_inequality('penta3', 'adminlevel_1') %>% 
+  plot() + cd_report_theme()
+```
+
+`r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
+
+`r my_multicol_start()`
+
+```{r, fig.width=3.1}
+cache$get_filtered_mapping_data('instdeliveries', 'adminlevel_1', 'Greens') %>% 
+  plot() + cd_report_theme()
+```
+
+```{r, fig.width=3.1}
+cache$get_filtered_mapping_data('penta3', 'adminlevel_1', 'Blues') %>% 
+  plot() + cd_report_theme()
+```
+
+::: {custom-style="Style1"}
+
+**Interpretação**
+
+- Como a cobertura evoluiu ao longo do tempo?
+- Houve alguma mudança na desigualdade? Os pontos de dados estão a tornar-se mais ou menos dispersos ao longo do tempo? As estimativas de MADM (Desvio Absoluto Médio em relação à Mediana) estão a mudar ao longo do período?
+- Quais regiões ou distritos apresentam o melhor e o pior desempenho?
+
+:::
+
+`r my_multicol_stop(widths = c(3.183, 3.183, 6.365), space = 0.2, sep = FALSE)`
+
+`r run_pagebreak()`
+
+## 4. Mortalidade institucional
+
+#### Tendências da mortalidade institucional (iMMR, iSBR)
+
+`r my_multicol_start()`
+
+**iMMR**
+```{r, fig.width=4.2}
+plot(cache$mortality_summary, indicator = 'mmr_inst') +
+  cd_report_theme()
+```
+
+**iSBR**
+```{r, fig.width=4.2}
+plot(cache$mortality_summary, indicator = 'sbr_inst') +
+  cd_report_theme()
+```
+
+::: {custom-style="Style1"}
+
+**Interpretação**
+
+- O que se pode dizer sobre o nível e a tendência? Isto está de acordo com o esperado com base nas estimativas das Nações Unidas?
+
+:::
+
+`r my_multicol_stop(widths = c(4.243,4.243,4.243), space = 0.2, sep = FALSE)`
+
+#### Mortalidade institucional por unidades admin1
+
+`r my_multicol_start()`
+
+```{r, fig.width=4.2}
+cache$filter_mortality_summary('mmr') %>% 
+  plot() %>%  cd_report_theme()
+```
+
+```{r, fig.width=4.2}
+cache$filter_mortality_summary('sbr') %>% 
+  plot() %>%  cd_report_theme()
+```
+
+::: {custom-style="Style1"}
+
+**Interpretação**
+
+- Quais são as 3 regiões com iMMR mais elevados e as regiões com iMMR e iSBR mais baixos? (nome e valor) Isto era esperado ou sugere problemas de qualidade dos dados?
+- (São regiões mais desenvolvidas onde se espera menor mortalidade, ou regiões menos desenvolvidas com baixa mortalidade, o que poderia indicar grande subnotificação de óbitos?)
+
+:::
+
+`r my_multicol_stop(widths = c(4.243,4.243,4.243), space = 0.2, sep = FALSE)`
+
+
+#### Métricas de qualidade dos dados
+
+Razão entre natimortos e mortes maternas nos dados das unidades sanitárias ao nível nacional
+
+`r my_multicol_start()`
+
+```{r, fig.width=6.3}
+plot(cache$mortality_summary, indicator = 'ratio_md_sb') +
+  cd_report_theme()
+```
+
+::: {custom-style="Style1"}
+
+**Interpretação**
+
+- Uma razão plausível está no intervalo de 5 a 25 natimortos por morte materna. A razão nacional está dentro do intervalo esperado?
+- O que se pode dizer sobre as 3 regiões com valores mais altos e as 3 com valores mais baixos?
+- Se a razão estiver acima de 25, isso pode significar que as mortes maternas estão mais subnotificadas do que os natimortos. Se estiver abaixo de 5, é provável que os natimortos estejam subnotificados. Se a razão estiver dentro do intervalo esperado, a notificação pode ser considerada boa se os níveis de mortalidade também forem plausíveis. Caso contrário, tanto as mortes maternas como os natimortos estão provavelmente subnotificados.
+
+:::
+
+`r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
+
+Completude estimada da notificação de mortes maternas e natimortos nas unidades sanitárias
+
+`r my_multicol_start()`
+
+```{r, fig.width=6.3}
+plot(cache$summarise_completeness_ratio, 'mmr') +
+  cd_report_theme()
+```
+
+```{r, fig.width=6.3}
+plot(cache$summarise_completeness_ratio, 'sbr') +
+  cd_report_theme()
+```
+
+`r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
+
+::: {custom-style="Style1"}
+
+**Interpretação**
+
+- Comente a completude da notificação do MMR e do SBR institucionais com base no MMR populacional e na razão comunidade/instituição.
+
+:::
+
+`r run_pagebreak()`
+
+## 5. Utilização dos serviços curativos para crianças doentes
+
+#### Utilização dos serviços ambulatórios e de internamento
+
+`r my_multicol_start()`
+
+```{r, fig.width=6.3}
+cache$filter_service_utilization('national', 'opd') %>% 
+  plot() + cd_report_theme()
+```
+
+```{r, fig.width=6.3}
+cache$filter_service_utilization('national', 'ipd') %>% 
+  plot() + cd_report_theme()
+
+run_columnbreak()
+```
+
+::: {custom-style="Style1"}
+
+**Interpretação**
+
+- Qual é o número de consultas OPD por criança por ano em 2024 e qual é a tendência ao longo do tempo? É inferior a 1 consulta por ano, o que sugeriria baixo acesso?
+- O que se pode dizer sobre a qualidade dos dados de consultas OPD e internamentos IPD? Existe consistência nos números reportados entre os anos?
+- Qual é o número de internamentos IPD por 100 crianças por ano entre 2019 e 2024? Está a aumentar? É inferior a 2 por 100 crianças menores de cinco anos, o que sugeriria baixo acesso?
+- O que se pode dizer sobre as consultas OPD e os internamentos por região/província em 2024? Qual é a magnitude da diferença entre as regiões com melhores e piores resultados?
+
+:::
+
+`r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
+
+#### Utilização dos serviços por região/província
+
+`r my_multicol_start()`
+
+```{r, fig.width=4.2}
+cache$filter_service_utilization('adminlevel_1', 'opd') %>% 
+  plot() + cd_report_theme()
+```
+
+```{r, fig.width=4.2}
+cache$filter_service_utilization('adminlevel_1', 'ipd') %>% 
+  plot() + cd_report_theme()
+```
+
+::: {custom-style="Style1"}
+
+**Interpretação**
+
+- Quais são as 3 regiões com as taxas OPD e IPD mais altas e as 3 com as mais baixas (nome da região e valores)? Alguma explicação? Possíveis problemas de qualidade dos dados?
+
+:::
+
+`r my_multicol_stop(widths = c(4.243,4.243,4.243), space = 0.2, sep = FALSE)`
+
+`r my_multicol_start()`
+
+#### Taxa de letalidade entre internamentos de menores de 5 anos
+
+```{r, fig.width=6.3}
+cache$filter_service_utilization('national', 'cfr') %>% 
+  plot() + cd_report_theme()
+```
+
+::: {custom-style="Style1"}
+
+**Interpretação**
+
+- Qual é a taxa de letalidade entre os internamentos de menores de cinco anos? Quais são as tendências?
+- O que isto diz sobre a qualidade dos cuidados?
+
+:::
+
+`r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
+
+`r run_pagebreak()`
+
+## 6. Progresso e desempenho do sistema de saúde
+
+#### Insumos do sistema de saúde
+
+`r my_multicol_start()`
+
+```{r, fig.width=6.3}
+plot_national_health_metric(cache$health_system_metrics_national, 'density') +
+  cd_report_theme()
+```
+
+::: {custom-style="Style1"}
+
+**Interpretação**
+
+- Nota sobre a completude dos dados (incluindo o setor privado)?
+- O que se pode dizer sobre os insumos do sistema nacional de saúde? Como se comparam com os valores de referência?
+Densidade de unidades sanitárias (referência: 2)
+Densidade de camas (referência: 25)
+Densidade da força de trabalho em saúde (referência: 23 – necessária para alcançar grandes progressos na redução da mortalidade materna e infantil com elevada assistência ao parto por pessoal qualificado (OMS).
+44,5 por 10.000 habitantes para alcançar a cobertura universal de saúde
+
+:::
+
+`r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
+
+#### Insumos do sistema de saúde por região/província
+
+`r my_multicol_start()`
+
+```{r, fig.width=4.2}
+cache$health_system_metrics_admin1 %>%
+  plot(indicator = 'ratio_fac_pop',
+       national_score = cache$health_system_metrics_national$ratio_fac_pop,
+       target = 2) +
+  cd_report_theme()
+```
+
+```{r, fig.width=4.2}
+cache$health_system_metrics_admin1 %>%
+  plot(indicator = 'ratio_hos_pop',
+       national_score =  cache$health_system_metrics_national$ratio_hos_pop,
+       target = 2) +
+  cd_report_theme()
+```
+
+```{r, fig.width=4.2}
+cache$health_system_metrics_admin1 %>%
+  plot(indicator = 'ratio_hstaff_pop',
+       national_score =  cache$health_system_metrics_national$ratio_hstaff_pop,
+       target = 23) +
+  cd_report_theme()
+```
+
+`r my_multicol_stop(widths = c(4.243,4.243,4.243), space = 0.2, sep = FALSE)`
+
+::: {custom-style="Style1"}
+
+---
+
+- Como varia o número de unidades sanitárias entre as unidades admin1?
+- Como varia a densidade hospitalar entre as unidades admin1?
+- Como varia a densidade da força de trabalho em saúde entre as unidades admin1?
+- Quais são as unidades admin1 com melhor e pior desempenho? São consistentes em todos os indicadores?
+
+---
+
+:::
+
+#### Resultados do sistema de saúde por insumos ao nível subnacional
+
+`r my_multicol_start()`
+
+```{r, fig.width=6.3}
+cache$health_system_comparison %>% 
+  plot(indicator = 'cov_instdeliveries_hstaff',
+       denominator = cache$maternal_denominator) +
+  cd_report_theme()
+```
+
+::: {custom-style="Style1"}
+
+**Interpretação**
+
+- A interpretação deve concentrar-se em saber se o quadro obtido é válido. Isso pode ser sugerido se os resultados confirmarem algumas expectativas, como regiões mais desenvolvidas a apresentarem melhor desempenho.
+- Descreva as regiões/províncias com pior e melhor desempenho.
+
+:::
+
+`r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
+
+#### Setor privado e serviços RMNCAH
+
+`r my_multicol_start()`
+
+```{r, fig.width=4.2}
+prepare_private_sector_plot_data(cache$sector_national_estimates, cache$csection_national_estimates) %>% 
+  plot() + cd_report_theme()
+```
+
+```{r, fig.width=4.2}
+prepare_private_sector_plot_data(cache$sector_area_estimates, cache$csection_area_estimates) %>% 
+  plot() + cd_report_theme()
+```
+
+::: {custom-style="Style1"}
+
+**Interpretação**
+
+- Quais indicadores apresentam maior participação do setor privado?
+- Existem diferenças entre áreas rurais e urbanas?
+
+:::
+
+`r my_multicol_stop(widths = c(4.243,4.243,4.243), space = 0.2, sep = FALSE)`

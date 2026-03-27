@@ -25,9 +25,9 @@ knitr::opts_chunk$set(
   message = FALSE,
   warning = FALSE,
   error = TRUE,
-  fig.width=7, 
-  fig.height=5, 
-  dpi=1200
+  fig.width = 7,
+  fig.height = 5,
+  dpi = 1200
 )
 
 library(cd2030.core)
@@ -41,8 +41,7 @@ cache <- params$cache
 adminlevel_1 <- params$adminlevel_1
 
 data <- cache$countdown_data
-country <- cache$country
-threshold <- cache$performance_threshold
+data_years <- cache$data_years
 ```
 
 ## 1. Health Facility Data Quality Assessment {-}
@@ -52,21 +51,25 @@ threshold <- cache$performance_threshold
 Routinely reported health facility data are an important data source for health
 indicators. The data are reported by health facilities on events such as immunizations
 given, or live births attended. As with any data, quality is an issue. Data are checked
-to consider completeness of reporting by health facilities, identify extreme outliers
-and internal consistency. 
+to consider completeness of reporting by health facilities, identify extreme outliers,
+and internal consistency.
 
-### Data Quality Sumary Table
+### Data Quality Summary Table
 
 ```{r}
-years <- unique(data$year)
+overall_score <- if (is.null(adminlevel_1)) {
+  cache$calculate_overall_score("national")
+} else {
+  cache$calculate_overall_score("adminlevel_1", region())
+}
 
-plot(cache$overall_score, years = )
+overall_score %>% plot(data_years, width = 8)
 ```
 
 ### District Reporting Rates
 
 ```{r district-reporting-rates}
-plot(calculate_district_reporting_rate(data, threshold, region = adminlevel_1)) +
+plot(cache$calculate_district_reporting_rate(region = adminlevel_1)) +
   cd_report_theme()
 ```
 
@@ -80,23 +83,22 @@ Make a statement about the data quality overall score and trend: is it good, is 
 
 Interpret the completeness of reporting data: is it good, going in the right direction?
 
-Interpret the data on extreme outliers: is it good , are districts doing well?
+Interpret the data on extreme outliers: is it good, are districts doing well?
 
-Interpret the consistency of the reported data for ANC1 and penta1 at the national level; same for penta1 and penta3
+Interpret the consistency of the reported data for ANC1 and penta1 at the national level; same for penta1 and penta3.
 
-Interpret the data on the percent of districts that have ANC1 to penta1 ratios within the expected range; same for penta1 to penta3
+Interpret the data on the percent of districts that have ANC1 to penta1 ratios within the expected range; same for penta1 to penta3.
 
 ---
 
 :::
 
-
 \newpage
 
-### ANC1/Penta1 and Penta/Penta3 Ratios
+### ANC1/Penta1 and Penta1/Penta3 Ratios
 
 ```{r}
-plot(calculate_ratios_summary(data, region = adminlevel_1)) +
+plot(cache$ratios_summary) +
   cd_report_theme()
 ```
 
@@ -116,9 +118,9 @@ plot_comparison_penta1_penta3(data) +
 
 ---
 
-Interpret the consistency of the reported data for ANC1 and penta1 at the national level; same for penta1 and penta3
+Interpret the consistency of the reported data for ANC1 and penta1 at the national level; same for penta1 and penta3.
 
-Interpret the data on the percent of districts that have ANC1 to penta1 ratios within the expected range; same for penta1 to penta3
+Interpret the data on the percent of districts that have ANC1 to penta1 ratios within the expected range; same for penta1 to penta3.
 
 ---
 
