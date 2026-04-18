@@ -95,6 +95,12 @@ CacheConnection <- R6::R6Class(
           }
         )
       }
+
+      # private$update_field("indicator_coverage_national", NULL)
+      # private$update_field("indicator_coverage_admin1", NULL)
+      # private$update_field("indicator_coverage_district", NULL)
+      # private$update_field("reporting_rate_national", NULL)
+      # private$update_field("reporting_rate_national", NULL)
     },
 
     #' Load data from disk.
@@ -147,17 +153,12 @@ CacheConnection <- R6::R6Class(
       }
 
       rates <- self$national_estimates
-      rates <- if (admin_level %in% c("adminlevel_1", "district") && !is.null(region)) {
-        self$get_regional_estimates(admin_level, region)
-      } else {
-        self$national_estimates
-      }
-
       calculate_indicator_coverage(
         .data = self$adjusted_data,
         admin_level = admin_level,
         derivation_population = self$derivation_population,
         un_estimates = self$un_estimates,
+        survey_estimates = self$regional_survey,
         region = region,
         sbr = rates$sbr,
         nmr = rates$nmr,
@@ -408,7 +409,7 @@ CacheConnection <- R6::R6Class(
         cd_abort(c("x" = "Survey must be a numeric vector."))
       }
       if (!all(factors %in% names(value))) {
-        missing <- setdiff(factor, names(value))
+        missing <- setdiff(factors, names(value))
         cd_warn(c("!" = "Survey values are missing the following {.val {missing}}"))
       }
       private$update_field("survey_estimates", value)
@@ -1155,6 +1156,27 @@ CacheConnection <- R6::R6Class(
         cd_abort(c("x" = "Analysis values must be a list."))
       }
       private$update_field("national_estimates", value)
+    },
+
+    #' @field admin1_estimates Gets national estimates.
+    admin1_estimates = function(value) {
+      if (missing(value)) {
+        private$depend("regional_survey")
+        private$depend("national_estimates")
+        survey <- self$regional_survey
+        rate <- self$national_estimates
+        return(get_national_rates(self$regional_survey,
+                                  'adminlevel_1',
+                                  rate$anc1,
+                                  rate$penta1,
+                                  rate$sbr,
+                                  rate$nmr,
+                                  rate$pnmr,
+                                  rate$twin_rate,
+                                  rate$preg_loss))
+      }
+
+      cd_abort(c("x" = "{.field admin1_estimates} is readonly."))
     },
 
     #' @field survey_years Get survey years.

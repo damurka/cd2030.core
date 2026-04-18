@@ -47,6 +47,7 @@ calculate_indicator_coverage <- function(.data,
                                                                    'un_population', 'un_births', 'un_under1'),
 
                                          un_estimates = NULL,
+                                         survey_estimates = NULL,
 
                                          anc1survey = 0.98,
                                          dpt1survey = 0.97,
@@ -64,14 +65,12 @@ calculate_indicator_coverage <- function(.data,
   check_scalar_integerish(survey_year)
   derivation_population <- arg_match(derivation_population)
   admin_level <- arg_match(admin_level)
-  admin_level_cols <- get_admin_columns(admin_level, region)
-  admin_level_cols <- c(admin_level_cols, 'year')
   country_iso <- attr_or_abort(.data, 'iso3')
 
   population <- calculate_populations(.data,
     admin_level = admin_level,
     derivation_population = derivation_population,
-    un_estimates = un_estimates, survey_year = survey_year,
+    un_estimates = un_estimates, survey_estimates = survey_estimates, survey_year = survey_year,
     anc1survey = anc1survey, dpt1survey = dpt1survey,
     region = region, sbr = sbr, nmr = nmr, pnmr = pnmr,
     twin = twin, preg_loss = preg_loss
@@ -138,11 +137,48 @@ filter_indicator_coverage <- function(.data, indicator, survey_coverage = 88, su
   )
 }
 
+#' @export
+get_national_rates <- function(.data,
+                               admin_level = c("national", "adminlevel_1", "district"),
+                               anc1survey = 0.98,
+                               dpt1survey = 0.97,
+                               sbr = 0.02,
+                               nmr = 0.025,
+                               pnmr = 0.024,
+                               twin = 0.015,
+                               preg_loss = 0.03) {
+  check_survey_data(.data, admin_level)
+  admin_level <- arg_match(admin_level)
+  admin_level_cols <- get_admin_columns(admin_level)
+
+  est <- .data %>%
+    select(year, any_of(admin_level_cols), starts_with('r_')) %>%
+    rename_with(~ str_remove(.x, 'r_'), starts_with('r_')) %>%
+    select(year, any_of(admin_level_cols), penta1, anc1, any_of(c('pnmr', 'nmr', 'sbr'))) %>%
+    rename(dpt1survey = penta1, anc1survey = anc1) %>%
+    pivot_longer(cols = -c(year, any_of(admin_level_cols))) %>%
+    filter(!is.na(value)) %>%
+    slice_max(year, n = 1, with_ties = F, by = c(admin_level_cols, name)) %>%
+    arrange(admin_level_cols) %>%
+    select(-year) %>%
+    pivot_wider(names_from = name, values_from = value) %>%
+    mutate(
+      pnmr = if_else(is.na(pnmr), !!pnmr, pnmr/1000),
+      nmr = if_else(is.na(nmr), !!nmr, nmr/1000),
+      sbr = if_else(is.na(sbr), !!sbr, sbr/1000),
+      preg_loss = if_else(is.na(preg_loss), !!preg_loss, preg_loss/1000),
+      anc1survey = if_else(is.na(anc1survey), !!anc1survey, anc1survey/100),
+      dpt1survey = if_else(is.na(dpt1survey), !!dpt1survey, dpt1survey/100),
+      twin = if_else(is.na(twin), !!twin, twin/1000),
+    )
+}
+
 calculate_populations <- function(.data,
                                   admin_level = c("national", "adminlevel_1", "district"),
                                   derivation_population = c('totbirths_dhis2', 'totlivebirths_dhis2', 'totunder1_dhis2', 'totpop_dhis2',
                                                             'un_population', 'un_births', 'un_under1'),
                                   un_estimates = NULL,
+                                  survey_estimates = NULL,
 
                                   anc1survey = 0.98,
                                   dpt1survey = 0.97,
@@ -171,7 +207,15 @@ calculate_populations <- function(.data,
   group_vars <- get_admin_columns(admin_level, region)
 
   output_data <- national_population %>%
-    inner_join(indicator_numerator, by = c(group_vars, "year")) %>%
+    inner_join(indicator_numerator, by = c(group_vars, "year"))
+
+  if (admin_level != 'national') {
+    est <- get_national_rates(survey_estimates, admin_level, anc1survey, dpt1survey, sbr, nmr, pnmr, twin, preg_loss)
+    output_data <- output_data %>%
+      left_join(est, join_by(adminlevel_1))
+  }
+
+  output_data <- output_data %>%
     mutate(
       # DHIS2 Estimates
       totpreg_dhis2 = totlivebirths_dhis2 * (1 - 0.5 * twin) / ((1 - sbr) * (1 - preg_loss)),
