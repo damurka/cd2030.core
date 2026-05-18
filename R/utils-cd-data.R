@@ -101,7 +101,7 @@ is_maternal_indicator <- function(indicator) {
 #' @export
 get_population_column <- function(indicator, denominator) {
   indicator <- arg_match(indicator, get_analysis_indicators())
-  denominator <- arg_match(denominator, c("dhis2", "anc1", "penta1", "penta1derived"))
+  denominator <- arg_match(denominator, c("dhis2", "anc1", "penta1", "penta1derived", "anc1derived"))
   population <- case_match(
     indicator,
     c("anc1", "anc_1trimester", "anc4", "ipt2", "ipt3", "ifa90", "syphilis_test", "hiv_test") ~ "totpreg",

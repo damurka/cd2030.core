@@ -509,8 +509,8 @@ calculate_populations <- function(.data,
   survey_year <- survey_year - 1
   survey_year <- robust_max(c(survey_year, min(output_data$year, na.rm = TRUE)), 2025)
   population_col <- sym(derivation_population)
-  penta1_estimates <- c('totinftpenta_penta1', 'totinftmeasles_penta1', 'totmeasles2_penta1', 'totlbirths_penta1',
-                        'totbirths_penta1', 'totdeliv_penta1', 'totpreg_penta1')
+  penta1_estimates <- c('totinftpenta_anc1', 'totinftmeasles_anc1', 'totmeasles2_anc1', 'totlbirths_anc1',
+                        'totbirths_anc1', 'totdeliv_anc1', 'totpreg_anc1')
 
   # ---------------------------------------------------------
   # STEPS 1-3: Calculate National Envelope (The Ultimate Fallback)
@@ -525,13 +525,23 @@ calculate_populations <- function(.data,
     filter(year == survey_year) %>%
     pull(!!population_col)
 
+  nat_survey_df <- nat_summary %>%
+    filter(year == survey_year) %>%
+    select(nat_survey_pop = !!population_col, any_of(penta1_estimates)) %>%
+    rename_with(~ paste0(.x, '_survey'), any_of(penta1_estimates))
+
   nat_summary <- nat_summary %>%
     rename(nat_pop = !!population_col) %>%
+    cross_join(nat_survey_df) %>%
     mutate(
       nat_survey_change = (nat_pop - nat_survey_pop) / nat_survey_pop * 100,
-      across(any_of(penta1_estimates), ~ .x * (1 + nat_survey_change/100), .names = 'nat_{.col}derived')
+      across(
+        any_of(paste0(penta1_estimates, '_survey')), 
+        ~ .x * (1 + nat_survey_change/100), 
+        .names = 'nat_{str_remove(.col, "_survey")}derived'
+      )
     ) %>%
-    select(-any_of(penta1_estimates))
+    select(-any_of(penta1_estimates), -ends_with('_survey'))
 
   # ---------------------------------------------------------
   # Process Subnational (Admin 1 & Admin 2) or National
@@ -556,16 +566,21 @@ calculate_populations <- function(.data,
 
     admin1_survey_df <- admin1_summary %>%
       filter(year == survey_year) %>%
-      select(adminlevel_1, admin1_survey_pop = !!population_col)
+      select(adminlevel_1, admin1_survey_pop = !!population_col, any_of(penta1_estimates)) %>%
+      rename_with(~ paste0(.x, '_survey'), any_of(penta1_estimates))
 
     admin1_summary <- admin1_summary %>%
       rename(admin1_pop = !!population_col) %>%
       left_join(admin1_survey_df, by = "adminlevel_1") %>%
       mutate(
         admin1_survey_change = (admin1_pop - admin1_survey_pop) / admin1_survey_pop * 100,
-        across(any_of(penta1_estimates), ~ .x * (1 + admin1_survey_change/100), .names = 'admin1_{.col}derived')
+        across(
+          any_of(paste0(penta1_estimates, '_survey')), 
+          ~ .x * (1 + admin1_survey_change/100), 
+          .names = 'admin1_{str_remove(.col, "_survey")}derived'
+        )
       ) %>%
-      select(-any_of(penta1_estimates))
+      select(-any_of(penta1_estimates), -ends_with('_survey'))
 
     # Extract Local Subnational Survey Population (for the specific unit)
     local_survey_df <- output_data %>%
@@ -593,7 +608,7 @@ calculate_populations <- function(.data,
         population_yoy_change = (!!population_col - lag(!!population_col)) / lag(!!population_col) * 100,
         population_survey_change = (!!population_col - local_survey_pop) / local_survey_pop * 100
       ) %>%
-      ungroup() %>%
+      ungroup() %>% glimpse() %>% print(n = 300) %>%
       mutate(
         across(
           any_of(paste0("admin1_", penta1_estimates, "derived")),
@@ -604,16 +619,16 @@ calculate_populations <- function(.data,
       select(-starts_with("nat_"), -starts_with("admin1_"), -envelope_pop, -use_admin1, -local_survey_pop)
   }
 
-  # ---------------------------------------------------------
+  # --------------------------------------------------------------
   # Calculate Final Coverage Percentages for Derived Denominators
   # ---------------------------------------------------------
   output_data <- output_data %>%
     mutate(
       across(any_of(get_coverage_indicators()), ~ {
-        pop_col <- get_population_column(cur_column(), "penta1derived")
+        pop_col <- get_population_column(cur_column(), "anc1derived")
         den <- get(pop_col)
         ifelse(den > 0, .x / den * 100, NA_real_)
-      }, .names = 'cov_{.col}_penta1derived')
+      }, .names = 'cov_{.col}_anc1derived')
     )
 
   if (get_selected_group() == 'vaccine') {
