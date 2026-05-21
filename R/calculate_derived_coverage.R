@@ -19,28 +19,30 @@
 #' calculate_derived_coverage(dhis_data, "penta1", 2019)
 #'
 #' @export
-calculate_derived_coverage <- function(.data, indicator) {
+calculate_derived_coverage <- function(.data, indicator, derivation = c('anc1', 'penta1')) {
   check_cd_population(.data)
   indicator <- arg_match(indicator, get_all_indicators())
+  derivation <- arg_match(derivation)
 
   population <- attr_or_abort(.data, 'population')
   admin_level <- attr_or_abort(.data, 'admin_level')
   region <- attr_or_null(.data, 'region')
 
   group_vars <- get_admin_columns(admin_level, region)
-  penta1_denom <- get_population_column(indicator, 'anc1')
-  penta1_derived_denom <- paste0(penta1_denom, 'derived')
-  cov_penta1 <- paste0('cov_', indicator, '_anc1')
-  cov_anc1 <- paste0('cov_', indicator, '_anc1')
+  penta1_denom <- get_population_column(indicator, derivation)
+  penta1_derived_denom_diff <- paste0(penta1_denom, 'derived_diff')
+  penta1_derived_denom_exp <- paste0(penta1_denom, 'derived_exp')
+  cov_penta1 <- paste0('cov_', indicator, '_', derivation)
+  cov_anc1 <- paste0('cov_', indicator, '_', derivation)
   cov_dhis2 <- paste0('cov_', indicator, '_dhis2')
   cov_un <- paste0('cov_', indicator, '_un')
-  cov_penta1_derived <- paste0(cov_penta1, 'derived')
+  cov_penta1_derived_diff <- paste0(cov_penta1, 'derived_diff')
+  cov_penta1_derived_exp <- paste0(cov_penta1, 'derived_exp')
 
   data <- .data %>%
-    select(any_of(c(group_vars, 'year', population, 'population_yoy_change',
-                    'population_survey_change', 'population_proportion', indicator,
-                    penta1_denom, penta1_derived_denom,
-                    cov_penta1, cov_anc1, cov_dhis2, cov_un, cov_penta1_derived)))
+    select(any_of(c(group_vars, 'year', population, 'population_growth_change_exp', 'population_growth_change_diff', 
+                   'population_proportion', indicator, penta1_denom, penta1_derived_denom_diff, penta1_derived_denom_exp,
+                    cov_penta1, cov_anc1, cov_dhis2, cov_un, cov_penta1_derived_diff, cov_penta1_derived_exp)))
 
   # Return final tibble tagged with admin level
   new_tibble(
