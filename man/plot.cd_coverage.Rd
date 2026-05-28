@@ -23,7 +23,7 @@
 
 \item{indicator}{Character string specifying the indicator (e.g., 'penta1').}
 
-\item{denominator}{Character string specifying the denominator ('penta1', 'anc1', 'dhis2', 'penta1derived').}
+\item{denominator}{Character string specifying the denominator ('penta1', 'anc1', 'dhis2', 'penta1derived', 'anc1derived').}
 
 \item{year}{Integer representing the year to plot.}
 

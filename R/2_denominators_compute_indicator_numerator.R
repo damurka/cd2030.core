@@ -30,7 +30,8 @@
 #' @export
 compute_indicator_numerator <- function(.data,
                                         admin_level = c("national", "adminlevel_1", "district"),
-                                        region = NULL) {
+                                        region = NULL,
+                                        show_district = TRUE) {
   year <- NULL
 
   # Validate inputs
@@ -38,7 +39,7 @@ compute_indicator_numerator <- function(.data,
 
   # Define grouping variables based on admin_level
   admin_level <- arg_match(admin_level)
-  group_vars <- get_admin_columns(admin_level, region)
+  group_vars <- get_admin_columns(admin_level, region, show_district)
 
   # Extract indicators from `indicator_groups` attribute
   all_indicators <- get_all_indicators()

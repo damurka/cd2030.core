@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{cd_derived_coverage}(
   x,
-  region = NULL,
+  year = NULL,
   title = NULL,
   x_label = NULL,
   y_label = NULL,
@@ -17,8 +17,7 @@
 \arguments{
 \item{x}{A \code{cd_coverage_trends} object.}
 
-\item{region}{(Optional) A character string of the region or district name.
-Required for subnational data, must be \code{NULL} for national data.}
+\item{year}{(optional) An integer for the year to plot the dot plot}
 
 \item{title}{(Optional) A scalar character string to override the default plot title. Defaults to \code{NULL}.}
 
@@ -30,6 +29,9 @@ Required for subnational data, must be \code{NULL} for national data.}
 default legend labels (e.g., \code{list(penta1derived = "Custom Penta1")}).}
 
 \item{...}{Additional arguments passed to \code{ggplot2} layers (not used).}
+
+\item{region}{(Optional) A character string of the region or district name.
+Required for subnational data, must be \code{NULL} for national data.}
 }
 \value{
 A \code{ggplot} object showing coverage trends over time.
@@ -38,21 +40,4 @@ A \code{ggplot} object showing coverage trends over time.
 This function generates a line plot comparing traditional (\code{coverage_old})
 and derived (\code{coverage_new}) coverage estimates over time for a single indicator.
 It supports both national and subnational views.
-}
-\examples{
-\dontrun{
-# Basic usage (uses all defaults)
-generate_coverage_data(dhis_data, "penta1", 2019) \%>\%
-  plot(region = "Nairobi")
-
-# Customizing title, axes, and specific legend labels
-generate_coverage_data(dhis_data, "penta1", 2019) \%>\%
-  plot(
-    region = "Nairobi",
-    title = "Nairobi: Penta1 Coverage Trends",
-    x_label = "Reporting Year",
-    legend_labels = list(penta1derived = "Penta1 (Derived Estimate)")
-  )
-}
-
 }

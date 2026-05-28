@@ -22,7 +22,7 @@ calculate_health_system_metrics <- function(.data, admin_level = c("national", "
   metrics <- .data %>%
     filter(year == last_year) %>%
     slice(1, .by = district) %>%
-    select(adminlevel_1, district, year, -month, all_of(allvars)) %>%
+    select(adminlevel_1, district, year, -month, all_of(c(allvars))) %>%
     mutate(
       across(
         all_of(allvars),
@@ -48,10 +48,17 @@ calculate_health_system_metrics <- function(.data, admin_level = c("national", "
       ratio_phys_pop = (total_physicians / total_pop) * 10000,
       ratio_nursemidwife_pop = (total_nursemidwife / total_pop) * 10000,
       ratio_bed_pop = (total_beds / total_pop) * 10000,
+
       ratio_opd_pop = total_opd / total_pop,
       ratio_ipd_pop = (total_ipd / total_pop) * 100,
       ratio_opd_u5_pop = total_opd_u5 / total_pop_u5,
       ratio_ipd_u5_pop = (total_ipd_u5 / total_pop_u5) * 100,
+
+      perc_opd_under5 = 100 * total_opd_u5 /total_opd,
+      perc_ipd_under5 = 100 * total_ipd_u5 / total_ipd,
+
+      ratio_opd_ipd = total_opd/total_ipd,
+      ratio_opd_u5_ipd_u5 = total_opd_u5/total_ipd_u5,
 
       # Scores
       score_infrastructure = (((ratio_fac_pop / 2) + (ratio_bed_pop / 25)) / 2) * 100,
@@ -61,7 +68,7 @@ calculate_health_system_metrics <- function(.data, admin_level = c("national", "
       score_workforce = if_else(score_workforce > 100, 100, score_workforce),
       score_utilization = if_else(score_utilization > 100, 100, score_utilization),
       score_total = (score_infrastructure + score_workforce + score_utilization) / 3,
-      score_total = if_else(score_total > 100, 100, score_total)
+      score_total = if_else(score_total > 100, 100, score_total),
     )
 
   new_tibble(

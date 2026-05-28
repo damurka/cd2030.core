@@ -8,7 +8,7 @@ filter_indicator_coverage(
   .data,
   indicator,
   survey_coverage = 88,
-  survey_year = 2024
+  survey_year = NULL
 )
 }
 \arguments{

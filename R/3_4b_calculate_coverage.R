@@ -111,7 +111,7 @@ calculate_coverage <- function(.data,
 #' @export
 filter_coverage <- function(.data,
                             indicator,
-                            denominator = c("dhis2", "anc1", "penta1", "penta1derived"),
+                            denominator = c("dhis2", "anc1", "penta1", "penta1derived", "anc1derived"),
                             region = NULL) {
   . <- value <- estimates <- NULL
 

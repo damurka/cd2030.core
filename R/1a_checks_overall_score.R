@@ -210,14 +210,17 @@ calculate_overall_score1 <- function(average_reporting_rate,
   final_data <- bind_rows(row_1a, row_1b, row_1c, row_2a, row_2b, row_ratios) %>%
     relocate(no, `Data Quality Metrics`)
 
+  # Dynamic Year Selection: Targets any column name that is fully numeric
+  year_cols <- grep("^\\d+$", names(final_data), value = TRUE)
+
   mean_row <- final_data %>%
     filter(no %in% ids_to_average) %>%
-    summarise(across(starts_with("20"), ~ mean(.x, na.rm = TRUE))) %>%
+    summarise(across(all_of(year_cols), ~ mean(.x, na.rm = TRUE))) %>%
     mutate(
       `Data Quality Metrics` = default_lbl$section$score,
       no = "4"
     )
-
+  
   combined <- final_data %>%
     bind_rows(mean_row) %>%
     arrange(no)

@@ -2,16 +2,20 @@
 title: "Data Adjustment for `r params$country` --- Countdown Analysis"
 date: "`r format(Sys.Date(), '%B %d, %Y')`"
 output: 
-  html_document:
-    toc: true
-    toc_float: true
-    theme: cerulean
-    highlight: kate
   officedown::rdocx_document:
     reference_docx: report-template.docx
-  pdf_document:
-    toc: false
-    latex_engine: lualatex
+    page_size:
+      width: !expr 11906 / 1440
+      height: !expr 16838 / 1440
+      orient: "portrait"
+    page_margins:
+      bottom: 1
+      top: 1
+      right: !expr 1417 / 1440
+      left: !expr 1417 / 1440
+      header: !expr 708 / 1440
+      footer: !expr 708 / 1440
+      gutter: 0
 params:
   cache: NULL
   country: NULL
@@ -27,7 +31,7 @@ knitr::opts_chunk$set(
   error = TRUE,
   fig.width=7, 
   fig.height=5, 
-  dpi=1200
+  dpi=300
 )
 
 library(cd2030.core)
@@ -61,18 +65,18 @@ adjustments <- data %>%
 ### Health facility data adjustment: Numerators - reported live births
 
 ```{r}
-plot(adjustments,
-     indicator = 'instlivebirths',
-     title = 'Comparison of number of live births before and after adjustments for completness and outliers') +
+adjustments %>% 
+  filter_adjustment_value('instlivebirths') %>% 
+  plot(title = 'Comparison of number of live births before and after adjustments for completness and outliers') +
   cd_report_theme()
 ```
 
 ### Health facility data adjustment: Numerators - reported Penta 1 doses
 
 ```{r}
-plot(adjustments,
-     indicator = 'penta1',
-     title = 'Comparison of number of penta1 vaccination before and after adjustments for completness and outliers') +
+adjustments %>% 
+  filter_adjustment_value('penta1') %>% 
+  plot(title = 'Comparison of number of penta1 vaccination before and after adjustments for completness and outliers') +
   cd_report_theme()
 ```
 

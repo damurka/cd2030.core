@@ -24,7 +24,7 @@
 \item{y_label}{(Optional) A scalar character string to override the default y-axis label.}
 
 \item{category_labels}{(Optional) A named list to override the x-axis bar categories
-(keys: \code{dhis2}, \code{anc1}, \code{penta1}, \code{un}, \code{penta1derived}).}
+(keys: \code{dhis2}, \code{anc1}, \code{penta1}, \code{un}, \code{penta1derived}, \code{anc1derived}).}
 
 \item{legend_labels}{(Optional) A named list to override the legend keys
 (keys: \code{facility}, \code{survey}).}

@@ -11,7 +11,7 @@
 #'
 #' @export
 calculate_threshold <- function(.data,
-                                denominator = c('dhis2', 'anc1', 'penta1', 'penta1derived'),
+                                denominator = c('dhis2', 'anc1', 'penta1', 'penta1derived', 'anc1derived'),
                                 indicator = c('anc4', 'instdeliveries', 'vaccine', 'dropout')) {
   check_cd_indicator_coverage(.data)
   indicator <- arg_match(indicator)
@@ -75,7 +75,7 @@ calculate_threshold <- function(.data,
 #' @export
 filter_high_performers <- function(.data,
                                    indicator,
-                                   denominator = c('dhis2', 'anc1', 'penta1', 'penta1derived'),
+                                   denominator = c('dhis2', 'anc1', 'penta1', 'penta1derived', 'anc1derived'),
                                    threshold = 90) {
   check_cd_indicator_coverage(.data)
   indicator <- arg_match(indicator, get_analysis_indicators())

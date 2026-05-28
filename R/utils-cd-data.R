@@ -101,7 +101,8 @@ is_maternal_indicator <- function(indicator) {
 #' @export
 get_population_column <- function(indicator, denominator) {
   indicator <- arg_match(indicator, get_analysis_indicators())
-  denominator <- arg_match(denominator, c("dhis2", "anc1", "penta1", "penta1derived_diff",  "penta1derived_exp", "anc1derived_diff", "anc1derived_exp"))
+  # denominator <- arg_match(denominator, c("dhis2", "anc1", "penta1", "penta1derived_diff",  "penta1derived", "anc1derived_diff", "anc1derived"))
+  denominator <- arg_match(denominator, c("dhis2", "anc1", "penta1",  "penta1derived", "anc1derived"))
   population <- case_match(
     indicator,
     c("anc1", "anc_1trimester", "anc4", "ipt2", "ipt3", "ifa90", "syphilis_test", "hiv_test") ~ "totpreg",
@@ -126,6 +127,7 @@ get_population_column <- function(indicator, denominator) {
 #'
 #' @param admin_level A string. One of `"national"`, `"adminlevel_1"`, or `"district"`.
 #' @param region Optional. If provided, must be used only with `admin_level = "adminlevel_1"`.
+#' @param show_district Optional. If show_district is true `adminlevel_1` will include `district` column
 #'
 #' @return A character vector of column names to use in grouping. Returns:
 #' - `NULL` for `"national"`
@@ -146,7 +148,7 @@ get_population_column <- function(indicator, denominator) {
 #' #> c("adminlevel_1", "district")
 #'
 #' @export
-get_admin_columns <- function(admin_level, region = NULL) {
+get_admin_columns <- function(admin_level, region = NULL, show_district = TRUE) {
 
   admin_level <- arg_match(admin_level, c("national", "adminlevel_1", "district"))
   if (admin_level != 'adminlevel_1' && !is.null(region)) {
@@ -155,7 +157,7 @@ get_admin_columns <- function(admin_level, region = NULL) {
 
   switch(admin_level,
     national = NULL,
-    adminlevel_1 = if (!is.null(region)) c("adminlevel_1", 'district') else 'adminlevel_1',
+    adminlevel_1 = if (!is.null(region) && show_district) c("adminlevel_1", 'district') else 'adminlevel_1',
     district = c("adminlevel_1", "district")
   )
 }

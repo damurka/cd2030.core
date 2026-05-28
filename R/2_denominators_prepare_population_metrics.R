@@ -42,7 +42,8 @@
 prepare_population_metrics <- function(.data,
                                        admin_level = c("national", "adminlevel_1", "district"),
                                        un_estimates = NULL,
-                                       region = NULL) {
+                                       region = NULL,
+                                       show_district = TRUE) {
   totlivebirths_dhis2 = total_pop = under5_pop = under1_pop = live_births =
     total_births = women15_49 = pop_rate = adminlevel_1 = district = year =
     pop_dhis2 = livebirths_dhis2 = totpop_dhis2 = totlivebirths_dhis2 = iso3 = NULL
@@ -52,7 +53,7 @@ prepare_population_metrics <- function(.data,
 
   # Define grouping variables based on the administrative level
   admin_level <- arg_match(admin_level)
-  group_vars <- get_admin_columns(admin_level, region)
+  group_vars <- get_admin_columns(admin_level, region, show_district)
   group_vars <- c(group_vars, "year")
 
   check_un_estimates_data(un_estimates, admin_level)

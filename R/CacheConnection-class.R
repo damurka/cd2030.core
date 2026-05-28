@@ -53,6 +53,9 @@ init_CacheConnection <- function(rds_path = NULL, countdown_data = NULL, data_pa
 CacheConnection <- R6::R6Class(
   "CacheConnection",
   public = list(
+    #' @field data_version Define the current data version.
+    data_version = '1.0.0',
+
     #' @description Initialize a CacheConnection instance.
     #' @param rds_path Path to the RDS file (can be NULL).
     #' @param countdown_data Countdown data of class `cd_data`.
@@ -76,8 +79,19 @@ CacheConnection <- R6::R6Class(
       private$.in_memory_data$rds_path <- rds_path
       private$.in_memory_data$survey_source <- NA
 
+      private$.in_memory_data$version <- self$data_version
+
       if (!is.null(rds_path)) {
         self$load_from_disk()
+
+        loaded_version <- private$.in_memory_data$version
+        if (is.null(loaded_version) || loaded_version != self$data_version) {
+          # Version is old or missing. Wipe the computed tables!
+          private$invalidate_cached_data()
+          
+          # Upgrade the version stamp to the current version so it doesn't trigger again
+          private$update_field("version", self$data_version)
+        }
       }
 
       if (is.null(rds_path)) {
@@ -95,12 +109,6 @@ CacheConnection <- R6::R6Class(
           }
         )
       }
-
-      # private$update_field("indicator_coverage_national", NULL)
-      # private$update_field("indicator_coverage_admin1", NULL)
-      # private$update_field("indicator_coverage_district", NULL)
-      # private$update_field("reporting_rate_national", NULL)
-      # private$update_field("reporting_rate_national", NULL)
     },
 
     #' Load data from disk.
@@ -145,7 +153,8 @@ CacheConnection <- R6::R6Class(
     #' @description Run coverage calculation using stored model parameters.
     #' @param admin_level Administrative level ("adminlevel_1" or "district").
     #' @param region Optional region filter.
-    calculate_indicator_coverage = function(admin_level, region = NULL) {
+    #' @param show_district Option whether to show the district column
+    calculate_indicator_coverage = function(admin_level, region = NULL, show_district = TRUE) {
       admin_level <- arg_match(admin_level, c("national", "adminlevel_1", "district"))
 
       if (!self$check_inequality_params) {
@@ -160,6 +169,7 @@ CacheConnection <- R6::R6Class(
         un_estimates = self$un_estimates,
         survey_estimates = self$regional_survey,
         region = region,
+        show_district = show_district,
         sbr = rates$sbr,
         nmr = rates$nmr,
         pnmr = rates$pnmr,
@@ -342,23 +352,7 @@ CacheConnection <- R6::R6Class(
     #' @param value A `cd_data` object.
     set_countdown_data = function(value) {
       private$setter("countdown_data", value, check_cd_data)
-
-      private$update_field("reporting_rate_national", NULL)
-      private$update_field("reporting_rate_admin1", NULL)
-      private$update_field("reporting_rate_district", NULL)
-      private$update_field("district_reporting_rate", NULL)
-
-      private$update_field("completeness_national", NULL)
-      private$update_field("completeness_admin1", NULL)
-      private$update_field("completeness_district", NULL)
-      private$update_field("district_completeness", NULL)
-
-      private$update_field("outliers_national", NULL)
-      private$update_field("outliers_admin1", NULL)
-      private$update_field("outliers_district", NULL)
-      private$update_field("district_outliers_summary", NULL)
-
-      private$update_field("adequacy_ratios", NULL)
+      private$invalidate_cached_data()
     },
 
     #' @description Set adjusted data.
@@ -658,11 +652,95 @@ CacheConnection <- R6::R6Class(
         )
       }
     },
+    #' @description Calculate Service DQA Summary (Wrapper).
+    #' @param admin_level Administrative level ("national" or "adminlevel_1").
+    #' @param region Optional region name (required if admin_level is "adminlevel_1").
+    #' @param labels Optional custom labels for the summary table.
+    calculate_service_dqa_summary = function(admin_level = c("national", "adminlevel_1"), 
+                                             region = NULL, 
+                                             labels = NULL) {
+      
+      admin_level <- arg_match(admin_level)
+      
+      if (admin_level == "adminlevel_1" && is.null(region)) {
+        cd_abort(c("x" = "{.arg region} must be provided for adminlevel_1"))
+      }
+      if (admin_level == "national" && !is.null(region)) {
+        cd_abort(c("x" = "{.arg region} must be null for national admin_level"))
+      }
+
+      if (admin_level == "national") {
+        # Pass cached national aggregates directly to the standalone function
+        generate_service_dqa_summary(
+          average_reporting_rate    = self$reporting_rate_national,
+          district_reporting_rate   = self$district_reporting_rate,
+          completeness_national     = self$completeness_national,
+          district_completeness     = self$district_completeness,
+          outliers_summary          = self$outliers_national,
+          district_outliers_summary = self$district_outliers_summary,
+          service_utilization       = self$service_utilization_national,
+          threshold                 = self$performance_threshold,
+          labels                    = labels
+        )
+      } else {
+        
+        # 1. Base Metrics: Filter the cached Admin1 datasets
+        avg_rr <- self$reporting_rate_admin1 %>%
+          filter(adminlevel_1 == region)
+        
+        comp_sum <- self$completeness_admin1 %>%
+          filter(adminlevel_1 == region)
+
+        out_sum <- self$outliers_admin1 %>%
+          filter(adminlevel_1 == region)
+
+        # 2. District Metrics: 
+        # These are aggregations. We cannot filter the national aggregate.
+        # We must re-calculate them specifically for the selected region.
+        dst_rr   <- self$calculate_district_reporting_rate(region)
+        dst_comp <- self$calculate_district_completeness_summary(region)
+        dst_out  <- self$calculate_district_outlier_summary(region)
+        
+        # 3. Service Utilization: 
+        # Calculate specifically for the selected region.
+        srv_util <- self$service_utilization_admin1 %>% 
+          filter(adminlevel_1 == region)
+
+        # Execute the standalone function with the region-specific data
+        generate_service_dqa_summary(
+          average_reporting_rate    = avg_rr,
+          district_reporting_rate   = dst_rr,
+          completeness_national     = comp_sum,
+          district_completeness     = dst_comp,
+          outliers_summary          = out_sum,
+          district_outliers_summary = dst_out,
+          service_utilization       = srv_util,
+          threshold                 = self$performance_threshold,
+          labels                    = labels
+        )
+      }
+    },
+    #' Generate Service Utilization Admin 1 Data
+    #'
+    #' @param metric_type Character. Either "opd" or "ipd".
+    #' @return A tibble with class `cd_service_util_admin1`.
+    #' @export
+    generate_admin1_service_utilization = function(metric_type = c("opd", "ipd")) {
+      metric_type <- arg_match(metric_type)
+      self$service_utilization_admin1 %>% 
+        generate_admin1_service_utilization(metric_type)
+    },
+    #' @description Get formatted MCH vs Curative Index data for plotting
+    generate_admin1_mch_curative_index = function() {
+      self$service_utilization_admin1 %>% 
+        generate_admin1_mch_curative_index()
+    },
     #' @description Get filtered indicator coverage responsive to admin level and survey year.
     #' @param indicator Character. The target health indicator.
     #' @param admin_level Character. Level of aggregation ("national", "adminlevel_1", "district").
     #' @param region Character. Optional region or district name to filter by.
-    get_filtered_indicator_coverage = function(indicator, admin_level, region = NULL) {
+    #' @param survey_year Character. Optional the year the survey was conducted
+    get_filtered_indicator_coverage = function(indicator, admin_level, region = NULL, survey_year = NULL) {
       indicator <- arg_match(indicator, get_all_indicators())
       admin_level <- arg_match(admin_level, c("national", "adminlevel_1", "district"))
 
@@ -671,7 +749,7 @@ CacheConnection <- R6::R6Class(
       }
 
       # 1. Retrieve the appropriate coverage data based on admin level
-      cov_data <- self$get_base_indicator_coverage(admin_level, region)
+      cov_data <- self$get_base_indicator_coverage(admin_level, region, FALSE)
 
       # 2. Extract the survey estimate for the specific indicator
       survey_rate <- unname(self$survey_estimates[indicator])
@@ -684,7 +762,7 @@ CacheConnection <- R6::R6Class(
         filter_indicator_coverage(
           indicator = indicator,
           survey_coverage = survey_rate,
-          survey_year = self$survey_year
+          survey_year = survey_year
         )
     },
     #' @description Get filtered coverage data responsive to admin level and indicator.
@@ -791,7 +869,8 @@ CacheConnection <- R6::R6Class(
     #' @description Get baseline indicator coverage data responsive to admin level and region.
     #' @param admin_level Character. Level of aggregation ("national", "adminlevel_1", "district").
     #' @param region Character. Optional region filter.
-    get_base_indicator_coverage = function(admin_level, region = NULL) {
+    #' @param show_district Optional. Whether to show the district column in when admin_level is adminlevel_11
+    get_base_indicator_coverage = function(admin_level, region = NULL, show_district = TRUE) {
       admin_level <- arg_match(admin_level, c("national", "adminlevel_1", "district"))
 
       if (!self$check_inequality_params) {
@@ -805,7 +884,7 @@ CacheConnection <- R6::R6Class(
       } else if (admin_level == "district"  && is.null(region)) {
         self$indicator_coverage_district
       } else {
-        self$calculate_indicator_coverage(admin_level, region)
+        self$calculate_indicator_coverage(admin_level, region, show_district)
       }
 
       data
@@ -838,7 +917,17 @@ CacheConnection <- R6::R6Class(
           denominator = denom
         )
     },
+    #' @description Calculate and filter derived coverage for a specific indicator.
+    #' @param indicator Character. The target health indicator to calculate.
+    #' @param admin_level Character. The administrative level for the data aggregation.
+    #' @param region Character. Optional. The name of the specific region or district to filter by. 
+    calculate_derived_coverage = function(indicator, admin_level, region = NULL) {
+      indicator <- arg_match(indicator, get_analysis_indicators())
+      admin_level <- arg_match(admin_level, c("national", "adminlevel_1", "district"))
 
+      self$get_base_indicator_coverage(admin_level, region, show_district = FALSE) %>% 
+        calculate_derived_coverage(indicator)
+    },
     #' @description Get high-performing regions based on indicator and threshold.
     #' @param indicator Character. The specific health indicator (e.g., "penta3").
     #' @param admin_level Character. Level of aggregation ("national", "adminlevel_1", "district").
@@ -1787,6 +1876,7 @@ CacheConnection <- R6::R6Class(
   ),
   private = list(
     .data_template = list(
+      version = NULL,
       language = "en",
       rds_path = NULL,
       countdown_data = NULL,
@@ -1802,18 +1892,17 @@ CacheConnection <- R6::R6Class(
       adjusted_data = NULL,
       survey_estimates = c(anc1 = NA, penta1 = NA, penta3 = NA, opv1 = NA, opv3 = NA, measles1 = NA, bcg = NA, anc4 = NA, instlivebirths = NA, low_bweight = NA, csection = NA),
       national_estimates = list(nmr = NA, pnmr = NA, twin_rate = 0.015, preg_loss = 0.03, sbr = NA),
+      
       survey_year = NULL,
-      indicator_coverage_national = NULL,
-      indicator_coverage_admin1 = NULL,
-      indicator_coverage_district = NULL,
       start_survey_year = NULL,
       survey_source = NA,
+
       selected_admin_level_1 = NULL,
       selected_district = NULL,
       selected_mortality_mapping_years = NULL,
       selected_utilization_mapping_years = NULL,
       selected_mapping_years = NULL,
-      # palette = c(coverage = 'Greens', dropout = 'Reds'),
+
       un_estimates = NULL,
       un_mortality_estimates = NULL,
       wuenic_estimates = NULL,
@@ -1824,11 +1913,7 @@ CacheConnection <- R6::R6Class(
       education_survey = NULL,
       survey_mapping = NULL,
       map_mapping = NULL,
-      fpet_data = NULL,
-      sector_national_estimates = NULL,
-      sector_area_estimates = NULL,
-      csection_national_estimates = NULL,
-      csection_area_estimates = NULL,
+
       reporting_rate_national = NULL,
       reporting_rate_admin1 = NULL,
       reporting_rate_district = NULL,
@@ -1845,9 +1930,21 @@ CacheConnection <- R6::R6Class(
       ratios_summary = NULL,
       adequacy_ratios = NULL,
       overall_score = NULL,
+
       denominator_metrics = NULL,
+
+      indicator_coverage_national = NULL,
+      indicator_coverage_admin1 = NULL,
+      indicator_coverage_district = NULL,
       inequality_admin1 = NULL,
       inequality_district = NULL,
+     
+      fpet_data = NULL,
+      sector_national_estimates = NULL,
+      sector_area_estimates = NULL,
+      csection_national_estimates = NULL,
+      csection_area_estimates = NULL,
+      
       mortality_summary = NULL,
       mortality_ratios = NULL,
       service_utilization_national = NULL,
@@ -1896,6 +1993,50 @@ CacheConnection <- R6::R6Class(
         cd_abort(c("x" = "Invalid value for field {.field {field_name}}."))
       }
       private$update_field(field_name, value)
+    },
+    invalidate_cached_data = function() {
+      # --- 1. DATA QUALITY & REPORTING ---
+      private$update_field("reporting_rate_national", NULL)
+      private$update_field("reporting_rate_admin1", NULL)
+      private$update_field("reporting_rate_district", NULL)
+      private$update_field("district_reporting_rate", NULL)
+      private$update_field("completeness_national", NULL)
+      private$update_field("completeness_admin1", NULL)
+      private$update_field("completeness_district", NULL)
+      private$update_field("district_completeness", NULL)
+      private$update_field("outliers_national", NULL)
+      private$update_field("outliers_admin1", NULL)
+      private$update_field("outliers_district", NULL)
+      private$update_field("district_outliers_summary", NULL)
+      private$update_field("list_outlier_units", NULL)
+      # private$update_field("service_dqa_summary", NULL)
+      private$update_field("ratios_summary", NULL)
+      private$update_field("adequacy_ratios", NULL)
+      private$update_field("overall_score", NULL)
+      private$update_field("denominator_metrics", NULL)
+    
+      # --- 3. COVERAGE & INEQUALITY ---
+      private$update_field("indicator_coverage_national", NULL)
+      private$update_field("indicator_coverage_admin1", NULL)
+      private$update_field("indicator_coverage_district", NULL)
+      private$update_field("inequality_admin1", NULL)
+      private$update_field("inequality_district", NULL)
+      
+      # --- 3. SPECIALIZED ESTIMATES ---
+      private$update_field("fpet_data", NULL)
+      private$update_field("sector_national_estimates", NULL)
+      private$update_field("sector_area_estimates", NULL)
+      private$update_field("csection_national_estimates", NULL)
+      private$update_field("csection_area_estimates", NULL)
+      
+      # --- 4. MORTALITY & HEALTH SYSTEMS ---
+      private$update_field("mortality_summary", NULL)
+      private$update_field("mortality_ratios", NULL)
+      private$update_field("service_utilization_national", NULL)
+      private$update_field("service_utilization_admin1", NULL)
+      private$update_field("health_system_comparison", NULL)
+      private$update_field("health_system_metrics_national", NULL)
+      private$update_field("health_system_metrics_admin1", NULL)
     },
     filter_survey = function(survey) {
       check_required(survey)

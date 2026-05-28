@@ -83,7 +83,7 @@ get_mapping_data <- function(.data,
 #'
 #' @param .data A `cd_mapping` object returned by `get_mapping_data()`.
 #' @param indicator Character. Indicator name (e.g., `"anc4"`, `"penta1"`).
-#' @param denominator Character. One of: `"dhis2"`, `"anc1"`, `"penta1"`, `"penta1derived"`.
+#' @param denominator Character. One of: `"dhis2"`, `"anc1"`, `"penta1"`, `"penta1derived"`, `"anc1derived"`.
 #' @param palette Character. Color palette for mapping.
 #'        One of: `"Reds"`, `"Blues"`, `"Greens"`, `"Purples"`, `"YlGnBu"`.
 #' @param plot_year Optional integer or vector of years to filter.
@@ -100,7 +100,7 @@ get_mapping_data <- function(.data,
 #' @export
 filter_mapping_data <- function(.data,
                                 indicator,
-                                denominator = c("dhis2", "anc1", "penta1", "penta1derived"),
+                                denominator = c("dhis2", "anc1", "penta1", "penta1derived", "anc1derived"),
                                 palette = c("Reds", "Blues", "Greens", "Purples", "YlGnBu"),
                                 plot_year = NULL) {
   check_cd_mapping(.data)
