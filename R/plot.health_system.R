@@ -240,3 +240,90 @@ plot_national_health_metric <- function(.data, metric = c('performance', 'densit
     scale_y_continuous(limits = limits, breaks = breaks, expand = expansion(mult = c(0, 0.1))) +
     cd_plot_theme(title = labels$title, y_axis = NULL, x_axis = NULL, caption = labels$caption)
 }
+
+#' Plot S3 method for Health System Metrics
+#'
+#' @param x An object of class `cd_health_system_table`
+#' @param year The year to display in the header (defaults to 2024)
+#' @param width (Optional) Total width in inches. If NULL, autofit is used.
+#' @param indicator_label (Optional) Translated label for the Indicator column header
+#' @param value_label (Optional) Translated label for the Value column header
+#' @param unit_label (Optional) Translated label for the Unit column header
+#' @param ... Additional arguments
+#'
+#' @export
+plot.cd_health_system_table <- function(x, 
+                                        year = 2024, 
+                                        width = NULL, 
+                                        indicator_label = "Indicator", 
+                                        value_label = "Value", 
+                                        unit_label = "Unit", 
+                                        ...) {
+  
+  base_font <- if (!is.null(width) && width < 5) 8 else 9
+
+  ft <- x %>%
+    # Automatically group by 'section' to create header rows
+    as_grouped_data(groups = "section") %>%
+    as_flextable() %>%
+    
+    # FIX 1: Move theme_vanilla() UP so it doesn't wipe out custom padding/borders
+    theme_vanilla() %>%
+    
+    font(fontname = "sans", part = "all") %>%
+    fontsize(size = base_font, part = "all") %>%
+    bg(part = "all", bg = "white") %>%
+    
+    # 1. Headers & Titles
+    set_header_labels(
+      # FIX 2: Removed 'section = ""' since the column no longer exists
+      indicator = indicator_label,
+      value = value_label,
+      unit = unit_label
+    ) %>%
+    add_header_lines(values = as.character(year)) %>%
+    bold(i = 1, part = "header", bold = TRUE) %>%
+    align(i = 1, align = "center", part = "header") %>%
+    
+    # 2. Style the Section Group Headers
+    compose(
+      i = ~ !is.na(section),
+      j = 1,
+      value = as_paragraph(as_chunk(section))
+    ) %>%
+    bold(i = ~ !is.na(section), bold = TRUE, part = "body") %>%
+    bg(i = ~ !is.na(section), part = "body", bg = "#D9EAF7") %>%
+    merge_h(i = ~ !is.na(section), part = "body") %>% 
+    
+    # 3. Format Data & Indents
+    colformat_double(j = "value", digits = 1, na_str = "") %>%
+    colformat_char(j = "unit", na_str = "") %>%
+    align(j = c("value", "unit"), align = "center", part = "all") %>%
+    
+    # FIX 3: Removed "section" from j, only aligning the indicator column
+    align(j = "indicator", align = "left", part = "all") %>%
+    padding(i = ~ is.na(section), j = "indicator", padding.left = 15, part = "body") %>%
+    
+    # 4. Apply Table Borders (Steelblue)
+    border_inner_h(border = officer::fp_border(color = "steelblue"), part = "body") # %>%
+    # border_top(border = officer::fp_border(color = "steelblue", width = 1.5), part = "all") # %>%
+    # border_bottom(border = officer::fp_border(color = "steelblue", width = 1.5), part = "all")
+
+  # 5. Handle Sizing
+  if (!is.null(width)) {
+    # FIX 4: Only 3 columns remain visible, adjust width ratios accordingly
+    w_ind <- width * 0.6
+    w_val <- width * 0.2
+    w_unit <- width * 0.2
+    
+    ft <- ft %>%
+      width(j = "indicator", width = w_ind) %>%
+      width(j = "value", width = w_val) %>%
+      width(j = "unit", width = w_unit) %>%
+      set_table_properties(layout = "fixed")
+  } else {
+    ft <- ft %>% autofit()
+  }
+
+  return(ft)
+}

@@ -255,6 +255,7 @@ Update a field (with change tracking)}
     \item \href{#method-CacheConnection-calculate_derived_coverage}{\code{CacheConnection$calculate_derived_coverage()}}
     \item \href{#method-CacheConnection-get_high_performers}{\code{CacheConnection$get_high_performers()}}
     \item \href{#method-CacheConnection-get_regional_estimates}{\code{CacheConnection$get_regional_estimates()}}
+    \item \href{#method-CacheConnection-generate_health_system_table}{\code{CacheConnection$generate_health_system_table()}}
     \item \href{#method-CacheConnection-clone}{\code{CacheConnection$clone()}}
   }
 }
@@ -1679,6 +1680,25 @@ Generate Service Utilization Admin 1 Data}
     \describe{
       \item{\code{admin_level}}{description}
       \item{\code{region}}{Character. .}
+    }
+    \if{html}{\out{</div>}}
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-generate_health_system_table"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-generate_health_system_table}{}}}
+\subsection{\code{CacheConnection$generate_health_system_table()}}{
+  Generate national health system metric table.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$generate_health_system_table(labels = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{labels}}{Character. Labels to use on the table.}
     }
     \if{html}{\out{</div>}}
   }

@@ -17,7 +17,7 @@ calculate_health_system_metrics <- function(.data, admin_level = c("national", "
 
   last_year <- robust_max(.data$year)
 
-  allvars <- c("total_pop", "total_facilities", "total_hospitals", "total_physicians", "total_nonclinique_phys", "total_nurses", "total_beds", "opd_total", "ipd_total", "under5_pop", "opd_under5", "ipd_under5")
+  allvars <- c("total_pop", "total_nonprofit", "total_profit", "total_facilities", "total_hospitals", "total_physicians", "total_nonclinique_phys", "total_nurses", "total_beds", "opd_total", "ipd_total", "under5_pop", "opd_under5", "ipd_under5")
 
   metrics <- .data %>%
     filter(year == last_year) %>%
@@ -59,6 +59,11 @@ calculate_health_system_metrics <- function(.data, admin_level = c("national", "
 
       ratio_opd_ipd = total_opd/total_ipd,
       ratio_opd_u5_ipd_u5 = total_opd_u5/total_ipd_u5,
+
+      skill_mix = total_nursemidwife / total_physicians,
+      private_facility_share = total_profit / total_facilities*100,
+      ngo_facility_share = total_nonprofit/total_facilities*100, 
+      hospital_share = total_hospitals/total_facilities*100,
 
       # Scores
       score_infrastructure = (((ratio_fac_pop / 2) + (ratio_bed_pop / 25)) / 2) * 100,
@@ -133,5 +138,96 @@ calculate_health_system_comparison <- function(.data, admin1_coverage_data, admi
   new_tibble(
     metrics,
     class = "cd_health_system_comparison"
+  )
+}
+
+#' Generate Health System Metrics Data
+#'
+#' @param metric_data A dataframe or list containing the yearly health system values.
+#' @param labels (Optional) A nested list of localized labels for sections, indicators, and units.
+#'
+#' @export
+generate_health_system_table <- function(metric_data, labels = NULL) {
+  check_cd_class(metric_data, 'cd_health_system_metric')
+
+  admin_level <- attr_or_abort(metric_data, 'admin_level')
+  if (admin_level != 'national') {
+    cd_abort(c('x' = 'Only national data can gener'))
+  }
+  
+  # 1. Define English Defaults (Matching overall_score structure)
+  default_lbl <- list(
+    section = list(
+      infrastructure = "Health infrastructure",
+      workforce      = "Health workforce",
+      private_sector = "Role of private sector"
+    ),
+    indicator = list(
+      fac_density   = "Health facility density",
+      hosp_share    = "Share of facilities that are hospitals",
+      hosp_density  = "Hospital density",
+      bed_density   = "Inpatient bed density",
+      hwf_density   = "Health workforce density",
+      skill_mix     = "Skills mix ratio nurse-midwives per physician",
+      private_share = "Share of Private facilities",
+      ngo_share     = "Share of NGO facilities"
+    ),
+    unit = list(
+      per_10k  = "per 10,000",
+      per_100k = "per 100,000",
+      pct      = "%"
+    )
+  )
+  
+  # 2. Merge Translations (Fallback to English if missing)
+  if (!is.null(labels)) {
+    if (!is.null(labels$section))   default_lbl$section   <- modifyList(default_lbl$section, as.list(labels$section))
+    if (!is.null(labels$indicator)) default_lbl$indicator <- modifyList(default_lbl$indicator, as.list(labels$indicator))
+    if (!is.null(labels$unit))      default_lbl$unit      <- modifyList(default_lbl$unit, as.list(labels$unit))
+  }
+  
+  # 3. Build the Tidy Tibble
+  table_data <- tibble(
+    section = c(
+      rep(default_lbl$section$infrastructure, 4),
+      rep(default_lbl$section$workforce, 2),
+      rep(default_lbl$section$private_sector, 2)
+    ),
+    indicator = c(
+      default_lbl$indicator$fac_density,
+      default_lbl$indicator$hosp_share,
+      default_lbl$indicator$hosp_density,
+      default_lbl$indicator$bed_density,
+      default_lbl$indicator$hwf_density,
+      default_lbl$indicator$skill_mix,
+      default_lbl$indicator$private_share,
+      default_lbl$indicator$ngo_share
+    ),
+    value = c(
+      metric_data$ratio_fac_pop,
+      metric_data$hospital_share,
+      metric_data$ratio_hos_pop,
+      metric_data$ratio_bed_pop,
+      metric_data$ratio_hstaff_pop,
+      metric_data$skill_mix,
+      metric_data$private_facility_share,
+      metric_data$ngo_facility_share
+    ),
+    unit = c(
+      default_lbl$unit$per_10k,
+      default_lbl$unit$pct,
+      default_lbl$unit$per_100k,
+      default_lbl$unit$per_10k,
+      default_lbl$unit$per_10k,
+      NA, 
+      default_lbl$unit$pct,
+      default_lbl$unit$pct
+    )
+  )
+  
+  # 4. Return as S3 Class
+  new_tibble(
+    table_data,
+    class = "cd_health_system_table"
   )
 }

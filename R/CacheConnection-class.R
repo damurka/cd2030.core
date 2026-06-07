@@ -1048,6 +1048,13 @@ CacheConnection <- R6::R6Class(
       }
 
       return(rates)
+    },
+
+    #' @description Generate national health system metric table.
+    #' @param labels Character. Labels to use on the table.
+    generate_health_system_table = function(labels = NULL) {
+      self$health_system_metrics_national %>% 
+        generate_health_system_table(labels)
     }
   ),
   active = list(
