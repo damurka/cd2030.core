@@ -256,6 +256,8 @@ Update a field (with change tracking)}
     \item \href{#method-CacheConnection-get_high_performers}{\code{CacheConnection$get_high_performers()}}
     \item \href{#method-CacheConnection-get_regional_estimates}{\code{CacheConnection$get_regional_estimates()}}
     \item \href{#method-CacheConnection-generate_health_system_table}{\code{CacheConnection$generate_health_system_table()}}
+    \item \href{#method-CacheConnection-generate_phc_scatter_data}{\code{CacheConnection$generate_phc_scatter_data()}}
+    \item \href{#method-CacheConnection-generate_private_sector_data}{\code{CacheConnection$generate_private_sector_data()}}
     \item \href{#method-CacheConnection-clone}{\code{CacheConnection$clone()}}
   }
 }
@@ -1699,6 +1701,45 @@ Generate Service Utilization Admin 1 Data}
     \if{html}{\out{<div class="arguments">}}
     \describe{
       \item{\code{labels}}{Character. Labels to use on the table.}
+    }
+    \if{html}{\out{</div>}}
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-generate_phc_scatter_data"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-generate_phc_scatter_data}{}}}
+\subsection{\code{CacheConnection$generate_phc_scatter_data()}}{
+  Generate PHC performance scatter plot data (Admin 1).
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$generate_phc_scatter_data(indicator, index_labels = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{indicator}}{Character. The independent variable to plot ("ratio_fac_pop" or "ratio_hstaff_pop").}
+      \item{\code{index_labels}}{(Optional) A named list to override default index labels for MCH and Curative.}
+    }
+    \if{html}{\out{</div>}}
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-generate_private_sector_data"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-generate_private_sector_data}{}}}
+\subsection{\code{CacheConnection$generate_private_sector_data()}}{
+  Generate private sector ownership data (Admin 1).
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$generate_private_sector_data(legend_labels = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{legend_labels}}{(Optional) A named list to override default labels for Private, NGO, and Public.}
     }
     \if{html}{\out{</div>}}
   }

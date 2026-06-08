@@ -1055,6 +1055,29 @@ CacheConnection <- R6::R6Class(
     generate_health_system_table = function(labels = NULL) {
       self$health_system_metrics_national %>% 
         generate_health_system_table(labels)
+    },
+
+    #' @description Generate PHC performance scatter plot data (Admin 1).
+    #' @param indicator Character. The independent variable to plot ("ratio_fac_pop" or "ratio_hstaff_pop").
+    #' @param index_labels (Optional) A named list to override default index labels for MCH and Curative.
+    generate_phc_scatter_data = function(indicator, index_labels = NULL) {
+      
+      indicator <- arg_match(indicator, c("ratio_fac_pop", "ratio_hstaff_pop"))
+      
+      self$health_system_metrics_admin1 %>% 
+        generate_phc_scatter_data(
+          x_indicator = indicator, 
+          index_labels = index_labels
+        )
+    },
+
+    #' @description Generate private sector ownership data (Admin 1).
+    #' @param legend_labels (Optional) A named list to override default labels for Private, NGO, and Public.
+    generate_private_sector_data = function(legend_labels = NULL) {
+      self$health_system_metrics_admin1 %>% 
+        generate_private_sector_data(
+          legend_labels = legend_labels
+        )
     }
   ),
   active = list(

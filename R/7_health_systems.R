@@ -18,11 +18,12 @@ calculate_health_system_metrics <- function(.data, admin_level = c("national", "
   last_year <- robust_max(.data$year)
 
   allvars <- c("total_pop", "total_nonprofit", "total_profit", "total_facilities", "total_hospitals", "total_physicians", "total_nonclinique_phys", "total_nurses", "total_beds", "opd_total", "ipd_total", "under5_pop", "opd_under5", "ipd_under5")
+  mch_vars <- c('anc1', 'anc4', 'pnc48h', 'bcg', 'penta1', "penta3", 'measles1', 'measles2', 'instdeliveries')
 
   metrics <- .data %>%
     filter(year == last_year) %>%
     slice(1, .by = district) %>%
-    select(adminlevel_1, district, year, -month, all_of(c(allvars))) %>%
+    select(adminlevel_1, district, year, -month, all_of(c(allvars, mch_vars))) %>%
     mutate(
       across(
         all_of(allvars),
@@ -74,7 +75,10 @@ calculate_health_system_metrics <- function(.data, admin_level = c("national", "
       score_utilization = if_else(score_utilization > 100, 100, score_utilization),
       score_total = (score_infrastructure + score_workforce + score_utilization) / 3,
       score_total = if_else(score_total > 100, 100, score_total),
-    )
+      mch_prev_services_index = (anc1 + anc4*3 + pnc48h + bcg + (penta1 + penta3)/2 + penta3 + measles1 + measles2 + instdeliveries*10) / total_pop_u5,
+      curative_services_index = (total_opd_u5 + total_ipd_u5 * 10)/total_pop_u5
+    ) %>% 
+    select(-any_of(mch_vars))
 
   new_tibble(
     metrics,
@@ -229,5 +233,116 @@ generate_health_system_table <- function(metric_data, labels = NULL) {
   new_tibble(
     table_data,
     class = "cd_health_system_table"
+  )
+}
+
+#' Generate PHC Performance Scatter Data
+#'
+#' @param .data Data frame containing subnational health indicators.
+#' @param x_indicator Independent variable ('ratio_fac_pop' or 'ratio_hstaff_pop').
+#' @param index_labels (Optional) A named list to override default index labels.
+#'
+#' @export
+generate_phc_scatter_data <- function(.data, 
+                                      x_indicator = c("ratio_fac_pop", "ratio_hstaff_pop"), 
+                                      index_labels = NULL) {
+  
+  check_cd_class(.data, 'cd_health_system_metric')
+  
+  x_indicator <- arg_match(x_indicator)
+
+  # 1. Setup default index labels and apply user overrides if provided
+  default_idx <- list(
+    mch_prev_services_index = "MCH Index", 
+    curative_services_index = "Curative Index"
+  )
+  
+  if (!is.null(index_labels)) {
+    default_idx <- modifyList(default_idx, as.list(index_labels))
+  }
+
+  lbl_mch <- default_idx$mch_prev_services_index
+  lbl_cur <- default_idx$curative_services_index
+
+  # 2. Pivot the data longer
+  plot_data <- .data %>%
+    select(adminlevel_1, !!sym(x_indicator), mch_prev_services_index, curative_services_index) %>%
+    pivot_longer(
+      cols = c(mch_prev_services_index, curative_services_index),
+      names_to = "index_type",
+      values_to = "index_value"
+    ) %>%
+    mutate(
+      index_name = recode(index_type, 
+                          mch_prev_services_index = lbl_mch, 
+                          curative_services_index = lbl_cur),
+      # Lock factor levels to maintain order (MCH left, Curative right)
+      index_name = factor(index_name, levels = c(lbl_mch, lbl_cur))
+    )
+
+  # 3. Calculate outliers (Bottom 25% or Top 25%) and save as a boolean flag
+  plot_data <- plot_data %>%
+    group_by(index_name) %>%
+    mutate(
+      is_outlier = index_value < quantile(index_value, 0.25, na.rm = TRUE) | 
+                   index_value > quantile(index_value, 0.75, na.rm = TRUE)
+    ) %>%
+    ungroup()
+
+  # 4. Return as Custom S3 Class with attributes
+  new_tibble(
+    plot_data,
+    class = "cd_phc_scatter",
+    x_indicator = x_indicator,
+    lbl_mch = lbl_mch,
+    lbl_cur = lbl_cur
+  )
+}
+
+#' Generate Private Sector Ownership Data
+#'
+#' @param .data Data frame containing subnational health indicators.
+#' @param legend_labels (Optional) A named list to override default legend labels.
+#'
+#' @export
+generate_private_sector_data <- function(.data, legend_labels = NULL) {
+  
+  # 1. Setup default legend labels and apply user overrides if provided
+  default_leg <- list(Private = "Private", NGO = "NGO", Public = "Public")
+  
+  if (!is.null(legend_labels)) {
+    default_leg <- modifyList(default_leg, as.list(legend_labels))
+  }
+  
+  lbl_prv <- default_leg$Private
+  lbl_ngo <- default_leg$NGO
+  lbl_pub <- default_leg$Public
+  
+  # 2. Prepare the data
+  plot_data <- .data %>%
+    mutate(Public = 100 - private_facility_share - ngo_facility_share) %>%
+    select(adminlevel_1, Public, private_facility_share, ngo_facility_share) %>%
+    pivot_longer(
+      cols = c(private_facility_share, ngo_facility_share, Public),
+      names_to = "facility_type",
+      values_to = "share"
+    ) %>%
+    mutate(
+      # Recode based on our final translated labels
+      facility_type = recode(facility_type,
+                             private_facility_share = lbl_prv,
+                             ngo_facility_share = lbl_ngo,
+                             Public = lbl_pub),
+      # Lock factor levels to maintain stack order (Private bottom, NGO middle, Public top)
+      facility_type = factor(facility_type, levels = c(lbl_prv, lbl_ngo, lbl_pub))
+    )
+  
+  # 3. Return as Custom S3 Class with attributes
+  new_tibble(
+    plot_data,
+    class = "cd_private_sector",
+    lbl_prv = lbl_prv,
+    lbl_ngo = lbl_ngo,
+    lbl_pub = lbl_pub
   )
 }
