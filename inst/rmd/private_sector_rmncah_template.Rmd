@@ -46,15 +46,7 @@ cache <- params$cache
 ## National Public Private Share
 
 ```{r}
-prepare_private_sector_plot_data(cache$sector_national_estimates, cache$csection_national_estimates) %>% 
-  plot() +
-  cd_report_theme()
-```
-
-## Area Public Private Share
-
-```{r}
-prepare_private_sector_plot_data(cache$sector_area_estimates, cache$csection_area_estimates) %>% 
+  cache$generate_private_sector_data(() %>% 
   plot() +
   cd_report_theme()
 ```
