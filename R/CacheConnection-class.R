@@ -221,6 +221,17 @@ CacheConnection <- R6::R6Class(
         )
     },
 
+    #' @description Generate Continuum of Care Coverage Data
+    #' @param admin_level Character. The geographic level to calculate and shape. 
+    generate_coverage_data = function(admin_level) {
+      admin_level <- arg_match(admin_level, c('national', 'adminlevel_1'))
+      self$calculate_coverage(admin_level) %>% 
+        generate_coverage_data(
+          vac_denominator = self$denominator,
+          mat_denominator = self$maternal_denominator
+        )
+    },
+
     #' @description Run coverage calculation using stored model parameters.
     #' @param admin_level Administrative level ("adminlevel_1" or "district").
     get_mapping_data = function(admin_level) {

@@ -189,6 +189,7 @@ Update a field (with change tracking)}
     \item \href{#method-CacheConnection-calculate_indicator_coverage}{\code{CacheConnection$calculate_indicator_coverage()}}
     \item \href{#method-CacheConnection-calculate_inequality}{\code{CacheConnection$calculate_inequality()}}
     \item \href{#method-CacheConnection-calculate_coverage}{\code{CacheConnection$calculate_coverage()}}
+    \item \href{#method-CacheConnection-generate_coverage_data}{\code{CacheConnection$generate_coverage_data()}}
     \item \href{#method-CacheConnection-get_mapping_data}{\code{CacheConnection$get_mapping_data()}}
     \item \href{#method-CacheConnection-lbr_mean}{\code{CacheConnection$lbr_mean()}}
     \item \href{#method-CacheConnection-summarise_completeness_ratio}{\code{CacheConnection$summarise_completeness_ratio()}}
@@ -383,6 +384,25 @@ Save data to disk (only if changed and RDS path is not NULL)
     \if{html}{\out{<div class="arguments">}}
     \describe{
       \item{\code{admin_level}}{Administrative level ("adminlevel_1" or "district").}
+    }
+    \if{html}{\out{</div>}}
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-generate_coverage_data"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-generate_coverage_data}{}}}
+\subsection{\code{CacheConnection$generate_coverage_data()}}{
+  Generate Continuum of Care Coverage Data
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$generate_coverage_data(admin_level)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{admin_level}}{Character. The geographic level to calculate and shape.}
     }
     \if{html}{\out{</div>}}
   }

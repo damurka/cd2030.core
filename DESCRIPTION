@@ -23,7 +23,7 @@ Imports:
     cli (>= 3.6.2),
     dplyr (>= 1.1.4),
     flextable,
-    forcats (>= 1.0.0),
+    forcats,
     ggplot2 (>= 3.5.1),
     haven (>= 2.5.4),
     htmltools,
@@ -57,3 +57,4 @@ LazyData: true
 BugReports: https://github.com/aphrcwaro/cd2030.core/issues
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.0.0
+RoxygenNote: 8.0.0
