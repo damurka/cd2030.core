@@ -154,7 +154,7 @@ calculate_inequality <- function(subnational_data,
 #' @export
 filter_inequality <- function(.data,
                               indicator,
-                              denominator = c("dhis2", "anc1", "penta1", "penta1derived")) {
+                              denominator = c("dhis2", "anc1", "penta1", "penta1derived", "anc1derived")) {
 
   admin_level <- attr_or_abort(.data, "admin_level")
   region <- attr_or_null(.data, 'region')

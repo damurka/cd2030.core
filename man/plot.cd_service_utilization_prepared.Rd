@@ -21,7 +21,7 @@ Generates a faceted map of service utilization metrics across subnational units
 \details{
 This function:
 \itemize{
-\item Extracts the appropriate indicator (\code{mean_opd_under5} or \code{mean_ipd_under5})
+\item Extracts the appropriate indicator (\code{ratio_opd_u5_pop} or \code{ratio_ipd_u5_pop})
 \item Projects the data to WGS84 for map consistency
 \item Renders the spatial data using \code{geom_sf()} with a sequential purple color scale
 \item Facets by year and applies the package's custom plot theme

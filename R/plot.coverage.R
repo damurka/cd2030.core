@@ -142,7 +142,7 @@ plot.cd_coverage_filtered <- function(x, title = NULL, x_axis = NULL, y_axis = N
 #'
 #' @param x Data frame containing the coverage data.
 #' @param indicator Character string specifying the indicator (e.g., 'penta1').
-#' @param denominator Character string specifying the denominator ('penta1', 'anc1', 'dhis2', 'penta1derived').
+#' @param denominator Character string specifying the denominator ('penta1', 'anc1', 'dhis2', 'penta1derived', 'anc1derived').
 #' @param year Integer representing the year to plot.
 #' @param region Character string for the specific region to highlight in yellow.
 #' @param title (Optional) Scalar character for a custom plot title.
@@ -162,7 +162,7 @@ plot.cd_coverage <- function(x, indicator = NULL, denominator = NULL, year = NUL
   check_required(year)
 
   indicator <- arg_match(indicator, get_analysis_indicators())
-  denominator <- arg_match(denominator, c('penta1', 'anc1', 'dhis2', 'penta1derived'))
+  denominator <- arg_match(denominator, c('penta1', 'anc1', 'dhis2', 'penta1derived', 'anc1derived'))
 
   if (!is.null(title) && !is_scalar_character(title)) {
     cd_abort(c("x" = "{.arg title} must be a scalar character or NULL."))

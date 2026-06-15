@@ -2,16 +2,20 @@
 title: "Denominator Selection for `r params$country` --- Countdown Analysis"
 date: "`r format(Sys.Date(), '%B %d, %Y')`"
 output: 
-  html_document:
-    toc: true
-    toc_float: true
-    theme: cerulean
-    highlight: kate
   officedown::rdocx_document:
     reference_docx: report-template.docx
-  pdf_document:
-    toc: false
-    latex_engine: lualatex
+    page_size:
+      width: !expr 11906 / 1440
+      height: !expr 16838 / 1440
+      orient: "portrait"
+    page_margins:
+      bottom: 1
+      top: 1
+      right: !expr 1417 / 1440
+      left: !expr 1417 / 1440
+      header: !expr 708 / 1440
+      footer: !expr 708 / 1440
+      gutter: 0
 params:
   cache: NULL
   country: NULL
@@ -27,7 +31,7 @@ knitr::opts_chunk$set(
   error = TRUE,
   fig.width=7, 
   fig.height=5, 
-  dpi=1200
+  dpi=300
 )
 
 library(cd2030.core)
@@ -38,12 +42,6 @@ library(officedown)
 library(officer)
 
 cache <- params$cache
-
-data <- cache$countdown_data
-adjusted_data <- cache$adjusted_data
-k_factors <- cache$k_factors
-un_estimates <- cache$un_estimates
-survey_estimates <- cache$survey_estimates
 ```
 
 ## Health facility data denominator assessment: DHIS2, UN Population and livebirths projections {-}
@@ -59,14 +57,16 @@ the UN projections.
 ### Total Population Projections: DHIS2 and UN Populations
 
 ```{r}
-plot(prepare_population_metrics(adjusted_data, un_estimates = un_estimates), metric = 'population') +
+cache$denominator_metrics %>% 
+  plot(metric = 'population') +
   cd_report_theme()
 ```
 
 ### Live Births Projections: DHIS2 and UN Live births
 
 ```{r}
-plot(prepare_population_metrics(adjusted_data, un_estimates = un_estimates), metric = 'births') +
+cache$denominator_metrics %>% 
+  plot(metric = 'births') +
   cd_report_theme()
 ```
 
@@ -94,21 +94,16 @@ The best performing denominator for coverage analysis with facility data is sele
 ### Denominators selection based on Penta3 Coverage
 
 ```{r}
-indicator_coverage <- cache$calculate_indicator_coverage('national')
-
-indicator_coverage %>% 
-  filter_indicator_coverage('penta3', unname(survey_estimates['penta3']), cache$survey_year) %>% 
+cache$get_filtered_indicator_coverage('penta3', 'national') %>% 
   plot() +
   cd_report_theme()
-
 ```
 
 
 ### Denominator selection based on Institutional Delivery
 
 ```{r}
-indicator_coverage %>% 
-  filter_indicator_coverage('instdeliveries', unname(survey_estimates['ideliv']), cache$survey_year) %>% 
+cache$get_filtered_indicator_coverage('instdeliveries', 'national') %>% 
   plot() +
   cd_report_theme()
 ```

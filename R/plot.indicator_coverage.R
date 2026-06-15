@@ -157,7 +157,7 @@ plot.cd_indicator_coverage <- function(x,
 #' @param x_label (Optional) A scalar character string to override the default x-axis label.
 #' @param y_label (Optional) A scalar character string to override the default y-axis label.
 #' @param category_labels (Optional) A named list to override the x-axis bar categories
-#'   (keys: `dhis2`, `anc1`, `penta1`, `un`, `penta1derived`).
+#'   (keys: `dhis2`, `anc1`, `penta1`, `un`, `penta1derived`, `anc1derived`).
 #' @param legend_labels (Optional) A named list to override the legend keys
 #'   (keys: `facility`, `survey`).
 #' @param ... Additional arguments (not used).
@@ -214,7 +214,8 @@ plot.cd_indicator_coverage_filtered <- function(x, title = NULL, x_label = NULL,
     dhis2         = "DHIS2 projection",
     anc1          = "ANC1-derived",
     penta1        = "Penta1-derived",
-    penta1derived = "Penta 1 population Growth"
+    penta1derived = "Penta 1 population Growth",
+    anc1derived   = 'ANC1 Population Growth'
   )
   final_categories <- utils::modifyList(default_categories, as.list(category_labels))
   cat_map <- unlist(final_categories)
@@ -243,6 +244,7 @@ plot.cd_indicator_coverage_filtered <- function(x, title = NULL, x_label = NULL,
   # Plot
   ggplot(x, aes(x = category_label, y = value)) +
     geom_col(aes(color = lbl_facility), fill = "darkgoldenrod3", width = 0.6) +
+    geom_text(aes(label = round(value, 1)), vjust = -0.5, size = 4, color = "black") +
     geom_hline(aes(yintercept = coverage, color = lbl_survey), linewidth = 1) +
     scale_y_continuous(limits = limits, breaks = breaks, expand = expansion(mult = c(0, 0.1))) +
     scale_color_manual(values = legend_colors, name = NULL) +

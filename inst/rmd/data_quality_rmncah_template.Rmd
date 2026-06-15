@@ -2,16 +2,20 @@
 title: "Data Quality for `r params$country` --- Countdown Analysis"
 date: "`r format(Sys.Date(), '%B %d, %Y')`"
 output: 
-  html_document:
-    toc: true
-    toc_float: true
-    theme: cerulean
-    highlight: kate
   officedown::rdocx_document:
     reference_docx: report-template.docx
-  pdf_document:
-    toc: false
-    latex_engine: lualatex
+    page_size:
+      width: !expr 11906 / 1440
+      height: !expr 16838 / 1440
+      orient: "portrait"
+    page_margins:
+      bottom: 1
+      top: 1
+      right: !expr 1417 / 1440
+      left: !expr 1417 / 1440
+      header: !expr 708 / 1440
+      footer: !expr 708 / 1440
+      gutter: 0
 params:
   cache: NULL
   country: NULL
@@ -25,9 +29,9 @@ knitr::opts_chunk$set(
   message = FALSE,
   warning = FALSE,
   error = TRUE,
-  fig.width = 7,
-  fig.height = 5,
-  dpi = 1200
+  # fig.width = 7,
+  # fig.height = 5,
+  dpi = 300
 )
 
 library(cd2030.core)
@@ -42,6 +46,10 @@ adminlevel_1 <- params$adminlevel_1
 
 data <- cache$countdown_data
 data_years <- cache$data_years
+
+layout <- cd_multicol_factory(width = 8.27, height = 11.69, orient = "portrait")
+my_multicol_start <- layout$start
+my_multicol_stop <- layout$stop
 ```
 
 ## 1. Health Facility Data Quality Assessment {-}
@@ -93,7 +101,7 @@ Interpret the data on the percent of districts that have ANC1 to penta1 ratios w
 
 :::
 
-\newpage
+`r run_pagebreak()`
 
 ### ANC1/Penta1 and Penta1/Penta3 Ratios
 
@@ -102,15 +110,21 @@ plot(cache$ratios_summary) +
   cd_report_theme()
 ```
 
+`r my_multicol_start()`
+
 ```{r}
 plot_comparison_anc1_penta1(data) +
   cd_report_theme()
 ```
 
+`r run_columnbreak()`
+
 ```{r}
 plot_comparison_penta1_penta3(data) +
   cd_report_theme()
 ```
+
+`r my_multicol_stop(widths = c(4, 4), space = 0.2, sep = FALSE)`
 
 #### 📝 Notes 
 

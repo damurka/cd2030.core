@@ -10,7 +10,7 @@ generate_fpet_summary(.data)
 \item{.data}{An object of class \code{cd_fpet_data}.}
 }
 \value{
-A \code{cd_fpet} object.
+A \code{cd_fpet_data} object.
 }
 \description{
 Processes raw FPET data (e.g., from Track20 or UNFPA) into a structured tibble

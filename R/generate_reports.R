@@ -48,22 +48,24 @@ generate_report <- function(cache,
   temp_dir <- tempfile("report_render_")
   dir.create(temp_dir)
 
-  analysis_type <- get_selected_group()
+  on.exit(unlink(temp_dir, recursive = TRUE), add = TRUE)
 
-  render(
-    input = file.path(system.file(package = "cd2030.core"), "rmd", paste0(report_name, "_", analysis_type, "_template.Rmd")),
-    # output_format = format,
-    output_file = output_path,
-    params = list(cache = cache, country = cache$country, adminlevel_1 = adminlevel_1),
-    encoding = "UTF-8",
-    runtime = "auto",
-    intermediates_dir = temp_dir, # Set unique temp directory
-    clean = TRUE # Clean up intermediate files
-  )
+  analysis_type <- get_selected_group()
 
   # Open the generated file automatically
   tryCatch(
     {
+      render(
+        input = file.path(system.file(package = "cd2030.core"), "rmd", paste0(report_name, "_", analysis_type, "_template.Rmd")),
+        output_format = format,
+        output_file = output_path,
+        params = list(cache = cache, country = cache$country, adminlevel_1 = adminlevel_1),
+        encoding = "UTF-8",
+        runtime = "auto",
+        intermediates_dir = temp_dir, # Set unique temp directory
+        clean = TRUE # Clean up intermediate files
+      )
+      
       check_file_path(output_path)
       if (format == "html_document") {
         utils::browseURL(output_path)
@@ -74,7 +76,7 @@ generate_report <- function(cache,
     error = function(e) {
       error <- clean_error_message(e)
       # showNotification(paste0("Report generation failed: ", error), type = "error")
-      cd_error(c('x' = paste0("Report generation failed: ", error)))
+      cd_abort(c('x' = paste0("Report generation failed: ", error)))
     }
   )
 }

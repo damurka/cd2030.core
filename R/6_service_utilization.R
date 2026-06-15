@@ -27,6 +27,7 @@ compute_service_utilization <- function(.data, admin_level = c('national', 'admi
 
   pop_vars <- c('total_pop', 'under5_pop', 'under1_pop', 'live_births', 'total_births')
   vars <- c('opd_total', 'opd_under5', 'ipd_total', 'ipd_under5', 'under5_deaths', 'total_deaths')
+  mch_vars <- c('anc1', 'anc4', 'pnc48h', 'bcg', 'penta1', "penta3", 'measles1', 'measles2', 'instdeliveries')
 
   result <- .data %>%
     mutate(
@@ -35,28 +36,44 @@ compute_service_utilization <- function(.data, admin_level = c('national', 'admi
       .by = all_of(admin_level_cols)
     ) %>%
     summarise(
-      across(all_of(vars), ~ sum(.x, na.rm = TRUE)),
+      across(all_of(c(vars, mch_vars)), ~ sum(.x, na.rm = TRUE)),
       across(all_of(pop_vars), ~ robust_max(.x)),
       across(starts_with('year_'), ~ robust_max(.x), .names = "{sub('^year_', '', .col)}"),
       .by = c(adminlevel_1, district, year),
     ) %>%
     summarise(
-      across(all_of(c(vars, pop_vars)), ~ sum(.x, na.rm = TRUE)),
+      across(all_of(c(vars, pop_vars, mch_vars)), ~ sum(.x, na.rm = TRUE)),
       across(ends_with('_rr'), ~ robust_max(.x)),
       .by = all_of(admin_level_cols)
     ) %>%
-    mutate(
-      mean_opd_total = opd_total / total_pop,
-      mean_ipd_total = 100 * ipd_total / total_pop,
-      mean_opd_under5 = opd_under5 / under5_pop,
-      mean_ipd_under5 = 100 * ipd_under5 / under5_pop,
-      perc_opd_under5 = 100 * opd_under5 / opd_total,
-      perc_ipd_under5 = 100 * ipd_under5 / ipd_total,
-      cfr_under5 = 100 * under5_deaths / ipd_under5,
-      cfr_total = 100 * total_deaths / ipd_total,
-      prop_death = 100 * under5_deaths / total_deaths
+    rename(
+      # total_nursemidwife = total_nurses,
+      total_opd = opd_total,
+      total_ipd = ipd_total,
+      total_pop_u5 = under5_pop,
+      total_opd_u5 = opd_under5,
+      total_ipd_u5 = ipd_under5
     ) %>%
-    select(-live_births, -under1_pop, -total_births)
+    mutate(
+      ratio_opd_pop = total_opd / total_pop,
+      ratio_ipd_pop = 100 * (total_ipd / total_pop),
+      ratio_opd_u5_pop = total_opd_u5 / total_pop_u5,
+      ratio_ipd_u5_pop = 100 * (total_ipd_u5 / total_pop_u5),
+
+      ratio_opd_ipd = total_opd/total_ipd,
+      ratio_opd_u5_ipd_u5 = total_opd_u5/total_ipd_u5,
+
+      perc_opd_under5 = 100 * total_opd_u5 / total_opd,
+      perc_ipd_under5 = 100 * total_ipd_u5 / total_ipd,
+      cfr_under5 = 100 * under5_deaths / total_ipd_u5,
+      cfr_total = 100 * total_deaths / total_ipd,
+      prop_death = 100 * under5_deaths / total_deaths,
+
+      # MCH preventive index & Curative service index
+      mch_prev_services_index = (anc1 + anc4*3 + pnc48h + bcg + (penta1 + penta3)/2 + penta3 + measles1 + measles2 + instdeliveries*10) / total_pop_u5,
+      curative_services_index = (total_opd_u5 + total_ipd_u5 * 10)/total_pop_u5
+    ) %>%
+    select(-live_births, -under1_pop, -total_births, -any_of(mch_vars))
 
   new_tibble(
     result,
@@ -80,7 +97,7 @@ compute_service_utilization <- function(.data, admin_level = c('national', 'admi
 #'
 #' @details
 #' This function:
-#' - Selects the under-five service indicator (`mean_opd_under5` or `mean_ipd_under5`)
+#' - Selects the under-five service indicator (`ratio_ipd_u5_pop` or `ratio_opd_u5_pop`)
 #' - Joins the appropriate admin level 1 shapefile using the specified country ISO
 #' - Filters to specified `plot_years` if provided
 #' - Renames the geometry column for compatibility with `geom_sf()`
@@ -97,7 +114,7 @@ prepare_mapping_service_utlization <- function(.data, indicator = c('ipd', 'opd'
 
   check_cd_class(.data, expected_class = 'cd_service_utilization')
   indicator <- arg_match(indicator)
-  indicator <- paste0('mean_', indicator, '_under5')
+  indicator <- paste0('ratio_', indicator, '_u5_pop')
   admin_level <- attr_or_abort(.data, 'admin_level')
   country_iso <- attr_or_abort(.data, 'iso3')
 
@@ -216,17 +233,17 @@ get_excel_version <- function(.data) {
   indicator_labels <- c(
     "total_pop"           = "Estimated population, all ages",
     "under5_pop"          = "Estimated population under-5",
-    "mean_opd_total"      = "Mean OPD visits per person per year, all ages",
-    "mean_ipd_total"      = "Mean IPD admissions per 100 persons per year, all ages",
+    "ratio_opd_pop"      = "Mean OPD visits per person per year, all ages",
+    "ratio_ipd_pop"       = "Mean IPD admissions per 100 persons per year, all ages",
     "opd_rr"              = "Completeness reporting OPD",
     "opd_total"           = "N of OPD visits per year, 5+",
     "opd_under5"          = "N of OPD visits per year, under-5",
-    "mean_opd_under5"     = "Mean OPD visits per child per year, under-5",
+    "ratio_opd_u5_pop"     = "Mean OPD visits per child per year, under-5",
     "perc_opd_under5"     = "Percent of OPD visits that are under-5",
     "ipd_rr"              = "Completeness reporting IPD",
     "ipd_total"           = "N of IPD admissions per year, all ages",
     "ipd_under5"          = "N of IPD admissions per year, under-5",
-    "mean_ipd_under5"     = "Mean IPD admissions per 100 children per year, under-5",
+    "ratio_ipd_u5_pop"     = "Mean IPD admissions per 100 children per year, under-5",
     "perc_ipd_under5"     = "Percent of IPD admissions that are under-5",
     "total_deaths"         = "N of deaths per year, all ages",
     "under5_deaths"        = "N of deaths in children under-5",
@@ -245,4 +262,199 @@ get_excel_version <- function(.data) {
     mutate(indiclabel = factor(indicator_labels[indic], levels = unname(indicator_labels))) %>%
     arrange(!!!syms(admin_level_col)) %>%
     relocate(!!!syms(admin_level_col), indiclabel)
+}
+
+#' Generate Service DQA Summary
+#'
+#' @param average_reporting_rate Dataframe. Reporting rate data.
+#' @param district_reporting_rate Dataframe. District reporting rate data.
+#' @param completeness_national Dataframe. National completeness data.
+#' @param district_completeness Dataframe. District completeness data.
+#' @param outliers_summary Dataframe. National outliers data.
+#' @param district_outliers_summary Dataframe. District outliers summary data.
+#' @param service_utilization Dataframe. Output of compute_service_utilization('national').
+#' @param threshold Numeric. The threshold to display in the label (default: 90).
+#' @param labels List. Optional custom labels for sections and indicators.
+#' @return A wide-format tibble with summarized DQA indicators grouped by section.
+#' @export
+generate_service_dqa_summary <- function(average_reporting_rate,
+                                         district_reporting_rate,
+                                         completeness_national,
+                                         district_completeness,
+                                         outliers_summary,
+                                         district_outliers_summary,
+                                         service_utilization,
+                                         threshold = 90,
+                                         labels = NULL) {
+  
+  # 1. Prepare Component Summaries
+  rr_summary <- average_reporting_rate %>% 
+    select(year, opd_rr) %>% 
+    left_join(
+      district_reporting_rate %>% 
+        select(year, district_opd_rr = low_opd_rr),
+      by = join_by(year)
+    )
+  
+  completeness_summary <- completeness_national %>% 
+    select(year, mis_opd_under5, mis_ipd_under5) %>% 
+    left_join(
+      district_completeness %>% 
+        select(year, districts_no_missing_opd = mis_opd_under5, districts_no_missing_ipd = mis_ipd_under5),
+      by = join_by(year)
+    )
+  
+  outlier_summary <- outliers_summary %>% 
+    select(year, opd_under5_outlier5std) %>% 
+    left_join(
+      district_outliers_summary %>% 
+        select(year, districts_no_outlier_opd = opd_under5_outlier5std),
+      by = join_by(year)
+    )
+  
+  service_summary <- service_utilization %>%
+    select(
+      year,
+      ratio_opd_u5_ipd_u5,
+      perc_opd_under5,
+      perc_ipd_under5
+    )
+  
+  # 2. Group indicators to avoid repetition
+  completeness_inds <- c(
+    "opd_rr", "district_opd_rr", "mis_opd_under5", 
+    "mis_ipd_under5", "districts_no_missing_opd", "districts_no_missing_ipd"
+  )
+  outlier_inds <- c(
+    "opd_under5_outlier5std", "districts_no_outlier_opd"
+  )
+
+  id_map <- c(
+    opd_rr                   = "1a",
+    district_opd_rr          = "1b",
+    mis_opd_under5           = "1c",
+    mis_ipd_under5           = "1d",
+    districts_no_missing_opd = "1e",
+    districts_no_missing_ipd = "1f",
+    
+    opd_under5_outlier5std   = "2a",
+    districts_no_outlier_opd = "2b",
+    
+    ratio_opd_u5_ipd_u5      = "3a",
+    perc_opd_under5          = "3b",
+    perc_ipd_under5          = "3c"
+  )
+  
+  # 3. Define Default Labels
+  default_labels <- list(
+    header = list(
+      h1 = "1. Completeness of reporting",
+      h2 = "2. Extreme outliers",
+      h3 = "3. Service DQA indicators"
+    ),
+    indicator = list(
+      opd_rr                   = "% expected monthly facility reports (National)",
+      district_opd_rr          = paste0("% districts with reporting rates >=", threshold),
+      mis_opd_under5           = "% non-missing OPD monthly values",
+      mis_ipd_under5           = "% non-missing IPD monthly values",
+      districts_no_missing_opd = "% districts with no missing OPD values",
+      districts_no_missing_ipd = "% districts with no missing IPD values",
+      
+      opd_under5_outlier5std   = "% OPD monthly values not extreme outliers",
+      districts_no_outlier_opd = "% districts with no OPD extreme outliers",
+      
+      ratio_opd_u5_ipd_u5      = "Ratio OPD/IPD under 5",
+      perc_opd_under5          = "% OPD under 5",
+      perc_ipd_under5          = "% IPD under 5"
+    )
+  )
+  
+  # Override defaults if custom labels are provided
+  if (!is.null(labels)) {
+    if (!is.null(labels$header)) default_labels$header <- modifyList(default_labels$header, as.list(labels$header))
+    if (!is.null(labels$indicator)) default_labels$indicator <- modifyList(default_labels$indicator, as.list(labels$indicator))
+  }
+  
+  # Flatten to named character vectors for fast mapping
+  header_map <- unlist(default_labels$header)
+  label_map <- unlist(default_labels$indicator)
+  
+  # 4. Combine, Map, and Reshape
+  combined_data <- rr_summary %>% 
+    left_join(completeness_summary, by = join_by(year)) %>% 
+    left_join(outlier_summary, by = join_by(year)) %>% 
+    left_join(service_summary, by = join_by(year)) %>% 
+    pivot_longer(
+      cols = -year,
+      names_to = "indicator",
+      values_to = "value" 
+    ) %>% 
+    mutate(
+      indicator_label = coalesce(unname(label_map[indicator]), indicator),
+      no = coalesce(unname(id_map[indicator]), '99'),
+      header = case_when(
+        startsWith(no, "1") ~ unname(header_map["h1"]),
+        startsWith(no, "2") ~ unname(header_map["h2"]),
+        TRUE                ~ unname(header_map["h3"])
+      ),
+    ) %>% 
+    select(header, no, indicator_label, year, value) %>% 
+    pivot_wider(
+      names_from = year,
+      values_from = value
+    ) %>% 
+    arrange(no)
+  
+  new_tibble(
+    combined_data,
+    class = "cd_utilization_dqa",
+    threshold = threshold
+  )
+}
+
+#' Generate Service Utilization Admin 1 Data
+#'
+#' @param service_utilization Dataframe containing admin1 service utilization.
+#' @param metric_type Character. Either "opd" or "ipd".
+#' @return A tibble with class `cd_service_util_admin1`.
+#' @export
+generate_admin1_service_utilization <- function(service_utilization, metric_type = c("opd", "ipd")) {
+  check_cd_class(service_utilization, 'cd_service_utilization')
+  if (!'adminlevel_1' %in% colnames(service_utilization)) {
+    cd_abort('{.arg service_utilization} must be a subnational dataset')
+  }
+  metric_type <-arg_match(metric_type)
+  
+  target_col <- paste0('ratio_', metric_type, '_u5_pop')
+  
+  df <- service_utilization %>% 
+    filter(year == max(year, na.rm = TRUE)) %>% 
+    select(adminlevel_1, year, !!sym(target_col))
+
+  new_tibble(
+    df,
+    class = 'cd_service_utilization_admin1',
+    metric_type = metric_type
+  )
+}
+
+#' Generate MCH vs Curative Index Data
+#'
+#' @param service_utilization Dataframe containing admin1 service utilization.
+#' @return A tibble with class `cd_mch_curative_index`.
+#' @export
+generate_admin1_mch_curative_index <- function(service_utilization) {
+  check_cd_class(service_utilization, 'cd_service_utilization')
+  if (!'adminlevel_1' %in% colnames(service_utilization)) {
+    cd_abort('{.arg service_utilization} must be a subnational dataset')
+  }
+ 
+  df <- service_utilization %>%
+    filter(year == max(year, na.rm = TRUE)) %>%
+    select(adminlevel_1, year, mch_prev_services_index, curative_services_index)
+
+  new_tibble(
+    df,
+    class = 'cd_mch_curative_index'
+  )
 }

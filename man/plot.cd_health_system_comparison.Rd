@@ -8,7 +8,12 @@
   x,
   indicator = c("cov_instdeliveries_hstaff", "ratio_opd_u5_hstaff", "ratio_ipd_u5_hos",
     "ratio_ipd_u5_bed"),
-  denominator = NULL
+  denominator = NULL,
+  title = NULL,
+  x_axis = NULL,
+  y_axis = NULL,
+  caption = NULL,
+  legend_labels = NULL
 )
 }
 \arguments{
@@ -17,6 +22,16 @@
 \item{indicator}{One of ratio_* or cov_instdeliveries_* (requires \code{denominator}).}
 
 \item{denominator}{Optional for cov_ indicators. Must be one of 'dhis2', 'anc1', 'penta1'.}
+
+\item{title}{(Optional) Custom title for the plot.}
+
+\item{x_axis}{(Optional) Custom label for the x-axis.}
+
+\item{y_axis}{(Optional) Custom label for the y-axis.}
+
+\item{caption}{(Optional) Custom caption text (R-squared will automatically be prepended to this).}
+
+\item{legend_labels}{(Optional) A named list to override default legend labels (keys: 'admin', 'linear').}
 }
 \value{
 A ggplot object.

@@ -50,40 +50,32 @@ Subnational analyses of health system inputs and service outputs are critical: d
 ### National Health System Indicators
 
 ```{r}
-national_metrics <- calculate_health_system_metrics(data, 'national')
-plot_national_health_metric(national_metrics, 'density') +
-  cd_report_theme()
+cache()$generate_health_system_table() +
+  plot()
 ```
 
 ### Subnational Health System Indicators
 
 ```{r}
-subnational_metrics <- calculate_health_system_metrics(data, 'adminlevel_1')
+subnational_metrics <- cache$health_system_metrics_admin1 %>%
+          select(adminlevel_1, year, total_pop, ratio_fac_pop, ratio_hos_pop, ratio_hstaff_pop, ratio_bed_pop, ratio_opd_pop, ratio_ipd_pop)
 
-plot(subnational_metrics, indicator = 'ratio_fac_pop',
-        national_score = national_metrics$ratio_fac_pop,
-        target = 2) +
+plot(subnational_metrics, indicator = 'ratio_fac_pop') +
   cd_report_theme()
 ```
 
 ```{r}
-plot(subnational_metrics, indicator = 'ratio_hos_pop',
-        national_score = national_metrics$ratio_hos_pop,
-        target = 2) +
+plot(subnational_metrics, indicator = 'ratio_hos_pop') +
   cd_report_theme()
 ```
 
 ```{r}
-plot(subnational_metrics, indicator = 'ratio_hstaff_pop',
-        national_score = national_metrics$ratio_hstaff_pop,
-        target = 23) +
+plot(subnational_metrics, indicator = 'ratio_hstaff_pop') +
   cd_report_theme()
 ```
 
 ```{r}
-plot(subnational_metrics, indicator = 'ratio_bed_pop',
-        national_score = national_metrics$ratio_bed_pop,
-        target = 25) +
+plot(subnational_metrics, indicator = 'ratio_bed_pop') +
   cd_report_theme()
 ```
 
@@ -108,7 +100,7 @@ Any reasons for unusual data?
 ## Health System Comparisons
 
 ```{r}
-comparison <- cache$calculate_health_system_comparison()
+comparison <- cache()$health_system_comparison
 plot(comparison, indicator = 'cov_instdeliveries_hstaff',
         denominator = cache$maternal_denominator) +
   cd_report_theme()

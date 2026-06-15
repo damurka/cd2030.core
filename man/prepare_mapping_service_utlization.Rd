@@ -30,7 +30,7 @@ Joins spatial data for subnational mapping and renames geometry for use with \co
 \details{
 This function:
 \itemize{
-\item Selects the under-five service indicator (\code{mean_opd_under5} or \code{mean_ipd_under5})
+\item Selects the under-five service indicator (\code{ratio_ipd_u5_pop} or \code{ratio_opd_u5_pop})
 \item Joins the appropriate admin level 1 shapefile using the specified country ISO
 \item Filters to specified \code{plot_years} if provided
 \item Renames the geometry column for compatibility with \code{geom_sf()}

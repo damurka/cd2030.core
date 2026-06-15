@@ -68,7 +68,7 @@
 adjust_service_data <- function(.data,
                                 adjustment = c("default", "custom", "none"),
                                 k_factors = NULL) {
-  district <- year <- month <- NULL
+  district = year = month = NULL
 
   check_cd_data(.data)
 

@@ -10,6 +10,7 @@
 
 ## usethis namespace: start
 #' @importFrom forcats fct_inorder
+#' @importFrom forcats fct_reorder
 #' @importFrom haven as_factor
 #' @importFrom haven is.labelled
 #' @importFrom haven read_dta

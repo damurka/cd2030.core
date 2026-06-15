@@ -18,7 +18,8 @@ create_mortality_summary <- function(.data) {
 
   new_tibble(
     scatter,
-    class = 'cd_mortality_summary'
+    class = 'cd_mortality_summary',
+    country = .data$country
   )
 }
 
@@ -136,14 +137,17 @@ summarised_data <- function(.data, admin_level = c('national', 'adminlevel_1', '
 
   .data %>%
     summarise(
-      across(c(instlivebirths, total_stillbirth, maternal_deaths, neonatal_deaths), ~ sum(.x, na.rm = TRUE)),
+      across(c(instlivebirths, total_stillbirth, stillbirth_f, maternal_deaths, neonatal_deaths), ~ sum(.x, na.rm = TRUE)),
       .by = all_of(c(admin_level_col, 'year'))
     ) %>%
     mutate(
       sbr_inst = 1000 * total_stillbirth/(instlivebirths+total_stillbirth),
       mmr_inst = 100000 * maternal_deaths/instlivebirths,
       nn_inst = 1000 * neonatal_deaths/instlivebirths,
+      pnr_inst = 1000 * (total_stillbirth + neonatal_deaths)/(instlivebirths + total_stillbirth),
       ratio_md_sb = total_stillbirth/maternal_deaths,
+      ratio_md_nd = neonatal_deaths / maternal_deaths,
+      fresh_total_sb = 100 * stillbirth_f / total_stillbirth,
       mmr_low = if_else(mmr_inst < 25, 1, 0),
       sbr_low = if_else(sbr_inst < 6, 1, 0)
     ) %>%

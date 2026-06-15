@@ -7,7 +7,8 @@
 compute_indicator_numerator(
   .data,
   admin_level = c("national", "adminlevel_1", "district"),
-  region = NULL
+  region = NULL,
+  show_district = TRUE
 )
 }
 \arguments{

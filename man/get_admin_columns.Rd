@@ -4,12 +4,14 @@
 \alias{get_admin_columns}
 \title{Determine Grouping Columns for Administrative Levels}
 \usage{
-get_admin_columns(admin_level, region = NULL)
+get_admin_columns(admin_level, region = NULL, show_district = TRUE)
 }
 \arguments{
 \item{admin_level}{A string. One of \code{"national"}, \code{"adminlevel_1"}, or \code{"district"}.}
 
 \item{region}{Optional. If provided, must be used only with \code{admin_level = "adminlevel_1"}.}
+
+\item{show_district}{Optional. If show_district is true \code{adminlevel_1} will include \code{district} column}
 }
 \value{
 A character vector of column names to use in grouping. Returns:

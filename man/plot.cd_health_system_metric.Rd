@@ -6,19 +6,26 @@
 \usage{
 \method{plot}{cd_health_system_metric}(
   x,
-  indicator = c("ratio_fac_pop", "ratio_hos_pop", "ratio_hstaff_pop", "ratio_bed_pop"),
-  national_score = NULL,
-  target = NULL
+  indicator = c("ratio_fac_pop", "ratio_hos_pop", "ratio_bed_pop", "ratio_hstaff_pop",
+    "skill_mix"),
+  title = NULL,
+  x_axis = NULL,
+  y_axis = NULL,
+  legend_labels = NULL
 )
 }
 \arguments{
 \item{x}{Data frame containing admin 1 level indicators.}
 
-\item{indicator}{A single metric to plot. Options include score_* and ratio_*.}
+\item{indicator}{A single metric to plot. Options include ratio_fac_pop, ratio_hos_pop, ratio_bed_pop, ratio_hstaff_pop, skill_mix.}
 
-\item{national_score}{National benchmark for dashed comparison line.}
+\item{title}{(Optional) Custom title for the plot.}
 
-\item{target}{Optional target value for additional line.}
+\item{x_axis}{(Optional) Custom label for the x-axis.}
+
+\item{y_axis}{(Optional) Custom label for the y-axis.}
+
+\item{legend_labels}{(Optional) A named list to override default legend labels.}
 }
 \value{
 A ggplot object.

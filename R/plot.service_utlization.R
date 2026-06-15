@@ -19,16 +19,16 @@ plot.cd_service_utilization_filtered <- function(x, ...) {
 
   labels <- list(
     opd = list(
-      y1 = 'mean_opd_under5',
-      y2 = 'mean_opd_total',
+      y1 = 'ratio_opd_pop',
+      y2 = 'ratio_opd_u5_pop',
       y1_label = 'Under-5',
       y2_label = 'All ages',
-      title = 'OPD visits',
-      y_label = 'Mean # of OPD visits per person'
+      title = 'OPD per person per year',
+      y_label = 'OPD Utilization Trends'
     ),
     ipd = list(
-      y1 = 'mean_ipd_under5',
-      y2 = 'mean_ipd_total',
+      y1 = 'ratio_ipd_u5_pop',
+      y2 = 'ratio_ipd_pop',
       y1_label = 'Under-5',
       y2_label = 'All ages',
       title = 'IPD admissions',
@@ -92,7 +92,7 @@ plot.cd_service_utilization_filtered <- function(x, ...) {
 #'
 #' @details
 #' This function:
-#' - Extracts the appropriate indicator (`mean_opd_under5` or `mean_ipd_under5`)
+#' - Extracts the appropriate indicator (`ratio_opd_u5_pop` or `ratio_ipd_u5_pop`)
 #' - Projects the data to WGS84 for map consistency
 #' - Renders the spatial data using `geom_sf()` with a sequential purple color scale
 #' - Facets by year and applies the package's custom plot theme
@@ -108,13 +108,13 @@ plot.cd_service_utilization_prepared <- function(x, ...) {
   indicator <- attr_or_abort(x, 'indicator')
 
   title <- switch (indicator,
-                   mean_opd_under5 = 'OPD under-five by Region',
-                   mean_ipd_under5 = 'IPD under-five by Region'
+                   ratio_opd_u5_pop = 'OPD under-five by Region',
+                   ratio_ipd_u5_pop = 'IPD under-five by Region'
   )
 
   legend <- switch (indicator,
-                    mean_opd_under5 = 'Mean OPD per child per year',
-                    mean_ipd_under5 = 'Mean IPD per 100 children per year'
+                    ratio_opd_u5_pop = 'Mean OPD per child per year',
+                    ratio_ipd_u5_pop = 'Mean IPD per 100 children per year'
   )
 
   x %>%
@@ -145,5 +145,129 @@ plot.cd_service_utilization_prepared <- function(x, ...) {
       axis.line = element_blank(),
       strip.text = element_text(size = 12, face = "bold"),
       aspect.ratio = 1
+    )
+}
+
+#' Plot S3 method for Service Utilization Admin1
+#'
+#' @param x Object of class cd_service_utilization_admin1.
+#' @param title Character. Optional translated title.
+#' @param x_axis Character. Optional translated x-axis label.
+#' @param legend Character. Optional translated legend label.
+#' @param ... Additional arguments.
+#' @export
+plot.cd_service_utilization_admin1 <- function(x, title = NULL, x_axis = NULL, legend = NULL, ...) {
+
+  metric_type <- attr_or_abort(x, "metric_type")
+
+  # 1. FIXED: Differentiated IPD vs OPD text
+  default_title <- switch(
+    metric_type,
+    ipd = 'Sub-National IPD Distribution',
+    opd = 'Sub-National OPD Distribution',
+    cd_abort(c('x' = '{.arg metric_type} can only be {.val opd} or {.val ipd}'))
+  )
+
+  default_x <- switch(
+    metric_type,
+    ipd = 'IPD per 100 children under5, by adminlevel1',
+    opd = 'OPD per capita under5, by adminlevel1',
+    cd_abort(c('x' = '{.arg metric_type} can only be {.val opd} or {.val ipd}'))
+  )
+
+  default_legend <- switch(
+    metric_type,
+    ipd = 'IPD Under 5',
+    opd = 'OPD Under 5',
+    cd_abort(c('x' = '{.arg metric_type} can only be {.val opd} or {.val ipd}'))
+  )
+
+  # 2. FIXED: metric_title -> legend
+  title  <- if (is.null(title)) default_title else title
+  x_axis <- if (is.null(x_axis)) default_x else x_axis
+  legend <- if (is.null(legend)) default_legend else legend
+
+  # 3. FIXED: Add the metric column to the data so the fill mapping works
+  x$metric <- legend
+
+  # 4. FIXED: Define fill_colors dynamically based on the metric type
+  base_color <- if (metric_type == "opd") "darkorange" else "orangered"
+  fill_colors <- setNames(base_color, legend)
+
+  x_value <- sym(paste0('ratio_', metric_type, '_u5_pop'))
+  
+  ggplot(x, aes(y = reorder(adminlevel_1, !!x_value), 
+                x = !!x_value, 
+                fill = metric)) +
+    geom_col(width = 0.8) +
+    geom_text(aes(label = round(!!x_value, 1)), 
+              hjust = -0.2, 
+              size = 3) +
+    scale_fill_manual(values = fill_colors) +
+    cd_plot_theme(
+      title = title,
+      x_axis = x_axis,
+      legend = legend
+    ) +
+    coord_cartesian(clip = "off")
+}
+
+#' Plot S3 method for MCH vs Curative Index
+#'
+#' @param x Object of class cd_mch_curative_index.
+#' @param labels List. Optional translations containing axes, title, and quadrant labels.
+#' @param ... Additional arguments.
+#' @export
+plot.cd_mch_curative_index <- function(x, labels = NULL, ...) {
+  
+  # 1. Calculate Mid-points
+  x_mid <- median(x$mch_prev_services_index, na.rm = TRUE)
+  y_mid <- median(x$curative_services_index, na.rm = TRUE)
+  
+  # 2. Identify Outliers for Labeling
+  labels_data <- x %>%
+    filter(
+      curative_services_index == max(curative_services_index, na.rm = TRUE) |
+      curative_services_index == min(curative_services_index, na.rm = TRUE) |
+      mch_prev_services_index == max(mch_prev_services_index, na.rm = TRUE) |
+      mch_prev_services_index == min(mch_prev_services_index, na.rm = TRUE)
+    )
+  
+  # 3. Safely Extract Translations (with fallbacks)
+  lbl_title <- if (!is.null(labels$title)) labels$title else "MCH preventive index compared to curative service index, under5"
+  lbl_x     <- if (!is.null(labels$x_axis)) labels$x_axis else "MCH Preventive services index"
+  lbl_y     <- if (!is.null(labels$y_axis)) labels$y_axis else "Curative service use index"
+  
+  q_tl <- if (!is.null(labels$q_top_left)) labels$q_top_left else "Low preventive\nHigh curative"
+  q_tr <- if (!is.null(labels$q_top_right)) labels$q_top_right else "High preventive\nHigh curative"
+  q_bl <- if (!is.null(labels$q_bottom_left)) labels$q_bottom_left else "Low preventive\nLow curative"
+  q_br <- if (!is.null(labels$q_bottom_right)) labels$q_bottom_right else "High preventive\nLow curative"
+  
+  # 4. Generate Plot
+  ggplot(x, aes(x = mch_prev_services_index, y = curative_services_index)) +
+    geom_point(size = 3, colour = "steelblue4") +
+    geom_smooth(method = "lm", se = FALSE, linetype = "dashed", colour = "steelblue4") +
+    
+    # Quadrant lines
+    geom_vline(xintercept = x_mid, linetype = "dashed", colour = "grey40") +
+    geom_hline(yintercept = y_mid, linetype = "dashed", colour = "grey40") +
+    
+    # Label only selected regions
+    geom_text(data = labels_data, aes(label = adminlevel_1), nudge_x = 0.08, size = 4) +
+    
+    # Quadrant labels
+    annotate("text", x = 1, y = 4.7, label = q_tl, size = 4, fontface = "bold") +
+    annotate("text", x = 4.5, y = 4.7, label = q_tr, size = 4, fontface = "bold") +
+    annotate("text", x = 1, y = 0.5, label = q_bl, size = 4, fontface = "bold") +
+    annotate("text", x = 4.5, y = 0.5, label = q_br, size = 4, fontface = "bold") +
+    
+    scale_x_continuous(limits = c(0, 5)) +
+    scale_y_continuous(limits = c(0, 5)) +
+    coord_equal(clip = "off") +
+    
+    cd_plot_theme(
+      title = lbl_title,
+      x_axis = lbl_x,
+      y_axis = lbl_y
     )
 }

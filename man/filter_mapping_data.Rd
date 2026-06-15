@@ -7,7 +7,7 @@
 filter_mapping_data(
   .data,
   indicator,
-  denominator = c("dhis2", "anc1", "penta1", "penta1derived"),
+  denominator = c("dhis2", "anc1", "penta1", "penta1derived", "anc1derived"),
   palette = c("Reds", "Blues", "Greens", "Purples", "YlGnBu"),
   plot_year = NULL
 )
@@ -17,7 +17,7 @@ filter_mapping_data(
 
 \item{indicator}{Character. Indicator name (e.g., \code{"anc4"}, \code{"penta1"}).}
 
-\item{denominator}{Character. One of: \code{"dhis2"}, \code{"anc1"}, \code{"penta1"}, \code{"penta1derived"}.}
+\item{denominator}{Character. One of: \code{"dhis2"}, \code{"anc1"}, \code{"penta1"}, \code{"penta1derived"}, \code{"anc1derived"}.}
 
 \item{palette}{Character. Color palette for mapping.
 One of: \code{"Reds"}, \code{"Blues"}, \code{"Greens"}, \code{"Purples"}, \code{"YlGnBu"}.}
