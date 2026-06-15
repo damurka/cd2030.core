@@ -4,7 +4,7 @@
 \alias{plot.cd_phc_scatter}
 \title{Plot S3 method for PHC Performance Scatter}
 \usage{
-\method{plot}{cd_phc_scatter}(x, title = NULL, x_axis = NULL, y_axis = NULL, ...)
+\method{plot}{cd_phc_scatter}(x, title = NULL, x_axis = NULL, y_axis = NULL, quad_labels = NULL, ...)
 }
 \arguments{
 \item{x}{An object of class \code{cd_phc_scatter}}
@@ -14,6 +14,9 @@
 \item{x_axis}{(Optional) Custom label for the x-axis.}
 
 \item{y_axis}{(Optional) Custom label for the y-axis.}
+
+\item{quad_labels}{(Optional) Named list to override quadrant text.
+Expected keys: \code{high_high}, \code{low_high}, \code{high_low}, \code{low_low}.}
 
 \item{...}{Additional arguments}
 }

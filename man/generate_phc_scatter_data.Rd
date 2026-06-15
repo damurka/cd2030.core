@@ -6,16 +6,13 @@
 \usage{
 generate_phc_scatter_data(
   .data,
-  x_indicator = c("ratio_fac_pop", "ratio_hstaff_pop"),
-  index_labels = NULL
+  x_indicator = c("ratio_fac_pop", "ratio_hstaff_pop")
 )
 }
 \arguments{
 \item{.data}{Data frame containing subnational health indicators.}
 
 \item{x_indicator}{Independent variable ('ratio_fac_pop' or 'ratio_hstaff_pop').}
-
-\item{index_labels}{(Optional) A named list to override default index labels.}
 }
 \description{
 Generate PHC Performance Scatter Data

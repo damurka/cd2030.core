@@ -68,7 +68,7 @@ check_cd_data <- function(.data, arg = caller_arg(.data), call = caller_env()) {
 }
 
 check_cd_fpet <- function(.data, arg = caller_arg(.data), call = caller_env()) {
-  check_cd_class(.data, "cd_fpet", arg = arg, call = call)
+  check_cd_class(.data, "cd_fpet_data", arg = arg, call = call)
 }
 
 check_cd_mapping <- function(.data, arg = caller_arg(.data), call = caller_env()) {

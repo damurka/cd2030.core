@@ -244,6 +244,7 @@ plot.cd_indicator_coverage_filtered <- function(x, title = NULL, x_label = NULL,
   # Plot
   ggplot(x, aes(x = category_label, y = value)) +
     geom_col(aes(color = lbl_facility), fill = "darkgoldenrod3", width = 0.6) +
+    geom_text(aes(label = round(value, 1)), vjust = -0.5, size = 4, color = "black") +
     geom_hline(aes(yintercept = coverage, color = lbl_survey), linewidth = 1) +
     scale_y_continuous(limits = limits, breaks = breaks, expand = expansion(mult = c(0, 0.1))) +
     scale_color_manual(values = legend_colors, name = NULL) +

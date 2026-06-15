@@ -240,62 +240,35 @@ generate_health_system_table <- function(metric_data, labels = NULL) {
 #'
 #' @param .data Data frame containing subnational health indicators.
 #' @param x_indicator Independent variable ('ratio_fac_pop' or 'ratio_hstaff_pop').
-#' @param index_labels (Optional) A named list to override default index labels.
 #'
 #' @export
 generate_phc_scatter_data <- function(.data, 
-                                      x_indicator = c("ratio_fac_pop", "ratio_hstaff_pop"), 
-                                      index_labels = NULL) {
+                                      x_indicator = c("ratio_fac_pop", "ratio_hstaff_pop")) {
   
   check_cd_class(.data, 'cd_health_system_metric')
   
   x_indicator <- arg_match(x_indicator)
 
-  # 1. Setup default index labels and apply user overrides if provided
-  default_idx <- list(
-    mch_prev_services_index = "MCH Index", 
-    curative_services_index = "Curative Index"
-  )
-  
-  if (!is.null(index_labels)) {
-    default_idx <- modifyList(default_idx, as.list(index_labels))
-  }
-
-  lbl_mch <- default_idx$mch_prev_services_index
-  lbl_cur <- default_idx$curative_services_index
-
   # 2. Pivot the data longer
   plot_data <- .data %>%
-    select(adminlevel_1, !!sym(x_indicator), mch_prev_services_index, curative_services_index) %>%
-    pivot_longer(
-      cols = c(mch_prev_services_index, curative_services_index),
-      names_to = "index_type",
-      values_to = "index_value"
-    ) %>%
     mutate(
-      index_name = recode(index_type, 
-                          mch_prev_services_index = lbl_mch, 
-                          curative_services_index = lbl_cur),
-      # Lock factor levels to maintain order (MCH left, Curative right)
-      index_name = factor(index_name, levels = c(lbl_mch, lbl_cur))
-    )
+      service_coverage = rowMeans(select(., mch_prev_services_index, curative_services_index), na.rm = TRUE)
+    ) %>%
+    select(adminlevel_1, !!sym(x_indicator), service_coverage)
 
   # 3. Calculate outliers (Bottom 25% or Top 25%) and save as a boolean flag
   plot_data <- plot_data %>%
-    group_by(index_name) %>%
+    # group_by(index_name) %>%
     mutate(
-      is_outlier = index_value < quantile(index_value, 0.25, na.rm = TRUE) | 
-                   index_value > quantile(index_value, 0.75, na.rm = TRUE)
-    ) %>%
-    ungroup()
+      is_outlier = service_coverage < quantile(service_coverage, 0.25, na.rm = TRUE) | 
+                   service_coverage > quantile(service_coverage, 0.75, na.rm = TRUE)
+    )
 
   # 4. Return as Custom S3 Class with attributes
   new_tibble(
     plot_data,
     class = "cd_phc_scatter",
-    x_indicator = x_indicator,
-    lbl_mch = lbl_mch,
-    lbl_cur = lbl_cur
+    indicator = x_indicator
   )
 }
 

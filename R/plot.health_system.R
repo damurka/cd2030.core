@@ -372,6 +372,8 @@ plot.cd_health_system_table <- function(x,
 #' @param title (Optional) Custom title for the entire plot.
 #' @param x_axis (Optional) Custom label for the x-axis.
 #' @param y_axis (Optional) Custom label for the y-axis.
+#' @param quad_labels (Optional) Named list to override quadrant text. 
+#'   Expected keys: `high_high`, `low_high`, `high_low`, `low_low`.
 #' @param ... Additional arguments
 #'
 #' @export
@@ -379,50 +381,70 @@ plot.cd_phc_scatter <- function(x,
                                 title = NULL,
                                 x_axis = NULL,
                                 y_axis = NULL,
+                                quad_labels = NULL,
                                 ...) {
   
   # Retrieve attributes saved during data generation
-  x_indicator <- attr(x, "x_indicator")
-  lbl_mch <- attr(x, "lbl_mch")
-  lbl_cur <- attr(x, "lbl_cur")
+  x_indicator <- attr_or_abort(x, "indicator")
+  # lbl_mch <- attr(x, "lbl_mch")
+  # lbl_cur <- attr(x, "lbl_cur")
 
   # 1. Setup Defaults
   default_x_lab <- switch(x_indicator,
     ratio_fac_pop = "Facility density",
     ratio_hstaff_pop = "Health workforce density"
   )
-  
-  t_title <- title %||% paste(default_x_lab, "vs PHC Indices")
+
+  default_x_prefix <- switch(x_indicator,
+    ratio_fac_pop = "facility density",
+    ratio_hstaff_pop = "workforce density"
+  )
+
+  t_title <- title %||% paste(default_x_lab, "vs MCH & Curative Service Index")
   t_x <- x_axis %||% default_x_lab
-  t_y <- y_axis %||% "Index Value"
+  t_y <- y_axis %||% "MCH & Curative Service Index"
 
-  # Create dynamic color mapping using the translated labels
-  idx_colors <- setNames(c("#2c7fb8", "#d95f02"), c(lbl_mch, lbl_cur))
+  # Setup default quadrant labels dynamically
+  default_quads <- list(
+    high_high = paste("High", default_x_prefix, "\nHigh service index"),
+    low_high  = paste("Low", default_x_prefix, "\nHigh service index"),
+    high_low  = paste("High", default_x_prefix, "\nLow service index"),
+    low_low   = paste("Low", default_x_prefix, "\nLow service index")
+  )
 
-  # Subset outliers for ggrepel
+ # Safely merge user translations if provided
+  if (!is.null(quad_labels)) {
+    default_quads <- modifyList(default_quads, as.list(quad_labels))
+  }
+
+  # 2. Calculate Medians to draw the lines
+  med_x <- median(x[[x_indicator]], na.rm = TRUE)
+  med_y <- median(x$service_coverage, na.rm = TRUE)
+
+  # 3. Subset outliers for labels
   outliers <- x %>% filter(is_outlier == TRUE)
 
   # 2. The SINGLE ggplot Block
-  ggplot(x, aes(x = !!sym(x_indicator), y = index_value, color = index_name)) +
-    
-    # Facet side-by-side (MCH | Curative)
-    facet_wrap(~ index_name, scales = "free_y", ncol = 2) +
-    
-    # Scatter Points
-    geom_point(size = 3) +
-    
-    # Trendline (force color to black so it doesn't inherit the point color)
+  ggplot(x, aes(x = !!sym(x_indicator), y = service_coverage)) +
+    geom_point(size = 3, color = "#2c7fb8") +
     geom_smooth(method = "lm", se = FALSE, linetype = "dashed", color = "black") +
+
+    # Median lines
+    geom_vline(xintercept = med_x, linetype = "longdash", color = "red") +
+    geom_hline(yintercept = med_y, linetype = "longdash", color = "red") +
     
     # Outlier Labels (force text color to black)
     ggrepel::geom_text_repel(data = outliers, aes(label = adminlevel_1), size = 3, color = "black") +
     
-    # Axes
-    scale_x_continuous(limits = c(0, NA), expand = expansion(mult = c(0, 0.05))) +
-    scale_y_continuous(limits = c(0, NA), expand = expansion(mult = c(0, 0.05))) +
+    # Quadrant annotations using the list
+    annotate("text", x = med_x * 1.5, y = med_y * 1.5, label = default_quads$high_high, size = 3) +
+    annotate("text", x = med_x * 0.5, y = med_y * 1.5, label = default_quads$low_high,  size = 3) +
+    annotate("text", x = med_x * 1.5, y = med_y * 0.5, label = default_quads$high_low,  size = 3) +
+    annotate("text", x = med_x * 0.5, y = med_y * 0.5, label = default_quads$low_low,   size = 3) +
     
-    # Apply custom distinct colors and hide the redundant legend
-    scale_color_manual(values = idx_colors, guide = "none") +
+    # Axes
+    scale_x_continuous(limits = c(0, NA), expand = expansion(mult = c(0, 0.15))) +
+    scale_y_continuous(limits = c(0, NA), expand = expansion(mult = c(0, 0.05))) +
     
     # Theming
     cd_plot_theme(
@@ -432,7 +454,6 @@ plot.cd_phc_scatter <- function(x,
     ) +
     theme(
       plot.title = element_text(face = "bold", hjust = 0.5),
-      strip.text = element_text(face = "bold", size = 11),
       plot.margin = margin(10, 20, 10, 20)
     )
 }

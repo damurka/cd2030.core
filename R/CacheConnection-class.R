@@ -175,7 +175,7 @@ CacheConnection <- R6::R6Class(
         pnmr = rates$pnmr,
         anc1survey = rates$anc1,
         dpt1survey = rates$penta1,
-        survey_year = self$survey_year,
+        survey_year = self$survey_year - 1,
         twin = rates$twin_rate,
         preg_loss = rates$preg_loss
       )
@@ -1070,16 +1070,12 @@ CacheConnection <- R6::R6Class(
 
     #' @description Generate PHC performance scatter plot data (Admin 1).
     #' @param indicator Character. The independent variable to plot ("ratio_fac_pop" or "ratio_hstaff_pop").
-    #' @param index_labels (Optional) A named list to override default index labels for MCH and Curative.
-    generate_phc_scatter_data = function(indicator, index_labels = NULL) {
+    generate_phc_scatter_data = function(indicator) {
       
       indicator <- arg_match(indicator, c("ratio_fac_pop", "ratio_hstaff_pop"))
       
       self$health_system_metrics_admin1 %>% 
-        generate_phc_scatter_data(
-          x_indicator = indicator, 
-          index_labels = index_labels
-        )
+        generate_phc_scatter_data(x_indicator = indicator)
     },
 
     #' @description Generate private sector ownership data (Admin 1).
@@ -1347,8 +1343,16 @@ CacheConnection <- R6::R6Class(
     #' @field mapping_years Gets mapping years.
     mapping_years = function(value) private$getter("selected_mapping_years", value),
 
-    #' @field fpet_data Gets UN estimates.
-    fpet_data = function(value) private$getter("fpet_data", value),
+    #' @field fpet_data Gets FPET data.
+    fpet_data = function(value) {
+      iso <- self$country_iso
+      dt <- private$getter("fpet_data", value)
+      if (is.null(dt)) {
+        dt <- fpet %>% filter(iso3 == iso)
+        attr(dt, 'country') <- self$country
+      }
+      dt
+    },
 
     #' @field un_estimates Gets UN estimates.
     un_estimates = function(value) {

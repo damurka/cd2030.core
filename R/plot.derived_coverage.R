@@ -126,20 +126,21 @@ plot.cd_derived_coverage <- function(x, year = NULL, title = NULL, x_label = NUL
       ) %>% 
       filter(!is.na(coverage_value))
     
-    ggplot(data, aes(x = coverage_value, y = reorder(!!sym(admin_level), coverage_value), color = method_lbl)) +
-      geom_point(size = 3, alpha = 0.8) +
+    ggplot(data, aes(x = coverage_value, y = reorder(!!sym(admin_level), coverage_value), fill = method_lbl)) +
+      # geom_point(size = 3, alpha = 0.8) +
+      geom_col(alpha = 0.8) +
       geom_vline(xintercept = 100, linetype = "dashed", color = "grey50") +
-      scale_color_manual(values = pal, breaks = ordered_labels) +
+      facet_wrap(~ method_lbl, ncol = 3) +
+      # scale_color_manual(values = pal, breaks = ordered_labels) +
       cd_plot_theme(
         title = final_title,
         x_axis = final_x_label,
         y_axis = final_y_label,
-        legend = ""
+        # legend = ""
       ) +
-      labs(fill = NULL, color = "") +
       theme(
-        panel.grid.major.y = element_line(color = "grey90", linetype = "dotted"),
-        legend.position = "bottom"
+        # panel.grid.major.y = element_line(color = "grey90", linetype = "dotted"),
+        legend.position = "none"
       )
       
   } else {

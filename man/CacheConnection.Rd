@@ -86,7 +86,7 @@ from \code{.rds} files.
 
     \item{\code{mapping_years}}{Gets mapping years.}
 
-    \item{\code{fpet_data}}{Gets UN estimates.}
+    \item{\code{fpet_data}}{Gets FPET data.}
 
     \item{\code{un_estimates}}{Gets UN estimates.}
 
@@ -1733,14 +1733,13 @@ Generate Service Utilization Admin 1 Data}
   Generate PHC performance scatter plot data (Admin 1).
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{CacheConnection$generate_phc_scatter_data(indicator, index_labels = NULL)}
+    \preformatted{CacheConnection$generate_phc_scatter_data(indicator)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
       \item{\code{indicator}}{Character. The independent variable to plot ("ratio_fac_pop" or "ratio_hstaff_pop").}
-      \item{\code{index_labels}}{(Optional) A named list to override default index labels for MCH and Curative.}
     }
     \if{html}{\out{</div>}}
   }

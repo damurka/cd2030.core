@@ -224,8 +224,8 @@ reference:
     contents:
       - generate_fpet_summary
       - interpret
-      - plot.cd_fpet
-      - interpret.cd_fpet
+      - plot.cd_fpet_data
+      - interpret.cd_fpet_data
 
   - title: "Reporting"
     desc: >
