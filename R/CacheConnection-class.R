@@ -211,6 +211,17 @@ CacheConnection <- R6::R6Class(
         cd_abort(c("x" = "One or more parameters is missing for {.fun calculate_coverage}"))
       }
 
+      # survey_data <- if (admin_level == "national") {
+      #   survey <- private$getter("national_survey") %||% survey_data$all
+      #   if (trim_surveys) self$filter_survey(survey) else survey
+      # } else {
+      #   survey <- private$getter("regional_survey") %||% survey_data$gregion
+      #   if (trim_surveys) self$filter_survey(survey) else survey
+      # }
+
+      # survey_data <- survey_data %>% 
+      #   filter(iso3 == self$country_iso)
+
       survey_data <- if (admin_level == "national") self$national_survey else self$regional_survey
 
       self$get_base_indicator_coverage(admin_level) %>%
@@ -218,7 +229,9 @@ CacheConnection <- R6::R6Class(
           survey_data = survey_data,
           wuenic_data = self$wuenic_estimates,
           subnational_map = self$survey_mapping
-        )
+        ) %>% 
+        mutate(country = self$country, iso = self$country_iso) %>% 
+        relocate(country, iso)
     },
 
     #' @description Generate Continuum of Care Coverage Data

@@ -11,7 +11,8 @@ calculate_overall_score1(
   outliers_summary,
   district_outliers_summary,
   ratios_summary,
-  labels = NULL
+  labels = NULL,
+  threshold = 90
 )
 }
 \description{

@@ -55,7 +55,8 @@ calculate_coverage <- function(.data,
 
   # Prepare survey data
   survey_data <- survey_data %>%
-    select(any_of(admin_level_cols), matches("^ll_|^ul|^r_")) %>%
+    
+    select(any_of(admin_level_cols), matches("^ll_|^ul|^r_|^se_|^source$")) %>%
     join_subnational_map(admin_level, subnational_map) %>%
     check_district_column(admin_level, dhis2_data)
 
