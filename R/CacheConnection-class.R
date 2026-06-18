@@ -633,7 +633,8 @@ CacheConnection <- R6::R6Class(
           outliers_summary          = self$outliers_national,
           district_outliers_summary = self$district_outliers_summary,
           ratios_summary            = self$adequacy_ratios,
-          labels                    = labels
+          labels                    = labels,
+          threshold                 = self$performance_threshold
         )
       } else {
         # 1. Reporting Rate: Filter the cached Admin1 dataset
@@ -659,7 +660,8 @@ CacheConnection <- R6::R6Class(
           outliers_summary          = out_sum,
           district_outliers_summary = dst_out,
           ratios_summary            = ratios,
-          labels                    = labels
+          labels                    = labels,
+          threshold                 = self$performance_threshold
         )
       }
     },
