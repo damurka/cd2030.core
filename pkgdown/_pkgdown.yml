@@ -202,10 +202,17 @@ reference:
     contents:
       - compute_service_utilization
       - filter_service_utilization
+      - prepare_mapping_service_utlization
       - prepare_private_sector_plot_data
+      - generate_service_dqa_summary
+      - generate_admin1_service_utilization
+      - generate_admin1_mch_curative_index
       - get_excel_version
-      - plot.cd_service_utilization_map
+      - plot.cd_service_utilization_prepared
       - plot.cd_service_utilization_filtered
+      - plot.cd_utilization_dqa
+      - plot.cd_service_utilization_admin1
+      - plot.cd_mch_curative_index
       - plot.cd_private_sector_plot_data
 
   - title: "Health System Performance"
