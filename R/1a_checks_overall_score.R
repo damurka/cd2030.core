@@ -74,15 +74,17 @@ calculate_overall_score1 <- function(average_reporting_rate,
                                      outliers_summary,
                                      district_outliers_summary,
                                      ratios_summary,
-                                     labels = NULL) {
+                                     labels = NULL,
+                                     threshold = 90) {
   check_cd_class(average_reporting_rate, "cd_average_reporting_rate")
   check_cd_class(district_reporting_rate, "cd_district_reporting_rate")
   check_cd_class(district_completeness, "cd_missing_district")
   check_cd_class(outliers_summary, "cd_outlier")
   check_cd_class(district_outliers_summary, "cd_district_outliers_summary")
   check_cd_class(ratios_summary, "cd_ratios_and_adequacy")
+  is_bare_numeric(threshold)
 
-  threshold <- attr_or_abort(district_reporting_rate, "threshold")
+  # threshold <- attr_or_abort(district_reporting_rate, "threshold")
 
   .generate_score_table(
     average_reporting_rate = average_reporting_rate,

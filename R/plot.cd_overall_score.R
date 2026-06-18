@@ -39,10 +39,10 @@ plot.cd_overall_score <- function(x, years = NULL, title = NULL, width = NULL, .
     bold(i = ~ is.na(type) & no == "4", bold = TRUE, part = "body") %>%
     bg(i = ~ is.na(type) & no == "4", part = "body", bg = "lightgoldenrodyellow") %>%
     bold(part = "header", bold = TRUE) %>%
-    colformat_double(i = ~ is.na(type) & !no %in% c("3a", "3b", "3c"), j = as.character(years), digits = 0, big.mark = ",") %>%
-    colformat_double(i = ~ is.na(type) & no %in% c("3a", "3b", "3c"), j = as.character(years), digits = 2) %>%
+    colformat_double(i = ~ is.na(type) & !no %in% c("3a", "3b"), j = as.character(years), digits = 0, big.mark = ",") %>%
+    colformat_double(i = ~ is.na(type) & no %in% c("3a", "3b"), j = as.character(years), digits = 2) %>%
     bg(
-      i = ~ is.na(type) & !no %in% c("3a", "3b", "3c"),
+      i = ~ is.na(type) & !no %in% c("3a", "3b"),
       j = as.character(years),
       bg = function(x) {
         result <- map_chr(as.list(x), ~ {
