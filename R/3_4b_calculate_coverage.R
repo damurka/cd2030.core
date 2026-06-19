@@ -250,7 +250,7 @@ check_district_column <- function(.data, admin_level, dhis2_data) {
 #'   indicators (e.g., 'penta3', 'measles1'). Options include "dhis2", "anc1", 
 #'   "penta1", "penta1derived", or "anc1derived".
 #' @param mat_denominator Character. The denominator to use for maternal/newborn 
-#'   indicators (e.g., 'anc4', 'instdeliveries'). Options include "dhis2", 
+#'   indicators (e.g., 'anc4', 'ideliv'). Options include "dhis2", 
 #'   "anc1", "penta1", "penta1derived", or "anc1derived".
 #'
 #' @return A tibble of class `cd_coverage_selected` containing the latest 
@@ -271,7 +271,7 @@ generate_coverage_data <- function(.data,
   vac_denominator <- arg_match(vac_denominator)
   mat_denominator <- arg_match(mat_denominator)
   vac_terms <- c('penta3', 'measles1')
-  mat_terms <- c("anc_1trimester", "anc4", "instdeliveries", "instlivebirths", "pnc48h")
+  mat_terms <- c("anc_1trimester", "anc4", "ideliv", "instlivebirths", "pnc48h")
   vac_terms_regex <- paste(vac_terms, collapse = '|')
   mat_terms_regex <- paste(mat_terms, collapse = '|')
 

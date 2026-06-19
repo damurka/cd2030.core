@@ -19,13 +19,13 @@
 .cd2030_indicator_groups <- list(
   vaccine = list(
     anc   = c('anc1'),
-    idelv = c('instdeliveries','instlivebirths'),
+    idelv = c('ideliv','instlivebirths'),
     vacc  = c('bcg','ipv1','ipv2','measles1','measles2','opv1','opv2','opv3',
               'penta1','penta2','penta3','pcv1','pcv2','pcv3','rota1','rota2')
   ),
   rmncah = list(
     anc   = c('anc1','anc_1trimester','anc4','ipt2','ipt3','syphilis_test','ifa90','hiv_test'),
-    idelv = c('sba','instdeliveries','instlivebirths','csection','low_bweight','pnc48h',
+    idelv = c('sba','ideliv','instlivebirths','csection','low_bweight','pnc48h',
               'total_stillbirth','stillbirth_f','stillbirth_m','maternal_deaths','neonatal_deaths'),
     vacc  = c('penta1','penta3','measles1','measles2','bcg'),
     opd   = c('opd_total','opd_under5'),

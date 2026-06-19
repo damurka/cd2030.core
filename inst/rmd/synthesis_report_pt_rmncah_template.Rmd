@@ -113,7 +113,7 @@ cache$denominator_metrics %>%
 ```
 **Partos institucionais**
 ```{r, fig.width=4.2}
-cache$get_filtered_indicator_coverage('instdeliveries', 'national') %>% 
+cache$get_filtered_indicator_coverage('ideliv', 'national') %>% 
   plot() + cd_report_theme()
 ```
 **Penta 3**
@@ -130,7 +130,7 @@ cache$get_filtered_indicator_coverage('penta3', 'national') %>%
 
 - Até que ponto a projeção nacional de nascimentos está alinhada com a projeção das Nações Unidas?
 - Quais métodos de denominador tiveram melhor desempenho ao nível nacional para a cobertura de nados-vivos e para a cobertura de penta3? E ao nível subnacional para os dois indicadores?
-- Quais denominadores são selecionados para os indicadores maternos (instdeliveries) e de vacinação (penta3) nas análises de cobertura?
+- Quais denominadores são selecionados para os indicadores maternos (ideliv) e de vacinação (penta3) nas análises de cobertura?
 
 :::
 
@@ -169,7 +169,7 @@ cache$get_filtered_coverage('anc_1trimester', 'national') %>%
 `r my_multicol_start()`
 
 ```{r, fig.width=6.3, fig.height=3}
-cache$get_filtered_coverage('instdeliveries', 'national') %>%
+cache$get_filtered_coverage('ideliv', 'national') %>%
   plot() + cd_report_theme()
 ```
 
@@ -300,7 +300,7 @@ equiplot_education(cache$education_survey, 'penta3') +
 
 **Partos institucionais**
 ```{r, fig.width=6.3}
-cache$get_filtered_inequality('instdeliveries', 'adminlevel_1') %>% 
+cache$get_filtered_inequality('ideliv', 'adminlevel_1') %>% 
   plot() + cd_report_theme()
 ```
 
@@ -316,7 +316,7 @@ cache$get_filtered_inequality('penta3', 'adminlevel_1') %>%
 `r my_multicol_start()`
 
 ```{r, fig.width=3.1}
-cache$get_filtered_mapping_data('instdeliveries', 'adminlevel_1', 'Greens') %>% 
+cache$get_filtered_mapping_data('ideliv', 'adminlevel_1', 'Greens') %>% 
   plot() + cd_report_theme()
 ```
 

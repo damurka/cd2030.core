@@ -35,7 +35,7 @@ plot.cd_threshold <- function(x, title = NULL, x_axis = NULL, y_axis = NULL, leg
                          vaccine = 'Vaccines',
                          dropout = 'Dropout',
                          anc4 = 'ANC 4',
-                         instdeliveries = 'Institutional Delivery',
+                         ideliv = 'Institutional Delivery',
                          str_to_title(indicator_group)
   )
 

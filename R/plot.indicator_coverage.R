@@ -185,7 +185,7 @@ plot.cd_indicator_coverage_filtered <- function(x, title = NULL, x_label = NULL,
 
   # Pretty indicator name
   indicator_pretty <- switch(indicator_raw,
-                             instdeliveries = "Institutional Delivery",
+                             ideliv = "Institutional Delivery",
                              anc4 = "ANC 4",
                              low_bweight = "Low Birth Weight",
                              penta3 = "Penta 3",

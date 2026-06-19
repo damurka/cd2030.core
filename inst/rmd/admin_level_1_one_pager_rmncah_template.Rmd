@@ -65,7 +65,7 @@ admin1_cov <- cache$calculate_coverage('adminlevel_1')
 admin2_cov <- cache$calculate_coverage('district') %>% 
   filter(adminlevel_1 == !!adminlevel_1)
 
-plot_subnational_comparison <- function(.data, indicator = c('penta3', 'instdeliveries'), denominator = c('penta1', 'anc1', 'dhis2', 'penta1derived'), last_year) {
+plot_subnational_comparison <- function(.data, indicator = c('penta3', 'ideliv'), denominator = c('penta1', 'anc1', 'dhis2', 'penta1derived'), last_year) {
   check_required(.data)
   indicator <- arg_match(indicator)
   indicator_col <- sym(paste0('cov_', indicator, '_', denominator))
@@ -194,7 +194,7 @@ run_columnbreak()
 
 ```{r, fig.width=3.6, fig.height=1.5}
 admin1_cov %>% 
-  filter_coverage('instdeliveries', denominator = cache$get_denominator('instdeliveries'), region = adminlevel_1) %>% 
+  filter_coverage('ideliv', denominator = cache$get_denominator('ideliv'), region = adminlevel_1) %>% 
   plot() +
   cd_report_theme(base_size = 7) +
   theme(
@@ -271,7 +271,7 @@ plot_subnational_comparison(admin1_cov, 'penta3', denominator = cache$get_denomi
 run_columnbreak()
 ```
 ```{r, fig.width=3.6, fig.height=2.5}
-plot_subnational_comparison(admin1_cov, 'instdeliveries', denominator = cache$get_denominator('instdeliveries'), last_year = last_year)
+plot_subnational_comparison(admin1_cov, 'ideliv', denominator = cache$get_denominator('ideliv'), last_year = last_year)
 ```
 
 <!---BLOCK_MULTICOL_STOP{widths: [3.63,3.63,3.63], space: 0.2, sep: false}--->

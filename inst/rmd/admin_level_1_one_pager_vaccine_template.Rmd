@@ -94,13 +94,13 @@ cache$get_filtered_coverage('penta3', 'adminlevel_1', adminlevel_1) %>%
 # =========================================================
 # 1. Trend Line
 cache$calculate_coverage('adminlevel_1') %>% 
-  plot('instdeliveries', denominator = cache$get_denominator('instdeliveries'), year = last_year, region = adminlevel_1) +
+  plot('ideliv', denominator = cache$get_denominator('ideliv'), year = last_year, region = adminlevel_1) +
   theme(text = element_text(size = 12))
 ```
 
 ```{r, fig.width=6.8, fig.height=3.5}
 # 2. Bar Chart
-cache$get_filtered_coverage('instdeliveries', 'adminlevel_1', adminlevel_1) %>% 
+cache$get_filtered_coverage('ideliv', 'adminlevel_1', adminlevel_1) %>% 
   plot() +
   cd_report_theme(base_size = 12)
 ```

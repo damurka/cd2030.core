@@ -19,7 +19,7 @@ indicators (e.g., 'penta3', 'measles1'). Options include "dhis2", "anc1",
 "penta1", "penta1derived", or "anc1derived".}
 
 \item{mat_denominator}{Character. The denominator to use for maternal/newborn
-indicators (e.g., 'anc4', 'instdeliveries'). Options include "dhis2",
+indicators (e.g., 'anc4', 'ideliv'). Options include "dhis2",
 "anc1", "penta1", "penta1derived", or "anc1derived".}
 }
 \value{

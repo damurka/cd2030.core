@@ -18,7 +18,7 @@ calculate_health_system_metrics <- function(.data, admin_level = c("national", "
   last_year <- robust_max(.data$year)
 
   allvars <- c("total_pop", "total_nonprofit", "total_profit", "total_facilities", "total_hospitals", "total_physicians", "total_nonclinique_phys", "total_nurses", "total_beds", "opd_total", "ipd_total", "under5_pop", "opd_under5", "ipd_under5")
-  mch_vars <- c('anc1', 'anc4', 'pnc48h', 'bcg', 'penta1', "penta3", 'measles1', 'measles2', 'instdeliveries')
+  mch_vars <- c('anc1', 'anc4', 'pnc48h', 'bcg', 'penta1', "penta3", 'measles1', 'measles2', 'ideliv')
 
   metrics <- .data %>%
     filter(year == last_year) %>%
@@ -75,7 +75,7 @@ calculate_health_system_metrics <- function(.data, admin_level = c("national", "
       score_utilization = if_else(score_utilization > 100, 100, score_utilization),
       score_total = (score_infrastructure + score_workforce + score_utilization) / 3,
       score_total = if_else(score_total > 100, 100, score_total),
-      mch_prev_services_index = (anc1 + anc4*3 + pnc48h + bcg + (penta1 + penta3)/2 + penta3 + measles1 + measles2 + instdeliveries*10) / total_pop_u5,
+      mch_prev_services_index = (anc1 + anc4*3 + pnc48h + bcg + (penta1 + penta3)/2 + penta3 + measles1 + measles2 + ideliv*10) / total_pop_u5,
       curative_services_index = (total_opd_u5 + total_ipd_u5 * 10)/total_pop_u5
     ) %>% 
     select(-any_of(mch_vars))
@@ -113,15 +113,15 @@ calculate_health_system_comparison <- function(.data, admin1_coverage_data, admi
   last_year <- robust_max(admin1_coverage_data$year)
 
   # nat <- calculate_indicator_coverage(.data, un_estimates = un_est) %>%
-  #   select(year, matches('^cov_(anc1|sba|instdeliveries|csection|pnc48|penta3)_(anc1|dhis2|penta1)$')) %>%
+  #   select(year, matches('^cov_(anc1|sba|ideliv|csection|pnc48|penta3)_(anc1|dhis2|penta1)$')) %>%
   #   rename_with(~ paste0('nat_', .x), .cols = starts_with('cov_'))
 
   ad1_cov <- admin1_coverage_data %>%
-    select(year, adminlevel_1, matches("^cov_(anc1|sba|instdeliveries|csection|pnc48|penta3)_(anc1|dhis2|penta1)$")) %>%
+    select(year, adminlevel_1, matches("^cov_(anc1|sba|ideliv|csection|pnc48|penta3)_(anc1|dhis2|penta1)$")) %>%
     rename_with(~ paste0("ad1_", .x), .cols = starts_with("cov_"))
 
   dis_cov <- admin2_coverage_data %>%
-    select(year, adminlevel_1, district, matches("^cov_(anc1|sba|instdeliveries|csection|pnc48|penta3)_(anc1|dhis2|penta1)$")) %>%
+    select(year, adminlevel_1, district, matches("^cov_(anc1|sba|ideliv|csection|pnc48|penta3)_(anc1|dhis2|penta1)$")) %>%
     rename_with(~ paste0("dis_", .x), .cols = starts_with("cov_"))
 
   ad1_metric <- calculate_health_system_metrics(.data, admin_level = "adminlevel_1") %>%

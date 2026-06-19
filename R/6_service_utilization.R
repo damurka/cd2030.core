@@ -27,7 +27,7 @@ compute_service_utilization <- function(.data, admin_level = c('national', 'admi
 
   pop_vars <- c('total_pop', 'under5_pop', 'under1_pop', 'live_births', 'total_births')
   vars <- c('opd_total', 'opd_under5', 'ipd_total', 'ipd_under5', 'under5_deaths', 'total_deaths')
-  mch_vars <- c('anc1', 'anc4', 'pnc48h', 'bcg', 'penta1', "penta3", 'measles1', 'measles2', 'instdeliveries')
+  mch_vars <- c('anc1', 'anc4', 'pnc48h', 'bcg', 'penta1', "penta3", 'measles1', 'measles2', 'ideliv')
 
   result <- .data %>%
     mutate(
@@ -70,7 +70,7 @@ compute_service_utilization <- function(.data, admin_level = c('national', 'admi
       prop_death = 100 * under5_deaths / total_deaths,
 
       # MCH preventive index & Curative service index
-      mch_prev_services_index = (anc1 + anc4*3 + pnc48h + bcg + (penta1 + penta3)/2 + penta3 + measles1 + measles2 + instdeliveries*10) / total_pop_u5,
+      mch_prev_services_index = (anc1 + anc4*3 + pnc48h + bcg + (penta1 + penta3)/2 + penta3 + measles1 + measles2 + ideliv*10) / total_pop_u5,
       curative_services_index = (total_opd_u5 + total_ipd_u5 * 10)/total_pop_u5
     ) %>%
     select(-live_births, -under1_pop, -total_births, -any_of(mch_vars))

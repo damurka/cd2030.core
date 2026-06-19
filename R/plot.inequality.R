@@ -47,7 +47,7 @@ plot.cd_inequality_filtered <- function(x, title = NULL, subtitle = NULL, x_axis
   default_title <- switch(indicator,
                           anc1 = "Antenatal care 1+ visits",
                           anc4 = "Antenatal care 4+ visits",
-                          instdeliveries = "Institutional deliveries",
+                          ideliv = "Institutional deliveries",
                           instlivebirths = "Institutional live births",
                           bcg = "BCG vaccine",
                           penta1 = "Penta vaccine - 1st dose",
