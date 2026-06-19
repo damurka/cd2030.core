@@ -273,6 +273,9 @@ plot_mortality_plausibility <- function(x,
     # Medians (Thick Red horizontal segments)
     geom_segment(data = medians, aes(x = year_left, xend = year_right, y = med_val, yend = med_val, 
                                      color = lbl_median, linetype = lbl_median), linewidth = 2) +
+    
+    geom_text(data = medians, aes(x = (year_left + year_right) / 2, y = med_val, label = round(med_val, 1), color = lbl_median),
+                                  vjust = -0.5,  show.legend = FALSE) +
 
     # Scales
     scale_color_manual(name = NULL, values = setNames(c("red", "blue"), c(lbl_median, lbl_plausible))) +

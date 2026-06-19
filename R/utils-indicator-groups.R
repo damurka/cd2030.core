@@ -365,6 +365,19 @@ get_analysis_indicators <- function()  {
   indicators
 }
 
+get_adjustment_indicators <- function() {
+  groups <- get_indicator_groups()
+  indicators <- sort(list_c(groups[!names(groups) %in% c("ipd")]))
+
+  indicators <- if (get_selected_group() == 'vaccine') {
+    c(indicators,'dropout_penta13','dropout_penta3mcv1','dropout_penta1mcv1', 'dropout_measles12', 'undervax','zerodose')
+  } else if (get_selected_group() == 'rmncah') {
+    indicators[!indicators %in% c('sba', "total_stillbirth", "stillbirth_f", "stillbirth_m", "maternal_deaths", "neonatal_deaths", 'under5_deaths', 'total_deaths')]
+  }
+
+  indicators
+}
+
 #' @title Get Named Indicator Vector
 #' @description Each indicator is named by its group
 #' @return Named character vector of indicators

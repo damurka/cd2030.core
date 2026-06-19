@@ -966,7 +966,7 @@ CacheConnection <- R6::R6Class(
       admin_level <- arg_match(admin_level, c("national", "adminlevel_1", "district"))
 
       self$get_base_indicator_coverage(admin_level, region, show_district = FALSE) %>% 
-        calculate_derived_coverage(indicator)
+        calculate_derived_coverage(indicator, self$survey_year)
     },
     #' @description Get high-performing regions based on indicator and threshold.
     #' @param indicator Character. The specific health indicator (e.g., "penta3").
@@ -1123,7 +1123,7 @@ CacheConnection <- R6::R6Class(
       private$depend("countdown_data")
       private$depend("bayesian_models")
       admin_level <- arg_match(admin_level, c('national', 'adminlevel_1'))
-      indicator <- arg_match(indicator, c('anc4', 'anc_1trimester', 'ideliv', 'measles2', 'penta3'))
+      indicator <- arg_match(indicator, c('anc4', 'anc_1trimester', 'ideliv', 'measles1', 'penta3'))
 
       denominator <- self$get_denominator(indicator)
       
