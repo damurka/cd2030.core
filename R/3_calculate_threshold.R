@@ -5,14 +5,14 @@
 #'
 #' @param .data A tibble of class `cd_indicator_coverage`.
 #' @param denominator Character. The denominator used (e.g., `'dhis2'`, `'anc1'`).
-#' @param indicator Character. The health indicator group to evaluate (`'anc4'`, `'instdeliveries'`, `'vaccine'`, `'dropout'`).
+#' @param indicator Character. The health indicator group to evaluate (`'anc4'`, `'ideliv'`, `'vaccine'`, `'dropout'`).
 #'
 #' @return A `cd_threshold` object summarizing the percentage of regions meeting the criteria by year.
 #'
 #' @export
 calculate_threshold <- function(.data,
                                 denominator = c('dhis2', 'anc1', 'penta1', 'penta1derived', 'anc1derived'),
-                                indicator = c('anc4', 'instdeliveries', 'vaccine', 'dropout')) {
+                                indicator = c('anc4', 'ideliv', 'vaccine', 'dropout')) {
   check_cd_indicator_coverage(.data)
   indicator <- arg_match(indicator)
   denominator <- arg_match(denominator)
@@ -33,7 +33,7 @@ calculate_threshold <- function(.data,
     indicator,
     vaccine = if (admin_level == "national") 90 else 80,
     anc4 = 70,
-    instdeliveries = 80,
+    ideliv = 80,
     dropout = 10
   )
 

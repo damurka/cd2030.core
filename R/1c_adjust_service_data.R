@@ -91,7 +91,8 @@ adjust_service_data <- function(.data,
   }
 
   indicator_groups <- get_indicator_groups()
-  all_indicators <- get_all_indicators()
+  all_indicators <- get_analysis_indicators()
+  all_indicators <- c(all_indicators, 'opd_total','opd_under5')
   last_year <- robust_max(.data$year)
 
   merged_data <- .data %>%

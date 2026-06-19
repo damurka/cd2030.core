@@ -7,7 +7,7 @@
 calculate_threshold(
   .data,
   denominator = c("dhis2", "anc1", "penta1", "penta1derived", "anc1derived"),
-  indicator = c("anc4", "instdeliveries", "vaccine", "dropout")
+  indicator = c("anc4", "ideliv", "vaccine", "dropout")
 )
 }
 \arguments{
@@ -15,7 +15,7 @@ calculate_threshold(
 
 \item{denominator}{Character. The denominator used (e.g., \code{'dhis2'}, \code{'anc1'}).}
 
-\item{indicator}{Character. The health indicator group to evaluate (\code{'anc4'}, \code{'instdeliveries'}, \code{'vaccine'}, \code{'dropout'}).}
+\item{indicator}{Character. The health indicator group to evaluate (\code{'anc4'}, \code{'ideliv'}, \code{'vaccine'}, \code{'dropout'}).}
 }
 \value{
 A \code{cd_threshold} object summarizing the percentage of regions meeting the criteria by year.

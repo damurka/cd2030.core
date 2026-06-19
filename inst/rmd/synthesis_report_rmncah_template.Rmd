@@ -113,7 +113,7 @@ cache$denominator_metrics %>%
 ```
 **Institutional Deliveries**
 ```{r, fig.width=4.2}
-cache$get_filtered_indicator_coverage('instdeliveries', 'national') %>% 
+cache$get_filtered_indicator_coverage('ideliv', 'national') %>% 
   plot() + cd_report_theme()
 ```
 **Penta 3**
@@ -130,7 +130,7 @@ cache$get_filtered_indicator_coverage('penta3', 'national') %>%
 
 - How well does the national projection of births align with the UN projection?
 - Which denominator methods performed best at the national level for the live births coverage and penta3 coverage? And for subnational level for the two indicators?
-- What denominators are selected for the maternal (instdeliveries) and vaccination (penta3) indicators in the coverage analyses? 
+- What denominators are selected for the maternal (ideliv) and vaccination (penta3) indicators in the coverage analyses? 
 
 :::
 
@@ -169,7 +169,7 @@ cache$get_filtered_coverage('anc_1trimester', 'national') %>%
 `r my_multicol_start()`
 
 ```{r, fig.width=6.3, fig.height=3}
-cache$get_filtered_coverage('instdeliveries', 'national') %>%
+cache$get_filtered_coverage('ideliv', 'national') %>%
   plot() + cd_report_theme()
 ```
 
@@ -300,7 +300,7 @@ equiplot_education(cache$education_survey, 'penta3') +
 
 **Instituional Deliveries**
 ```{r, fig.width=6.3}
-cache$get_filtered_inequality('instdeliveries', 'adminlevel_1') %>% 
+cache$get_filtered_inequality('ideliv', 'adminlevel_1') %>% 
   plot() + cd_report_theme()
 ```
 
@@ -316,7 +316,7 @@ cache$get_filtered_inequality('penta3', 'adminlevel_1') %>%
 `r my_multicol_start()`
 
 ```{r, fig.width=3.1}
-cache$get_filtered_mapping_data('instdeliveries', 'adminlevel_1', 'Greens') %>% 
+cache$get_filtered_mapping_data('ideliv', 'adminlevel_1', 'Greens') %>% 
   plot() + cd_report_theme()
 ```
 

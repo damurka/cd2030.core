@@ -54,7 +54,7 @@ facility and survey data need to be used.
 admin_level_1_inequality <- cache$calculate_inequality('adminlevel_1')
 
 admin_level_1_inequality %>% 
-  filter_inequality('instdeliveries') %>% 
+  filter_inequality('ideliv') %>% 
   plot() +
   cd_report_theme()
 ```
@@ -67,19 +67,19 @@ max_year <- robust_max(admin_level_1_mapping$year)
 years <- if (is.null(cache$mapping_years)) c(min_year, max_year) else cache$mapping_years
 
 admin_level_1_mapping %>% 
-  filter_mapping_data('instdeliveries', denominator = cache$maternal_denominator,
+  filter_mapping_data('ideliv', denominator = cache$maternal_denominator,
                       palette = 'Blues', plot_year = years) %>% 
   plot() +
   cd_report_theme()
 ```
 
 ```{r, fig.cap='Institutioinal Deliveries coverage by wealth, recent surveys'}
-equiplot_wealth(cache$wiq_survey, 'instdeliveries') +
+equiplot_wealth(cache$wiq_survey, 'ideliv') +
   cd_report_theme()
 ```
 
 ```{r, fig.cap='Institutioinal Deliveries coverage by maternal education, recent surveys'}
-equiplot_education(cache$education_survey, 'instdeliveries') +
+equiplot_education(cache$education_survey, 'ideliv') +
   cd_report_theme()
 ```
 
@@ -165,7 +165,7 @@ facility and survey data need to be used.
 district_inequality <- cache$calculate_inequality('district')
 
 district_inequality %>% 
-  filter_inequality('instdeliveries') %>% 
+  filter_inequality('ideliv') %>% 
   plot() +
   cd_report_theme()
 ```

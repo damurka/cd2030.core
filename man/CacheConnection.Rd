@@ -259,6 +259,7 @@ Update a field (with change tracking)}
     \item \href{#method-CacheConnection-generate_health_system_table}{\code{CacheConnection$generate_health_system_table()}}
     \item \href{#method-CacheConnection-generate_phc_scatter_data}{\code{CacheConnection$generate_phc_scatter_data()}}
     \item \href{#method-CacheConnection-generate_private_sector_data}{\code{CacheConnection$generate_private_sector_data()}}
+    \item \href{#method-CacheConnection-get_bayes_model}{\code{CacheConnection$get_bayes_model()}}
     \item \href{#method-CacheConnection-clone}{\code{CacheConnection$clone()}}
   }
 }
@@ -1759,6 +1760,26 @@ Generate Service Utilization Admin 1 Data}
     \if{html}{\out{<div class="arguments">}}
     \describe{
       \item{\code{legend_labels}}{(Optional) A named list to override default labels for Private, NGO, and Public.}
+    }
+    \if{html}{\out{</div>}}
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-get_bayes_model"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-get_bayes_model}{}}}
+\subsection{\code{CacheConnection$get_bayes_model()}}{
+  Get or calculate a Bayesian Coverage Model
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$get_bayes_model(admin_level, indicator)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{admin_level}}{Administrative level ("national", "adminlevel_1")}
+      \item{\code{indicator}}{Character. Indicator name.}
     }
     \if{html}{\out{</div>}}
   }

@@ -19,13 +19,13 @@
 #' calculate_derived_coverage(dhis_data, "penta1", 2019)
 #'
 #' @export
-calculate_derived_coverage <- function(.data, indicator) {
+calculate_derived_coverage <- function(.data, indicator, survey_year) {
   check_cd_population(.data)
   indicator <- arg_match(indicator, get_all_indicators())
 
   population <- attr_or_abort(.data, 'population')
   admin_level <- attr_or_abort(.data, 'admin_level')
-  survey_year <- attr_or_abort(.data, 'survey_year')
+  # survey_year <- attr_or_abort(.data, 'survey_year')
   region <- attr_or_null(.data, 'region')
 
   group_vars <- get_admin_columns(admin_level, region)

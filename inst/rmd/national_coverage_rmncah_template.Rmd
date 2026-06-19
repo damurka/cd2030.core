@@ -100,7 +100,7 @@ national_coverage %>%
 
 ```{r}
 national_coverage %>% 
-  filter_coverage('instdeliveries', denominator = cache$get_denominator('instdeliveries')) %>% 
+  filter_coverage('ideliv', denominator = cache$get_denominator('ideliv')) %>% 
   plot() +
   cd_report_theme()
 ```

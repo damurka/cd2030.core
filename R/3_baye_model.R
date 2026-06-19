@@ -8,7 +8,7 @@
 #' @export
 generate_bayes_model <- function(coverage_data,
                                  overall_score,
-                                 indicator = c('anc4', 'anc_1trimester', 'instdeliveries', 'measles2', 'penta3'), 
+                                 indicator = c('anc4', 'anc_1trimester', 'ideliv', 'measles1', 'penta3'), 
                                  denominator = c('anc1', 'dhis2', 'penta1', 'penta1derived', 'anc1derived')) {
   
   # Validate inputs
@@ -23,8 +23,8 @@ generate_bayes_model <- function(coverage_data,
     indicator,
     'anc4'           = 'anc4',
     'anc_1trimester' = 'anc1trimester',
-    'instdeliveries' = 'ideliv',
-    'measles2'       = 'vmsl',
+    'ideliv' = 'ideliv',
+    'measles1'       = 'vmsl',
     'penta3'         = 'vdpt',
     indicator # fallback
   )
@@ -101,6 +101,9 @@ generate_bayes_model <- function(coverage_data,
   # Join DQA scores
   routine_dt <- routine_dt %>% 
     left_join(dqa, by = join_by(year))
+
+  print(glimpse(baye_dt))
+  print(glimpse(routine_dt))
 
   # ---------------------------------------------------------
   # 4. Fit Model

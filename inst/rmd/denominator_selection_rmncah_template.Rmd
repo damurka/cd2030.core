@@ -103,7 +103,7 @@ cache$get_filtered_indicator_coverage('penta3', 'national') %>%
 ### Denominator selection based on Institutional Delivery
 
 ```{r}
-cache$get_filtered_indicator_coverage('instdeliveries', 'national') %>% 
+cache$get_filtered_indicator_coverage('ideliv', 'national') %>% 
   plot() +
   cd_report_theme()
 ```

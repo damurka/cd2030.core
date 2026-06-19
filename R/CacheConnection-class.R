@@ -109,6 +109,20 @@ CacheConnection <- R6::R6Class(
           }
         )
       }
+
+      if ('instdeliveries' %in% colnames(private$.in_memory_data$countdown_data)) {
+        
+        private$invalidate_cached_data()
+
+        private$.in_memory_data$countdown_data <- private$.in_memory_data$countdown_data %>% 
+          rename(ideliv = any_of('instdeliveries'))
+
+        if (!is.null(private$.in_memory_data$adjusted_data)) {
+          private$.in_memory_data$adjusted_data <- private$.in_memory_data$adjusted_data %>% 
+            rename(ideliv = any_of('instdeliveries'))
+        }
+      }
+      
     },
 
     #' Load data from disk.
@@ -129,7 +143,7 @@ CacheConnection <- R6::R6Class(
       # }
       private$.in_memory_data <- loaded_data
       private$.in_memory_data$countdown_data <- private$.in_memory_data$countdown_data %>%
-        rename(instdeliveries = any_of("ideliv"))
+        rename(ideliv = any_of("ideliv"))
     },
 
     #' Save data to disk (only if changed and RDS path is not NULL)
@@ -405,7 +419,7 @@ CacheConnection <- R6::R6Class(
       factors <- if (get_selected_group() == "vaccine") {
         vacc_factors
       } else {
-        c(vacc_factors, "opd", "ipd")
+        c(vacc_factors, "opd")
       }
       private$setter("k_factors", value, ~ is.numeric(.x) && all(factors %in% names(.x)))
     },
@@ -920,7 +934,7 @@ CacheConnection <- R6::R6Class(
     #' @param admin_level Character. Level of aggregation ("national", "adminlevel_1", "district").
     #' @param region Character. Optional region filter.
     get_filtered_threshold = function(indicator, admin_level, region = NULL) {
-      indicator <- arg_match(indicator, c('anc4', 'instdeliveries', 'vaccine', 'dropout'))
+      indicator <- arg_match(indicator, c('anc4', 'ideliv', 'vaccine', 'dropout'))
       admin_level <- arg_match(admin_level, c("national", "adminlevel_1", "district"))
 
       if (!self$check_inequality_params) {
@@ -952,7 +966,7 @@ CacheConnection <- R6::R6Class(
       admin_level <- arg_match(admin_level, c("national", "adminlevel_1", "district"))
 
       self$get_base_indicator_coverage(admin_level, region, show_district = FALSE) %>% 
-        calculate_derived_coverage(indicator)
+        calculate_derived_coverage(indicator, self$survey_year)
     },
     #' @description Get high-performing regions based on indicator and threshold.
     #' @param indicator Character. The specific health indicator (e.g., "penta3").
@@ -982,7 +996,7 @@ CacheConnection <- R6::R6Class(
 
         # Other explicit targets
         indicator == "anc4" ~ 70,
-        indicator == "instdeliveries" ~ 80,
+        indicator == "instlivebirths" ~ 80,
         str_detect(indicator, "dropout") ~ 10,
 
         # The fallback for anything else (e.g., anc1, sba)
@@ -1100,6 +1114,50 @@ CacheConnection <- R6::R6Class(
         generate_private_sector_data(
           legend_labels = legend_labels
         )
+    },
+    #' @description Get or calculate a Bayesian Coverage Model
+    #' @param admin_level Administrative level ("national", "adminlevel_1")
+    #' @param indicator Character. Indicator name.
+    get_bayes_model = function(admin_level, indicator) {
+      # 1. Register dependencies for Shiny reactivity
+      private$depend("countdown_data")
+      private$depend("bayesian_models")
+      admin_level <- arg_match(admin_level, c('national', 'adminlevel_1'))
+      indicator <- arg_match(indicator, c('anc4', 'anc_1trimester', 'ideliv', 'measles1', 'penta3'))
+
+      denominator <- self$get_denominator(indicator)
+      
+      # 2. Create a unique cache key
+      key <- paste(admin_level, indicator, denominator, sep = "_")
+      
+      # 3. Fetch the list of cached models safely
+      models_list <- private$getter("bayesian_models")
+      if (is.null(models_list)) models_list <- list()
+      
+      # 4. If the model isn't calculated yet, generate it!
+      if (is.null(models_list[[key]])) {
+        
+        # Calculate dependencies
+        cov_data <- self$calculate_coverage(admin_level)
+        
+        # Fit the model
+        new_model <- generate_bayes_model(
+          coverage_data = cov_data,
+          overall_score = self$overall_score,
+          indicator = indicator,
+          denominator = denominator
+        )
+        
+        # Store in the local list
+        models_list[[key]] <- new_model
+        
+        # 5. Use update_field! 
+        # This automatically triggers Shiny reactivity AND saves the heavy object to disk
+        private$update_field("bayesian_models", models_list)
+      }
+      
+      # Return the specific model
+      return(models_list[[key]])
     }
   ),
   active = list(
@@ -1974,6 +2032,8 @@ CacheConnection <- R6::R6Class(
       survey_mapping = NULL,
       map_mapping = NULL,
 
+      bayesian_models = NULL,
+
       reporting_rate_national = NULL,
       reporting_rate_admin1 = NULL,
       reporting_rate_district = NULL,
@@ -2088,6 +2148,7 @@ CacheConnection <- R6::R6Class(
       private$update_field("sector_area_estimates", NULL)
       private$update_field("csection_national_estimates", NULL)
       private$update_field("csection_area_estimates", NULL)
+      private$update_field("mortality_summary", NULL)
       
       # --- 4. MORTALITY & HEALTH SYSTEMS ---
       private$update_field("mortality_summary", NULL)

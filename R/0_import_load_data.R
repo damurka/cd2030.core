@@ -289,6 +289,9 @@ new_countdown <- function(
 ) {
   check_required(.data)
 
+  .data <- .data %>% 
+     rename(ideliv = any_of('instdeliveries'))
+
   column_names <- colnames(.data)
 
   resolved_group <- resolve_indicator_group(column_names, indicator_group, profile_name)
@@ -576,7 +579,7 @@ standardize_data <- function(.data, call = caller_env()) {
     select(-matches("_reporting_received$|_reporting_expected$")) %>%
     rename(
       adminlevel_1 = any_of("first_admin_level"),
-      instdeliveries = any_of("instdelivery"),
+      ideliv = any_of("instdelivery"),
       pnc48h = any_of("pnc_48h"),
       pop_rate = any_of("pop_growth_rate"),
       total_pop = any_of("total_population"),
