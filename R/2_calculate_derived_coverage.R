@@ -19,13 +19,14 @@
 #' calculate_derived_coverage(dhis_data, "penta1", 2019)
 #'
 #' @export
-calculate_derived_coverage <- function(.data, indicator, survey_year) {
-  check_cd_population(.data)
+calculate_derived_coverage <- function(.data, indicator) {
+  # check_cd_population(.data)
+  check_cd_coverage(.data)
   indicator <- arg_match(indicator, get_all_indicators())
 
   population <- attr_or_abort(.data, 'population')
   admin_level <- attr_or_abort(.data, 'admin_level')
-  # survey_year <- attr_or_abort(.data, 'survey_year')
+  survey_year <- attr_or_abort(.data, 'survey_year')
   region <- attr_or_null(.data, 'region')
 
   group_vars <- get_admin_columns(admin_level, region)
@@ -41,11 +42,12 @@ calculate_derived_coverage <- function(.data, indicator, survey_year) {
   # cov_penta1_derived_diff <- paste0(cov_penta1, 'derived_diff')
   cov_penta1_derived <- paste0(cov_penta1, 'derived')
   cov_anc1_derived <- paste0(cov_anc1, 'derived')
+  survey_values <- paste0('r_', indicator)
 
   data <- .data %>%
     select(any_of(c(group_vars, 'year', population, 'population_growth_change', # 'population_growth_change_diff', 
                    'population_proportion', indicator, penta1_denom, anc1_denom, penta1_derived_denom, anc1_derived_denom, # penta1_derived_denom_diff,
-                    cov_penta1, cov_anc1, cov_dhis2, cov_un, cov_penta1_derived, cov_anc1_derived # , cov_penta1_derived_diff
+                    cov_penta1, cov_anc1, cov_dhis2, cov_un, cov_penta1_derived, cov_anc1_derived, survey_values # , cov_penta1_derived_diff
                   )))
 
   # Return final tibble tagged with admin level

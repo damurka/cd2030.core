@@ -5,7 +5,6 @@
 #' It supports both national and subnational views.
 #'
 #' @param x A `cd_coverage_trends` object.
-#' @param year (optional) An integer for the year to plot the dot plot
 #' @param region (Optional) A character string of the region or district name.
 #'   Required for subnational data, must be `NULL` for national data.
 #' @param title (Optional) A scalar character string to override the default plot title. Defaults to `NULL`.
@@ -17,13 +16,14 @@
 #'
 #' @return A `ggplot` object showing coverage trends over time.
 #' @export
-plot.cd_derived_coverage <- function(x, year = NULL, title = NULL, x_label = NULL, y_label = NULL, legend_labels = list(), ...) {
+plot.cd_derived_coverage <- function(x, title = NULL, x_label = NULL, y_label = NULL, legend_labels = list(), ...) {
   
   # 1. Metadata Extraction & Validation
   admin_level <- attr_or_abort(x, "admin_level")
   indicator <- attr_or_abort(x, "indicator")
   indicator_title <- str_to_title(indicator) 
   region <- attr_or_null(x, 'region')
+  year <- attr_or_null(x, 'survey_year')
   
   # Extract max year globally so it can be used in titles
   min_yr <- min(x$year, na.rm = TRUE)
@@ -45,7 +45,7 @@ plot.cd_derived_coverage <- function(x, year = NULL, title = NULL, x_label = NUL
     }
   } else {
     # Fallback to survey_year attribute, or max year if attribute doesn't exist
-    attr_or_null(x, 'survey_year')
+    cd_abort(c("x" = "{.arg year} must be a single integer."))
   }
 
   if (admin_level == "national" && !is.null(region)) {
@@ -69,7 +69,9 @@ plot.cd_derived_coverage <- function(x, year = NULL, title = NULL, x_label = NUL
     "anc1"          = "ANC1",
     "penta1"        = "Penta1",
     "penta1derived" = "Penta1 Population Growth",
-    "anc1derived"   = "ANC1 Population Growth"
+    "anc1derived"   = "ANC1 Population Growth",
+    "survey"        = "Survey Estimate",
+    "survey_year"        = "Survey Year"
   )
   final_legend <- modifyList(default_legend, as.list(unlist(legend_labels)))
   ordered_keys <- names(final_legend)
@@ -82,7 +84,9 @@ plot.cd_derived_coverage <- function(x, year = NULL, title = NULL, x_label = NUL
     "dhis2"         = "#4DAF4A", # Green
     "penta1derived" = "#984EA3", # Purple
     "penta1"        = "#FF7F00", # Orange
-    "un"            = "#A65628"  # Brown (added a distinct color for UN)
+    "un"            = "#A65628" , # Brown (added a distinct color for UN)
+    "survey"        = "black",
+    "survey_year"   = "black"
   )
   
   # Map the internal colors to the translated display labels dynamically
@@ -90,6 +94,8 @@ plot.cd_derived_coverage <- function(x, year = NULL, title = NULL, x_label = NUL
 
   # 4. Determine Plot Type and Set Labels
   cov_indicator <- paste0('cov_', indicator)
+  surv_indicator <- paste0('r_', indicator)
+
   is_dot_plot <- admin_level != 'national' && is.null(region)
 
   title_text <- if (admin_level == "national") {
@@ -110,7 +116,7 @@ plot.cd_derived_coverage <- function(x, year = NULL, title = NULL, x_label = NUL
     # Data wrangling for dot plot
     data <- x %>%
       filter(year == data_year) %>%
-      select(all_of(admin_level), starts_with('cov')) %>%
+      select(all_of(admin_level), starts_with('cov'), starts_with('r')) %>%
       pivot_longer(
         cols = starts_with(cov_indicator),
         names_to = "coverage_type",
@@ -129,6 +135,8 @@ plot.cd_derived_coverage <- function(x, year = NULL, title = NULL, x_label = NUL
     ggplot(data, aes(x = coverage_value, y = reorder(!!sym(admin_level), coverage_value), fill = method_lbl)) +
       # geom_point(size = 3, alpha = 0.8) +
       geom_col(alpha = 0.8) +
+      geom_point(aes(x = !!sym(surv_indicator), shape = "survey_point"),  color = "black", size = 3, na.rm = TRUE) +
+      scale_shape_manual(name = NULL,values = c("survey_point" = 18), labels = final_legend[["survey"]]) +
       geom_vline(xintercept = 100, linetype = "dashed", color = "grey50") +
       facet_wrap(~ method_lbl, ncol = 3) +
       # scale_color_manual(values = pal, breaks = ordered_labels) +
@@ -148,6 +156,7 @@ plot.cd_derived_coverage <- function(x, year = NULL, title = NULL, x_label = NUL
     # Data wrangling for trend line
     cols <- x %>%
       select(year, starts_with(cov_indicator)) %>%
+      filter(year >= 2020) %>% 
       pivot_longer(cols = -year, names_to = "series", values_to = "value") %>%
       mutate(
         suffix = gsub(paste0("^", cov_indicator, "_?"), "", series),
@@ -157,10 +166,14 @@ plot.cd_derived_coverage <- function(x, year = NULL, title = NULL, x_label = NUL
     max_val <- robust_max(cols$value, fallback = 100)
     y_max <- max(100, ceiling(max_val / 10) * 10)
 
+    line_df <- data.frame(x_val = data_year, line_type = "survey_year")
+
     ggplot(cols, aes(x = year, y = value, colour = series_label, group = series_label)) +
       geom_line(linewidth = 1) +
       geom_point(size = 2) +
       geom_hline(yintercept = 100, linetype = "dashed", colour = "gray70") +
+      geom_vline(data = line_df, aes(xintercept = x_val, linetype = line_type), color = "black", linewidth = 1, show.legend = TRUE) +
+      scale_linetype_manual(name = NULL, values = c("survey_year" = "dotdash"),  labels = final_legend[["survey_year"]]) +
       scale_y_continuous(
         breaks = scales::pretty_breaks(n = 13),
         expand = expansion(mult = c(0, 0.05)),

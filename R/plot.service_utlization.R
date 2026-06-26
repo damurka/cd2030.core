@@ -255,14 +255,15 @@ plot.cd_mch_curative_index <- function(x, labels = NULL, ...) {
     # Label only selected regions
     geom_text(data = labels_data, aes(label = adminlevel_1), nudge_x = 0.08, size = 4) +
     
-    # Quadrant labels
-    annotate("text", x = 1, y = 4.7, label = q_tl, size = 4, fontface = "bold") +
-    annotate("text", x = 4.5, y = 4.7, label = q_tr, size = 4, fontface = "bold") +
-    annotate("text", x = 1, y = 0.5, label = q_bl, size = 4, fontface = "bold") +
-    annotate("text", x = 4.5, y = 0.5, label = q_br, size = 4, fontface = "bold") +
+    # Quadrant labels (Anchored to the absolute corners of the plot)
+    annotate("text", x = -Inf, y = Inf,  label = q_tl, hjust = -0.05, vjust = 1.2, size = 4, fontface = "bold", color = "grey30") +
+    annotate("text", x = Inf,  y = Inf,  label = q_tr, hjust = 1.05,  vjust = 1.2, size = 4, fontface = "bold", color = "grey30") +
+    annotate("text", x = -Inf, y = -Inf, label = q_bl, hjust = -0.05, vjust = -0.2, size = 4, fontface = "bold", color = "grey30") +
+    annotate("text", x = Inf,  y = -Inf, label = q_br, hjust = 1.05,  vjust = -0.2, size = 4, fontface = "bold", color = "grey30") +
     
-    scale_x_continuous(limits = c(0, 5)) +
-    scale_y_continuous(limits = c(0, 5)) +
+    scale_x_continuous(limits = c(0, NA), expand = expansion(mult = c(0, 0.15))) +
+    scale_y_continuous(limits = c(0, NA), expand = expansion(mult = c(0, 0.15))) +
+    
     coord_equal(clip = "off") +
     
     cd_plot_theme(

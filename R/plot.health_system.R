@@ -118,10 +118,11 @@ plot.cd_health_system_comparison <- function(x,
 #'
 #' @param x Data frame containing admin 1 level indicators.
 #' @param indicator A single metric to plot. Options include ratio_fac_pop, ratio_hos_pop, ratio_bed_pop, ratio_hstaff_pop, skill_mix.
+#' @param national_value A numeric value representing the national average to plot as a vertical line. Can be NA.
 #' @param title (Optional) Custom title for the plot.
 #' @param x_axis (Optional) Custom label for the x-axis.
 #' @param y_axis (Optional) Custom label for the y-axis.
-#' @param legend_labels (Optional) A named list to override default legend labels.
+#' @param legend_labels (Optional) A named list to override default legend labels (e.g. for translation).
 #'
 #' @return A ggplot object.
 #'
@@ -134,13 +135,15 @@ plot.cd_health_system_metric <- function(x,
                                            'ratio_hstaff_pop',
                                            'skill_mix'
                                          ),
-                                        title = NULL,
-                                        x_axis = NULL,
-                                        y_axis = NULL,
-                                        legend_labels = NULL) {
+                                         national_value = NA_real_,
+                                         title = NULL,
+                                         x_axis = NULL,
+                                         y_axis = NULL,
+                                         legend_labels = NULL) {
 
   indicator <- arg_match(indicator)
-  # Map indicators to their respective benchmarks (NA if they don't have one)
+  
+  # 1. Map indicators to their respective benchmarks
   threshold <- switch(
     indicator,
     ratio_fac_pop = 2,
@@ -149,7 +152,7 @@ plot.cd_health_system_metric <- function(x,
     NA
   )
 
-  # Map indicators without benchmarks to their specific static fill colors
+  # 2. Map indicators without benchmarks to their specific static fill colors
   static_fill <- switch(
     indicator, 
     ratio_hos_pop = "#7570b3", 
@@ -157,26 +160,32 @@ plot.cd_health_system_metric <- function(x,
     NA
   )
 
-  # Setup default legend and apply user overrides if provided
-  default_leg <- list("FALSE" = "Below benchmark", "TRUE" = "Meets benchmark")
+  # 3. Setup Default Legend Text
+  default_leg <- list(
+    "FALSE" = "Below benchmark", 
+    "TRUE" = "Meets benchmark",
+    "threshold_line" = "Target benchmark",
+    "national_line" = "National average"
+  )
+  
   if (!is.null(legend_labels)) {
     default_leg <- modifyList(default_leg, as.list(legend_labels))
   }
 
-  # Create a unified fill column: TRUE/FALSE if there's a threshold, or "STATIC" if there isn't
+  # 4. Create unified fill column
   plot_data <- x %>% 
     mutate(
       benchmark_flag = if (!is.na(threshold)) as.character(!!sym(indicator) >= threshold) else "STATIC"
     )
 
-  # Create a unified color palette based on whether a threshold exists
-  palette_colors <- if (!is.na(threshold)) {
+  # 5. Determine palettes
+  fill_colors <- if (!is.na(threshold)) {
     c("TRUE" = "#1b9e77", "FALSE" = "#d95f02")
   } else {
     setNames(static_fill, "STATIC")
   }
 
-  # Setup default labels (overridden by user args if provided)
+  # 6. Setup default labels
   t_title <- title %||% switch(indicator,
     ratio_fac_pop = "Facility Density per 10,000 population",
     ratio_hos_pop = "Hospital Density per 100,000 population",
@@ -195,21 +204,49 @@ plot.cd_health_system_metric <- function(x,
   
   t_y <- y_axis %||% ""
 
-  plot_data %>%
+  # 7. Build the Base Plot
+  p <- plot_data %>%
     ggplot(aes(y = reorder(adminlevel_1, !!sym(indicator)), x = !!sym(indicator))) +
     geom_col(aes(fill = benchmark_flag)) +
-    geom_vline(
-      xintercept = if (is.na(threshold)) 0 else threshold, 
-      linetype = if (is.na(threshold)) 'blank' else "dashed", 
-      linewidth = 1
-    ) +
     geom_text(aes(label = round(!!sym(indicator), 1)), hjust = -0.1, size = 3) +
     scale_fill_manual(
-      values = palette_colors,
-      labels = unlist(default_leg),
+      values = fill_colors,
+      labels = function(x) unlist(default_leg[x]), 
       name = '',
-      guide = if (is.na(threshold)) 'none' else 'legend'
-    ) +
+      guide = if (is.na(threshold)) 'none' else guide_legend(order = 1)
+    )
+
+  # 8. Add Vertical Lines (Vectorized implementation without rbind)
+  # Create a dataframe with both lines, then simply filter out the NAs.
+  lines_df <- data.frame(
+    xintercept = c(threshold, national_value),
+    line_type_id = c("threshold_line", "national_line")
+  ) %>%
+    filter(!is.na(xintercept))
+
+  if (nrow(lines_df) > 0) {
+    p <- p + 
+      geom_vline(
+        data = lines_df, 
+        aes(xintercept = xintercept, color = line_type_id, linetype = line_type_id),
+        linewidth = 1
+      ) +
+      scale_color_manual(
+        name = "",
+        values = c("threshold_line" = "black", "national_line" = "#377eb8"),
+        labels = function(x) unlist(default_leg[x]),
+        guide = guide_legend(order = 2)
+      ) +
+      scale_linetype_manual(
+        name = "",
+        values = c("threshold_line" = "dashed", "national_line" = "solid"),
+        labels = function(x) unlist(default_leg[x]),
+        guide = guide_legend(order = 2)
+      )
+  }
+
+  # 9. Apply the theme
+  p + 
     cd_plot_theme(
       title = t_title,
       x_axis = t_x,
@@ -218,7 +255,9 @@ plot.cd_health_system_metric <- function(x,
     theme(
       plot.title = element_text(face = "bold", hjust = 0.5),
       plot.caption = element_text(size = 9, color = "gray40"),
-      axis.text.y = element_text(size = 9)
+      axis.text.y = element_text(size = 9),
+      legend.box = "horizontal",
+      legend.position = "bottom"
     )
 }
 
@@ -427,7 +466,6 @@ plot.cd_phc_scatter <- function(x,
   # 2. The SINGLE ggplot Block
   ggplot(x, aes(x = !!sym(x_indicator), y = service_coverage)) +
     geom_point(size = 3, color = "#2c7fb8") +
-    geom_smooth(method = "lm", se = FALSE, linetype = "dashed", color = "black") +
 
     # Median lines
     geom_vline(xintercept = med_x, linetype = "longdash", color = "red") +

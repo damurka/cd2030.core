@@ -54,7 +54,7 @@ CacheConnection <- R6::R6Class(
   "CacheConnection",
   public = list(
     #' @field data_version Define the current data version.
-    data_version = '1.0.0',
+    data_version = '1.0.2',
 
     #' @description Initialize a CacheConnection instance.
     #' @param rds_path Path to the RDS file (can be NULL).
@@ -122,7 +122,6 @@ CacheConnection <- R6::R6Class(
             rename(ideliv = any_of('instdeliveries'))
         }
       }
-      
     },
 
     #' Load data from disk.
@@ -182,6 +181,7 @@ CacheConnection <- R6::R6Class(
         derivation_population = self$derivation_population,
         un_estimates = self$un_estimates,
         survey_estimates = self$regional_survey,
+        subnational_map = self$survey_mapping,
         region = region,
         show_district = show_district,
         sbr = rates$sbr,
@@ -189,7 +189,7 @@ CacheConnection <- R6::R6Class(
         pnmr = rates$pnmr,
         anc1survey = rates$anc1,
         dpt1survey = rates$penta1,
-        survey_year = self$survey_year - 1,
+        survey_year = self$survey_year,
         twin = rates$twin_rate,
         preg_loss = rates$preg_loss
       )
@@ -250,12 +250,14 @@ CacheConnection <- R6::R6Class(
 
     #' @description Generate Continuum of Care Coverage Data
     #' @param admin_level Character. The geographic level to calculate and shape. 
-    generate_coverage_data = function(admin_level) {
+    generate_coverage_data = function(admin_level, type) {
+      type <- arg_match(type, c('maternal', 'child'))
+      denom <- if (type == 'maternal') self$maternal_denominator else self$denominator
       admin_level <- arg_match(admin_level, c('national', 'adminlevel_1'))
       self$calculate_coverage(admin_level) %>% 
         generate_coverage_data(
-          vac_denominator = self$denominator,
-          mat_denominator = self$maternal_denominator
+          type = type,
+          denominator = denom
         )
     },
 
@@ -965,8 +967,8 @@ CacheConnection <- R6::R6Class(
       indicator <- arg_match(indicator, get_analysis_indicators())
       admin_level <- arg_match(admin_level, c("national", "adminlevel_1", "district"))
 
-      self$get_base_indicator_coverage(admin_level, region, show_district = FALSE) %>% 
-        calculate_derived_coverage(indicator, self$survey_year)
+      self$calculate_coverage(admin_level) %>% 
+        calculate_derived_coverage(indicator)
     },
     #' @description Get high-performing regions based on indicator and threshold.
     #' @param indicator Character. The specific health indicator (e.g., "penta3").
@@ -1468,12 +1470,13 @@ CacheConnection <- R6::R6Class(
       survey <- private$getter("wiq_survey", value)
       if (is.null(survey)) {
         survey <- survey_data$wiq %>%
-          pivot_longer(
-            cols = matches('q[1-5]$'),
-            names_pattern = '(.*)(q[1-5])$',
-            names_to = c('.value', 'level')
-          ) %>%
-          mutate(level = str_to_upper(level)) %>%
+          # pivot_longer(
+          #   cols = matches('q[1-5]$'),
+          #   names_pattern = '(.*)(q[1-5])$',
+          #   names_to = c('.value', 'level')
+          # ) %>%
+          # mutate(level = str_to_upper(level)) %>%
+          mutate(level = factor(level, levels = c('Q1', 'Q2', 'Q3', 'Q4', 'Q5'))) %>% 
           new_tibble(class = 'cd_equity_data')
       }
       private$filter_survey(survey)
@@ -1484,18 +1487,19 @@ CacheConnection <- R6::R6Class(
       survey <- private$getter("area_survey", value)
       if (is.null(survey)) {
         survey <- survey_data$area %>%
-          select(-matches('_[12]$')) %>%
-          pivot_longer(
-            cols = matches('_area[12]$'),
-            names_pattern = '(.*)_(area[12])$',
-            names_to = c('.value', 'level')
-          ) %>%
+          # select(-matches('_[12]$')) %>%
+          # pivot_longer(
+          #   cols = matches('_area[12]$'),
+          #   names_pattern = '(.*)_(area[12])$',
+          #   names_to = c('.value', 'level')
+          # ) %>%
           mutate(
-            level = case_match(
-              level,
-              'area1' ~ 'urban',
-              'area2' ~ 'rural'
-            )
+            # level = case_match(
+            #   level,
+            #   'area1' ~ 'urban',
+            #   'area2' ~ 'rural'
+            # )
+            level = factor(level, levels = c('urban', 'rural'))
           ) %>%
           new_tibble(class = 'cd_equity_data')
       }
@@ -1507,19 +1511,20 @@ CacheConnection <- R6::R6Class(
       survey <- private$getter("education_survey", value)
       if (is.null(survey)) {
         survey <- survey_data$meduc %>%
-          pivot_longer(
-            cols = matches('_me[1-3]$'),
-            names_pattern = '(.*)_(me[1-3])$',
-            names_to = c('.value', 'level')
-          ) %>%
+          # pivot_longer(
+          #   cols = matches('_me[1-3]$'),
+          #   names_pattern = '(.*)_(me[1-3])$',
+          #   names_to = c('.value', 'level')
+          # ) %>%
           mutate(
-            level = case_match(
-              level,
-              'me1' ~ 'none',
-              'me2' ~ 'primary',
-              'me3' ~ 'secondary+',
-              .ptype = factor(levels = c('none', 'primary', 'secondary+'))
-            )
+            # level = case_match(
+            #   level,
+            #   'me1' ~ 'none',
+            #   'me2' ~ 'primary',
+            #   'me3' ~ 'secondary+',
+            #   .ptype = factor(levels = c('none', 'primary', 'secondary+'))
+            # )
+            levels = factor(level, levels = c('none', 'primary', 'secondary+'))
           ) %>%
           new_tibble(class = 'cd_equity_data')
       }

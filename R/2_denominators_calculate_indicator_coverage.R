@@ -48,6 +48,7 @@ calculate_indicator_coverage <- function(.data,
                                         
                                          un_estimates = NULL,
                                          survey_estimates = NULL,
+                                         subnational_map = NULL,
 
                                          anc1survey = 0.98,
                                          dpt1survey = 0.97,
@@ -70,7 +71,8 @@ calculate_indicator_coverage <- function(.data,
   population <- calculate_populations(.data,
     admin_level = admin_level,
     derivation_population = derivation_population,
-    un_estimates = un_estimates, survey_estimates = survey_estimates, survey_year = survey_year,
+    un_estimates = un_estimates, survey_estimates = survey_estimates, 
+    subnational_map = subnational_map, survey_year = survey_year,
     anc1survey = anc1survey, dpt1survey = dpt1survey,
     region = region, show_district = show_district, sbr = sbr, nmr = nmr, pnmr = pnmr,
     twin = twin, preg_loss = preg_loss
@@ -107,6 +109,8 @@ filter_indicator_coverage <- function(.data, indicator, survey_coverage = 88, su
   region <- attr_or_null(.data, 'region')
   admin_cols <- get_admin_columns(admin_level, region) 
 
+  survey_year <- survey_year %||% attr_or_abort(.data, 'survey_year')
+
   min_year <- min(.data$year, na.rm = TRUE)
   max_year <- max(.data$year, na.rm = TRUE)
   data_year <- if (!is.null(survey_year)) {
@@ -122,7 +126,7 @@ filter_indicator_coverage <- function(.data, indicator, survey_coverage = 88, su
       survey_year
     }
   } else {
-    attr_or_abort(.data, 'survey_year')
+     cd_abort(c("x" = "A scalar numeric is required."))
   }
 
   # Prepare the data for plotting
@@ -158,31 +162,42 @@ get_national_rates <- function(.data,
                                nmr = 0.025,
                                pnmr = 0.024,
                                twin = 0.015,
-                               preg_loss = 0.03) {
+                               preg_loss = 0.03,
+                              subnational_map = NULL) {
   check_survey_data(.data, admin_level)
   admin_level <- arg_match(admin_level)
   admin_level_cols <- get_admin_columns(admin_level)
 
+  .data <- .data %>% 
+    join_subnational_map(admin_level, subnational_map)
+
   est <- .data %>%
-    select(year, any_of(admin_level_cols), starts_with('r_')) %>%
+    # select(year, any_of(admin_level_cols), starts_with('r_')) %>%
     rename_with(~ str_remove(.x, 'r_'), starts_with('r_')) %>%
     select(year, any_of(admin_level_cols), penta1, anc1, any_of(c('pnmr', 'nmr', 'sbr'))) %>%
-    rename(dpt1survey = penta1, anc1survey = anc1) %>%
+    # rename(dpt1survey = penta1, anc1survey = anc1) %>%
     pivot_longer(cols = -c(year, any_of(admin_level_cols))) %>%
     filter(!is.na(value)) %>%
     slice_max(year, n = 1, with_ties = F, by = c(admin_level_cols, name)) %>%
     arrange(admin_level_cols) %>%
     select(-year) %>%
     pivot_wider(names_from = name, values_from = value) %>%
+    ensure_cols() %>% 
     mutate(
       pnmr = if_else(is.na(pnmr), !!pnmr, pnmr/1000),
       nmr = if_else(is.na(nmr), !!nmr, nmr/1000),
       sbr = if_else(is.na(sbr), !!sbr, sbr/1000),
       preg_loss = if_else(is.na(preg_loss), !!preg_loss, preg_loss/1000),
-      anc1survey = if_else(is.na(anc1survey), !!anc1survey, anc1survey/100),
-      dpt1survey = if_else(is.na(dpt1survey), !!dpt1survey, dpt1survey/100),
+      anc1survey = if_else(is.na(anc1), !!anc1survey, anc1/100),
+      dpt1survey = if_else(is.na(penta1), !!dpt1survey, penta1/100),
       twin = if_else(is.na(twin), !!twin, twin/1000),
-    )
+    ) %>% 
+    select(-anc1, -penta1)
+}
+
+ensure_cols <- function(df) {
+  missing <- setdiff(c("pnmr", "nmr", "sbr", "preg_loss", "anc1", "penta1", "twin"), names(df))
+  mutate(df, !!!setNames(rep(list(NA_real_), length(missing)), missing))
 }
 
 calculate_populations <- function(.data,
@@ -191,6 +206,7 @@ calculate_populations <- function(.data,
                                                             'un_population', 'un_births', 'un_under1'),
                                   un_estimates = NULL,
                                   survey_estimates = NULL,
+                                  subnational_map = NULL,
 
                                   anc1survey = 0.98,
                                   dpt1survey = 0.97,
@@ -224,7 +240,7 @@ calculate_populations <- function(.data,
 
   if (admin_level != 'national') {
     survey_admin_level <- if (admin_level == "district") "adminlevel_1" else admin_level
-    est <- get_national_rates(survey_estimates, survey_admin_level, anc1survey, dpt1survey, sbr, nmr, pnmr, twin, preg_loss)
+    est <- get_national_rates(survey_estimates, survey_admin_level, anc1survey, dpt1survey, sbr, nmr, pnmr, twin, preg_loss, subnational_map = subnational_map)
 
     join_cols <- if (admin_level == "district" || admin_level == 'adminlevel_1' && !is.null(region)) "adminlevel_1" else group_vars
     output_data <- output_data %>%

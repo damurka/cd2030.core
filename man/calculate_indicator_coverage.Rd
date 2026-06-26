@@ -11,6 +11,7 @@ calculate_indicator_coverage(
     "totpop_dhis2", "un_population", "un_births", "un_under1"),
   un_estimates = NULL,
   survey_estimates = NULL,
+  subnational_map = NULL,
   anc1survey = 0.98,
   dpt1survey = 0.97,
   survey_year = 2019,

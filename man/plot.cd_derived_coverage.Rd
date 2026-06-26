@@ -6,7 +6,6 @@
 \usage{
 \method{plot}{cd_derived_coverage}(
   x,
-  year = NULL,
   title = NULL,
   x_label = NULL,
   y_label = NULL,
@@ -16,8 +15,6 @@
 }
 \arguments{
 \item{x}{A \code{cd_coverage_trends} object.}
-
-\item{year}{(optional) An integer for the year to plot the dot plot}
 
 \item{title}{(Optional) A scalar character string to override the default plot title. Defaults to \code{NULL}.}
 

@@ -169,7 +169,6 @@ reference:
     desc: >
       Estimate coverage levels and inequity by geography and subgroup.
     contents:
-      - calculate_coverage
       - filter_coverage
       - calculate_inequality
       - filter_inequality

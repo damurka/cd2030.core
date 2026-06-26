@@ -133,10 +133,10 @@ adjust_service_data <- function(.data,
         }
       )
     ) %>%
-    add_outlier5std_column(all_indicators) %>%
+    add_outlier5std_column(c(all_indicators, 'ipd_total','ipd_under5')) %>%
     mutate(
       across(
-        all_of(all_indicators),
+        all_of(c(all_indicators, 'ipd_total','ipd_under5')),
         ~ {
           outlier <- get(paste0(cur_column(), "_outlier5std"))
           med <- round(median(if_else(outlier != 1, ., NA_real_), na.rm = TRUE), 0)

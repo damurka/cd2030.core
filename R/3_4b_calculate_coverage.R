@@ -55,7 +55,6 @@ calculate_coverage <- function(.data,
 
   # Prepare survey data
   survey_data <- survey_data %>%
-    
     select(any_of(admin_level_cols), matches("^ll_|^ul|^r_|^se_|^source$")) %>%
     join_subnational_map(admin_level, subnational_map) %>%
     check_district_column(admin_level, dhis2_data)
@@ -219,7 +218,7 @@ join_subnational_map <- function(.data, admin_level, map) {
 }
 
 check_district_column <- function(.data, admin_level, dhis2_data) {
-  adminlevel_1 <- district <- NULL
+  adminlevel_1 = district = NULL
 
   if (admin_level == "district" && !"district" %in% colnames(.data)) {
     .data <- dhis2_data %>%
@@ -235,23 +234,19 @@ check_district_column <- function(.data, admin_level, dhis2_data) {
 #' @description 
 #' Processes and shapes raw coverage data into a clean, long format optimized for 
 #' continuum-of-care plotting. It dynamically builds regex patterns based on the 
-#' spatial level to extract relevant columns:
+#' spatial level and data type to extract relevant columns:
 #' * **National**: Extracts Facility, Survey, and WUENIC data.
 #' * **Subnational**: Extracts Facility data only.
 #' 
 #' The function automatically filters for the absolute latest available data point 
 #' per indicator-source combination and converts the `indicator` column into an 
-#' ordered factor representing the lifecycle stages (Pregnancy -> Delivery -> 
-#' Postnatal -> Immunization) to ensure plots are always ordered correctly.
+#' ordered factor representing the lifecycle stages to ensure plots are always ordered correctly.
 #'
 #' @param .data A data frame/tibble originating from `calculate_coverage()`. 
 #'   Must contain an `admin_level` attribute.
-#' @param vac_denominator Character. The denominator to use for vaccination 
-#'   indicators (e.g., 'penta3', 'measles1'). Options include "dhis2", "anc1", 
-#'   "penta1", "penta1derived", or "anc1derived".
-#' @param mat_denominator Character. The denominator to use for maternal/newborn 
-#'   indicators (e.g., 'anc4', 'ideliv'). Options include "dhis2", 
-#'   "anc1", "penta1", "penta1derived", or "anc1derived".
+#' @param type Character. Specifies whether to extract 'maternal' or 'child' indicators.
+#' @param denominator Character. The denominator to use for the specified indicator type. 
+#'   Options include "dhis2", "anc1", "penta1", "penta1derived", or "anc1derived".
 #'
 #' @return A tibble of class `cd_coverage_selected` containing the latest 
 #'   coverage values, categorized sources, and ordered indicators. Retains 
@@ -259,8 +254,8 @@ check_district_column <- function(.data, admin_level, dhis2_data) {
 #'
 #' @export
 generate_coverage_data <- function(.data,
-                                   vac_denominator = c("dhis2", "anc1", "penta1", "penta1derived", "anc1derived"),
-                                   mat_denominator = c("dhis2", "anc1", "penta1", "penta1derived", "anc1derived")) {
+                                   type = c('maternal', 'child'),
+                                   denominator = c("dhis2", "anc1", "penta1", "penta1derived", "anc1derived")) {
   
   check_cd_coverage(.data)
   admin_level <- attr_or_abort(.data, "admin_level")
@@ -268,44 +263,46 @@ generate_coverage_data <- function(.data,
   admin_level_col <- get_admin_columns(admin_level, region)
   admin_level_cols <- c(admin_level_col, 'year')
 
-  vac_denominator <- arg_match(vac_denominator)
-  mat_denominator <- arg_match(mat_denominator)
-  vac_terms <- c('penta3', 'measles1')
-  mat_terms <- c("anc_1trimester", "anc4", "ideliv", "instlivebirths", "pnc48h")
-  vac_terms_regex <- paste(vac_terms, collapse = '|')
-  mat_terms_regex <- paste(mat_terms, collapse = '|')
-
-  regex_match <- if (admin_level == 'national') {
-    mat_fac_regex <- paste0('^cov_*(', mat_terms_regex, ')_(', mat_denominator, '|wuenic)$')
-    vac_fac_regex <- paste0('^cov_*(', vac_terms_regex, ')_(', vac_denominator, '|wuenic)$')
-    surv_regex    <- paste0('^r_.*(', mat_terms_regex, '|', vac_terms_regex, ')$')
-    
-    paste(mat_fac_regex, vac_fac_regex, surv_regex, sep = '|')
+  type <- arg_match(type)
+  denominator <- arg_match(denominator)
+  
+  # 1. Define terms based on the selected type
+  terms <- if (type == 'maternal') {
+    c("anc_1trimester", "anc4", "ideliv", "instlivebirths", "pnc48h")
   } else {
-    mat_sub_regex <- paste0('^cov_*(', mat_terms_regex, ')_(', mat_denominator, ')$')
-    vac_sub_regex <- paste0('^cov_*(', vac_terms_regex, ')_(', vac_denominator, ')$')
-    
-    paste(mat_sub_regex, vac_sub_regex, sep = '|')
+    c('penta3', 'measles1')
+  }
+  terms_regex <- paste(terms, collapse = '|')
+
+  # 2. Build Regex for Extraction
+  regex_match <- if (admin_level == 'national') {
+    fac_regex <- paste0('^cov_*(', terms_regex, ')_(', denominator, '|wuenic)$')
+    surv_regex <- paste0('^r_.*(', terms_regex, ')$')
+    paste(fac_regex, surv_regex, sep = '|')
+  } else {
+    paste0('^cov_*(', terms_regex, ')_(', denominator, ')$')
   }
 
+  # 3. Wrangle Data
   plot_data <- .data %>% 
     select(any_of(admin_level_cols), matches(regex_match)) %>% 
     pivot_longer(-any_of(admin_level_cols)) %>% 
     arrange(pick(any_of(admin_level_cols))) %>% 
-    filter(!is.na(value)) %>% glimpse() %>% 
+    filter(!is.na(value)) %>% 
     slice_tail(n = 1, by = any_of(c(admin_level_col, 'name'))) %>% 
     mutate(
       source = case_when(
-        grepl(paste0("^cov_.*_(", mat_denominator, "|", vac_denominator, ")$"), name) ~ "facility",
+        grepl(paste0("^cov_.*_", denominator, "$"), name) ~ "facility",
         grepl("^cov_.*_wuenic$", name) ~ "wuenic",
         grepl("^r_", name) ~ "survey",
         .ptype = factor(levels = c('facility', 'survey', 'wuenic'))
       ),
       indicator = name %>% 
         sub("^cov_|^r_", "", .) %>% 
-        sub(paste0("_(", mat_denominator, "|", vac_denominator, "|wuenic)$"), "", .),
-      indicator = factor(indicator, levels = c(mat_terms, vac_terms))
+        sub(paste0("_(", denominator, "|wuenic)$"), "", .),
+      indicator = factor(indicator, levels = terms)
     )
+    
   return(
     new_tibble(
       plot_data, 
