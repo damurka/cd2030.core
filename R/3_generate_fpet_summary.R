@@ -94,7 +94,7 @@ plot.cd_fpet_data <- function(x,
       geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.2, colour = NA) +
       geom_line(aes(y = median), linewidth = 1.2) +
       geom_point(aes(y = median), size = 2) +
-      scale_y_continuous(labels = scales::percent) +
+      scale_y_continuous(labels = scales::percent, limits = c(0, NA)) +
       labs(color = NULL, fill = NULL) +
       cd_plot_theme(
         title = t_title,

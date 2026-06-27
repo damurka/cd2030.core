@@ -113,12 +113,12 @@ cache$denominator_metrics %>%
 ```
 **Accouchements institutionnels**
 ```{r, fig.width=4.2}
-cache$get_filtered_indicator_coverage('ideliv', 'national') %>% 
+cache$calculate_derived_coverage('ideliv', 'national') %>% 
   plot() + cd_report_theme()
 ```
 **Penta 3**
 ```{r, fig.width=4.2}
-cache$get_filtered_indicator_coverage('penta3', 'national') %>% 
+cache$calculate_derived_coverage('penta3', 'national') %>% 
   plot() + cd_report_theme()
 ```
 
@@ -215,13 +215,13 @@ run_columnbreak()
 
 **ANC 4**
 ```{r, fig.width=4.2, fig.height=3}
-cache$get_filtered_threshold('anc4', 'national') %>% 
+cache$get_filtered_threshold('anc4', 'district') %>% 
    plot() + cd_report_theme()
 ```
 
 **Indicateurs de santé de l’enfant**
 ```{r, fig.width=4.2, fig.height=3}
-cache$get_filtered_threshold('vaccine', 'national') %>% 
+cache$get_filtered_threshold('vaccine', 'district') %>% 
    plot() + cd_report_theme()
 ```
 

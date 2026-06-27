@@ -6,21 +6,18 @@
 \usage{
 generate_coverage_data(
   .data,
-  vac_denominator = c("dhis2", "anc1", "penta1", "penta1derived", "anc1derived"),
-  mat_denominator = c("dhis2", "anc1", "penta1", "penta1derived", "anc1derived")
+  type = c("maternal", "child"),
+  denominator = c("dhis2", "anc1", "penta1", "penta1derived", "anc1derived")
 )
 }
 \arguments{
 \item{.data}{A data frame/tibble originating from \code{calculate_coverage()}.
 Must contain an \code{admin_level} attribute.}
 
-\item{vac_denominator}{Character. The denominator to use for vaccination
-indicators (e.g., 'penta3', 'measles1'). Options include "dhis2", "anc1",
-"penta1", "penta1derived", or "anc1derived".}
+\item{type}{Character. Specifies whether to extract 'maternal' or 'child' indicators.}
 
-\item{mat_denominator}{Character. The denominator to use for maternal/newborn
-indicators (e.g., 'anc4', 'ideliv'). Options include "dhis2",
-"anc1", "penta1", "penta1derived", or "anc1derived".}
+\item{denominator}{Character. The denominator to use for the specified indicator type.
+Options include "dhis2", "anc1", "penta1", "penta1derived", or "anc1derived".}
 }
 \value{
 A tibble of class \code{cd_coverage_selected} containing the latest
@@ -30,7 +27,7 @@ coverage values, categorized sources, and ordered indicators. Retains
 \description{
 Processes and shapes raw coverage data into a clean, long format optimized for
 continuum-of-care plotting. It dynamically builds regex patterns based on the
-spatial level to extract relevant columns:
+spatial level and data type to extract relevant columns:
 \itemize{
 \item \strong{National}: Extracts Facility, Survey, and WUENIC data.
 \item \strong{Subnational}: Extracts Facility data only.
@@ -38,6 +35,5 @@ spatial level to extract relevant columns:
 
 The function automatically filters for the absolute latest available data point
 per indicator-source combination and converts the \code{indicator} column into an
-ordered factor representing the lifecycle stages (Pregnancy -> Delivery ->
-Postnatal -> Immunization) to ensure plots are always ordered correctly.
+ordered factor representing the lifecycle stages to ensure plots are always ordered correctly.
 }

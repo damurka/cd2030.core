@@ -268,9 +268,9 @@ generate_coverage_data <- function(.data,
   
   # 1. Define terms based on the selected type
   terms <- if (type == 'maternal') {
-    c("anc_1trimester", "anc4", "ideliv", "instlivebirths", "pnc48h")
+    c("anc_1trimester", 'anc1', "anc4", "ideliv", "instlivebirths", "pnc48h")
   } else {
-    c('penta3', 'measles1')
+    c('penta1', 'penta3', 'measles1')
   }
   terms_regex <- paste(terms, collapse = '|')
 

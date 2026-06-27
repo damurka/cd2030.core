@@ -42,7 +42,7 @@ calculate_derived_coverage <- function(.data, indicator) {
   # cov_penta1_derived_diff <- paste0(cov_penta1, 'derived_diff')
   cov_penta1_derived <- paste0(cov_penta1, 'derived')
   cov_anc1_derived <- paste0(cov_anc1, 'derived')
-  survey_values <- paste0('r_', indicator)
+  survey_values <- paste0(c('r_', 'ul_', 'll_'), indicator)
 
   data <- .data %>%
     select(any_of(c(group_vars, 'year', population, 'population_growth_change', # 'population_growth_change_diff', 

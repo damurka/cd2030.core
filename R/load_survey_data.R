@@ -142,6 +142,7 @@ load_wuenic_data <- function(path = NULL, .data = NULL, country_iso) {
 
   data %>%
     filter(iso == country_iso) %>%
+    rename(iso3 = iso) %>%
     # Standardize column names
     rename_with(~ str_replace(., "^cov_cov", "cov")) %>%
     rename_with(~ str_replace(., "^wuenic_(.*)", "\\1_wuenic")) %>%
@@ -283,8 +284,8 @@ load_fpet_data <- function(path = NULL, .data = NULL, country_iso = NULL) {
 #' }
 #'
 #' @export
-load_private_sector_data  <- function(path = NULL, .data = NULL, country_iso, level = c('national', 'area')) {
-  check_required(country_iso)
+load_private_sector_data  <- function(path = NULL, .data = NULL, country_iso = NULL, level = c('national', 'area')) {
+  # check_required(country_iso)
   level <- arg_match(level)
   level_cols <- switch (
     level,
@@ -303,7 +304,7 @@ load_private_sector_data  <- function(path = NULL, .data = NULL, country_iso, le
   }
 
   data <- data %>%
-    filter(iso == country_iso) %>%
+    # filter(iso == country_iso) %>%
     mutate(
       sector = case_when(
         str_ends(indic, 'pub') ~ 'Public',
@@ -356,8 +357,8 @@ load_private_sector_data  <- function(path = NULL, .data = NULL, country_iso, le
 #' }
 #'
 #' @export
-load_csection_estimates <- function(path = NULL, .data = NULL, country_iso, level = c('national', 'area')) {
-  check_required(country_iso)
+load_csection_estimates <- function(path = NULL, .data = NULL, country_iso = NULL, level = c('national', 'area')) {
+  # check_required(country_iso)
 
   data <- load_data_or_file(path, .data)
 
@@ -370,8 +371,8 @@ load_csection_estimates <- function(path = NULL, .data = NULL, country_iso, leve
     cd_abort(c('x' = 'National data loaded with the {.arg {level}} level.'))
   }
 
-  data <- data %>%
-    filter(iso == country_iso)
+  # data <- data %>%
+  #   filter(iso == country_iso)
 
   if (level == 'area') {
     data <- data %>%

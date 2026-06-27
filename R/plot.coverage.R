@@ -91,21 +91,24 @@ plot.cd_coverage_filtered <- function(x, title = NULL, x_axis = NULL, y_axis = N
   surv_data <- data_long %>%
     filter(!is.na(`Survey estimates`))
 
+  # Check if WUENIC estimates column exists and has non-NA values
+  has_wuenic <- "WUENIC estimates" %in% names(data_long) && any(!is.na(data_long[["WUENIC estimates"]]))
+
   # 3. Build the Plot (Mapping aesthetic colors to the translated labels)
   plot <- data_long %>%
     ggplot(aes(x = year)) +
-    geom_line(aes(y = `DHIS2 estimate`, color = lbl_dhis2), linewidth = 1) +
-    geom_point(aes(y = `DHIS2 estimate`, color = lbl_dhis2), size = 2)
+    geom_line(aes(y = `DHIS2 estimate`, color = lbl_dhis2), linewidth = 1, na.rm = TRUE) +
+    geom_point(aes(y = `DHIS2 estimate`, color = lbl_dhis2), size = 2, na.rm = TRUE)
 
-  if (admin_level == "national") {
+  if (has_wuenic) {
     plot <- plot +
-      geom_line(aes(y = `WUENIC estimates`, color = lbl_wuenic), linewidth = 1) +
-      geom_point(aes(y = `WUENIC estimates`, color = lbl_wuenic), size = 2)
+      geom_line(aes(y = `WUENIC estimates`, color = lbl_wuenic), linewidth = 1, na.rm = TRUE) +
+      geom_point(aes(y = `WUENIC estimates`, color = lbl_wuenic), size = 2, na.rm = TRUE)
   }
 
   plot <- plot +
-    geom_line(data = surv_data, aes(y = `Survey estimates`, color = lbl_survey), linewidth = 1) +
-    geom_point(aes(y = `Survey estimates`, color = lbl_survey), size = 2) +
+    geom_line(data = surv_data, aes(y = `Survey estimates`, color = lbl_survey), linewidth = 1, na.rm = TRUE) +
+    geom_point(aes(y = `Survey estimates`, color = lbl_survey), size = 2, na.rm = TRUE) +
     geom_errorbar(
       aes(ymin = `95% CI LL`, ymax = `95% CI UL`, y = `Survey estimates`, color = lbl_ci),
       width = 0.2,
@@ -115,10 +118,15 @@ plot.cd_coverage_filtered <- function(x, title = NULL, x_axis = NULL, y_axis = N
     scale_x_continuous(breaks = scales::pretty_breaks(5))
 
   # 4. Map the exact translated strings to their respective colors
-  legend_colors <- set_names(
-    c("royalblue1", "royalblue1", "forestgreen", "gold"),
-    c(lbl_survey, lbl_ci, lbl_dhis2, lbl_wuenic)
-  )
+  legend_keys <- c(lbl_survey, lbl_ci, lbl_dhis2)
+  legend_vals <- c("royalblue1", "royalblue1", "forestgreen")
+
+  if (has_wuenic) {
+    legend_keys <- c(legend_keys, lbl_wuenic)
+    legend_vals <- c(legend_vals, "gold")
+  }
+  
+  legend_colors <- set_names(legend_vals, legend_keys)
 
   plot +
     scale_color_manual(values = legend_colors, name = NULL) +

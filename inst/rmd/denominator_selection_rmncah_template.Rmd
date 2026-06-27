@@ -94,7 +94,7 @@ The best performing denominator for coverage analysis with facility data is sele
 ### Denominators selection based on Penta3 Coverage
 
 ```{r}
-cache$get_filtered_indicator_coverage('penta3', 'national') %>% 
+cache$calculate_derived_coverage('penta3', 'national') %>% 
   plot() +
   cd_report_theme()
 ```
@@ -103,7 +103,7 @@ cache$get_filtered_indicator_coverage('penta3', 'national') %>%
 ### Denominator selection based on Institutional Delivery
 
 ```{r}
-cache$get_filtered_indicator_coverage('ideliv', 'national') %>% 
+cache$calculate_derived_coverage('ideliv', 'national') %>% 
   plot() +
   cd_report_theme()
 ```

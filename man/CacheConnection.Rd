@@ -247,7 +247,6 @@ Update a field (with change tracking)}
     \item \href{#method-CacheConnection-calculate_service_dqa_summary}{\code{CacheConnection$calculate_service_dqa_summary()}}
     \item \href{#method-CacheConnection-generate_admin1_service_utilization}{\code{CacheConnection$generate_admin1_service_utilization()}}
     \item \href{#method-CacheConnection-generate_admin1_mch_curative_index}{\code{CacheConnection$generate_admin1_mch_curative_index()}}
-    \item \href{#method-CacheConnection-get_filtered_indicator_coverage}{\code{CacheConnection$get_filtered_indicator_coverage()}}
     \item \href{#method-CacheConnection-get_filtered_coverage}{\code{CacheConnection$get_filtered_coverage()}}
     \item \href{#method-CacheConnection-get_filtered_inequality}{\code{CacheConnection$get_filtered_inequality()}}
     \item \href{#method-CacheConnection-get_filtered_mapping_data}{\code{CacheConnection$get_filtered_mapping_data()}}
@@ -397,13 +396,14 @@ Save data to disk (only if changed and RDS path is not NULL)
   Generate Continuum of Care Coverage Data
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{CacheConnection$generate_coverage_data(admin_level)}
+    \preformatted{CacheConnection$generate_coverage_data(admin_level, type)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
       \item{\code{admin_level}}{Character. The geographic level to calculate and shape.}
+      \item{\code{type}}{Character. The type of data to summarise}
     }
     \if{html}{\out{</div>}}
   }
@@ -1502,33 +1502,6 @@ Generate Service Utilization Admin 1 Data}
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$generate_admin1_mch_curative_index()}
-    \if{html}{\out{</div>}}
-  }
-}
-
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_filtered_indicator_coverage"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_filtered_indicator_coverage}{}}}
-\subsection{\code{CacheConnection$get_filtered_indicator_coverage()}}{
-  Get filtered indicator coverage responsive to admin level and survey year.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{CacheConnection$get_filtered_indicator_coverage(
-  indicator,
-  admin_level,
-  region = NULL,
-  survey_year = NULL
-)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{indicator}}{Character. The target health indicator.}
-      \item{\code{admin_level}}{Character. Level of aggregation ("national", "adminlevel_1", "district").}
-      \item{\code{region}}{Character. Optional region or district name to filter by.}
-      \item{\code{survey_year}}{Character. Optional the year the survey was conducted}
-    }
     \if{html}{\out{</div>}}
   }
 }

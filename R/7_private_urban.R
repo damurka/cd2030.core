@@ -41,21 +41,29 @@ prepare_private_sector_plot_data <- function(.data, csection_data) {
   csection_level <- attr_or_abort(csection_data, 'level')
 
   if (data_level != csection_level) {
-    cd_abort(c('x' = 'Both {arg .data} and {.arg csection_data} should be of the same level.'))
+    # Fixed a minor typo in the original template: {arg .data} to {.arg .data}
+    cd_abort(c('x' = 'Both {.arg .data} and {.arg csection_data} should be of the same level.'))
   }
 
   by_cols <- c('iso', "year", "indic")
   if (data_level == "area") by_cols <- c(by_cols, "area")
+  
+  # Define exact id_cols for pivot_wider to match Stata's i() variables in reshape wide
+  id_cols <- c("iso", "country", "year", "source", "indic")
+  if (data_level == "area") id_cols <- c(id_cols, "area")
 
   correction_col <- if (data_level == "national") "national" else "area_est"
 
   .data %>%
     left_join(csection_data, by = by_cols) %>%
     mutate(
-      r_raw = if_else(indic == "csection", !!sym(correction_col) * share_csection, r_raw)
+      # Using grepl matches Stata's regexm logic for updating r_raw
+      r_raw = if_else(grepl("csection", indic), !!sym(correction_col) * share_csection, r_raw)
     ) %>%
-    select(-num_csection, -total_csection, -share_csection, -all_of(correction_col)) %>%
+    # any_of safely suppresses errors if these intermediate columns were dropped earlier
+    select(-any_of(c("num_csection", "total_csection", "share_csection", correction_col))) %>%
     pivot_wider(
+      id_cols = any_of(id_cols),
       names_from = sector,
       values_from = c(r_raw, se_raw, ll, ul, pop, N),
       names_glue = "{.value}_{sector}"

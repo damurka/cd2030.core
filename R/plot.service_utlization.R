@@ -246,7 +246,6 @@ plot.cd_mch_curative_index <- function(x, labels = NULL, ...) {
   # 4. Generate Plot
   ggplot(x, aes(x = mch_prev_services_index, y = curative_services_index)) +
     geom_point(size = 3, colour = "steelblue4") +
-    geom_smooth(method = "lm", se = FALSE, linetype = "dashed", colour = "steelblue4") +
     
     # Quadrant lines
     geom_vline(xintercept = x_mid, linetype = "dashed", colour = "grey40") +
