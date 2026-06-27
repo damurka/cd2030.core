@@ -113,12 +113,12 @@ cache$denominator_metrics %>%
 ```
 **Institutional Deliveries**
 ```{r, fig.width=4.2}
-cache$get_filtered_indicator_coverage('ideliv', 'national') %>% 
+cache$calculate_derived_coverage('ideliv', 'national') %>% 
   plot() + cd_report_theme()
 ```
 **Penta 3**
 ```{r, fig.width=4.2}
-cache$get_filtered_indicator_coverage('penta3', 'national') %>% 
+cache$calculate_derived_coverage('penta3', 'national') %>% 
   plot() + cd_report_theme()
 ```
 
@@ -195,13 +195,13 @@ run_columnbreak()
 
 **Vaccine**
 ```{r, fig.width=6.365, fig.height=3}
-cache$get_filtered_threshold('vaccine', 'national') %>% 
+cache$get_filtered_threshold('vaccine', 'district') %>% 
    plot() + cd_report_theme()
 ```
 
 **Dropout**
 ```{r, fig.width=6.365, fig.height=3}
-cache$get_filtered_threshold('dropout', 'national') %>% 
+cache$get_filtered_threshold('dropout', 'district') %>% 
    plot() + cd_report_theme()
 ```
 

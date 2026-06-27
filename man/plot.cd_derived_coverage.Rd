@@ -6,7 +6,7 @@
 \usage{
 \method{plot}{cd_derived_coverage}(
   x,
-  year = NULL,
+  type = c("bar", "trend"),
   title = NULL,
   x_label = NULL,
   y_label = NULL,
@@ -15,9 +15,10 @@
 )
 }
 \arguments{
-\item{x}{A \code{cd_coverage_trends} object.}
+\item{x}{A \code{cd_derived_coverage} object.}
 
-\item{year}{(optional) An integer for the year to plot the dot plot}
+\item{type}{A character string specifying the plot type: \code{"bar"} or \code{"trend"}.
+\code{"trend"} can only be applied nationally or to a specific region. Defaults to \code{"bar"}.}
 
 \item{title}{(Optional) A scalar character string to override the default plot title. Defaults to \code{NULL}.}
 
@@ -29,9 +30,6 @@
 default legend labels (e.g., \code{list(penta1derived = "Custom Penta1")}).}
 
 \item{...}{Additional arguments passed to \code{ggplot2} layers (not used).}
-
-\item{region}{(Optional) A character string of the region or district name.
-Required for subnational data, must be \code{NULL} for national data.}
 }
 \value{
 A \code{ggplot} object showing coverage trends over time.

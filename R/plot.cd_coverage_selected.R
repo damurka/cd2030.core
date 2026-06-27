@@ -107,7 +107,14 @@ plot.cd_coverage_selected <- function(x,
       
       ggplot(x, aes(x = indicator, y = fct_reorder(!!admin_col, value, .fun = mean, na.rm = TRUE), fill = value)) +
         geom_tile() +
-        scale_fill_gradient(limits = c(0, 100), na.value = "grey90", labels = scales::label_number(suffix = "%")) +
+        scale_fill_stepsn(
+          colors = c("#d73027", "#fdae61", "#1a9850"), # Professional Hex codes for Red, Orange, Green
+          breaks = c(70, 80),                          # The thresholds that separate the colors
+          limits = c(0, 100), 
+          na.value = "grey90", 
+          labels = scales::label_number(suffix = "%")
+        ) +
+        # scale_fill_gradient(limits = c(0, 100), na.value = "grey90", labels = scales::label_number(suffix = "%")) +
         labs(title = t_title, x = x_axis, y = y_axis, fill = t_fill) +
         theme_minimal(base_size = 8) +
         theme(axis.text.x = element_text(angle = 30, hjust = 1))

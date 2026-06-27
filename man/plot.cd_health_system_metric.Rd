@@ -8,6 +8,7 @@
   x,
   indicator = c("ratio_fac_pop", "ratio_hos_pop", "ratio_bed_pop", "ratio_hstaff_pop",
     "skill_mix"),
+  national_value = NA_real_,
   title = NULL,
   x_axis = NULL,
   y_axis = NULL,
@@ -19,13 +20,15 @@
 
 \item{indicator}{A single metric to plot. Options include ratio_fac_pop, ratio_hos_pop, ratio_bed_pop, ratio_hstaff_pop, skill_mix.}
 
+\item{national_value}{A numeric value representing the national average to plot as a vertical line. Can be NA.}
+
 \item{title}{(Optional) Custom title for the plot.}
 
 \item{x_axis}{(Optional) Custom label for the x-axis.}
 
 \item{y_axis}{(Optional) Custom label for the y-axis.}
 
-\item{legend_labels}{(Optional) A named list to override default legend labels.}
+\item{legend_labels}{(Optional) A named list to override default legend labels (e.g. for translation).}
 }
 \value{
 A ggplot object.

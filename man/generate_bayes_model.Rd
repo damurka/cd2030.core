@@ -7,7 +7,7 @@
 generate_bayes_model(
   coverage_data,
   overall_score,
-  indicator = c("anc4", "anc_1trimester", "ideliv", "measles2", "penta3"),
+  indicator = c("anc4", "anc_1trimester", "ideliv", "measles1", "penta3"),
   denominator = c("anc1", "dhis2", "penta1", "penta1derived", "anc1derived")
 )
 }

@@ -12,7 +12,7 @@
 #' @export
 calculate_threshold <- function(.data,
                                 denominator = c('dhis2', 'anc1', 'penta1', 'penta1derived', 'anc1derived'),
-                                indicator = c('anc4', 'ideliv', 'vaccine', 'dropout')) {
+                                indicator = c('anc4', 'instlivebirths', 'vaccine', 'dropout')) {
   check_cd_indicator_coverage(.data)
   indicator <- arg_match(indicator)
   denominator <- arg_match(denominator)
@@ -33,7 +33,7 @@ calculate_threshold <- function(.data,
     indicator,
     vaccine = if (admin_level == "national") 90 else 80,
     anc4 = 70,
-    ideliv = 80,
+    instlivebirths = 80,
     dropout = 10
   )
 
