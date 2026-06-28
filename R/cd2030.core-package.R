@@ -4,7 +4,6 @@
 #' @import ggplot2
 #' @import officer
 #' @import rlang
-#' @import khisr
 #' @import tidyr
 "_PACKAGE"
 
@@ -17,8 +16,6 @@
 #' @importFrom haven write_dta
 #' @importFrom htmltools HTML
 #' @importFrom janitor make_clean_names
-#' @importFrom khisr %.d%
-#' @importFrom khisr get_analytics
 #' @importFrom lubridate month
 #' @importFrom lubridate year
 #' @importFrom lubridate ym

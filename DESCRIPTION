@@ -28,7 +28,6 @@ Imports:
     haven (>= 2.5.4),
     htmltools,
     janitor (>= 2.2.1),
-    khisr (>= 1.0.6),
     lubridate (>= 1.9.4),
     openxlsx (>= 4.2.8),
     officer,

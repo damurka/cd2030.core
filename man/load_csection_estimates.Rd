@@ -7,7 +7,7 @@
 load_csection_estimates(
   path = NULL,
   .data = NULL,
-  country_iso,
+  country_iso = NULL,
   level = c("national", "area")
 )
 }
