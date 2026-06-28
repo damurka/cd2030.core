@@ -108,17 +108,23 @@ plot(cache$calculate_district_reporting_rate(region = adminlevel_1)) +
 
 **Total Livebirths**
 ```{r, fig.width=4.2}
+selected_population <- cache$derivation_population
+metric <- case_when(
+str_detect(selected_population, "births") ~ "births",
+str_detect(selected_population, "pop") ~ "population",
+str_detect(selected_population, "under1") ~ "under1",
+)
 cache$denominator_metrics %>% 
-  plot(metric = "births") + cd_report_theme()
+  plot(metric = metric) + cd_report_theme()
 ```
-**Institutional Deliveries**
+**Institutional Livebirths**
 ```{r, fig.width=4.2}
-cache$calculate_derived_coverage('ideliv', 'national') %>% 
+cache$calculate_derived_coverage('instlivebirths', 'national') %>% 
   plot() + cd_report_theme()
 ```
-**Penta 3**
+**Subnational Institutional livebirths**
 ```{r, fig.width=4.2}
-cache$calculate_derived_coverage('penta3', 'national') %>% 
+cache$calculate_derived_coverage('instlivebirths', 'adminlevel_1') %>% 
   plot() + cd_report_theme()
 ```
 
@@ -130,7 +136,7 @@ cache$calculate_derived_coverage('penta3', 'national') %>%
 
 - How well does the national projection of births align with the UN projection?
 - Which denominator methods performed best at the national level for the live births coverage and penta3 coverage? And for subnational level for the two indicators?
-- What denominators are selected for the maternal (ideliv) and vaccination (penta3) indicators in the coverage analyses? 
+- What denominators are selected for the maternal (instlivebirths) and vaccination (penta3) indicators in the coverage analyses? 
 
 :::
 
@@ -169,7 +175,7 @@ cache$get_filtered_coverage('anc_1trimester', 'national') %>%
 `r my_multicol_start()`
 
 ```{r, fig.width=6.3, fig.height=3}
-cache$get_filtered_coverage('ideliv', 'national') %>%
+cache$get_filtered_coverage('instlivebirths', 'national') %>%
   plot() + cd_report_theme()
 ```
 
@@ -241,7 +247,7 @@ cache$get_filtered_threshold('vaccine', 'district') %>%
 
 #### Equity by wealth, education, rural-urban residence (from surveys)
 
-**Institutional Deliveries**
+**Institutional Livebirths**
 
 `r my_multicol_start()`
 
@@ -300,7 +306,7 @@ equiplot_education(cache$education_survey, 'penta3') +
 
 **Instituional Deliveries**
 ```{r, fig.width=6.3}
-cache$get_filtered_inequality('ideliv', 'adminlevel_1') %>% 
+cache$get_filtered_inequality('instlivebirths', 'adminlevel_1') %>% 
   plot() + cd_report_theme()
 ```
 
@@ -316,7 +322,7 @@ cache$get_filtered_inequality('penta3', 'adminlevel_1') %>%
 `r my_multicol_start()`
 
 ```{r, fig.width=3.1}
-cache$get_filtered_mapping_data('ideliv', 'adminlevel_1', 'Greens') %>% 
+cache$get_filtered_mapping_data('instlivebirths', 'adminlevel_1', 'Greens') %>% 
   plot() + cd_report_theme()
 ```
 

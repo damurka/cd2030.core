@@ -7,7 +7,7 @@
 load_private_sector_data(
   path = NULL,
   .data = NULL,
-  country_iso,
+  country_iso = NULL,
   level = c("national", "area")
 )
 }

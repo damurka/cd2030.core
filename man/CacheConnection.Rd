@@ -174,7 +174,11 @@ from \code{.rds} files.
 
     \item{\code{health_system_metrics_national}}{coverage calculation using stored model parameters.}
 
-    \item{\code{health_system_metrics_admin1}}{coverage calculation using stored model parameters.
+    \item{\code{health_system_metrics_admin1}}{coverage calculation using stored model parameters.}
+
+    \item{\code{national_private_share}}{National private share data.}
+
+    \item{\code{area_private_share}}{National private share data.
 Update a field (with change tracking)}
   }
   \if{html}{\out{</div>}}
@@ -1598,17 +1602,17 @@ Generate Service Utilization Admin 1 Data}
 \if{html}{\out{<a id="method-CacheConnection-get_filtered_threshold"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_filtered_threshold}{}}}
 \subsection{\code{CacheConnection$get_filtered_threshold()}}{
-  Get calculated threshold data responsive to admin level and indicator.
+  Get calculated threshold data responsive to target unit and region.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{CacheConnection$get_filtered_threshold(indicator, admin_level, region = NULL)}
+    \preformatted{CacheConnection$get_filtered_threshold(indicator, target_unit, region = NULL)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
       \item{\code{indicator}}{Character. The target health indicator group (e.g., "vaccine", "dropout").}
-      \item{\code{admin_level}}{Character. Level of aggregation ("national", "adminlevel_1", "district").}
+      \item{\code{target_unit}}{Character. The level being evaluated ("district" or "adminlevel_1").}
       \item{\code{region}}{Character. Optional region filter.}
     }
     \if{html}{\out{</div>}}
