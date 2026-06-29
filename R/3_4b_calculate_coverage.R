@@ -270,17 +270,17 @@ generate_coverage_data <- function(.data,
   terms <- if (type == 'maternal') {
     c("anc_1trimester", 'anc1', "anc4", "ideliv", "instlivebirths", "pnc48h")
   } else {
-    c('penta1', 'penta3', 'measles1')
+    c('bcg', 'penta1', 'penta3', 'measles1', 'measle2')
   }
   terms_regex <- paste(terms, collapse = '|')
 
   # 2. Build Regex for Extraction
   regex_match <- if (admin_level == 'national') {
-    fac_regex <- paste0('^cov_*(', terms_regex, ')_(', denominator, '|wuenic)$')
-    surv_regex <- paste0('^r_.*(', terms_regex, ')$')
+    fac_regex <- paste0('^cov_(', terms_regex, ')_(', denominator, '|wuenic)$')
+    surv_regex <- paste0('^r_(', terms_regex, ')$')
     paste(fac_regex, surv_regex, sep = '|')
   } else {
-    paste0('^cov_*(', terms_regex, ')_(', denominator, ')$')
+    paste0('^cov_(', terms_regex, ')_(', denominator, ')$')
   }
 
   # 3. Wrangle Data

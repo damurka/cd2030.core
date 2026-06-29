@@ -106,18 +106,24 @@ plot.cd_coverage_selected <- function(x,
       t_fill  <- fill_label %||% "Coverage"
       
       ggplot(x, aes(x = indicator, y = fct_reorder(!!admin_col, value, .fun = mean, na.rm = TRUE), fill = value)) +
-        geom_tile() +
+        # Added color and linewidth to create clean grid lines between the tiles
+        geom_tile(color = "white", linewidth = 0.5) +
         scale_fill_stepsn(
-          colors = c("#d73027", "#fdae61", "#1a9850"), # Professional Hex codes for Red, Orange, Green
-          breaks = c(70, 80),                          # The thresholds that separate the colors
+          # 5 colors transitioning from Green to Red
+          colours = c("#d73027", "#fc8d59", "#ffffbf", "#91cf60", "#1a9850"),
+          # 20% step thresholds separating the 5 colors
+          breaks = c(20, 40, 60, 80),                                
           limits = c(0, 100), 
           na.value = "grey90", 
           labels = scales::label_number(suffix = "%")
         ) +
-        # scale_fill_gradient(limits = c(0, 100), na.value = "grey90", labels = scales::label_number(suffix = "%")) +
         labs(title = t_title, x = x_axis, y = y_axis, fill = t_fill) +
-        theme_minimal(base_size = 8) +
-        theme(axis.text.x = element_text(angle = 30, hjust = 1))
+        theme_minimal(base_size = 10) +
+        theme(
+          axis.text.x = element_text(angle = 30, hjust = 1),
+          # Removes default background grid lines so the tile borders stand out sharply
+          panel.grid = element_blank() 
+        )
     }
   }
 }

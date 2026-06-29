@@ -108,17 +108,23 @@ plot(cache$calculate_district_reporting_rate(region = adminlevel_1)) +
 
 **Total Livebirths**
 ```{r, fig.width=4.2}
+selected_population <- cache$derivation_population
+metric <- case_when(
+  str_detect(selected_population, 'birth') ~ 'births',
+  str_detect(selected_population, 'pop') ~ 'population',
+  str_detect(selected_population, 'under1') ~ 'under1',
+)
 cache$denominator_metrics %>% 
-  plot(metric = "births") + cd_report_theme()
+  plot(metric = metric) + cd_report_theme()
 ```
-**Institutional Deliveries**
+**National Institutional Live Births**
 ```{r, fig.width=4.2}
-cache$calculate_derived_coverage('ideliv', 'national') %>% 
+cache$calculate_derived_coverage('instlivebirths', 'national') %>% 
   plot() + cd_report_theme()
 ```
-**Penta 3**
+**Subnational Institutional Live births**
 ```{r, fig.width=4.2}
-cache$calculate_derived_coverage('penta3', 'national') %>% 
+cache$calculate_derived_coverage('instlivebirths', 'adminlevel_1') %>% 
   plot() + cd_report_theme()
 ```
 
@@ -130,7 +136,7 @@ cache$calculate_derived_coverage('penta3', 'national') %>%
 
 - How well does the national projection of births align with the UN projection?
 - Which denominator methods performed best at the national level for the live births coverage and penta3 coverage? And for subnational level for the two indicators?
-- What denominators are selected for the maternal (ideliv) and vaccination (penta3) indicators in the coverage analyses? 
+- What denominators are selected for the maternal (instlivebirths) and vaccination (penta3) indicators in the coverage analyses? 
 
 :::
 
@@ -169,7 +175,7 @@ cache$get_filtered_coverage('anc_1trimester', 'national') %>%
 `r my_multicol_start()`
 
 ```{r, fig.width=6.3, fig.height=3}
-cache$get_filtered_coverage('ideliv', 'national') %>%
+cache$get_filtered_coverage('instlivebirths', 'national') %>%
   plot() + cd_report_theme()
 ```
 
@@ -241,7 +247,7 @@ cache$get_filtered_threshold('vaccine', 'district') %>%
 
 #### Equity by wealth, education, rural-urban residence (from surveys)
 
-**Institutional Deliveries**
+**InstitutionalLive Births**
 
 `r my_multicol_start()`
 
@@ -298,9 +304,9 @@ equiplot_education(cache$education_survey, 'penta3') +
 
 `r my_multicol_start()`
 
-**Instituional Deliveries**
+**InstituionalLive Births**
 ```{r, fig.width=6.3}
-cache$get_filtered_inequality('ideliv', 'adminlevel_1') %>% 
+cache$get_filtered_inequality('instlivebirths', 'adminlevel_1') %>% 
   plot() + cd_report_theme()
 ```
 
@@ -316,7 +322,7 @@ cache$get_filtered_inequality('penta3', 'adminlevel_1') %>%
 `r my_multicol_start()`
 
 ```{r, fig.width=3.1}
-cache$get_filtered_mapping_data('ideliv', 'adminlevel_1', 'Greens') %>% 
+cache$get_filtered_mapping_data('instlivebirths', 'adminlevel_1', 'Greens') %>% 
   plot() + cd_report_theme()
 ```
 
@@ -478,12 +484,12 @@ run_columnbreak()
 `r my_multicol_start()`
 
 ```{r, fig.width=4.2}
-cache$filter_service_utilization('adminlevel_1', 'opd') %>% 
+cache$filter_service_utilization('national', 'opd') %>% 
   plot() + cd_report_theme()
 ```
 
 ```{r, fig.width=4.2}
-cache$filter_service_utilization('adminlevel_1', 'ipd') %>% 
+cache$filter_service_utilization('national', 'ipd') %>% 
   plot() + cd_report_theme()
 ```
 
@@ -499,10 +505,10 @@ cache$filter_service_utilization('adminlevel_1', 'ipd') %>%
 
 `r my_multicol_start()`
 
-#### Case Fatality Rate among admissions Under 5
+#### MCH Preventive vs Curative Index
 
 ```{r, fig.width=6.3}
-cache$filter_service_utilization('national', 'cfr') %>% 
+cache$generate_admin1_mch_curative_index() %>% 
   plot() + cd_report_theme()
 ```
 
@@ -526,8 +532,8 @@ cache$filter_service_utilization('national', 'cfr') %>%
 `r my_multicol_start()`
 
 ```{r, fig.width=6.3}
-plot_national_health_metric(cache$health_system_metrics_national, 'density') +
-  cd_report_theme()
+cache$generate_health_system_table() %>% 
+  plot(latest_year = 2025)
 ```
 
 ::: {custom-style="Style1"}
@@ -550,26 +556,24 @@ Health workforce density (Benchmark: 23 – needed to make major progress in red
 `r my_multicol_start()`
 
 ```{r, fig.width=4.2}
+national_metrics <- cache$health_system_metrics_national
 cache$health_system_metrics_admin1 %>%
   plot(indicator = 'ratio_fac_pop',
-       national_score = cache$health_system_metrics_national$ratio_fac_pop,
-       target = 2) +
+       national_score = national_metrics$ratio_fac_pop) +
   cd_report_theme()
 ```
 
 ```{r, fig.width=4.2}
 cache$health_system_metrics_admin1 %>%
   plot(indicator = 'ratio_hos_pop',
-       national_score =  cache$health_system_metrics_national$ratio_hos_pop,
-       target = 2) +
+       national_score = national_metrics$ratio_hos_pop) +
   cd_report_theme()
 ```
 
 ```{r, fig.width=4.2}
 cache$health_system_metrics_admin1 %>%
   plot(indicator = 'ratio_hstaff_pop',
-       national_score =  cache$health_system_metrics_national$ratio_hstaff_pop,
-       target = 23) +
+       national_score =  national_metrics$ratio_hstaff_pop) +
   cd_report_theme()
 ```
 
@@ -593,10 +597,8 @@ cache$health_system_metrics_admin1 %>%
 `r my_multicol_start()`
 
 ```{r, fig.width=6.3}
-cache$health_system_comparison %>% 
-  plot(indicator = 'cov_instdeliveries_hstaff',
-       denominator = cache$maternal_denominator) +
-  cd_report_theme()
+cache$generate_phc_scatter_data(indicator = 'ratio_fac_pop') %>% 
+  plot() + cd_report_theme()
 ```
 
 ::: {custom-style="Style1"}
@@ -615,12 +617,12 @@ cache$health_system_comparison %>%
 `r my_multicol_start()`
 
 ```{r, fig.width=4.2}
-prepare_private_sector_plot_data(cache$sector_national_estimates, cache$csection_national_estimates) %>% 
+cache()$national_private_share %>% 
   plot() + cd_report_theme()
 ```
 
 ```{r, fig.width=4.2}
-prepare_private_sector_plot_data(cache$sector_area_estimates, cache$csection_area_estimates) %>% 
+cache()$area_private_share %>% 
   plot() + cd_report_theme()
 ```
 
