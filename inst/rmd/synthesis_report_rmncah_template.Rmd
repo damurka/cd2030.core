@@ -119,11 +119,13 @@ metric <- case_when(
 cache$denominator_metrics %>% 
   plot(metric = metric) + cd_report_theme()
 ```
+
 **National Institutional Live Births**
 ```{r, fig.width=4.2}
 cache$calculate_derived_coverage('instlivebirths', 'national') %>% 
   plot() + cd_report_theme()
 ```
+
 **Subnational Institutional Live births**
 ```{r, fig.width=4.2}
 cache$calculate_derived_coverage('instlivebirths', 'adminlevel_1') %>% 
