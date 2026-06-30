@@ -381,13 +381,14 @@ Save data to disk (only if changed and RDS path is not NULL)
   Run coverage calculation using stored model parameters.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{CacheConnection$calculate_coverage(admin_level)}
+    \preformatted{CacheConnection$calculate_coverage(admin_level, region = NULL)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
       \item{\code{admin_level}}{Administrative level ("adminlevel_1" or "district").}
+      \item{\code{region}}{Optional}
     }
     \if{html}{\out{</div>}}
   }
@@ -400,7 +401,7 @@ Save data to disk (only if changed and RDS path is not NULL)
   Generate Continuum of Care Coverage Data
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{CacheConnection$generate_coverage_data(admin_level, type)}
+    \preformatted{CacheConnection$generate_coverage_data(admin_level, type, region = NULL)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
@@ -408,6 +409,7 @@ Save data to disk (only if changed and RDS path is not NULL)
     \describe{
       \item{\code{admin_level}}{Character. The geographic level to calculate and shape.}
       \item{\code{type}}{Character. The type of data to summarise}
+      \item{\code{region}}{Character. optional}
     }
     \if{html}{\out{</div>}}
   }

@@ -43,10 +43,23 @@ library(officer)
 cache <- params$cache
 ```
 
-## National Public Private Share
+## National Ownership of Health Facilities
 
 ```{r}
-  cache$generate_private_sector_data(() %>% 
-  plot() +
-  cd_report_theme()
+  cache$generate_private_sector_data() %>% 
+  plot() + cd_report_theme()
+```
+
+## National Private Share of Services
+
+```{r}
+  cache$national_private_share %>% 
+  plot() + cd_report_theme()
+```
+
+## Sub-National Private Share of Services by Area
+
+```{r}
+  cache$area_private_share %>% 
+  plot() + cd_report_theme()
 ```

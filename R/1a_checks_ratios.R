@@ -218,30 +218,37 @@ calculate_ratios_and_adequacy <- function(.data,
 
   all_pairs <- list_c(ratio_pairs)
 
+  # Create dynamic math expressions for calculating ratios
+  ratio_exprs <- imap(ratio_pairs, ~ expr(!!sym(.x[1]) / !!sym(.x[2])))
+
   data_summary <- .data %>%
     filter(if (!is.null(region)) adminlevel_1 == region else TRUE) %>%
     # Calculate the average of indicators by district and year
     summarise(
       across(all_of(all_pairs), ~ sum(.x, na.rm = TRUE)),
       .by = c(adminlevel_1, district, year)
-    )
-
-  data_summary <- data_summary %>%
-    bind_cols(
-      imap_dfc(ratio_pairs, ~ data_summary[[.x[1]]] / data_summary[[.x[2]]] %>% set_names(.y))
     ) %>%
-    # Calculate adequacy checks
-    mutate(across(names(ratio_pairs), ~ as.integer(.x >= adequate_range[1] & .x <= adequate_range[2]), .names = "adeq_{.col}")) %>%
-    # Summarize adequacy checks by year
+    # Calculate district-level ratios
+    mutate(!!!ratio_exprs) %>%
+    # Flag if the district ratio is adequate (1 or 0)
+    mutate(
+      across(
+        all_of(names(ratio_pairs)),
+        ~ as.integer(.x >= adequate_range[1] & .x <= adequate_range[2]),
+        .names = "adeq_{.col}"
+      )
+    ) |> 
+    # Roll up to the yearly level
     summarise(
+      # Sum the district sums to get total yearly sums
       across(all_of(all_pairs), ~ sum(.x, na.rm = TRUE)),
-      across(c(starts_with("adeq_"), starts_with("ratio")), ~ mean(.x, na.rm = TRUE)),
+      # Average the district adequacy flags to get the % of adequate districts
+      across(starts_with("adeq_"), ~ mean(.x, na.rm = TRUE) * 100),
       .by = year
     ) %>%
-    mutate(
-      across(starts_with("adeq_"), ~ round(.x * 100, 1)),
-      across(all_of(all_pairs), ~ round(.x, 1))
-    ) %>%
+    
+    # Calculate the aggregate ratio using the newly summed yearly totals
+    mutate(!!!ratio_exprs) %>%
     rename_with(
       ~ map_chr(.x, function(name) {
         ratio_name <- str_replace(name, "^adeq_", "")
@@ -255,7 +262,7 @@ calculate_ratios_and_adequacy <- function(.data,
         pair <- ratio_pairs[[name]]
         paste0("Ratio ", pair[1], "/", pair[2])
       }),
-      starts_with("ratio")
+      all_of(names(ratio_pairs))
     )
 
   new_tibble(

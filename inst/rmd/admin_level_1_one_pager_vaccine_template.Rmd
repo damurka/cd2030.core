@@ -3,19 +3,6 @@ title: "Sub-National Statistical Profile: `r params$adminlevel_1`"
 output: 
   officedown::rdocx_document:
     reference_docx: subnational-one-pager-template.docx
-    page_margins:
-      bottom: 0.5
-      top: 0.5
-      right: 0.5
-      left: 0.5
-      gutter: 0
-      header: 0
-      footer: 0
-    page_size:
-      height: 17.0
-      width: 22.0
-      orient: "landscape"
-      unit: "in"
 params:
   cache: NULL
   country: NULL
@@ -59,9 +46,6 @@ my_multicol_stop <- layout$stop
 `r my_multicol_start()`
 
 ```{r, fig.width=6.8, fig.height=7.0}
-# =========================================================
-# TOP LEFT: DATA QUALITY TABLE (Fixed Height)
-# =========================================================
 cache$calculate_overall_score("adminlevel_1", adminlevel_1) %>% 
   plot(cache$data_years, width = 6.8)
 ```
@@ -69,13 +53,10 @@ cache$calculate_overall_score("adminlevel_1", adminlevel_1) %>%
 `r run_columnbreak()`
 
 ```{r, fig.width=6.8, fig.height=3.5}
-# =========================================================
-# TOP CENTER: PENTA 3 CHARTS
-# =========================================================
 # 1. Trend Line
 cache$calculate_coverage('adminlevel_1') %>% 
   plot('penta3', denominator = cache$get_denominator('penta3'), year = last_year, region = adminlevel_1) +
-  theme(text = element_text(size = 12))
+  cd_report_theme(base_size = 12)
 ```
 
 ```{r, fig.width=6.8, fig.height=3.5}
@@ -89,29 +70,23 @@ cache$get_filtered_coverage('penta3', 'adminlevel_1', adminlevel_1) %>%
 `r run_columnbreak()`
 
 ```{r, fig.width=6.8, fig.height=3.5}
-# =========================================================
-# TOP RIGHT: INST DELIVERIES CHARTS
-# =========================================================
 # 1. Trend Line
 cache$calculate_coverage('adminlevel_1') %>% 
-  plot('ideliv', denominator = cache$get_denominator('ideliv'), year = last_year, region = adminlevel_1) +
+  plot('instlivebirths', denominator = cache$get_denominator('instlivebirths'), year = last_year, region = adminlevel_1) +
   theme(text = element_text(size = 12))
 ```
 
 ```{r, fig.width=6.8, fig.height=3.5}
 # 2. Bar Chart
-cache$get_filtered_coverage('ideliv', 'adminlevel_1', adminlevel_1) %>% 
+cache$get_filtered_coverage('instlivebirths', 'adminlevel_1', adminlevel_1) %>% 
   plot() +
-  cd_report_theme(base_size = 12)
+  cd_report_theme(base_size = 12) +
+  theme(plot.margin = margin(10, 0, 0, 0))
 ```
 
 `r my_multicol_stop(widths = c(6.8, 6.8, 6.8), space = 0.3, sep = FALSE)`
 
 ```{r, fig.width=21.0}
-# =========================================================
-# BOTTOM SECTION ("THIRD ROW"): COMBINED MASTER TABLE
-# =========================================================
-
 # 1. Extract Population Data
 cov <- cache$indicator_coverage_district %>% 
   filter(adminlevel_1 == !!adminlevel_1, year == last_year) 

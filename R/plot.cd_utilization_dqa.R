@@ -74,7 +74,11 @@ plot.cd_utilization_dqa <- function(x, years = NULL, title = NULL, width = NULL,
       },
       part = "body"
     ) %>%
-    theme_vanilla()
+    theme_vanilla() %>%
+    add_footer_lines("Reference: \u25CB 3a 16-47   \u25CB 3b and 3c 15 - 45%") %>%
+    fontsize(size = base_font - 1, part = "footer") %>%
+    italic(part = "footer") %>%
+    color(color = "gray30", part = "footer")
   
   # WIDTH SIZING LOGIC
   if (!is.null(width)) {

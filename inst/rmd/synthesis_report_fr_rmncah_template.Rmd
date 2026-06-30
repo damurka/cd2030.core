@@ -552,24 +552,21 @@ Densité du personnel de santé (référence : 23 – nécessaire pour réaliser
 ```{r, fig.width=4.2}
 cache$health_system_metrics_admin1 %>%
   plot(indicator = 'ratio_fac_pop',
-       national_score = cache$health_system_metrics_national$ratio_fac_pop,
-       target = 2) +
+       national_value = cache$health_system_metrics_national$ratio_fac_pop) +
   cd_report_theme()
 ```
 
 ```{r, fig.width=4.2}
 cache$health_system_metrics_admin1 %>%
   plot(indicator = 'ratio_hos_pop',
-       national_score =  cache$health_system_metrics_national$ratio_hos_pop,
-       target = 2) +
+       national_value =  cache$health_system_metrics_national$ratio_hos_pop) +
   cd_report_theme()
 ```
 
 ```{r, fig.width=4.2}
 cache$health_system_metrics_admin1 %>%
   plot(indicator = 'ratio_hstaff_pop',
-       national_score =  cache$health_system_metrics_national$ratio_hstaff_pop,
-       target = 23) +
+       national_value =  cache$health_system_metrics_national$ratio_hstaff_pop) +
   cd_report_theme()
 ```
 

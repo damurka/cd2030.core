@@ -38,6 +38,8 @@ library(officedown)
 library(officer)
 
 cache <- params$cache
+first_year <- min(cache$data_years)
+last_year <- max(cache$data_years)
 ```
 
 ## Curative health services: admission and case fatality rates among children under-5
@@ -46,6 +48,12 @@ cache <- params$cache
 
 Data on inpatient admissions among under-fives are indicators of access to curative services. In-patient mortality (case fatality rates) is an indicator of quality of care. 
 
+### Service Utilization DQA
+
+```{r}
+cache$calculate_service_dqa_summary('national') %>%
+  plot(years = cache$data_years)
+```
 
 ```{r, fig.cap='Figure 6a: OPD service use by children and all ages, national'}
 cache$filter_service_utilization('national', 'opd') %>% 
@@ -53,7 +61,7 @@ cache$filter_service_utilization('national', 'opd') %>%
 ```
 
 ```{r, fig.cap='Figure 6b : map with OPD service use by children, by region'}
-cache$filter_service_utilization('adminlevel_1', 'ipd') %>% 
+cache$prepare_mapping_service_utlization('opd', c(first_year, last_year)) %>% 
   plot() + cd_report_theme()
 ```
 
@@ -84,8 +92,8 @@ cache$filter_service_utilization('national', 'ipd') %>%
   plot() + cd_report_theme()
 ```
 
-```{r, fig.cap='Figure 6d : Admission rates per 100 children under-5, by region'}
-cache$filter_service_utilization('adminlevel_1', 'ipd') %>% 
+```{r, fig.cap='Figure 6b : map with OPD service use by children, by region'}
+cache$prepare_mapping_service_utlization('ipd', c(first_year, last_year)) %>% 
   plot() + cd_report_theme()
 ```
 
@@ -105,3 +113,12 @@ What can be said about admissions per 100 children under-5 per year by region/pr
 ---
 
 :::
+
+
+### MCH Preventive vs Curative Index
+
+```{r}
+cache$generate_admin1_mch_curative_index() |> 
+  plot() + cd_report_theme()
+
+```
