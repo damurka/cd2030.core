@@ -20,11 +20,10 @@ plot.cd_coverage_selected <- function(x,
                                       fill_label = NULL,
                                       source_labels = NULL,
                                       indicator_labels = NULL) {
-
-    print
   
-  admin_level <- attr(x, "admin_level")
-  admin_col <- if (!is.null(attr(x, "admin_col"))) sym(attr(x, "admin_col")) else sym(admin_level)
+  admin_level <- attr_or_abort(x, "admin_level")
+  region <- attr_or_null(x, 'region')
+  admin_col <- get_admin_columns(admin_level, region)
   
   # --- 1. Apply Indicator Translations Safely ---
   # This translates the text without breaking the underlying factor order!
@@ -43,7 +42,7 @@ plot.cd_coverage_selected <- function(x,
   # =====================================================
   # NATIONAL PLOTS (Profile & Gap)
   # =====================================================
-  if (admin_level == "national") {
+  if (admin_level == "national" || !is.null(region)) {
     
     type <- type %||% "profile"
     type <- arg_match(type, c("profile", "gap"))
@@ -93,7 +92,7 @@ plot.cd_coverage_selected <- function(x,
       t_title <- title %||% paste0("Subnational latest coverage (", latest_yr, ")")
       t_x     <- x_axis %||% "Coverage"
       
-      ggplot(x, aes(x = value, y = fct_reorder(!!admin_col, value))) +
+      ggplot(x, aes(x = value, y = fct_reorder(!!sym(admin_col), value))) +
         geom_point() +
         # FIX: Facet by indicator so the translated labels are used!
         facet_wrap(~indicator, scales = "free_y", ncol = 2) +
@@ -105,7 +104,7 @@ plot.cd_coverage_selected <- function(x,
       t_title <- title %||% paste0("Subnational continuum heatmap (", latest_yr, ")")
       t_fill  <- fill_label %||% "Coverage"
       
-      ggplot(x, aes(x = indicator, y = fct_reorder(!!admin_col, value, .fun = mean, na.rm = TRUE), fill = value)) +
+      ggplot(x, aes(x = indicator, y = fct_reorder(!!sym(admin_col), value, .fun = mean, na.rm = TRUE), fill = value)) +
         # Added color and linewidth to create clean grid lines between the tiles
         geom_tile(color = "white", linewidth = 0.5) +
         scale_fill_stepsn(

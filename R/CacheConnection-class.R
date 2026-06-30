@@ -218,7 +218,8 @@ CacheConnection <- R6::R6Class(
 
     #' @description Run coverage calculation using stored model parameters.
     #' @param admin_level Administrative level ("adminlevel_1" or "district").
-    calculate_coverage = function(admin_level) {
+    #' @param region Optional
+    calculate_coverage = function(admin_level, region = NULL) {
       check_required(admin_level)
 
       if (!self$check_coverage_params) {
@@ -238,7 +239,7 @@ CacheConnection <- R6::R6Class(
 
       survey_data <- if (admin_level == "national") self$national_survey else self$regional_survey
 
-      self$get_base_indicator_coverage(admin_level) %>%
+      self$get_base_indicator_coverage(admin_level, region, FALSE) %>%
         calculate_coverage(
           survey_data = survey_data,
           wuenic_data = self$wuenic_estimates,
@@ -251,11 +252,12 @@ CacheConnection <- R6::R6Class(
     #' @description Generate Continuum of Care Coverage Data
     #' @param admin_level Character. The geographic level to calculate and shape. 
     #' @param type Character. The type of data to summarise
-    generate_coverage_data = function(admin_level, type) {
+    #' @param region Character. optional
+    generate_coverage_data = function(admin_level, type, region = NULL) {
       type <- arg_match(type, c('maternal', 'child'))
       denom <- if (type == 'maternal') self$maternal_denominator else self$denominator
       admin_level <- arg_match(admin_level, c('national', 'adminlevel_1'))
-      self$calculate_coverage(admin_level) %>% 
+      self$calculate_coverage(admin_level, region) %>%
         generate_coverage_data(
           type = type,
           denominator = denom
@@ -848,7 +850,7 @@ CacheConnection <- R6::R6Class(
     #' @param indicator Character. The target health indicator.
     #' @param palette Character. Color palette for mapping.
     #' @param admin_level Character. Level of aggregation (defaults to "adminlevel_1").
-    get_filtered_mapping_data = function(indicator, admin_level, palette) {
+    get_filtered_mapping_data = function(indicator, admin_level, palette, plot_year = NULL) {
       indicator <- arg_match(indicator, get_analysis_indicators())
       admin_level <- arg_match(admin_level, c("adminlevel_1", "district"))
       check_required(palette)
@@ -865,7 +867,7 @@ CacheConnection <- R6::R6Class(
       }
 
       # 3. Resolve plotting years (fallback to cached years if not explicitly provided)
-      years_to_plot <- self$mapping_years
+      years_to_plot <- plot_year %||% self$mapping_years
 
       # 4. Retrieve the spatial mapping data
       map_data <- self$get_mapping_data(admin_level)

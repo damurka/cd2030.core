@@ -96,11 +96,11 @@ national_coverage %>%
   cd_report_theme()
 ```
 
-**Coverage Trends for Instituational Deliveries**
+**Coverage Trends for Institutional Live Births**
 
 ```{r}
 national_coverage %>% 
-  filter_coverage('ideliv', denominator = cache$get_denominator('ideliv')) %>% 
+  filter_coverage('instlivebirths', denominator = cache$get_denominator('instlivebirths')) %>% 
   plot() +
   cd_report_theme()
 ```
@@ -183,6 +183,21 @@ Then, interpret the data if there is sufficient confidence in the observed level
 
 :::
 
+
+### Maternal Continuum of Care
+
+```{r}
+cache$generate_coverage_data('national', 'maternal') %>%
+  plot() + cd_report_theme()
+```
+
+### Child Continuum of Care
+
+```{r}
+cache$generate_coverage_data('national', 'child') %>%
+  plot() + cd_report_theme()
+```
+
 ## National coverage trends: family planning
 
 ### Background
@@ -192,9 +207,8 @@ Analyzing trends in mCPR and demand satisfied over time allows policymakers, res
 
 ```{r}
 cache$fpet_data %>% 
-  generate_fpet_summary() %>% 
-  plot() +
-  cd_report_theme()
+  filter(year >= 2010) %>% 
+  plot() + cd_report_theme()
 ```
 
 #### 📝 Notes 
@@ -220,22 +234,25 @@ Analyze whether a divergence in these trends may indicate a persistently high le
 
 The global health community has committed to eliminating preventable maternal and newborn deaths through a series of interconnected targets and strategic frameworks. Two key initiatives—Ending Preventable Maternal Mortality (EPMM) and Every Newborn Action Plan (ENAP)—jointly provide a coordinated roadmap to strengthen health systems, ensure equitable access to quality care, and improve accountability for maternal and newborn outcomes. Central to these frameworks are measurable coverage indicators and time-bound targets that track progress toward universal health coverage and the Sustainable Development Goals (SDGs), particularly SDG 3.1 and 3.2.
 
-#### Maternal
+#### ANC4 
 
 ```{r}
-indicator_coverage <- cache$calculate_indicator_coverage('adminlevel_1')
+cache$get_filtered_threshold('anc4', 'district') %>% 
+  plot() + cd_report_theme()
+```
 
-indicator_coverage %>%
-  calculate_threshold(indicator = 'maternal', denominator = cache$maternal_denominator) %>% 
-  plot()
+#### ANC4 
+
+```{r}
+cache$get_filtered_threshold('instlivebirths', 'district') %>% 
+  plot() + cd_report_theme()
 ```
 
 #### Vaccines
 
 ```{r}
-indicator_coverage %>%
-  calculate_threshold(indicator = 'vaccine', denominator = cache$denominator) %>% 
-  plot()
+cache$get_filtered_threshold('vaccine', 'district') %>% 
+  plot() + cd_report_theme()
 ```
 
 #### 📝 Notes 
@@ -253,3 +270,18 @@ ANC 4+ time attendances: at least 80% of the district should have a coverage of 
 ---
 
 :::
+
+
+### Sub National Maternal Continuum of Care
+
+```{r}
+cache$generate_coverage_data('adminlevel_1', 'maternal') %>% 
+  plot(type = 'heatmap') + cd_report_theme()
+```
+
+### Sub National Child Continuum of Care
+
+```{r}
+cache$generate_coverage_data('adminlevel_1', 'child') %>% 
+  plot(type = 'heatmap') + cd_report_theme()
+```

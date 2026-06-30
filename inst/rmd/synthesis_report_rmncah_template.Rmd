@@ -33,6 +33,8 @@ data <- cache$countdown_data
 country <- cache$country
 data_years <- cache$data_years
 years_range <- paste0(min(data_years, na.rm = TRUE), '-', max(data_years, na.rm = TRUE))
+first_year <- min(uganda_cache$data_years)
+last_year <- max(uganda_cache$data_years)
 
 layout <- cd_multicol_factory(width = 13.93, height = 22.0, orient = "portrait", margins = c(0.5, 0.5, 0.5, 0.5))
 
@@ -322,12 +324,12 @@ cache$get_filtered_inequality('penta3', 'adminlevel_1') %>%
 `r my_multicol_start()`
 
 ```{r, fig.width=3.1}
-cache$get_filtered_mapping_data('instlivebirths', 'adminlevel_1', 'Greens') %>% 
+cache$get_filtered_mapping_data('instlivebirths', 'adminlevel_1', 'Greens', c(first_year, last_year)) %>% 
   plot() + cd_report_theme()
 ```
 
 ```{r, fig.width=3.1}
-cache$get_filtered_mapping_data('penta3', 'adminlevel_1', 'Blues') %>% 
+cache$get_filtered_mapping_data('penta3', 'adminlevel_1', 'Blues', c(first_year, last_year)) %>% 
   plot() + cd_report_theme()
 ```
 
@@ -378,13 +380,13 @@ plot(cache$mortality_summary, indicator = 'sbr_inst') +
 `r my_multicol_start()`
 
 ```{r, fig.width=4.2}
-cache$filter_mortality_summary('mmr') %>% 
-  plot() %>%  cd_report_theme()
+cache$filter_mortality_summary('mmr', c(first_year, last_year)) %>% 
+  plot() +  cd_report_theme()
 ```
 
 ```{r, fig.width=4.2}
-cache$filter_mortality_summary('sbr') %>% 
-  plot() %>%  cd_report_theme()
+cache$filter_mortality_summary('sbr', c(first_year, last_year)) %>% 
+  plot() + cd_report_theme()
 ```
 
 ::: {custom-style="Style1"}
@@ -427,12 +429,14 @@ Estimated completeness of facility maternal death and stillbirth reporting
 `r my_multicol_start()`
 
 ```{r, fig.width=6.3}
-plot(cache$summarise_completeness_ratio, 'mmr') +
+cache$summarise_completeness_ratio('mmr') %>%
+  plot() +
   cd_report_theme()
 ```
 
 ```{r, fig.width=6.3}
-plot(cache$summarise_completeness_ratio, 'sbr') +
+cache$summarise_completeness_ratio('sbr') %>%
+  plot() +
   cd_report_theme()
 ```
 
@@ -531,9 +535,10 @@ cache$generate_admin1_mch_curative_index() %>%
 
 `r my_multicol_start()`
 
-```{r, fig.width=6.3}
+```{r, fig.width=6.3, fig.height = 3.5}
 cache$generate_health_system_table() %>% 
-  plot(latest_year = 2025)
+  plot(latest_year = 2025) %>% 
+  padding(padding = 1.5, part = 'all')
 ```
 
 ::: {custom-style="Style1"}
@@ -559,21 +564,21 @@ Health workforce density (Benchmark: 23 – needed to make major progress in red
 national_metrics <- cache$health_system_metrics_national
 cache$health_system_metrics_admin1 %>%
   plot(indicator = 'ratio_fac_pop',
-       national_score = national_metrics$ratio_fac_pop) +
+       national_value = national_metrics$ratio_fac_pop) +
   cd_report_theme()
 ```
 
 ```{r, fig.width=4.2}
 cache$health_system_metrics_admin1 %>%
   plot(indicator = 'ratio_hos_pop',
-       national_score = national_metrics$ratio_hos_pop) +
+       national_value = national_metrics$ratio_hos_pop) +
   cd_report_theme()
 ```
 
 ```{r, fig.width=4.2}
 cache$health_system_metrics_admin1 %>%
   plot(indicator = 'ratio_hstaff_pop',
-       national_score =  national_metrics$ratio_hstaff_pop) +
+       national_value =  national_metrics$ratio_hstaff_pop) +
   cd_report_theme()
 ```
 
@@ -617,12 +622,12 @@ cache$generate_phc_scatter_data(indicator = 'ratio_fac_pop') %>%
 `r my_multicol_start()`
 
 ```{r, fig.width=4.2}
-cache()$national_private_share %>% 
+cache$national_private_share %>% 
   plot() + cd_report_theme()
 ```
 
 ```{r, fig.width=4.2}
-cache()$area_private_share %>% 
+cache$area_private_share %>% 
   plot() + cd_report_theme()
 ```
 
