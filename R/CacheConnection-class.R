@@ -421,10 +421,10 @@ CacheConnection <- R6::R6Class(
     #' @param value Named numeric vector.
     set_k_factors = function(value) {
       vacc_factors <- c("anc", "idelv", "vacc")
-      factors <- if (get_selected_group() == "vaccine") {
-        vacc_factors
+      factors <- if (get_selected_group() == "rmncah") {
+         c(vacc_factors, "opd")
       } else {
-        c(vacc_factors, "opd")
+       vacc_factors
       }
       private$setter("k_factors", value, ~ is.numeric(.x) && all(factors %in% names(.x)))
     },
@@ -436,20 +436,38 @@ CacheConnection <- R6::R6Class(
     #' @description Set survey estimates.
     #' @param value Named numeric vector.
     set_survey_estimates = function(value) {
+      if (!is.numeric(value)) cd_abort(c("x" = "Survey must be a numeric vector."))
+      
+      # 1. Dynamically get the required factors based on the group
       common_factors <- c("anc1", "instlivebirths", "bcg", "penta1", "penta3", "measles1")
       factors <- if (get_selected_group() == "vaccine") {
         c(common_factors, "opv1", "opv3")
       } else {
         c(common_factors, "anc4", "low_bweight", "csection")
       }
-      if (!is.numeric(value)) {
-        cd_abort(c("x" = "Survey must be a numeric vector."))
-      }
+      
       if (!all(factors %in% names(value))) {
         missing <- setdiff(factors, names(value))
         cd_warn(c("!" = "Survey values are missing the following {.val {missing}}"))
       }
-      private$update_field("survey_estimates", value)
+      
+      # 2. Build a perfectly sized empty template using exactly the factors
+      new_est <- set_names(rep(NA_real_, length(factors)), factors)
+      
+      # 3. Pull existing data and merge it in (to preserve existing fields)
+      current_est <- private$.in_memory_data$survey_estimates
+      if (!is.null(current_est)) {
+        existing_keys <- intersect(names(current_est), factors)
+        new_est[existing_keys] <- current_est[existing_keys]
+      }
+      
+      # 4. Merge the new incoming values
+      incoming_keys <- intersect(names(value), factors)
+      new_est[incoming_keys] <- value[incoming_keys]
+
+      # 5. Save the perfectly sized vector
+      private$setter("survey_estimates", new_est, is.numeric)
+      private$invalidate_coverage_cache()
     },
 
     #' @description Set national estimates.
@@ -462,7 +480,25 @@ CacheConnection <- R6::R6Class(
     #' @description Set national estimates.
     #' @param value Named list.
     set_national_estimates = function(value) {
-      private$setter("national_estimates", value, is.list)
+      if (!is.list(value)) cd_abort(c("x" = "National estimates must be a list."))
+      
+      # Prevent duplicate survey data (anc1/penta1) from bleeding into the base cache
+      value$anc1 <- NULL
+      value$penta1 <- NULL
+      
+      # 1. Get current baseline (or instantiate template if NULL)
+      current_est <- private$.in_memory_data$national_estimates
+      if (is.null(current_est)) {
+        current_est <- list(nmr = NA_real_, pnmr = NA_real_, twin_rate = 0.015, preg_loss = 0.03, sbr = NA_real_)
+      }
+
+      # 2. Merge exactly like a loop: safely protects twin_rate and preg_loss defaults!
+      valid_keys <- intersect(names(value), names(current_est))
+      current_est[valid_keys] <- value[valid_keys]
+
+      # 3. Safely save the full, intact list
+      private$setter("national_estimates", current_est, is.list)
+      # private$invalidate_coverage_cache()
       private$.invalidate_coverage <<- TRUE
     },
 
@@ -527,11 +563,29 @@ CacheConnection <- R6::R6Class(
 
     #' @description Set national survey.
     #' @param value Data frame.
-    set_national_survey = function(value) private$setter("national_survey", value, check_survey_data),
+    set_national_survey = function(value) {
+      private$setter("national_survey", value, check_survey_data)
+
+      private$extract_national_estimates(value)
+
+      private$update_field("indicator_coverage_national", NULL)
+      private$update_field("indicator_coverage_admin1", NULL)
+      private$update_field("indicator_coverage_district", NULL)
+      private$update_field("inequality_admin1", NULL)
+      private$update_field("inequality_district", NULL)
+    },
 
     #' @description Set regional survey.
     #' @param value Data frame.
-    set_regional_survey = function(value) private$setter("regional_survey", value, ~ check_survey_data(.x, "adminlevel_1")),
+    set_regional_survey = function(value) {
+      private$setter("regional_survey", value, ~ check_survey_data(.x, "adminlevel_1"))
+
+      private$update_field("indicator_coverage_national", NULL)
+      private$update_field("indicator_coverage_admin1", NULL)
+      private$update_field("indicator_coverage_district", NULL)
+      private$update_field("inequality_admin1", NULL)
+      private$update_field("inequality_district", NULL)
+    },
 
     #' @description Set WIQ survey.
     #' @param value Data frame.
@@ -2221,6 +2275,47 @@ CacheConnection <- R6::R6Class(
       self$set_national_estimates(c(list(pnmr = NA, nmr = NA, sbr = NA, twin_rate = 0.015, preg_loss = 0.03), nat_est))
       self$set_survey_estimates(survey_est)
       self$set_survey_year(year)
+    },
+    extract_national_estimates = function(survey_data_df) {
+      if (is.null(survey_data_df) || nrow(survey_data_df) == 0) return()
+      iso <- self$country_iso
+      
+      estimates <- survey_data_df %>%
+        filter(iso3 == iso) %>%
+        select(year, starts_with("r_"), -ends_with("24_35")) %>%
+        rename_with(~ str_remove(.x, "r_"), starts_with("r_"))
+
+      group <- get_selected_group()
+      nat_est <- if (group == "vaccine") {
+        estimates %>% select(any_of(c("year", "anc1", "instlivebirths", "bcg", "penta1", "penta3", "opv1", "opv3", "measles1", "nmr", "pnmr")))
+      } else {
+        estimates %>% select(any_of(c("year", "anc1", "anc4", "instlivebirths", "bcg", "penta1", "penta3", "measles1", "low_bweight", "csection", "nmr", "pnmr")))
+      }
+      
+      nat_est <- nat_est %>% pivot_longer(cols = -year) %>% filter(!is.na(value)) %>% slice_max(order_by = year, by = name, with_ties = FALSE)
+      if(nrow(nat_est) == 0) return()
+
+      latest_year <- max(nat_est$year)
+      
+      survey_est_raw <- nat_est %>% filter(!name %in% c("nmr", "pnmr")) %>% mutate(value = round(value, 1))
+      new_survey_est <- set_names(survey_est_raw$value, survey_est_raw$name)
+      
+      nat_est_raw <- nat_est %>% filter(name %in% c("nmr", "pnmr")) %>% mutate(value = case_when(name %in% c("nmr", "pnmr") ~ value / 1000, .default = value))
+      new_nat_rates <- set_names(nat_est_raw$value, nat_est_raw$name)
+
+      # 1. Start with completely blank template for survey estimates to wipe old stale data
+      full_survey_est <- c(anc1 = NA_real_, penta1 = NA_real_, penta3 = NA_real_, opv1 = NA_real_, opv3 = NA_real_, measles1 = NA_real_, bcg = NA_real_, anc4 = NA_real_, instlivebirths = NA_real_, low_bweight = NA_real_, csection = NA_real_)
+      for(nm in names(new_survey_est)) full_survey_est[[nm]] <- new_survey_est[[nm]]
+
+      # 2. Retain default preg_loss / twin_rate by pulling current state
+      current_nat_rates <- private$.in_memory_data$national_estimates
+      if(is.null(current_nat_rates)) current_nat_rates <- list(pnmr = NA, nmr = NA, sbr = NA, twin_rate = 0.015, preg_loss = 0.03)
+      for(nm in names(new_nat_rates)) current_nat_rates[[nm]] <- new_nat_rates[[nm]]
+
+      # 3. Push back to class
+      self$set_national_estimates(current_nat_rates)
+      self$set_survey_estimates(full_survey_est)
+      self$set_survey_year(latest_year)
     },
     depend = function(field_name) {
       if (!is.null(private$.reactiveDep[[field_name]])) {

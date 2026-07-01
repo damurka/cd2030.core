@@ -33,8 +33,8 @@ data <- cache$countdown_data
 country <- cache$country
 data_years <- cache$data_years
 years_range <- paste0(min(data_years, na.rm = TRUE), '-', max(data_years, na.rm = TRUE))
-first_year <- min(uganda_cache$data_years)
-last_year <- max(uganda_cache$data_years)
+first_year <- min(cache$data_years)
+last_year <- max(cache$data_years)
 
 layout <- cd_multicol_factory(width = 13.93, height = 22.0, orient = "portrait", margins = c(0.5, 0.5, 0.5, 0.5))
 
