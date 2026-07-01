@@ -467,7 +467,7 @@ CacheConnection <- R6::R6Class(
 
       # 5. Save the perfectly sized vector
       private$setter("survey_estimates", new_est, is.numeric)
-      private$invalidate_coverage_cache()
+      # private$invalidate_coverage_cache()
     },
 
     #' @description Set national estimates.
