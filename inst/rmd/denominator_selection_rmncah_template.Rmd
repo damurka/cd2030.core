@@ -18,6 +18,8 @@ output:
       gutter: 0
 params:
   cache: NULL
+  i18n: NULL
+
   country: NULL
   adminlevel_1: NULL
 ---
@@ -42,6 +44,7 @@ library(officedown)
 library(officer)
 
 cache <- params$cache
+i18n <- params$i18n
 ```
 
 ## Health facility data denominator assessment: DHIS2, UN Population and livebirths projections {-}
@@ -57,18 +60,43 @@ the UN projections.
 ### Total Population Projections: DHIS2 and UN Populations
 
 ```{r}
-cache$denominator_metrics %>% 
-  plot(metric = 'population') +
+cache$denominator_metrics %>%
+  plot(
+    metric = 'population', 
+    title = i18n$t("plt_title_denom_pop"),
+    x_label = i18n$t("title_global_year"),
+    y_label = i18n$t("opt_population"),
+    legend_labels = c(i18n$t("lbl_leg_denom_un_pop"), i18n$t("lbl_leg_denom_dhis2_pop"))) +
   cd_report_theme()
 ```
 
 ### Live Births Projections: DHIS2 and UN Live births
 
 ```{r}
-cache$denominator_metrics %>% 
-  plot(metric = 'births') +
+cache$denominator_metrics %>%
+  plot(
+    metric = 'births', 
+    title = i18n$t("plt_title_denom_births"),
+    x_label = i18n$t("title_global_year"),
+    y_label = i18n$t("opt_live_births"),
+    legend_labels = c(i18n$t("lbl_leg_denom_un_births"), i18n$t("lbl_leg_denom_dhis2_live_births"), i18n$t("lbl_leg_denom_dhis2_tot_births"))) +
   cd_report_theme()
 ```
+
+
+### Under 1 Projections: DHIS2 and UN Under 1
+```{r}
+cache$denominator_metrics %>%
+  plot(
+    metric = 'under1', 
+    title = i18n$t("plt_title_denom_under1"),
+    x_label = i18n$t("title_global_year"),
+    y_label = i18n$t("opt_live_births"),
+    legend_labels = c(i18n$t("lbl_leg_denom_un_under1"), i18n$t("lbl_leg_denom_dhis2_under1"))) +
+  cd_report_theme()
+```
+
+
 
 #### 📝 Notes 
 
@@ -96,15 +124,45 @@ The best performing denominator for coverage analysis with facility data is sele
 #### National
 
 ```{r}
+indicator <- i18n$t("opt_penta3")
+year <- cache$survey_year
 cache$calculate_derived_coverage('penta3', 'national') %>% 
-  plot() + cd_report_theme()
+  plot(
+    title = str_glue(i18n$t("plt_title_denom_survey_comp")),
+    y_label = str_glue(i18n$t("lbl_axis_y_coverage")),
+    category_labels = list(
+      un            = i18n$t("lbl_denom_un_proj"),
+      dhis2         = i18n$t("lbl_denom_dhis2_proj"),
+      anc1          = i18n$t("lbl_denom_anc1_derived"),
+      penta1        = i18n$t("lbl_denom_penta1_derived"),
+      penta1derived = i18n$t("opt_penta1derived"),
+      anc1derived = i18n$t("opt_anc1derived")
+    ),
+    legend_labels = list(
+      facility = i18n$t("lbl_denom_facility_based"),
+      survey = i18n$t("lbl_denom_survey_national")
+    )
+  ) + 
+  cd_report_theme()
 ```
 
 #### Sub National
 
 ```{r}
 cache$calculate_derived_coverage('penta3', 'adminlevel_1') %>% 
-  plot() + cd_report_theme()
+  plot(
+    title = str_glue(i18n$t("plt_title_cross_section_subnat"), indicator = indicator, year = year),
+    x_label = str_glue(i18n$t("opt_coverage")),
+    y_label = i18n$t("lbl_axis_y_region"),
+    legend_labels = list(
+      "un"            = i18n$t("opt_un"),
+      "dhis2"         = i18n$t("opt_dhis2"),
+      "anc1"          = i18n$t("opt_anc1"),
+      "penta1"        = i18n$t("opt_penta1"),
+      "penta1derived" = i18n$t("opt_penta1derived"),
+      "anc1derived"   = i18n$t("opt_anc1derived")
+    )) + 
+  cd_report_theme()
 ```
 
 
@@ -113,15 +171,44 @@ cache$calculate_derived_coverage('penta3', 'adminlevel_1') %>%
 #### National
 
 ```{r}
+indicator <- i18n$t("opt_instlivebirths")
 cache$calculate_derived_coverage('instlivebirths', 'national') %>% 
-  plot() + cd_report_theme()
+    plot(
+    title = str_glue(i18n$t("plt_title_denom_survey_comp")),
+    y_label = str_glue(i18n$t("lbl_axis_y_coverage")),
+    category_labels = list(
+      un            = i18n$t("lbl_denom_un_proj"),
+      dhis2         = i18n$t("lbl_denom_dhis2_proj"),
+      anc1          = i18n$t("lbl_denom_anc1_derived"),
+      penta1        = i18n$t("lbl_denom_penta1_derived"),
+      penta1derived = i18n$t("opt_penta1derived"),
+      anc1derived = i18n$t("opt_anc1derived")
+    ),
+    legend_labels = list(
+      facility = i18n$t("lbl_denom_facility_based"),
+      survey = i18n$t("lbl_denom_survey_national")
+    )
+  ) + 
+  cd_report_theme()
 ```
 
 #### Sub National
 
 ```{r}
 cache$calculate_derived_coverage('instlivebirths', 'adminlevel_1') %>% 
-  plot() + cd_report_theme()
+  plot(
+    title = str_glue(i18n$t("plt_title_cross_section_subnat"), indicator = indicator, year = year),
+    x_label = str_glue(i18n$t("opt_coverage")),
+    y_label = i18n$t("lbl_axis_y_region"),
+    legend_labels = list(
+      "un"            = i18n$t("opt_un"),
+      "dhis2"         = i18n$t("opt_dhis2"),
+      "anc1"          = i18n$t("opt_anc1"),
+      "penta1"        = i18n$t("opt_penta1"),
+      "penta1derived" = i18n$t("opt_penta1derived"),
+      "anc1derived"   = i18n$t("opt_anc1derived")
+    )) + 
+  cd_report_theme()
 ```
 
 #### 📝 Notes 

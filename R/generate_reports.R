@@ -25,6 +25,8 @@ generate_report <- function(cache,
                             output_file,
                             report_name,
                             adminlevel_1 = NULL,
+                            i18n = NULL,
+                            language = NULL,
                             output_format = c("word_document", "pdf_document", "html_document")) {
   # check_cd_data(.data)
   check_required(cache)
@@ -52,14 +54,34 @@ generate_report <- function(cache,
 
   analysis_type <- get_selected_group()
 
+  i18n_func <- if (is.null(i18n)) {
+    list(
+      t = function(text, ...) { text },
+    )
+  } else {
+    i18n
+  }
+
+  if (!is.null(language)) {
+    language <- arg_match(language, c('en', 'fr', 'pt'))
+  }
+
+  language <- language %||% cache$language
+  language_prefix <- switch(
+    language,
+    en = '',
+    fr = '_fr',
+    pt = '_pt'
+  )
+
   # Open the generated file automatically
   tryCatch(
     {
       render(
-        input = file.path(system.file(package = "cd2030.core"), "rmd", paste0(report_name, "_", analysis_type, "_template.Rmd")),
+        input = file.path(system.file(package = "cd2030.core"), "rmd", paste0(report_name, language_prefix, "_", analysis_type, "_template.Rmd")),
         output_format = format,
         output_file = output_path,
-        params = list(cache = cache, country = cache$country, adminlevel_1 = adminlevel_1),
+        params = list(cache = cache, country = cache$country, adminlevel_1 = adminlevel_1, i18n = i18n_func),
         encoding = "UTF-8",
         runtime = "auto",
         intermediates_dir = temp_dir, # Set unique temp directory

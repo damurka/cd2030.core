@@ -14,6 +14,8 @@ output:
     latex_engine: lualatex
 params:
   cache: NULL
+  i18n: NULL
+
   country: NULL
   adminlevel_1: NULL
 ---
@@ -38,9 +40,9 @@ library(officedown)
 library(officer)
 
 cache <- params$cache
+i18n <- params$i18n
 
-adjusted_data <- cache$adjusted_data
-denominator <- cache$denominator
+country_name <- cache$country
 ```
 
 ## 5. National Estimates: National Vaccination Coverage trends {-}
@@ -56,19 +58,41 @@ facility and survey data need to be used.
 **Coverage Trends for ANC4**
 
 ```{r}
-national_coverage <- cache$calculate_coverage('national')
-
-national_coverage %>% 
-  filter_coverage('anc4', denominator = cache$get_denominator('anc4')) %>% 
-  plot() +
+current_indicator <- 'anc4'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
   cd_report_theme()
 ```
 
 **Coverage Trends for ANC First Trimeter**
 ```{r}
-national_coverage %>% 
-  filter_coverage('anc_1trimester', denominator = cache$get_denominator('anc_1trimester')) %>% 
-  plot() +
+current_indicator <- 'anc_1trimester'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
   cd_report_theme()
 ```
 
@@ -87,21 +111,45 @@ Then, interpret the data if there is sufficient confidence in the observed level
 
 ### Delivery Care
 
-**Coverage Trends for live births**
+**Coverage Trends for Institutional Deliveries**
 
 ```{r}
-national_coverage %>% 
-  filter_coverage('instlivebirths', denominator = cache$get_denominator('instlivebirths')) %>% 
-  plot() +
+current_indicator <- 'ideliv'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
   cd_report_theme()
 ```
 
 **Coverage Trends for Institutional Live Births**
 
 ```{r}
-national_coverage %>% 
-  filter_coverage('instlivebirths', denominator = cache$get_denominator('instlivebirths')) %>% 
-  plot() +
+current_indicator <- 'instlivebirths'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
   cd_report_theme()
 ```
 
@@ -121,18 +169,42 @@ Then, interpret the data if there is sufficient confidence in the observed level
 
 **Coverage Trends for Postnatal Care**
 ```{r}
-national_coverage %>% 
-  filter_coverage('pnc48h', denominator = cache$get_denominator('pnc48h')) %>% 
-  plot() +
+current_indicator <- 'pnc48h'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
   cd_report_theme()
 ```
 
 **Coverage Trends for Low Birth Weight**
 
 ```{r}
-national_coverage %>% 
-  filter_coverage('low_bweight', denominator = cache$get_denominator('low_bweight')) %>% 
-  plot() +
+current_indicator <- 'low_bweight'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
   cd_report_theme()
 ```
 
@@ -155,17 +227,41 @@ Then, interpret the data if there is sufficient confidence in the observed level
 
 **Coverage Trends for Penta 3**
 ```{r}
-national_coverage %>% 
-  filter_coverage('penta3', denominator = cache$get_denominator('penta3')) %>% 
-  plot() +
+current_indicator <- 'penta3'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
   cd_report_theme()
 ```
 
 **Coverage Trends for Measles 1**
 ```{r}
-national_coverage %>% 
-  filter_coverage('measles1', denominator = cache$get_denominator('measles1')) %>% 
-  plot() +
+current_indicator <- 'measles1'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
   cd_report_theme()
 ```
 
@@ -188,14 +284,70 @@ Then, interpret the data if there is sufficient confidence in the observed level
 
 ```{r}
 cache$generate_coverage_data('national', 'maternal') %>%
-  plot() + cd_report_theme()
+  plot(
+    type = 'profile',
+                    
+                    # Dynamic titles based on whether it's 'profile' or 'gap'
+    title    = i18n$t("title_cov_profile"),
+    subtitle = i18n$t("subtitle_cov_profile"),
+        
+        # Dynamic axes
+    x_axis   = NULL,
+    y_axis   = i18n$t("opt_coverage"),
+        
+        # Translation lists
+    source_labels = list(
+      facility = i18n$t("lbl_src_facility"),
+      survey   = i18n$t("lbl_src_survey"),
+      wuenic   = i18n$t("lbl_src_wuenic")
+    ),
+    indicator_labels = list(
+      anc_1trimester = i18n$t("opt_anc_1trimester"),
+      anc4           = i18n$t("opt_anc4"),
+      ideliv = i18n$t("opt_ideliv"),
+      instlivebirths = i18n$t("opt_instlivebirths"),
+      pnc48h         = i18n$t("opt_pnc48h"),
+      # penta3         = i18n$t("opt_penta3"),
+      # measles1       = i18n$t("opt_measles1"),
+      # bcg            = i18n$t("opt_bcg"),
+      # penta1          = i18n$t("opt_penta1"),
+    )
+  ) + cd_report_theme()
 ```
 
 ### Child Continuum of Care
 
 ```{r}
 cache$generate_coverage_data('national', 'child') %>%
-  plot() + cd_report_theme()
+  plot(
+    type = 'profile',
+                    
+        # Dynamic titles based on whether it's 'profile' or 'gap'
+    title    = i18n$t("title_cov_profile"),
+    subtitle = i18n$t("subtitle_cov_profile"),
+        
+        # Dynamic axes
+    x_axis   = NULL,
+    y_axis   = i18n$t("opt_coverage"),
+        
+        # Translation lists
+    source_labels = list(
+      facility = i18n$t("lbl_src_facility"),
+      survey   = i18n$t("lbl_src_survey"),
+      wuenic   = i18n$t("lbl_src_wuenic")
+    ),
+    indicator_labels = list(
+      # anc_1trimester = i18n$t("opt_anc_1trimester"),
+      # anc4           = i18n$t("opt_anc4"),
+      # ideliv = i18n$t("opt_ideliv"),
+      # instlivebirths = i18n$t("opt_instlivebirths"),
+      # pnc48h         = i18n$t("opt_pnc48h"),
+      penta3         = i18n$t("opt_penta3"),
+      measles1       = i18n$t("opt_measles1"),
+      bcg            = i18n$t("opt_bcg"),
+      penta1          = i18n$t("opt_penta1"),
+    )
+  ) + cd_report_theme()
 ```
 
 ## National coverage trends: family planning
@@ -208,7 +360,18 @@ Analyzing trends in mCPR and demand satisfied over time allows policymakers, res
 ```{r}
 cache$fpet_data %>% 
   filter(year >= 2010) %>% 
-  plot() + cd_report_theme()
+  plot(
+    title = paste0(i18n$t("title_graph_fpet"), ", ", country_name),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = i18n$t("ylab_fpet"),
+    caption = i18n$t("caption_fpet"),
+    
+    # Translate the legend (adjust the keys based on what they are named in your CSV/tibble)
+    indicator_labels = list(
+      prevalence = i18n$t("lbl_fpet_mcpr"),
+      demand = i18n$t("lbl_fpet_demand")
+    )
+  ) + cd_report_theme()
 ```
 
 #### 📝 Notes 
@@ -237,22 +400,124 @@ The global health community has committed to eliminating preventable maternal an
 #### ANC4 
 
 ```{r}
-cache$get_filtered_threshold('anc4', 'district') %>% 
-  plot() + cd_report_theme()
+current_indicator <- 'anc4'
+translated_x_labels <- list(
+  instlivebirths = i18n$t("opt_instlivebirths"),
+  pnc48h = i18n$t("opt_pnc48h"),
+  bcg = i18n$t("opt_bcg"),
+  penta3 = i18n$t("opt_penta3"),
+  measles1 = i18n$t("opt_measles1"),
+  dropout_penta13 = i18n$t("opt_dropout_penta13"),
+  dropout_penta3mcv1 = i18n$t("opt_dropout_penta3mcv1")
+)
+
+filtered_data <- cache$get_filtered_threshold(current_indicator, 'district')
+
+admin_lvl_translated <- i18n$t(paste0("opt_", current_indicator))
+rate <- i18n$t(if (current_indicator == 'opt_dropout') 'opt_rate' else 'opt_coverage')
+sign <- if (current_indicator == 'opt_dropout') '<' else '≥'
+group <- i18n$t(paste0("opt_", current_indicator))
+coverage <- attr(filtered_data, "threshold")
+
+# FIXED: Explicitly pass named variables into str_glue so it overrides the reactive functions in the environment
+plot_title <- str_glue(
+  i18n$t('plt_title_target_national'),
+  admin_level = admin_lvl_translated,
+  region = "",
+  coverage = coverage,
+  group = group,
+  rate = rate,
+  sign = sign
+)
+filtered_data %>% 
+  plot(
+    title = plot_title,
+    y_axis = i18n$t("lbl_axis_y_pct_subnat"),
+    legend_title = i18n$t("title_global_year"),
+    x_labels = translated_x_labels
+  ) + cd_report_theme()
 ```
 
-#### ANC4 
+#### Institutional Live Births 
 
 ```{r}
-cache$get_filtered_threshold('instlivebirths', 'district') %>% 
-  plot() + cd_report_theme()
+current_indicator <- 'instlivebirths'
+translated_x_labels <- list(
+  instlivebirths = i18n$t("opt_instlivebirths"),
+  pnc48h = i18n$t("opt_pnc48h"),
+  bcg = i18n$t("opt_bcg"),
+  penta3 = i18n$t("opt_penta3"),
+  measles1 = i18n$t("opt_measles1"),
+  dropout_penta13 = i18n$t("opt_dropout_penta13"),
+  dropout_penta3mcv1 = i18n$t("opt_dropout_penta3mcv1")
+)
+
+filtered_data <- cache$get_filtered_threshold(current_indicator, 'district')
+
+admin_lvl_translated <- i18n$t(paste0("opt_", current_indicator))
+rate <- i18n$t(if (current_indicator == 'opt_dropout') 'opt_rate' else 'opt_coverage')
+sign <- if (current_indicator == 'opt_dropout') '<' else '≥'
+group <- i18n$t(paste0("opt_", current_indicator))
+coverage <- attr(filtered_data, "threshold")
+
+# FIXED: Explicitly pass named variables into str_glue so it overrides the reactive functions in the environment
+plot_title <- str_glue(
+  i18n$t('plt_title_target_national'),
+  admin_level = admin_lvl_translated,
+  region = "",
+  coverage = coverage,
+  group = group,
+  rate = rate,
+  sign = sign
+)
+filtered_data %>% 
+  plot(
+    title = plot_title,
+    y_axis = i18n$t("lbl_axis_y_pct_subnat"),
+    legend_title = i18n$t("title_global_year"),
+    x_labels = translated_x_labels
+  ) + cd_report_theme()
 ```
 
 #### Vaccines
 
 ```{r}
-cache$get_filtered_threshold('vaccine', 'district') %>% 
-  plot() + cd_report_theme()
+current_indicator <- 'vaccine'
+translated_x_labels <- list(
+  instlivebirths = i18n$t("opt_instlivebirths"),
+  pnc48h = i18n$t("opt_pnc48h"),
+  bcg = i18n$t("opt_bcg"),
+  penta3 = i18n$t("opt_penta3"),
+  measles1 = i18n$t("opt_measles1"),
+  dropout_penta13 = i18n$t("opt_dropout_penta13"),
+  dropout_penta3mcv1 = i18n$t("opt_dropout_penta3mcv1")
+)
+
+filtered_data <- cache$get_filtered_threshold(current_indicator, 'district')
+
+admin_lvl_translated <- i18n$t(paste0("opt_", current_indicator))
+rate <- i18n$t(if (current_indicator == 'opt_dropout') 'opt_rate' else 'opt_coverage')
+sign <- if (current_indicator == 'opt_dropout') '<' else '≥'
+group <- i18n$t(paste0("opt_", current_indicator))
+coverage <- attr(filtered_data, "threshold")
+
+# FIXED: Explicitly pass named variables into str_glue so it overrides the reactive functions in the environment
+plot_title <- str_glue(
+  i18n$t('plt_title_target_national'),
+  admin_level = admin_lvl_translated,
+  region = "",
+  coverage = coverage,
+  group = group,
+  rate = rate,
+  sign = sign
+)
+filtered_data %>% 
+  plot(
+    title = plot_title,
+    y_axis = i18n$t("lbl_axis_y_pct_subnat"),
+    legend_title = i18n$t("title_global_year"),
+    x_labels = translated_x_labels
+  ) + cd_report_theme()
 ```
 
 #### 📝 Notes 
@@ -276,12 +541,66 @@ ANC 4+ time attendances: at least 80% of the district should have a coverage of 
 
 ```{r}
 cache$generate_coverage_data('adminlevel_1', 'maternal') %>% 
-  plot(type = 'heatmap') + cd_report_theme()
+  plot(
+    type = 'heatmap',
+                    
+        # Dynamic titles based on whether it's 'profile' or 'gap'
+    title    = i18n$t("title_cov_profile"),
+    subtitle = i18n$t("subtitle_cov_profile"),
+        
+        # Dynamic axes
+    x_axis   = NULL,
+    y_axis   = i18n$t("opt_coverage"),
+        
+        # Translation lists
+    source_labels = list(
+      facility = i18n$t("lbl_src_facility"),
+      survey   = i18n$t("lbl_src_survey"),
+      wuenic   = i18n$t("lbl_src_wuenic")
+    ),
+    indicator_labels = list(
+      anc_1trimester = i18n$t("opt_anc_1trimester"),
+      anc4           = i18n$t("opt_anc4"),
+      ideliv = i18n$t("opt_ideliv"),
+      instlivebirths = i18n$t("opt_instlivebirths"),
+      pnc48h         = i18n$t("opt_pnc48h"),
+      # penta3         = i18n$t("opt_penta3"),
+      # measles1       = i18n$t("opt_measles1")
+    )
+  ) + cd_report_theme()
 ```
 
 ### Sub National Child Continuum of Care
 
 ```{r}
 cache$generate_coverage_data('adminlevel_1', 'child') %>% 
-  plot(type = 'heatmap') + cd_report_theme()
+  plot(
+   type = 'heatmap',
+                    
+        # Dynamic titles based on whether it's 'profile' or 'gap'
+    title    = i18n$t("title_cov_profile"),
+    subtitle = i18n$t("subtitle_cov_profile"),
+        
+        # Dynamic axes
+    x_axis   = NULL,
+    y_axis   = i18n$t("opt_coverage"),
+        
+        # Translation lists
+    source_labels = list(
+      facility = i18n$t("lbl_src_facility"),
+      survey   = i18n$t("lbl_src_survey"),
+      wuenic   = i18n$t("lbl_src_wuenic")
+    ),
+    indicator_labels = list(
+      # anc_1trimester = i18n$t("opt_anc_1trimester"),
+      # anc4           = i18n$t("opt_anc4"),
+      # ideliv = i18n$t("opt_ideliv"),
+      # instlivebirths = i18n$t("opt_instlivebirths"),
+      # pnc48h         = i18n$t("opt_pnc48h"),
+      penta3         = i18n$t("opt_penta3"),
+      measles1       = i18n$t("opt_measles1"),
+      bcg            = i18n$t("opt_bcg"),
+      penta1          = i18n$t("opt_penta1"),
+    )
+  ) + cd_report_theme()
 ```

@@ -1,19 +1,25 @@
 ---
-title: "Qualité des données pour `r params$country` --- Analyse Countdown"
-date: "`r format(Sys.Date(), '%d %B %Y')`"
+title: "Data Quality for `r params$country` --- Countdown Analysis"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
 output: 
-  html_document:
-    toc: true
-    toc_float: true
-    theme: cerulean
-    highlight: kate
   officedown::rdocx_document:
     reference_docx: report-template.docx
-  pdf_document:
-    toc: false
-    latex_engine: lualatex
+    page_size:
+      width: !expr 11906 / 1440
+      height: !expr 16838 / 1440
+      orient: "portrait"
+    page_margins:
+      bottom: 1
+      top: 1
+      right: !expr 1417 / 1440
+      left: !expr 1417 / 1440
+      header: !expr 708 / 1440
+      footer: !expr 708 / 1440
+      gutter: 0
 params:
   cache: NULL
+  i18n: NULL
+
   country: NULL
   adminlevel_1: NULL
 ---
@@ -25,19 +31,21 @@ knitr::opts_chunk$set(
   message = FALSE,
   warning = FALSE,
   error = TRUE,
-  fig.width = 7,
-  fig.height = 5,
-  dpi = 1200
+  # fig.width = 7,
+  # fig.height = 5,
+  dpi = 300
 )
 
 library(cd2030.core)
 library(dplyr)
 library(purrr)
+library(stringr)
 library(reactable)
 library(officedown)
 library(officer)
 
 cache <- params$cache
+i18n <- params$i18n
 adminlevel_1 <- params$adminlevel_1
 
 data <- cache$countdown_data
@@ -48,29 +56,58 @@ data_years <- cache$data_years
 
 ### Contexte
 
-Les données de routine rapportées par les établissements de santé constituent une source
-importante d’information pour les indicateurs de santé. Ces données sont rapportées par les
-établissements de santé sur des événements tels que les vaccinations administrées ou les naissances
-vivantes assistées. Comme pour toute donnée, la qualité est un enjeu. Les données sont vérifiées pour
-examiner l’exhaustivité de la notification par les établissements de santé, identifier les valeurs
-extrêmes aberrantes et évaluer la cohérence interne.
+Les données des établissements de santé rapportées de façon routinière sont une source de données importante pour les indicateurs de santé. Les données sont rapportées par les établissements de santé sur des événements tels que les vaccinations administrées, ou les naissances vivantes assistées. Comme pour toutes les données, la qualité est un enjeu. Les données sont vérifiées afin de considérer la complétude du reporting par les établissements de santé, d'identifier les valeurs extrêmes aberrantes, et la cohérence interne.
 
 ### Tableau récapitulatif de la qualité des données
 
 ```{r}
+translated_labels <- list(
+  header = list(
+    h1 = i18n$t("title_score_monthly_complete"),
+    h2 = i18n$t("title_score_extreme_outliers"),
+    h3 = i18n$t("title_score_consist_annual")
+  ),
+  section = list(
+    r1a   = i18n$t("lbl_score_1a"),
+            # Combine text + threshold number
+    r1b   = paste0(i18n$t("lbl_score_1b_prefix"), cache$performance_threshold),
+    r1c   = if (get_selected_group() == "vaccine") i18n$t("lbl_score_1c_vaccine") else i18n$t("lbl_score_1c_rmncah"),
+    r2a   = i18n$t("lbl_score_2a"),
+    r2b   = i18n$t("lbl_score_2b"),
+    score = i18n$t("lbl_score_annual_score")
+  ),
+  metric = list(
+    r_anc1_penta1    = i18n$t("lbl_consist_ratio_anc1_penta1"),
+    r_penta1_penta3  = i18n$t("lbl_consist_ratio_penta1_penta3"),
+    ok_anc1_penta1   = i18n$t("lbl_score_range_anc1_penta1"),
+    ok_penta1_penta3 = i18n$t("lbl_score_range_penta1_penta3")
+  )
+)
+
 overall_score <- if (is.null(adminlevel_1)) {
-  cache$calculate_overall_score("national")
+  cache$calculate_overall_score("national", labels = translated_labels)
 } else {
-  cache$calculate_overall_score("adminlevel_1", region())
+  cache$calculate_overall_score("adminlevel_1", region = adminlevel_1, labels = translated_labels)
 }
 
-overall_score %>% plot(data_years, width = 8)
+overall_score %>% 
+  plot(data_years, width = 8, title = i18n$t("lbl_score_metric_header"))
 ```
 
-### Taux de notification par district
+### Taux de reporting des districts
 
 ```{r district-reporting-rates}
-plot(cache$calculate_district_reporting_rate(region = adminlevel_1)) +
+reporting_rate <- cache$performance_threshold
+plot(cache$calculate_district_reporting_rate(
+  region = adminlevel_1),
+  title = str_glue(i18n$t("plt_title_rr_national")),
+  caption = str_glue(i18n$t("plt_caption_rr_national")),
+  indicator_labels = c(
+    anc = i18n$t("opt_anc"),
+    idelv = i18n$t("opt_idelv"),
+    vacc = i18n$t("opt_vacc"),
+    opd = i18n$t("opt_opd")
+  )) +
   cd_report_theme()
 ```
 
@@ -80,36 +117,61 @@ plot(cache$calculate_district_reporting_rate(region = adminlevel_1)) +
 
 ---
 
-Faire une déclaration sur le score global de qualité des données et son évolution : est-il bon, évolue-t-il dans la bonne direction ?
+Faire une déclaration concernant le score global de la qualité des données et la tendance : est‑il bon, va‑t‑il dans la bonne direction ?
 
-Interpréter l’exhaustivité des données rapportées : est-elle bonne, évolue-t-elle dans la bonne direction ?
+Interpréter la complétude des données de reporting : est‑elle bonne, va‑t‑elle dans la bonne direction ?
 
-Interpréter les données sur les valeurs extrêmes aberrantes : la situation est-elle bonne, les districts s’en sortent-ils bien ?
+Interpréter les données sur les valeurs extrêmes aberrantes : sont‑elles bonnes, les districts se portent‑ils bien ?
 
-Interpréter la cohérence des données rapportées pour l’ANC1 et le penta1 au niveau national ; faire de même pour le penta1 et le penta3.
+Interpréter la cohérence des données rapportées pour ANC1 et penta1 au niveau national ; idem pour penta1 et penta3.
 
-Interpréter les données sur le pourcentage de districts dont les ratios ANC1/penta1 se situent dans l’intervalle attendu ; faire de même pour le penta1/penta3.
+Interpréter les données sur le pourcentage de districts dont les ratios ANC1/penta1 sont dans la fourchette attendue ; idem pour penta1/penta3.
 
 ---
 
 :::
 
-\newpage
 
 ### Ratios ANC1/Penta1 et Penta1/Penta3
 
 ```{r}
-plot(cache$ratios_summary) +
+plot(
+  cache$ratios_summary,
+  title = i18n$t("plt_title_consist_ratios"),
+  x_labels = c(
+    "anc1_penta1"   = i18n$t("lbl_consist_ratio_anc1_penta1"),
+    "penta1_penta3" = i18n$t("lbl_consist_ratio_penta1_penta3")
+  )) +
   cd_report_theme()
 ```
 
 ```{r}
-plot_comparison_anc1_penta1(data) +
+legend <- c(
+  district = i18n$t("lbl_leg_consist_district"),
+  linear_fit = i18n$t("lbl_leg_consist_linear_fit"),
+  diagonale = i18n$t("lbl_leg_consist_diagonal")
+)
+
+vacc1 <- i18n$t("opt_anc1")
+vacc2 <- i18n$t("opt_penta1")
+plot_comparison_anc1_penta1(
+  data,
+  title = str_glue(i18n$t("plt_title_consist_checks")),
+  x_label = vacc1,
+  y_label = vacc2,
+  legend = legend) +
   cd_report_theme()
 ```
 
 ```{r}
-plot_comparison_penta1_penta3(data) +
+vacc1 <- i18n$t("opt_penta1")
+vacc2 <- i18n$t("opt_penta3")
+plot_comparison_penta1_penta3(
+  data,
+  title = str_glue(i18n$t("plt_title_consist_checks")),
+  x_label = vacc1,
+  y_label = vacc2,
+  legend = legend)+
   cd_report_theme()
 ```
 
@@ -119,9 +181,9 @@ plot_comparison_penta1_penta3(data) +
 
 ---
 
-Interpréter la cohérence des données rapportées pour l’ANC1 et le penta1 au niveau national ; faire de même pour le penta1 et le penta3.
+Interpréter la cohérence des données rapportées pour ANC1 et penta1 au niveau national ; idem pour penta1 et penta3.
 
-Interpréter les données sur le pourcentage de districts dont les ratios ANC1/penta1 se situent dans l’intervalle attendu ; faire de même pour le penta1/penta3.
+Interpréter les données sur le pourcentage de districts dont les ratios ANC1/penta1 sont dans la fourchette attendue ; idem pour penta1/penta3.
 
 ---
 

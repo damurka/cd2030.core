@@ -18,6 +18,7 @@ output:
       gutter: 0
 params:
   cache: NULL
+  i18n: NULL
   country: NULL
   adminlevel_1: NULL
 ---
@@ -37,11 +38,13 @@ knitr::opts_chunk$set(
 library(cd2030.core)
 library(dplyr)
 library(purrr)
+library(stringr)
 library(reactable)
 library(officedown)
 library(officer)
 
 cache <- params$cache
+i18n <- params$i18n
 
 data <- cache$countdown_data
 k_factors <- cache$k_factors
@@ -65,18 +68,32 @@ adjustments <- data %>%
 ### Health facility data adjustment: Numerators - reported live births
 
 ```{r}
+indicator <- i18n$t("opt_instlivebirths")
 adjustments %>% 
   filter_adjustment_value('instlivebirths') %>% 
-  plot(title = 'Comparison of number of live births before and after adjustments for completness and outliers') +
+  plot(
+    title = str_glue(i18n$t("plt_title_adjust_comparison")),
+    legend_labels = c(
+      raw = str_glue(i18n$t("lbl_adjust_n_before")),
+      adjusted = str_glue(i18n$t("lbl_adjust_n_after"))
+    )
+  ) +
   cd_report_theme()
 ```
 
 ### Health facility data adjustment: Numerators - reported Penta 1 doses
 
 ```{r}
+indicator <- i18n$t("opt_penta1")
 adjustments %>% 
   filter_adjustment_value('penta1') %>% 
-  plot(title = 'Comparison of number of penta1 vaccination before and after adjustments for completness and outliers') +
+  plot(
+    title = str_glue(i18n$t("plt_title_adjust_comparison")),
+    legend_labels = c(
+      raw = str_glue(i18n$t("lbl_adjust_n_before")),
+      adjusted = str_glue(i18n$t("lbl_adjust_n_after"))
+    )
+  ) +
   cd_report_theme()
 ```
 

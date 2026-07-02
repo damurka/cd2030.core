@@ -1,0 +1,112 @@
+---
+title: "Data Adjustment for `r params$country` --- Countdown Analysis"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: 
+  officedown::rdocx_document:
+    reference_docx: report-template.docx
+    page_size:
+      width: !expr 11906 / 1440
+      height: !expr 16838 / 1440
+      orient: "portrait"
+    page_margins:
+      bottom: 1
+      top: 1
+      right: !expr 1417 / 1440
+      left: !expr 1417 / 1440
+      header: !expr 708 / 1440
+      footer: !expr 708 / 1440
+      gutter: 0
+params:
+  cache: NULL
+  i18n: NULL
+  country: NULL
+  adminlevel_1: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  error = TRUE,
+  fig.width=7, 
+  fig.height=5, 
+  dpi=300
+)
+
+library(cd2030.core)
+library(dplyr)
+library(purrr)
+library(stringr)
+library(reactable)
+library(officedown)
+library(officer)
+
+cache <- params$cache
+i18n <- params$i18n
+
+data <- cache$countdown_data
+k_factors <- cache$k_factors
+```
+
+## Ajustes de Dados de Instalações de Saúde {-}
+
+### Contexto
+
+A completude dos relatórios afeta a análise, especialmente se for baixa ou variar entre os 
+anos. Outliers extremos podem ter um grande impacto, especialmente nos números subnacionais.
+Vários passos são necessários para obter um conjunto de dados limpo para a análise de “endline”, 
+incluindo o ajuste para relatórios incompletos e a correção de outliers extremos.
+Esses gráficos mostram o impacto nos números.
+
+```{r}
+adjustments <- data %>%
+  generate_adjustment_values(adjustment = 'custom', k_factors = !!k_factors)
+```
+
+### Ajuste de dados de instalações de saúde: Numeradores - nascimentos vivos reportados
+
+```{r}
+indicator <- i18n$t("opt_instlivebirths")
+adjustments %>% 
+  filter_adjustment_value('instlivebirths') %>% 
+  plot(
+    title = str_glue(i18n$t("plt_title_adjust_comparison")),
+    legend_labels = c(
+      raw = str_glue(i18n$t("lbl_adjust_n_before")),
+      adjusted = str_glue(i18n$t("lbl_adjust_n_after"))
+    )
+  ) +
+  cd_report_theme()
+```
+
+### Ajuste de dados de instalações de saúde: Numeradores - doses de Penta 1 reportadas
+
+```{r}
+indicator <- i18n$t("opt_penta1")
+adjustments %>% 
+  filter_adjustment_value('penta1') %>% 
+  plot(
+    title = str_glue(i18n$t("plt_title_adjust_comparison")),
+    legend_labels = c(
+      raw = str_glue(i18n$t("lbl_adjust_n_before")),
+      adjusted = str_glue(i18n$t("lbl_adjust_n_after"))
+    )
+  ) +
+  cd_report_theme()
+```
+
+#### 📑 Notas 
+
+::: {custom-style="Style1"}
+
+---
+
+Considere o efeito do ajuste nos nascimentos vivos nas instalações de saúde, e mencione a diferença no número, bem como o aumento percentual em 2023; destaque o ano com o maior impacto, se houver; interprete se o impacto do ajuste nas taxas de cobertura é grande ou pequeno.
+
+Faça a mesma descrição e interpretações para as vacinações de penta1.
+
+---
+
+:::

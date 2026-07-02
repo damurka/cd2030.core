@@ -1,0 +1,230 @@
+---
+title: "Health System Performance for `r params$country` --- Countdown Analysis"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cerulean
+    highlight: kate
+  officedown::rdocx_document:
+    reference_docx: report-template.docx
+  pdf_document:
+    toc: false
+    latex_engine: lualatex
+params:
+  cache: NULL
+  i18n: NULL
+
+  country: NULL
+  adminlevel_1: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  error = TRUE,
+  fig.width=7, 
+  fig.height=5, 
+  dpi=1200
+)
+
+library(cd2030.core)
+library(dplyr)
+library(purrr)
+library(reactable)
+library(officedown)
+library(officer)
+
+cache <- params$cache
+i18n <- params$i18n
+data <- cache$adjusted_data
+latest_year <- max(cache$data_years)
+```
+
+## Avaliação do desempenho do sistema de saúde: indicadores
+
+### Contexto
+
+Análises subnacionais de insumos do sistema de saúde e resultados dos serviços são críticas: distritos e regiões são unidades‑chave dos sistemas de saúde e de sua prestação de serviços. Isso inclui a avaliação dos insumos do sistema (força de trabalho em saúde, infraestrutura) e dos resultados (uso, cobertura).
+
+### Indicadores do Sistema Nacional de Saúde
+
+```{r}
+cache$generate_health_system_table(
+  labels = list(
+    section = list(
+      infrastructure = i18n$t("sec_infrastructure"),
+      workforce      = i18n$t("sec_workforce"),
+      private_sector = i18n$t("sec_private_sector")
+    ),
+    indicator = list(
+      fac_density   = i18n$t("ind_fac_density"),
+      hosp_share    = i18n$t("ind_hosp_share"),
+      hosp_density  = i18n$t("ind_hosp_density"),
+      bed_density   = i18n$t("ind_bed_density"),
+      hwf_density   = i18n$t("ind_hwf_density"),
+      skill_mix     = i18n$t("ind_skill_mix"),
+      private_share = i18n$t("ind_private_share"),
+      ngo_share     = i18n$t("ind_ngo_share")
+    ),
+    unit = list(
+      per_10k  = i18n$t("unit_per_10k"),
+      per_100k = i18n$t("unit_per_100k"),
+      pct      = "%"
+    )
+  )) %>%
+  plot(
+    year = latest_year, 
+    indicator_label = i18n$t("title_global_indicator"),
+    value_label     = i18n$t("lbl_value"),
+    unit_label      = i18n$t("lbl_unit")
+  )
+```
+
+### Indicadores Subnacionais do Sistema de Saúde
+
+```{r}
+nat_metrics <- cache$health_system_metrics_national
+current_indicator <- "ratio_fac_pop"
+cache$health_system_metrics_admin1 %>%
+  plot(
+    indicator = current_indicator,
+    national_value = nat_metrics[[current_indicator]],
+    title         = i18n$t(paste0('title_metric_', current_indicator)),
+    x_axis        = i18n$t(paste0('xlab_metric_', current_indicator)),
+    legend_labels = list(
+      "FALSE" = i18n$t("lbl_below_benchmark"),
+      "TRUE"  = i18n$t("lbl_meets_benchmark"),
+      "threshold_line" = i18n$t("lbl_target_benchmark"), 
+      "national_line"  = i18n$t("lbl_national_average")
+    )
+  ) +
+  cd_report_theme()
+```
+
+```{r}
+current_indicator <- "ratio_hos_pop"
+cache$health_system_metrics_admin1 %>%
+  plot(
+    indicator = current_indicator,
+    national_value = nat_metrics[[current_indicator]],
+    title         = i18n$t(paste0('title_metric_', current_indicator)),
+    x_axis        = i18n$t(paste0('xlab_metric_', current_indicator)),
+    legend_labels = list(
+      "FALSE" = i18n$t("lbl_below_benchmark"),
+      "TRUE"  = i18n$t("lbl_meets_benchmark"),
+      "threshold_line" = i18n$t("lbl_target_benchmark"), 
+      "national_line"  = i18n$t("lbl_national_average")
+    )
+  ) +
+  cd_report_theme()
+```
+
+```{r}
+current_indicator <- "ratio_hstaff_pop"
+cache$health_system_metrics_admin1 %>%
+  plot(
+    indicator = current_indicator,
+    national_value = nat_metrics[[current_indicator]],
+    title         = i18n$t(paste0('title_metric_', current_indicator)),
+    x_axis        = i18n$t(paste0('xlab_metric_', current_indicator)),
+    legend_labels = list(
+      "FALSE" = i18n$t("lbl_below_benchmark"),
+      "TRUE"  = i18n$t("lbl_meets_benchmark"),
+      "threshold_line" = i18n$t("lbl_target_benchmark"), 
+      "national_line"  = i18n$t("lbl_national_average")
+    )
+  ) +
+  cd_report_theme()
+```
+
+```{r}
+current_indicator <- "ratio_bed_pop"
+cache$health_system_metrics_admin1 %>%
+  plot(
+    indicator = current_indicator,
+    national_value = nat_metrics[[current_indicator]],
+    title         = i18n$t(paste0('title_metric_', current_indicator)),
+    x_axis        = i18n$t(paste0('xlab_metric_', current_indicator)),
+    legend_labels = list(
+      "FALSE" = i18n$t("lbl_below_benchmark"),
+      "TRUE"  = i18n$t("lbl_meets_benchmark"),
+      "threshold_line" = i18n$t("lbl_target_benchmark"), 
+      "national_line"  = i18n$t("lbl_national_average")
+    )
+  ) +
+  cd_report_theme()
+```
+
+#### 📝 Notas 
+
+::: {custom-style="Style1"}
+
+---
+
+O que pode ser dito sobre a qualidade dos dados?
+
+Descreva a comparação com os dados do sistema de saúde no banco de dados da OMS e de outros países? Isso sugere subnotificação ou supernotificação?
+
+O padrão por região/província está conforme o esperado?
+
+Existem razões para dados incomuns?
+
+---
+
+:::
+
+## Desempenho da Atenção Primária à Saúde
+
+```{r}
+current_indicator <- "ratio_fac_pop"
+cache$generate_phc_scatter_data(indicator = current_indicator) %>%
+  plot(
+    title  = i18n$t(paste0("title_scatter_", current_indicator)),
+    x_axis = i18n$t(paste0("xlab_", current_indicator)),
+    y_axis = i18n$t("ylab_phc_scatter"),
+    quad_labels = list(
+      high_high = i18n$t(paste0("lbl_hh_", current_indicator)),
+      low_high  = i18n$t(paste0("lbl_lh_", current_indicator)),
+      high_low  = i18n$t(paste0("lbl_hl_", current_indicator)),
+      low_low   = i18n$t(paste0("lbl_ll_", current_indicator))
+    )
+  ) + 
+  cd_report_theme()
+```
+
+```{r}
+current_indicator <- "ratio_hstaff_pop"
+cache$generate_phc_scatter_data(indicator = current_indicator) %>%
+  plot(
+    title  = i18n$t(paste0("title_scatter_", current_indicator)),
+    x_axis = i18n$t(paste0("xlab_", current_indicator)),
+    y_axis = i18n$t("ylab_phc_scatter"),
+    quad_labels = list(
+      high_high = i18n$t(paste0("lbl_hh_", current_indicator)),
+      low_high  = i18n$t(paste0("lbl_lh_", current_indicator)),
+      high_low  = i18n$t(paste0("lbl_hl_", current_indicator)),
+      low_low   = i18n$t(paste0("lbl_ll_", current_indicator))
+    )
+  ) + 
+  cd_report_theme()
+```
+
+
+#### 📝 Notas 
+
+::: {custom-style="Style1"}
+
+---
+
+A interpretação deve focar em se a imagem obtida tem validade. Isso pode ser sugerido se confirmar algumas expectativas, como regiões mais desenvolvidas apresentarem melhor desempenho
+
+Descreva as regiões/províncias com desempenho ruim e bom.
+
+---
+
+:::

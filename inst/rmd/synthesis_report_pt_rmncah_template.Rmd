@@ -5,6 +5,8 @@ output:
     reference_docx: synthesis-template.docx
 params:
   cache: NULL
+  i18n: NULL
+
   adminlevel_1: NULL
   country: NULL
 ---
@@ -18,7 +20,7 @@ knitr::opts_chunk$set(
   error = TRUE,
   # fig.width=7, 
   # fig.height=5, 
-  dpi=300
+  dpi = 300
 )
 
 library(cd2030.core)
@@ -29,10 +31,13 @@ library(officedown)
 library(officer)
 
 cache <- params$cache
+i18n <- params$i18n
 data <- cache$countdown_data
 country <- cache$country
 data_years <- cache$data_years
 years_range <- paste0(min(data_years, na.rm = TRUE), '-', max(data_years, na.rm = TRUE))
+first_year <- min(cache$data_years)
+last_year <- max(cache$data_years)
 
 layout <- cd_multicol_factory(width = 13.93, height = 22.0, orient = "portrait", margins = c(0.5, 0.5, 0.5, 0.5))
 
@@ -40,42 +45,66 @@ my_multicol_start <- layout$start
 my_multicol_stop <- layout$stop
 ```
 
-### Análise dos indicadores de saúde reprodutiva, materna, neonatal, infantil e adolescente para `r years_range`: caderno de síntese
-### Countdown to 2030 em parceria com o Ministério da Saúde de `r country`, Global Financing Facility, OMS, WAHO e UNICEF
+### Analysis of reproductive, maternal, newborn, child and adolescent health indicators for `r years_range`: Synthesis chartbook 
+### Countdown to 2030 in partnership with `r country`` Ministry of Health, Global Financing Facility, WHO, WAHO, UNICEF
 
-> Nomes e afiliações da equipa analítica do país
+> Country analytical team names and affiliation
 
-# PRINCIPAIS ACHADOS
+# KEY FINDINGS
 
-## 1. Avaliação da qualidade dos dados das unidades sanitárias: numeradores e denominadores
+## 1. Health facility data quality assessment: numerators and denominators
 
-**NUMERADORES:** Os dados das unidades sanitárias reportados rotineiramente são uma importante fonte de informação para os indicadores de saúde. Esses dados reportam eventos como vacinas administradas ou nados-vivos assistidos. Como acontece com qualquer dado, a qualidade é uma questão importante. Os dados são avaliados quanto à completude da notificação pelas unidades sanitárias, valores atípicos extremos e consistência interna. Ajustes apropriados são feitos antes do uso dos dados para calcular estatísticas.
+**NUMERATORS:** Routinely reported health facility data are an important data source for health indicators. The data are reported by health facilities on events such as immunizations given, or live births attended. As with any data, quality is an issue. Data are assessed for completeness of reporting by health facilities, extreme outliers and internal consistency. Appropriate adjustments are made to the data before use to compute statistics.
 
-#### Resumo da qualidade dos dados reportados pelas unidades sanitárias, DHIS2, `r years_range`
+#### Summary of reported health facility data quality, DHIS2, `r years_range`
 
 `r my_multicol_start()`
 
 ```{r, fig.width=8}
+translated_labels <- list(
+  header = list(
+    h1 = i18n$t("title_score_monthly_complete"),
+    h2 = i18n$t("title_score_extreme_outliers"),
+    h3 = i18n$t("title_score_consist_annual")
+  ),
+  section = list(
+    r1a   = i18n$t("lbl_score_1a"),
+            # Combine text + threshold number
+    r1b   = paste0(i18n$t("lbl_score_1b_prefix"), cache$performance_threshold),
+    r1c   = if (get_selected_group() == "vaccine") i18n$t("lbl_score_1c_vaccine") else i18n$t("lbl_score_1c_rmncah"),
+    r2a   = i18n$t("lbl_score_2a"),
+    r2b   = i18n$t("lbl_score_2b"),
+    score = i18n$t("lbl_score_annual_score")
+  ),
+  metric = list(
+    r_anc1_penta1    = i18n$t("lbl_consist_ratio_anc1_penta1"),
+    r_penta1_penta3  = i18n$t("lbl_consist_ratio_penta1_penta3"),
+    ok_anc1_penta1   = i18n$t("lbl_score_range_anc1_penta1"),
+    ok_penta1_penta3 = i18n$t("lbl_score_range_penta1_penta3")
+  )
+)
+
 overall_score <- if (is.null(adminlevel_1)) {
-  cache$calculate_overall_score("national")
+  cache$calculate_overall_score("national", labels = translated_labels)
 } else {
-  cache$calculate_overall_score("adminlevel_1", region())
+  cache$calculate_overall_score("adminlevel_1", region = adminlevel_1, labels = translated_labels)
 }
 
-overall_score %>% plot(data_years, width = 8)
+overall_score %>% 
+  plot(data_years, width = 8, title = i18n$t("lbl_score_metric_header"))
 ```
 
 `r run_columnbreak()`
 
 ::: {custom-style="Style1"}
 
-**Interpretação**
+**Interpretations**
 
-- Qual é a qualidade global dos dados conforme avaliada pela pontuação anual global de qualidade dos dados?
-- Existe algum padrão de qualidade dos dados por ano que possa ser explicado?
-- Existem regiões ou outras unidades subnacionais particularmente problemáticas?
-- Existem formulários ou serviços de reporte (por exemplo, cuidados pré-natais, trabalho de parto e parto, imunização) que sejam problemáticos? Foi feito algum ajuste para reporte incompleto (indique o valor de k)?
-- Existe boa consistência entre os números reportados de ANC1 e penta1? Se não, qual poderia ser a explicação?
+- What is the overall quality of the data as assessed by the overall annual data quality score?
+- Is there a data quality pattern by year for which there is an explanation? 
+- Are there certain regions or other subnational units that are particularly problematic?
+- Are there certain reporting forms or services (e.g., antenatal care, labour and delivery, immunization) that are problematic? Was an adjustment done for incomplete reporting (provide the k value)?
+- Is there good consistency between reported numbers of ANC1 and penta1? If not, what could be the explanation?
 
 :::
 
@@ -83,153 +112,358 @@ overall_score %>% plot(data_years, width = 8)
 
 `r my_multicol_start()`
 
-Numerador: qualidade dos dados das unidades sanitárias - exemplo 1
-Explique a observação sobre a qualidade dos dados (um ponto)
+Numerator: facility data quality  - example 1
+Explain the observation on data quality (one bullet)
 
 ```{r, fig.width=6.3, fig.height=3.5}
-plot_comparison_anc1_penta1(data) +
+legend <- c(
+  district = i18n$t("lbl_leg_consist_district"),
+  linear_fit = i18n$t("lbl_leg_consist_linear_fit"),
+  diagonale = i18n$t("lbl_leg_consist_diagonal")
+)
+
+vacc1 <- i18n$t("opt_anc1")
+vacc2 <- i18n$t("opt_penta1")
+plot_comparison_anc1_penta1(
+  data,
+  title = str_glue(i18n$t("plt_title_consist_checks")),
+  x_label = vacc1,
+  y_label = vacc2,
+  legend = legend) +
   cd_report_theme()
 
 run_columnbreak()
 ```
-Numerador: qualidade dos dados das unidades sanitárias - exemplo 2
-Explique a observação sobre a qualidade dos dados (um ponto)
+Numerator: facility data quality  - example 2
+Explain the observation on data quality (one bullet)
 
 ```{r , fig.width=6.3, fig.height=3.5}
-plot(cache$calculate_district_reporting_rate(region = adminlevel_1)) +
+reporting_rate <- cache$performance_threshold
+plot(cache$calculate_district_reporting_rate(region = adminlevel_1),
+  title = str_glue(i18n$t("plt_title_rr_national")),
+  caption = str_glue(i18n$t("plt_caption_rr_national")),
+  indicator_labels = c(
+    anc = i18n$t("opt_anc"),
+    idelv = i18n$t("opt_idelv"),
+    vacc = i18n$t("opt_vacc"),
+    opd = i18n$t("opt_opd")
+  )) +
   cd_report_theme()
 ```
 
 `r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
 
-**DENOMINADORES:** A cobertura dos serviços é definida como a população que recebeu o serviço (numerador) dividida pela população que necessita do serviço (denominador). Testamos quatro opções de denominadores usando nados-vivos institucionais e a cobertura vacinal de Penta-3 (Figuras 2c e 2d). A qualidade das projeções populacionais no DHIS2 é avaliada por meio da consistência ao longo do tempo e da comparação com as projeções das Nações Unidas. Dois denominadores também são derivados a partir de serviços quase universais, como ANC-1 e Penta-1. O denominador mais plausível é selecionado para gerar as outras estatísticas.
+**DENOMINATORS:** Service coverage is defined as the population who received the service (numerator) divided by the population who need the services: (the denominator). We test four options for denominator measures using institutional live births and Pent-3 immunization coverage (Figures 2c and 2d). The quality of the population projections in DHIS2 is assessed through consistency over time and comparison with the UN projections. Two denominators are also derived using near universal service such as ANC-1 and Penta-1. The most plausible is identified for use to generate other statistics.
 
 `r my_multicol_start()`
 
-**Total de nados-vivos**
+**Total Livebirths**
 ```{r, fig.width=4.2}
-cache$denominator_metrics %>% 
-  plot(metric = "births") + cd_report_theme()
+selected_population <- cache$derivation_population
+metric <- case_when(
+  str_detect(selected_population, 'birth') ~ 'births',
+  str_detect(selected_population, 'pop') ~ 'population',
+  str_detect(selected_population, 'under1') ~ 'under1',
+)
+
+cache$denominator_metrics %>%
+  plot(
+    metric = metric, 
+    title = i18n$t(paste0("plt_title_denom_", metric)),
+    x_label = i18n$t("title_global_year"),
+    y_label = i18n$t(paste0("opt_", metric)),
+    legend_labels = c(i18n$t(paste0("lbl_leg_denom_un_", metric)), i18n$t(paste0("lbl_leg_denom_dhis2_", metric)))) +
+  cd_report_theme()
 ```
-**Partos institucionais**
+
+**National Institutional Live Births**
 ```{r, fig.width=4.2}
-cache$calculate_derived_coverage('ideliv', 'national') %>% 
-  plot() + cd_report_theme()
+indicator <- i18n$t("opt_instlivebirths")
+cache$calculate_derived_coverage('instlivebirths', 'national') %>% 
+    plot(
+    title = str_glue(i18n$t("plt_title_denom_survey_comp")),
+    y_label = str_glue(i18n$t("lbl_axis_y_coverage")),
+    category_labels = list(
+      un            = i18n$t("lbl_denom_un_proj"),
+      dhis2         = i18n$t("lbl_denom_dhis2_proj"),
+      anc1          = i18n$t("lbl_denom_anc1_derived"),
+      penta1        = i18n$t("lbl_denom_penta1_derived"),
+      penta1derived = i18n$t("opt_penta1derived"),
+      anc1derived = i18n$t("opt_anc1derived")
+    ),
+    legend_labels = list(
+      facility = i18n$t("lbl_denom_facility_based"),
+      survey = i18n$t("lbl_denom_survey_national")
+    )
+  ) + 
+  cd_report_theme()
 ```
-**Penta 3**
+
+**Subnational Institutional Live births**
 ```{r, fig.width=4.2}
-cache$calculate_derived_coverage('penta3', 'national') %>% 
-  plot() + cd_report_theme()
+cache$calculate_derived_coverage('instlivebirths', 'adminlevel_1') %>% 
+  plot(
+    title = str_glue(i18n$t("plt_title_cross_section_subnat"), indicator = indicator, year = year),
+    x_label = str_glue(i18n$t("opt_coverage")),
+    y_label = i18n$t("lbl_axis_y_region"),
+    legend_labels = list(
+      "un"            = i18n$t("opt_un"),
+      "dhis2"         = i18n$t("opt_dhis2"),
+      "anc1"          = i18n$t("opt_anc1"),
+      "penta1"        = i18n$t("opt_penta1"),
+      "penta1derived" = i18n$t("opt_penta1derived"),
+      "anc1derived"   = i18n$t("opt_anc1derived")
+    )) + 
+  cd_report_theme()
 ```
 
 `r my_multicol_stop(widths = c(4.243, 4.243, 4.243), space = 0.2, sep = FALSE)`
 
 ::: {custom-style="Style1"}
 
-**Interpretação**
+**Interpretations**
 
-- Até que ponto a projeção nacional de nascimentos está alinhada com a projeção das Nações Unidas?
-- Quais métodos de denominador tiveram melhor desempenho ao nível nacional para a cobertura de nados-vivos e para a cobertura de penta3? E ao nível subnacional para os dois indicadores?
-- Quais denominadores são selecionados para os indicadores maternos (ideliv) e de vacinação (penta3) nas análises de cobertura?
+- How well does the national projection of births align with the UN projection?
+- Which denominator methods performed best at the national level for the live births coverage and penta3 coverage? And for subnational level for the two indicators?
+- What denominators are selected for the maternal (instlivebirths) and vaccination (penta3) indicators in the coverage analyses? 
 
 :::
 
 `r run_pagebreak()`
 
-## 2. Tendências nacionais de cobertura: dados das unidades sanitárias e inquéritos
+## 2. National coverage trends: facility data and surveys
 
-#### Cuidados pré-natais: ANC4, visita precoce de ANC, primeiro trimestre da gravidez
+#### Antenatal care: ANC4, ANC early visit, first trimester of pregnancy
 
 `r my_multicol_start()`
 
 **ANC 4**
 ```{r, fig.width=6.3, fig.height=3}
-cache$get_filtered_coverage('anc4', 'national') %>%
-  plot() + cd_report_theme()
+current_indicator <- 'anc4'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
+  cd_report_theme()
 ```
 
-**Visita precoce de ANC**
+**ANC early visit**
 ```{r, fig.width=6.3, fig.height=3}
-cache$get_filtered_coverage('anc_1trimester', 'national') %>%
-  plot() + cd_report_theme()
+current_indicator <- 'anc_1trimester'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
+  cd_report_theme()
 ```
 
 `r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
 
 ::: {custom-style="Style1"}
 
-**Interpretação**
+**Interpretations**
 
-- Os níveis e as tendências são plausíveis? Existe boa consistência entre os dados das unidades sanitárias e os dados de inquérito?
+- Are the levels and trends plausible? Is there good consistency between the facility and survey data?
 
 :::
 
-#### Parto institucional
+#### Institutional Live Births
 
 `r my_multicol_start()`
 
 ```{r, fig.width=6.3, fig.height=3}
-cache$get_filtered_coverage('ideliv', 'national') %>%
-  plot() + cd_report_theme()
+current_indicator <- 'instlivebirths'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
+  cd_report_theme()
 ```
 
 ::: {custom-style="Style1"}
 
-**Interpretação**
+**Interpretations**
 
-- Os níveis e as tendências são plausíveis? Existe boa consistência entre os dados das unidades sanitárias e os dados de inquérito?
-- Como a cobertura se comporta em comparação com as metas? Esta é uma tendência positiva?
+- Are the levels and trends plausible? Is there good consistency between the facility and survey data?
+- How does the coverage perform compared to the targets? Is this a positive trend?
 
 :::
 
 `r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
 
-#### Imunização: Penta 3, Sarampo 1
+#### Immunization: Penta 3, Measles 1
 
 `r my_multicol_start()`
 
 ```{r, fig.width=6.3, fig.height=3}
-cache$get_filtered_coverage('penta3', 'national') %>%
-  plot() + cd_report_theme()
+current_indicator <- 'penta3'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
+  cd_report_theme()
 
-cache$get_filtered_coverage('measles1', 'national') %>%
-  plot() + cd_report_theme()
+current_indicator <- 'measles1'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
+  cd_report_theme()
 
 run_columnbreak()
 ```
 
 ::: {custom-style="Style1"}
 
-**Interpretação**
+**Interpretations**
 
-- Os níveis e as tendências são plausíveis? Existe boa consistência entre os dados das unidades sanitárias e os dados de inquérito? Como os resultados se comparam com as estimativas das Nações Unidas (WUENIC)?
-- Como a cobertura se comporta em comparação com as metas? Esta é uma tendência positiva?
+- Are the levels and trends plausible? Is there good consistency between the facility and survey data? How do the results compare to the UN estimates (WUENIC)?
+- How does the coverage perform compared to the targets? Is this a positive trend?
 
 :::
 
 `r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
 
-#### Percentagem de distritos que atingem metas elevadas de cobertura
+#### Percent of districts achieving high coverage targets
 
 `r my_multicol_start()`
 
 **ANC 4**
 ```{r, fig.width=4.2, fig.height=3}
-cache$get_filtered_threshold('anc4', 'district') %>% 
-   plot() + cd_report_theme()
+current_indicator <- 'anc4'
+translated_x_labels <- list(
+  instlivebirths = i18n$t("opt_instlivebirths"),
+  pnc48h = i18n$t("opt_pnc48h"),
+  bcg = i18n$t("opt_bcg"),
+  penta3 = i18n$t("opt_penta3"),
+  measles1 = i18n$t("opt_measles1"),
+  dropout_penta13 = i18n$t("opt_dropout_penta13"),
+  dropout_penta3mcv1 = i18n$t("opt_dropout_penta3mcv1")
+)
+
+filtered_data <- cache$get_filtered_threshold(current_indicator, 'district')
+
+admin_lvl_translated <- i18n$t(paste0("opt_", current_indicator))
+rate <- i18n$t(if (current_indicator == 'opt_dropout') 'opt_rate' else 'opt_coverage')
+sign <- if (current_indicator == 'opt_dropout') '<' else '≥'
+group <- i18n$t(paste0("opt_", current_indicator))
+coverage <- attr(filtered_data, "threshold")
+
+# FIXED: Explicitly pass named variables into str_glue so it overrides the reactive functions in the environment
+plot_title <- str_glue(
+  i18n$t('plt_title_target_national'),
+  admin_level = admin_lvl_translated,
+  region = "",
+  coverage = coverage,
+  group = group,
+  rate = rate,
+  sign = sign
+)
+filtered_data %>% 
+  plot(
+    title = plot_title,
+    y_axis = i18n$t("lbl_axis_y_pct_subnat"),
+    legend_title = i18n$t("title_global_year"),
+    x_labels = translated_x_labels
+  ) + cd_report_theme()
 ```
 
-**Indicadores de saúde infantil**
+**Child Health Indicators**
+
 ```{r, fig.width=4.2, fig.height=3}
-cache$get_filtered_threshold('vaccine', 'district') %>% 
-   plot() + cd_report_theme()
+current_indicator <- 'vaccine'
+translated_x_labels <- list(
+  instlivebirths = i18n$t("opt_instlivebirths"),
+  pnc48h = i18n$t("opt_pnc48h"),
+  bcg = i18n$t("opt_bcg"),
+  penta3 = i18n$t("opt_penta3"),
+  measles1 = i18n$t("opt_measles1"),
+  dropout_penta13 = i18n$t("opt_dropout_penta13"),
+  dropout_penta3mcv1 = i18n$t("opt_dropout_penta3mcv1")
+)
+
+filtered_data <- cache$get_filtered_threshold(current_indicator, 'district')
+
+admin_lvl_translated <- i18n$t(paste0("opt_", current_indicator))
+rate <- i18n$t(if (current_indicator == 'opt_dropout') 'opt_rate' else 'opt_coverage')
+sign <- if (current_indicator == 'opt_dropout') '<' else '≥'
+group <- i18n$t(paste0("opt_", current_indicator))
+coverage <- attr(filtered_data, "threshold")
+
+# FIXED: Explicitly pass named variables into str_glue so it overrides the reactive functions in the environment
+plot_title <- str_glue(
+  i18n$t('plt_title_target_national'),
+  admin_level = admin_lvl_translated,
+  region = "",
+  coverage = coverage,
+  group = group,
+  rate = rate,
+  sign = sign
+)
+filtered_data %>% 
+  plot(
+    title = plot_title,
+    y_axis = i18n$t("lbl_axis_y_pct_subnat"),
+    legend_title = i18n$t("title_global_year"),
+    x_labels = translated_x_labels
+  ) + cd_report_theme()
 ```
 
 ::: {custom-style="Style1"}
 
-**Interpretação**
+**Interpretations**
 
-- A proporção de distritos que atingiram a meta variou ao longo do tempo?
+- Has the proportion of districts that achieved the target varied over time?
 
 :::
 
@@ -237,47 +471,97 @@ cache$get_filtered_threshold('vaccine', 'district') %>%
 
 `r run_pagebreak()`
 
-## 3. Equidade
+## 3. Equity
 
-#### Equidade por riqueza, educação e residência rural-urbana (a partir de inquéritos)
+#### Equity by wealth, education, rural-urban residence (from surveys)
 
-**Partos institucionais**
+**InstitutionalLive Births**
 
 `r my_multicol_start()`
 
 ```{r, fig.width=4.2}
-equiplot_area(cache$area_survey, 'instlivebirths') +
+equiplot_area(
+  cache$area_survey, 
+  'instlivebirths',
+  title = str_glue(i18n$t("plt_title_equity_area")),
+  x_title = str_glue(i18n$t("lbl_axis_y_coverage")),
+  legend_title = i18n$t("lbl_leg_equity_area"),
+  legend_labels = list(
+    "Rural" = i18n$t("lbl_equity_area_rural"),
+    "Urban" = i18n$t("lbl_equity_area_urban")
+  )) +
+cd_report_theme()
+```
+
+```{r, fig.width=4.2}
+equiplot_wealth(
+  cache$wiq_survey, 
+  'instlivebirths',
+  title = str_glue(i18n$t("plt_title_equity_wealth")),
+  x_title = str_glue(i18n$t("lbl_axis_y_coverage")),
+  legend_title = i18n$t("lbl_leg_equity_wealth")
+  ) %>%
   cd_report_theme()
 ```
 
 ```{r, fig.width=4.2}
-equiplot_wealth(cache$wiq_survey, 'instlivebirths') +
-  cd_report_theme()
-```
-
-```{r, fig.width=4.2}
-equiplot_education(cache$education_survey, 'instlivebirths') +
+equiplot_education(
+  cache$education_survey, 
+  'instlivebirths',
+  title = str_glue(i18n$t("plt_title_equity_education")),
+  x_title = str_glue(i18n$t("lbl_axis_y_coverage")),
+  legend_title = i18n$t("lbl_leg_equity_education"),
+  legend_labels = list(
+    "none" ~ i18n$t("lbl_equity_edu_none"),
+    "primary" ~ i18n$t("lbl_equity_edu_primary"),
+    "secondary+" ~ i18n$t("lbl_equity_edu_secondary")
+  )) %>%
   cd_report_theme()
 ```
 
 `r my_multicol_stop(widths = c(4.243, 4.243, 4.243), space = 0.2, sep = FALSE)`
 
-**Terceira dose de pentavalente**
+**Pentavalent 3rd Dose**
 
 `r my_multicol_start()`
 
 ```{r, fig.width=4.2}
-equiplot_area(cache$area_survey, 'penta3') +
+equiplot_area(
+  cache$area_survey, 
+  'penta3',
+  title = str_glue(i18n$t("plt_title_equity_area")),
+  x_title = str_glue(i18n$t("lbl_axis_y_coverage")),
+  legend_title = i18n$t("lbl_leg_equity_area"),
+  legend_labels = list(
+    "Rural" = i18n$t("lbl_equity_area_rural"),
+    "Urban" = i18n$t("lbl_equity_area_urban")
+  )) +
+cd_report_theme()
+```
+
+```{r, fig.width=4.2}
+equiplot_wealth(
+  cache$wiq_survey, 
+  'penta3',
+  title = str_glue(i18n$t("plt_title_equity_wealth")),
+  x_title = str_glue(i18n$t("lbl_axis_y_coverage")),
+  legend_title = i18n$t("lbl_leg_equity_wealth")
+  ) +
   cd_report_theme()
 ```
 
 ```{r, fig.width=4.2}
-equiplot_wealth(cache$wiq_survey, 'penta3') +
-  cd_report_theme()
-```
-
-```{r, fig.width=4.2}
-equiplot_education(cache$education_survey, 'penta3') +
+equiplot_education(
+  cache$education_survey, 
+  'penta3',
+  title = str_glue(i18n$t("plt_title_equity_education")),
+  x_title = str_glue(i18n$t("lbl_axis_y_coverage")),
+  legend_title = i18n$t("lbl_leg_equity_education"),
+  legend_labels = list(
+    "none" ~ i18n$t("lbl_equity_edu_none"),
+    "primary" ~ i18n$t("lbl_equity_edu_primary"),
+    "secondary+" ~ i18n$t("lbl_equity_edu_secondary")
+  )) %>%
   cd_report_theme()
 ```
 
@@ -285,30 +569,54 @@ equiplot_education(cache$education_survey, 'penta3') +
 
 ::: {custom-style="Style1"}
 
-**Interpretação**
+**Interpretations**
 
-- É possível observar diferenças sistemáticas, como grupos específicos que ficam consistentemente para trás?
-- Existem padrões observáveis de desigualdade (por exemplo, lineares, concentrados no topo ou na base)? Em caso afirmativo, que estratégias poderiam ser implementadas para reduzir essas desigualdades?
-- Todos os subgrupos estão a experimentar aumentos ou diminuições de cobertura/prevalência ao mesmo ritmo?
-- As desigualdades estão a mudar ao longo do tempo?
+- Can you observe any systematic differences—such as specific groups consistently being left behind?
+- Are there observable patterns of inequality (e.g., linear, concentrated at the top or bottom)? If so, what potential strategies could be implemented to reduce these inequalities?
+- Are all subgroups experiencing increases or decreases in coverage/prevalence at the same pace?
+- Are inequalities changing over time?
 
 :::
 
-#### Desigualdades geográficas: dados das unidades sanitárias
+#### Geographical inequalities: Health facility data 
 
 `r my_multicol_start()`
 
-**Partos institucionais**
+**InstituionalLive Births**
 ```{r, fig.width=6.3}
-cache$get_filtered_inequality('ideliv', 'adminlevel_1') %>% 
-  plot() + cd_report_theme()
+current_indicator <- 'instlivebirths'
+indicator <- i18n$t(paste0("opt_", current_indicator))
+cache$get_filtered_inequality(indicator = current_indicator, admin_level = 'adminlevel_1') %>% 
+  plot(
+    title = indicator,
+    subtitle = str_glue(i18n$t('lbl_inequ_subnat_admin1')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = i18n$t(paste0("plt_caption_equity_", cache$get_denominator(current_indicator))),
+    legend_labels = list(
+      subnational = i18n$t("lbl_inequ_coverage_subnat"),
+      national = str_glue(i18n$t('title_coverage_national'))
+    )
+  ) + cd_report_theme()
 ```
 
-**Terceira dose de pentavalente**
+**Pentavalent 3rd Dose**
 
 ```{r, fig.width=6.3}
-cache$get_filtered_inequality('penta3', 'adminlevel_1') %>% 
-  plot() + cd_report_theme()
+current_indicator <- 'penta3'
+indicator <- i18n$t(paste0("opt_", current_indicator))
+cache$get_filtered_inequality(indicator = current_indicator, admin_level = 'adminlevel_1') %>% 
+  plot(
+    title = indicator,
+    subtitle = str_glue(i18n$t('lbl_inequ_subnat_admin1')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = i18n$t(paste0("plt_caption_equity_", cache$get_denominator(current_indicator))),
+    legend_labels = list(
+      subnational = i18n$t("lbl_inequ_coverage_subnat"),
+      national = str_glue(i18n$t('title_coverage_national'))
+    )
+  ) + cd_report_theme()
 ```
 
 `r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
@@ -316,22 +624,36 @@ cache$get_filtered_inequality('penta3', 'adminlevel_1') %>%
 `r my_multicol_start()`
 
 ```{r, fig.width=3.1}
-cache$get_filtered_mapping_data('ideliv', 'adminlevel_1', 'Greens') %>% 
-  plot() + cd_report_theme()
+current_indicator <- 'instlivebirths'
+min_year <- min(cache$data_years)
+max_year <- robust_max(cache$data_years)
+years <- if (is.null(cache$mapping_years)) c(min_year, max_year) else cache$mapping_years
+
+cache$get_filtered_mapping_data(current_indicator, "adminlevel_1", 'Blues', plot_year = years) %>% 
+  plot(
+    title = str_glue(i18n$t("plt_title_map_dist")),
+    caption = i18n$t("plt_caption_map_dhis2"),
+    legend = str_glue(i18n$t("lbl_axis_y_coverage"))
+  ) + cd_report_theme()
 ```
 
 ```{r, fig.width=3.1}
-cache$get_filtered_mapping_data('penta3', 'adminlevel_1', 'Blues') %>% 
-  plot() + cd_report_theme()
+current_indicator <- 'penta3'
+cache$get_filtered_mapping_data(current_indicator, "adminlevel_1", 'Blues', plot_year = years) %>% 
+  plot(
+    title = str_glue(i18n$t("plt_title_map_dist")),
+    caption = i18n$t("plt_caption_map_dhis2"),
+    legend = str_glue(i18n$t("lbl_axis_y_coverage"))
+  ) + cd_report_theme()
 ```
 
 ::: {custom-style="Style1"}
 
-**Interpretação**
+**Interpretations**
 
-- Como a cobertura evoluiu ao longo do tempo?
-- Houve alguma mudança na desigualdade? Os pontos de dados estão a tornar-se mais ou menos dispersos ao longo do tempo? As estimativas de MADM (Desvio Absoluto Médio em relação à Mediana) estão a mudar ao longo do período?
-- Quais regiões ou distritos apresentam o melhor e o pior desempenho?
+- How has coverage evolved over time?
+- Has there been any change in inequality? Are the data points becoming more or less dispersed over time? Are the MADM (Mean Absolute Deviation from the Median) estimates changing throughout the period?
+- Which regions or districts are the best and worst performers?
 
 :::
 
@@ -339,9 +661,9 @@ cache$get_filtered_mapping_data('penta3', 'adminlevel_1', 'Blues') %>%
 
 `r run_pagebreak()`
 
-## 4. Mortalidade institucional
+## 4. Institutional mortality
 
-#### Tendências da mortalidade institucional (iMMR, iSBR)
+#### Institutional Mortality trends (iMMR, iSBR)
 
 `r my_multicol_start()`
 
@@ -359,74 +681,87 @@ plot(cache$mortality_summary, indicator = 'sbr_inst') +
 
 ::: {custom-style="Style1"}
 
-**Interpretação**
+**Interpretations**
 
-- O que se pode dizer sobre o nível e a tendência? Isto está de acordo com o esperado com base nas estimativas das Nações Unidas?
-
-:::
-
-`r my_multicol_stop(widths = c(4.243,4.243,4.243), space = 0.2, sep = FALSE)`
-
-#### Mortalidade institucional por unidades admin1
-
-`r my_multicol_start()`
-
-```{r, fig.width=4.2}
-cache$filter_mortality_summary('mmr') %>% 
-  plot() %>%  cd_report_theme()
-```
-
-```{r, fig.width=4.2}
-cache$filter_mortality_summary('sbr') %>% 
-  plot() %>%  cd_report_theme()
-```
-
-::: {custom-style="Style1"}
-
-**Interpretação**
-
-- Quais são as 3 regiões com iMMR mais elevados e as regiões com iMMR e iSBR mais baixos? (nome e valor) Isto era esperado ou sugere problemas de qualidade dos dados?
-- (São regiões mais desenvolvidas onde se espera menor mortalidade, ou regiões menos desenvolvidas com baixa mortalidade, o que poderia indicar grande subnotificação de óbitos?)
+- What can be said about the level and trend? Is this in line with what is expected based on UN estimates?
 
 :::
 
 `r my_multicol_stop(widths = c(4.243,4.243,4.243), space = 0.2, sep = FALSE)`
 
+#### Institutional Mortality by admin1 units
 
-#### Métricas de qualidade dos dados
+`r my_multicol_start()`
 
-Razão entre natimortos e mortes maternas nos dados das unidades sanitárias ao nível nacional
+```{r, fig.width=4.2}
+cache$filter_mortality_summary('mmr', c(first_year, last_year)) %>% 
+  plot() +  cd_report_theme()
+```
+
+```{r, fig.width=4.2}
+cache$filter_mortality_summary('sbr', c(first_year, last_year)) %>% 
+  plot() + cd_report_theme()
+```
+
+::: {custom-style="Style1"}
+
+**Interpretations**
+
+- What are the 3 highest iMMR regions and the lowest iMMR & iSBR regions? (name with level) Is this as expected, or does it suggest data quality issues?
+- (are these more advanced regions where mortality is expected to be lower or are there less-developed regions with low mortality,. which could be an indication of major underreporting of deaths)
+
+:::
+
+`r my_multicol_stop(widths = c(4.243,4.243,4.243), space = 0.2, sep = FALSE)`
+
+
+#### Data quality metrics
+
+Ratio stillbirth to maternal deaths in the health facility data at national level
 
 `r my_multicol_start()`
 
 ```{r, fig.width=6.3}
-plot(cache$mortality_summary, indicator = 'ratio_md_sb') +
+current_indicator <- "ratio_md_sb"
+plot_mortality_plausibility(
+  mortality_summary, 
+  indicator = current_indicator,
+  title = full_title,
+  y_axis = i18n$t(paste0("ylab_", current_indicator)),
+  x_axis = i18n$t("title_global_year"),
+  note = i18n$t(paste0("note_", current_indicator)),
+  legend_labels = list(
+    median = i18n$t("lbl_median"),
+    plausible = i18n$t("lbl_plausible")
+  )) +
   cd_report_theme()
 ```
 
 ::: {custom-style="Style1"}
 
-**Interpretação**
+**Interpretations**
 
-- Uma razão plausível está no intervalo de 5 a 25 natimortos por morte materna. A razão nacional está dentro do intervalo esperado?
-- O que se pode dizer sobre as 3 regiões com valores mais altos e as 3 com valores mais baixos?
-- Se a razão estiver acima de 25, isso pode significar que as mortes maternas estão mais subnotificadas do que os natimortos. Se estiver abaixo de 5, é provável que os natimortos estejam subnotificados. Se a razão estiver dentro do intervalo esperado, a notificação pode ser considerada boa se os níveis de mortalidade também forem plausíveis. Caso contrário, tanto as mortes maternas como os natimortos estão provavelmente subnotificados.
+- A plausible ratio is in the range of 5 to 25 stillbirths per maternal death. Is the national ratio within the expected range?
+- What can be said about the top 3 and bottom 3 regions?
+- If the ratio is above 25, this may mean that maternal deaths are more underreported than stillbirths. If it is below 5, stillbirths are likely underreported. If the ratio is within the range, the reporting may be good if the mortality levels are in the expected range. If not, then both maternal deaths and stillbirths are underreported.
 
 :::
 
 `r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
 
-Completude estimada da notificação de mortes maternas e natimortos nas unidades sanitárias
+Estimated completeness of facility maternal death and stillbirth reporting
 
 `r my_multicol_start()`
 
 ```{r, fig.width=6.3}
-plot(cache$summarise_completeness_ratio, 'mmr') +
+cache$summarise_completeness_ratio('mmr') %>%
+  plot() +
   cd_report_theme()
 ```
 
 ```{r, fig.width=6.3}
-plot(cache$summarise_completeness_ratio, 'sbr') +
+cache$summarise_completeness_ratio('sbr') %>%
+  plot() +
   cd_report_theme()
 ```
 
@@ -434,17 +769,17 @@ plot(cache$summarise_completeness_ratio, 'sbr') +
 
 ::: {custom-style="Style1"}
 
-**Interpretação**
+**Interpretations**
 
-- Comente a completude da notificação do MMR e do SBR institucionais com base no MMR populacional e na razão comunidade/instituição.
+- Comment on the completeness of reporting of institutional MMR and SBR based on the population MMR and the Community to Institutional ratio
 
 :::
 
 `r run_pagebreak()`
 
-## 5. Utilização dos serviços curativos para crianças doentes
+## 5. Curative health service utilization for sick children
 
-#### Utilização dos serviços ambulatórios e de internamento
+#### Outpatient and inpatient service utilization 
 
 `r my_multicol_start()`
 
@@ -462,36 +797,36 @@ run_columnbreak()
 
 ::: {custom-style="Style1"}
 
-**Interpretação**
+**Interpretations**
 
-- Qual é o número de consultas OPD por criança por ano em 2024 e qual é a tendência ao longo do tempo? É inferior a 1 consulta por ano, o que sugeriria baixo acesso?
-- O que se pode dizer sobre a qualidade dos dados de consultas OPD e internamentos IPD? Existe consistência nos números reportados entre os anos?
-- Qual é o número de internamentos IPD por 100 crianças por ano entre 2019 e 2024? Está a aumentar? É inferior a 2 por 100 crianças menores de cinco anos, o que sugeriria baixo acesso?
-- O que se pode dizer sobre as consultas OPD e os internamentos por região/província em 2024? Qual é a magnitude da diferença entre as regiões com melhores e piores resultados?
+- What is the number of OPD visits per child per year during in 2024 and the trend over time?  Is it lower than 1 visit per year, which suggests low access? 
+- What can be said about the data quality for OPD & IPD visits? Is there consistency of reported numbers between years?
+- What is the number of IPD visits per 100 children per year during 2019-2024, is it increasing?  Is it lower than 2 per 100 children under-five, which suggests low access? 
+- What can be said about the OPD visits & admissions by region/province in 2024? How large is the difference between top and bottom regions? 
 
 :::
 
 `r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
 
-#### Utilização dos serviços por região/província
+#### Regional/provincial service utilization
 
 `r my_multicol_start()`
 
 ```{r, fig.width=4.2}
-cache$filter_service_utilization('adminlevel_1', 'opd') %>% 
+cache$filter_service_utilization('national', 'opd') %>% 
   plot() + cd_report_theme()
 ```
 
 ```{r, fig.width=4.2}
-cache$filter_service_utilization('adminlevel_1', 'ipd') %>% 
+cache$filter_service_utilization('national', 'ipd') %>% 
   plot() + cd_report_theme()
 ```
 
 ::: {custom-style="Style1"}
 
-**Interpretação**
+**Interpretations**
 
-- Quais são as 3 regiões com as taxas OPD e IPD mais altas e as 3 com as mais baixas (nome da região e valores)? Alguma explicação? Possíveis problemas de qualidade dos dados?
+- What are the 3 regions with the highest OPD and IPD rates and the 3 regions with the lowest (region name with values)? Any reason? Potential data issues?
 
 :::
 
@@ -499,19 +834,29 @@ cache$filter_service_utilization('adminlevel_1', 'ipd') %>%
 
 `r my_multicol_start()`
 
-#### Taxa de letalidade entre internamentos de menores de 5 anos
+#### MCH Preventive vs Curative Index
 
 ```{r, fig.width=6.3}
-cache$filter_service_utilization('national', 'cfr') %>% 
-  plot() + cd_report_theme()
+cache$generate_admin1_mch_curative_index() %>% 
+  plot(
+    labels = list(
+      title          = i18n$t("lbl_mch_curative_title"),
+      x_axis         = i18n$t("lbl_mch_prev_index_x"),
+      y_axis         = i18n$t("lbl_curative_index_y"),
+      q_top_left     = i18n$t("lbl_quad_low_prev_high_cur"),
+      q_top_right    = i18n$t("lbl_quad_high_prev_high_cur"),
+      q_bottom_left  = i18n$t("lbl_quad_low_prev_low_cur"),
+      q_bottom_right = i18n$t("lbl_quad_high_prev_low_cur")
+    )
+  ) + cd_report_theme()
 ```
 
 ::: {custom-style="Style1"}
 
-**Interpretação**
+**Interpretations**
 
-- Qual é a taxa de letalidade entre os internamentos de menores de cinco anos? Quais são as tendências?
-- O que isto diz sobre a qualidade dos cuidados?
+- What is the case fatality among admissions under-five? What are the trends?
+- What does this say about the quality of care? 
 
 :::
 
@@ -519,54 +864,118 @@ cache$filter_service_utilization('national', 'cfr') %>%
 
 `r run_pagebreak()`
 
-## 6. Progresso e desempenho do sistema de saúde
+## 6. Health system progress and performance
 
-#### Insumos do sistema de saúde
+#### Health system inputs
 
 `r my_multicol_start()`
 
-```{r, fig.width=6.3}
-plot_national_health_metric(cache$health_system_metrics_national, 'density') +
-  cd_report_theme()
+```{r, fig.width=6.3, fig.height = 3.5}
+latest_year <- max(cache$data_years)
+
+cache$generate_health_system_table(
+  labels = list(
+    section = list(
+      infrastructure = i18n$t("sec_infrastructure"),
+      workforce      = i18n$t("sec_workforce"),
+      private_sector = i18n$t("sec_private_sector")
+    ),
+    indicator = list(
+      fac_density   = i18n$t("ind_fac_density"),
+      hosp_share    = i18n$t("ind_hosp_share"),
+      hosp_density  = i18n$t("ind_hosp_density"),
+      bed_density   = i18n$t("ind_bed_density"),
+      hwf_density   = i18n$t("ind_hwf_density"),
+      skill_mix     = i18n$t("ind_skill_mix"),
+      private_share = i18n$t("ind_private_share"),
+      ngo_share     = i18n$t("ind_ngo_share")
+    ),
+    unit = list(
+      per_10k  = i18n$t("unit_per_10k"),
+      per_100k = i18n$t("unit_per_100k"),
+      pct      = "%"
+    )
+  )) %>%
+  plot(
+    year = latest_year, 
+    indicator_label = i18n$t("title_global_indicator"),
+    value_label     = i18n$t("lbl_value"),
+    unit_label      = i18n$t("lbl_unit")
+  ) %>% 
+  padding(padding = 1.5, part = 'all')
 ```
 
 ::: {custom-style="Style1"}
 
-**Interpretação**
+**Interpretations**
 
-- Nota sobre a completude dos dados (incluindo o setor privado)?
-- O que se pode dizer sobre os insumos do sistema nacional de saúde? Como se comparam com os valores de referência?
-Densidade de unidades sanitárias (referência: 2)
-Densidade de camas (referência: 25)
-Densidade da força de trabalho em saúde (referência: 23 – necessária para alcançar grandes progressos na redução da mortalidade materna e infantil com elevada assistência ao parto por pessoal qualificado (OMS).
-44,5 por 10.000 habitantes para alcançar a cobertura universal de saúde
+- Note on completeness of the data (private sector included)? 
+- What can be said about the national health system inputs? How do they compare to the benchmarks?
+Health Facility Density (Benchmark: 2)
+Bed density (Benchmark: 25)
+Health workforce density (Benchmark: 23 – needed to make major progress in reducing maternal and child mortality with high skilled birth attendance (WHO). 
+44.5 per 10,000 population to achieve universal health coverage
 
 :::
 
 `r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
 
-#### Insumos do sistema de saúde por região/província
+#### Health system inputs by region/province
 
 `r my_multicol_start()`
 
 ```{r, fig.width=4.2}
+nat_metrics <- cache$health_system_metrics_national
+current_indicator <- "ratio_fac_pop"
 cache$health_system_metrics_admin1 %>%
-  plot(indicator = 'ratio_fac_pop',
-       national_value = cache$health_system_metrics_national$ratio_fac_pop) +
+  plot(
+    indicator = current_indicator,
+    national_value = nat_metrics[[current_indicator]],
+    title         = i18n$t(paste0('title_metric_', current_indicator)),
+    x_axis        = i18n$t(paste0('xlab_metric_', current_indicator)),
+    legend_labels = list(
+      "FALSE" = i18n$t("lbl_below_benchmark"),
+      "TRUE"  = i18n$t("lbl_meets_benchmark"),
+      "threshold_line" = i18n$t("lbl_target_benchmark"), 
+      "national_line"  = i18n$t("lbl_national_average")
+    )
+  ) +
   cd_report_theme()
 ```
 
 ```{r, fig.width=4.2}
+current_indicator <- "ratio_hos_pop"
 cache$health_system_metrics_admin1 %>%
-  plot(indicator = 'ratio_hos_pop',
-       national_value =  cache$health_system_metrics_national$ratio_hos_pop) +
+  plot(
+    indicator = current_indicator,
+    national_value = nat_metrics[[current_indicator]],
+    title         = i18n$t(paste0('title_metric_', current_indicator)),
+    x_axis        = i18n$t(paste0('xlab_metric_', current_indicator)),
+    legend_labels = list(
+      "FALSE" = i18n$t("lbl_below_benchmark"),
+      "TRUE"  = i18n$t("lbl_meets_benchmark"),
+      "threshold_line" = i18n$t("lbl_target_benchmark"), 
+      "national_line"  = i18n$t("lbl_national_average")
+    )
+  ) +
   cd_report_theme()
 ```
 
 ```{r, fig.width=4.2}
+current_indicator <- "ratio_hstaff_pop"
 cache$health_system_metrics_admin1 %>%
-  plot(indicator = 'ratio_hstaff_pop',
-       national_value =  cache$health_system_metrics_national$ratio_hstaff_pop) +
+  plot(
+    indicator = current_indicator,
+    national_value = nat_metrics[[current_indicator]],
+    title         = i18n$t(paste0('title_metric_', current_indicator)),
+    x_axis        = i18n$t(paste0('xlab_metric_', current_indicator)),
+    legend_labels = list(
+      "FALSE" = i18n$t("lbl_below_benchmark"),
+      "TRUE"  = i18n$t("lbl_meets_benchmark"),
+      "threshold_line" = i18n$t("lbl_target_benchmark"), 
+      "national_line"  = i18n$t("lbl_national_average")
+    )
+  ) +
   cd_report_theme()
 ```
 
@@ -576,57 +985,67 @@ cache$health_system_metrics_admin1 %>%
 
 ---
 
-- Como varia o número de unidades sanitárias entre as unidades admin1?
-- Como varia a densidade hospitalar entre as unidades admin1?
-- Como varia a densidade da força de trabalho em saúde entre as unidades admin1?
-- Quais são as unidades admin1 com melhor e pior desempenho? São consistentes em todos os indicadores?
+- How does the number of health facilities vary by admin1 units?
+- How does hospital density vary by admin1 units?
+- How does health workforce density vary by admin1 units?
+- What are the top and bottom admin1 units?, are they consistent across all indicators
 
 ---
 
 :::
 
-#### Resultados do sistema de saúde por insumos ao nível subnacional
+#### Health system outputs by inputs at the subnational level
 
 `r my_multicol_start()`
 
 ```{r, fig.width=6.3}
-cache$health_system_comparison %>% 
-  plot(indicator = 'cov_instdeliveries_hstaff',
-       denominator = cache$maternal_denominator) +
+current_indicator <- "ratio_fac_pop"
+cache$generate_phc_scatter_data(indicator = current_indicator) %>%
+  plot(
+    title  = i18n$t(paste0("title_scatter_", current_indicator)),
+    x_axis = i18n$t(paste0("xlab_", current_indicator)),
+    y_axis = i18n$t("ylab_phc_scatter"),
+    quad_labels = list(
+      high_high = i18n$t(paste0("lbl_hh_", current_indicator)),
+      low_high  = i18n$t(paste0("lbl_lh_", current_indicator)),
+      high_low  = i18n$t(paste0("lbl_hl_", current_indicator)),
+      low_low   = i18n$t(paste0("lbl_ll_", current_indicator))
+    )
+  ) + 
   cd_report_theme()
 ```
 
 ::: {custom-style="Style1"}
 
-**Interpretação**
+**Interpretations**
 
-- A interpretação deve concentrar-se em saber se o quadro obtido é válido. Isso pode ser sugerido se os resultados confirmarem algumas expectativas, como regiões mais desenvolvidas a apresentarem melhor desempenho.
-- Descreva as regiões/províncias com pior e melhor desempenho.
+- The interpretation should focus on whether the obtained picture has validity. This may be posited if it confirms some expectations such as more developed regions doing better
+- Describe poor and good performing regions/provinces
 
 :::
 
 `r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
 
-#### Setor privado e serviços RMNCAH
+#### Private sector and RMNCAH services
 
 `r my_multicol_start()`
 
 ```{r, fig.width=4.2}
-prepare_private_sector_plot_data(cache$sector_national_estimates, cache$csection_national_estimates) %>% 
+cache$national_private_share %>% 
   plot() + cd_report_theme()
 ```
 
 ```{r, fig.width=4.2}
-prepare_private_sector_plot_data(cache$sector_area_estimates, cache$csection_area_estimates) %>% 
+cache$area_private_share %>% 
   plot() + cd_report_theme()
 ```
 
 ::: {custom-style="Style1"}
 
-**Interpretação**
+**Interpretations**
 
-- Quais indicadores apresentam maior participação do setor privado?
-- Existem diferenças entre áreas rurais e urbanas?
+- Which indicators have higher private share?
+- Are there rural/urban differences?
 
 :::
 

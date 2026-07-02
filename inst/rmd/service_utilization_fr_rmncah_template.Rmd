@@ -1,0 +1,158 @@
+---
+title: "Curative Health Services for `r params$country` --- Countdown Analysis"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cerulean
+    highlight: kate
+  officedown::rdocx_document:
+    reference_docx: report-template.docx
+  pdf_document:
+    toc: false
+    latex_engine: lualatex
+params:
+  cache: NULL
+  i18n: NULL
+
+  country: NULL
+  adminlevel_1: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  error = TRUE,
+  fig.width=7, 
+  fig.height=5, 
+  dpi=1200
+)
+
+library(cd2030.core)
+library(dplyr)
+library(purrr)
+library(reactable)
+library(officedown)
+library(officer)
+
+cache <- params$cache
+i18n <- params$i18n
+first_year <- min(cache$data_years)
+last_year <- max(cache$data_years)
+```
+
+## Services de santé curatifs : taux d'admission et de létalité parmi les enfants de moins de 5 ans
+
+### Contexte
+
+Les données sur les admissions hospitalières des moins de cinq ans sont des indicateurs d'accès aux services curatifs. La mortalité hospitalière (taux de létalité) est un indicateur de la qualité des soins. 
+
+### DQA d'utilisation des services
+
+```{r}
+translated_labels <- list(
+  header = list(
+    h1 = i18n$t("title_score_monthly_complete"),
+    h2 = i18n$t("title_score_extreme_outliers"),
+    h3 = i18n$t("title_score_service_dqa") # Ensure you have a translation key for this
+  ),
+  indicator = list(
+    opd_rr                   = i18n$t("lbl_opd_rr"), 
+    district_opd_rr          = paste0(i18n$t("lbl_score_1b_prefix"), cache$performance_threshold),
+    mis_opd_under5           = i18n$t("lbl_mis_opd_under5"),
+    mis_ipd_under5           = i18n$t("lbl_mis_ipd_under5"),
+    districts_no_missing_opd = i18n$t("lbl_districts_no_missing_opd"),
+    districts_no_missing_ipd = i18n$t("lbl_districts_no_missing_ipd"),
+    
+    opd_under5_outlier5std   = i18n$t("lbl_opd_under5_outlier5std"),
+    district_no_outlier_opd  = i18n$t("lbl_district_no_outlier_opd"),
+    
+    ratio_opd_u5_ipd_u5      = i18n$t("lbl_ratio_opd_u5_ipd_u5"),
+    perc_opd_under5          = i18n$t("lbl_perc_opd_under5"),
+    perc_ipd_under5          = i18n$t("lbl_perc_ipd_under5")
+  )
+)
+cache$calculate_service_dqa_summary("national", labels = translated_labels) %>%
+  plot(years = cache$data_years, title = i18n$t("lbl_score_metric_header"))
+```
+
+```{r, fig.cap='Figure 6a: OPD service use by children and all ages, national'}
+cache$filter_service_utilization('national', 'opd') %>% 
+  plot() + cd_report_theme()
+```
+
+```{r, fig.cap='Figure 6b : map with OPD service use by children, by region'}
+cache$prepare_mapping_service_utlization('opd', c(first_year, last_year)) %>% 
+  plot() + cd_report_theme()
+```
+
+#### 📋 Notes 
+
+::: {custom-style=\"Style1\"}
+
+---
+
+Que peut-on dire de la qualité des données pour les visites en consultation externe (OPD) ? Y a-t-il une cohérence des nombres rapportés d'une année à l'autre ? Quel est le % des visites en consultation externe qui concernent les moins de 5 ans et sont-elles dans la fourchette attendue de 15-40 % ?? 
+
+Quel est le nombre de visites en consultation externe par enfant par an pendant 2019-2023, augmente-t-il ? Est-il inférieur à 1 visite par an, ce qui est considéré comme indicatif d'un faible accès ? Quel % des visites en consultation externe concerne les enfants de moins de 5 ans ? 
+
+Que peut-on dire des visites en consultation externe par enfant par an selon la région/province en 2023 ? Quelle est l'ampleur de la différence entre les régions les plus élevées et les plus basses ? 
+
+---
+
+:::
+
+## Services de santé curatifs : taux d'admission et de létalité parmi les enfants de moins de 5 ans
+
+### Contexte
+
+Les données sur les admissions hospitalières des moins de cinq ans sont des indicateurs d'accès aux services curatifs. La mortalité hospitalière (taux de létalité) est un indicateur de la qualité des soins. 
+
+```{r, fig.cap='Figure 6c: Admissions per 100 children and case fatality rates per 100 admissions under-5, national'}
+cache$filter_service_utilization('national', 'ipd') %>% 
+  plot() + cd_report_theme()
+```
+
+```{r, fig.cap='Figure 6b : map with OPD service use by children, by region'}
+cache$prepare_mapping_service_utlization('ipd', c(first_year, last_year)) %>% 
+  plot() + cd_report_theme()
+```
+
+#### 📋 Notes 
+
+::: {custom-style=\"Style1\"}
+
+---
+
+Que peut-on dire de la qualité des données ? Y a-t-il une cohérence des nombres rapportés d'admissions / taux d'admission au fil du temps ? Le pourcentage d'admissions qui concernent les enfants de moins de 5 ans est-il plausible (dans une fourchette attendue de 15-40 %) 
+
+Quel est le nombre d'admission pour 100 enfants de moins de 5 ans par an pendant 2019-2024 ? Tendance ? Est-il bas ou élevé?
+Quel est le taux de létalité parmi les admissions de moins de 5 ans, quelle est la tendance ? Que cela indique-t-il sur la qualité des soins?
+
+Que peut-on dire des admissions pour 100 enfants de moins de 5 ans par an selon la région/province en 2024?
+
+---
+
+:::
+
+
+### Indice Préventif vs Curatif MCH
+
+```{r}
+cache$generate_admin1_mch_curative_index() %>% 
+  plot(
+    labels = list(
+      title          = i18n$t("lbl_mch_curative_title"),
+      x_axis         = i18n$t("lbl_mch_prev_index_x"),
+      y_axis         = i18n$t("lbl_curative_index_y"),
+      q_top_left     = i18n$t("lbl_quad_low_prev_high_cur"),
+      q_top_right    = i18n$t("lbl_quad_high_prev_high_cur"),
+      q_bottom_left  = i18n$t("lbl_quad_low_prev_low_cur"),
+      q_bottom_right = i18n$t("lbl_quad_high_prev_low_cur")
+    )
+  ) + cd_report_theme()
+```

@@ -5,6 +5,8 @@ output:
     reference_docx: synthesis-template.docx
 params:
   cache: NULL
+  i18n: NULL
+
   adminlevel_1: NULL
   country: NULL
 ---
@@ -29,6 +31,7 @@ library(officedown)
 library(officer)
 
 cache <- params$cache
+i18n <- params$i18n
 data <- cache$countdown_data
 country <- cache$country
 data_years <- cache$data_years
@@ -58,13 +61,37 @@ my_multicol_stop <- layout$stop
 `r my_multicol_start()`
 
 ```{r, fig.width=8}
+translated_labels <- list(
+  header = list(
+    h1 = i18n$t("title_score_monthly_complete"),
+    h2 = i18n$t("title_score_extreme_outliers"),
+    h3 = i18n$t("title_score_consist_annual")
+  ),
+  section = list(
+    r1a   = i18n$t("lbl_score_1a"),
+            # Combine text + threshold number
+    r1b   = paste0(i18n$t("lbl_score_1b_prefix"), cache$performance_threshold),
+    r1c   = if (get_selected_group() == "vaccine") i18n$t("lbl_score_1c_vaccine") else i18n$t("lbl_score_1c_rmncah"),
+    r2a   = i18n$t("lbl_score_2a"),
+    r2b   = i18n$t("lbl_score_2b"),
+    score = i18n$t("lbl_score_annual_score")
+  ),
+  metric = list(
+    r_anc1_penta1    = i18n$t("lbl_consist_ratio_anc1_penta1"),
+    r_penta1_penta3  = i18n$t("lbl_consist_ratio_penta1_penta3"),
+    ok_anc1_penta1   = i18n$t("lbl_score_range_anc1_penta1"),
+    ok_penta1_penta3 = i18n$t("lbl_score_range_penta1_penta3")
+  )
+)
+
 overall_score <- if (is.null(adminlevel_1)) {
-  cache$calculate_overall_score("national")
+  cache$calculate_overall_score("national", labels = translated_labels)
 } else {
-  cache$calculate_overall_score("adminlevel_1", region())
+  cache$calculate_overall_score("adminlevel_1", region = adminlevel_1, labels = translated_labels)
 }
 
-overall_score %>% plot(data_years, width = 8)
+overall_score %>% 
+  plot(data_years, width = 8, title = i18n$t("lbl_score_metric_header"))
 ```
 
 `r run_columnbreak()`
@@ -89,7 +116,20 @@ Numerator: facility data quality  - example 1
 Explain the observation on data quality (one bullet)
 
 ```{r, fig.width=6.3, fig.height=3.5}
-plot_comparison_anc1_penta1(data) +
+legend <- c(
+  district = i18n$t("lbl_leg_consist_district"),
+  linear_fit = i18n$t("lbl_leg_consist_linear_fit"),
+  diagonale = i18n$t("lbl_leg_consist_diagonal")
+)
+
+vacc1 <- i18n$t("opt_anc1")
+vacc2 <- i18n$t("opt_penta1")
+plot_comparison_anc1_penta1(
+  data,
+  title = str_glue(i18n$t("plt_title_consist_checks")),
+  x_label = vacc1,
+  y_label = vacc2,
+  legend = legend) +
   cd_report_theme()
 
 run_columnbreak()
@@ -98,7 +138,16 @@ Numerator: facility data quality  - example 2
 Explain the observation on data quality (one bullet)
 
 ```{r , fig.width=6.3, fig.height=3.5}
-plot(cache$calculate_district_reporting_rate(region = adminlevel_1)) +
+reporting_rate <- cache$performance_threshold
+plot(cache$calculate_district_reporting_rate(region = adminlevel_1),
+  title = str_glue(i18n$t("plt_title_rr_national")),
+  caption = str_glue(i18n$t("plt_caption_rr_national")),
+  indicator_labels = c(
+    anc = i18n$t("opt_anc"),
+    idelv = i18n$t("opt_idelv"),
+    vacc = i18n$t("opt_vacc"),
+    opd = i18n$t("opt_opd")
+  )) +
   cd_report_theme()
 ```
 
@@ -116,20 +165,56 @@ metric <- case_when(
   str_detect(selected_population, 'pop') ~ 'population',
   str_detect(selected_population, 'under1') ~ 'under1',
 )
-cache$denominator_metrics %>% 
-  plot(metric = metric) + cd_report_theme()
+
+cache$denominator_metrics %>%
+  plot(
+    metric = metric, 
+    title = i18n$t(paste0("plt_title_denom_", metric)),
+    x_label = i18n$t("title_global_year"),
+    y_label = i18n$t(paste0("opt_", metric)),
+    legend_labels = c(i18n$t(paste0("lbl_leg_denom_un_", metric)), i18n$t(paste0("lbl_leg_denom_dhis2_", metric)))) +
+  cd_report_theme()
 ```
 
 **National Institutional Live Births**
 ```{r, fig.width=4.2}
+indicator <- i18n$t("opt_instlivebirths")
 cache$calculate_derived_coverage('instlivebirths', 'national') %>% 
-  plot() + cd_report_theme()
+    plot(
+    title = str_glue(i18n$t("plt_title_denom_survey_comp")),
+    y_label = str_glue(i18n$t("lbl_axis_y_coverage")),
+    category_labels = list(
+      un            = i18n$t("lbl_denom_un_proj"),
+      dhis2         = i18n$t("lbl_denom_dhis2_proj"),
+      anc1          = i18n$t("lbl_denom_anc1_derived"),
+      penta1        = i18n$t("lbl_denom_penta1_derived"),
+      penta1derived = i18n$t("opt_penta1derived"),
+      anc1derived = i18n$t("opt_anc1derived")
+    ),
+    legend_labels = list(
+      facility = i18n$t("lbl_denom_facility_based"),
+      survey = i18n$t("lbl_denom_survey_national")
+    )
+  ) + 
+  cd_report_theme()
 ```
 
 **Subnational Institutional Live births**
 ```{r, fig.width=4.2}
 cache$calculate_derived_coverage('instlivebirths', 'adminlevel_1') %>% 
-  plot() + cd_report_theme()
+  plot(
+    title = str_glue(i18n$t("plt_title_cross_section_subnat"), indicator = indicator, year = year),
+    x_label = str_glue(i18n$t("opt_coverage")),
+    y_label = i18n$t("lbl_axis_y_region"),
+    legend_labels = list(
+      "un"            = i18n$t("opt_un"),
+      "dhis2"         = i18n$t("opt_dhis2"),
+      "anc1"          = i18n$t("opt_anc1"),
+      "penta1"        = i18n$t("opt_penta1"),
+      "penta1derived" = i18n$t("opt_penta1derived"),
+      "anc1derived"   = i18n$t("opt_anc1derived")
+    )) + 
+  cd_report_theme()
 ```
 
 `r my_multicol_stop(widths = c(4.243, 4.243, 4.243), space = 0.2, sep = FALSE)`
@@ -154,14 +239,42 @@ cache$calculate_derived_coverage('instlivebirths', 'adminlevel_1') %>%
 
 **ANC 4**
 ```{r, fig.width=6.3, fig.height=3}
-cache$get_filtered_coverage('anc4', 'national') %>%
-  plot() + cd_report_theme()
+current_indicator <- 'anc4'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
+  cd_report_theme()
 ```
 
 **ANC early visit**
 ```{r, fig.width=6.3, fig.height=3}
-cache$get_filtered_coverage('anc_1trimester', 'national') %>%
-  plot() + cd_report_theme()
+current_indicator <- 'anc_1trimester'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
+  cd_report_theme()
 ```
 
 `r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
@@ -174,13 +287,27 @@ cache$get_filtered_coverage('anc_1trimester', 'national') %>%
 
 :::
 
-#### Institutional delivery
+#### Institutional Live Births
 
 `r my_multicol_start()`
 
 ```{r, fig.width=6.3, fig.height=3}
-cache$get_filtered_coverage('instlivebirths', 'national') %>%
-  plot() + cd_report_theme()
+current_indicator <- 'instlivebirths'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
+  cd_report_theme()
 ```
 
 ::: {custom-style="Style1"}
@@ -199,11 +326,39 @@ cache$get_filtered_coverage('instlivebirths', 'national') %>%
 `r my_multicol_start()`
 
 ```{r, fig.width=6.3, fig.height=3}
-cache$get_filtered_coverage('penta3', 'national') %>%
-  plot() + cd_report_theme()
+current_indicator <- 'penta3'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
+  cd_report_theme()
 
-cache$get_filtered_coverage('measles1', 'national') %>%
-  plot() + cd_report_theme()
+current_indicator <- 'measles1'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
+  cd_report_theme()
 
 run_columnbreak()
 ```
@@ -225,14 +380,83 @@ run_columnbreak()
 
 **ANC 4**
 ```{r, fig.width=4.2, fig.height=3}
-cache$get_filtered_threshold('anc4', 'district') %>% 
-   plot() + cd_report_theme()
+current_indicator <- 'anc4'
+translated_x_labels <- list(
+  instlivebirths = i18n$t("opt_instlivebirths"),
+  pnc48h = i18n$t("opt_pnc48h"),
+  bcg = i18n$t("opt_bcg"),
+  penta3 = i18n$t("opt_penta3"),
+  measles1 = i18n$t("opt_measles1"),
+  dropout_penta13 = i18n$t("opt_dropout_penta13"),
+  dropout_penta3mcv1 = i18n$t("opt_dropout_penta3mcv1")
+)
+
+filtered_data <- cache$get_filtered_threshold(current_indicator, 'district')
+
+admin_lvl_translated <- i18n$t(paste0("opt_", current_indicator))
+rate <- i18n$t(if (current_indicator == 'opt_dropout') 'opt_rate' else 'opt_coverage')
+sign <- if (current_indicator == 'opt_dropout') '<' else '≥'
+group <- i18n$t(paste0("opt_", current_indicator))
+coverage <- attr(filtered_data, "threshold")
+
+# FIXED: Explicitly pass named variables into str_glue so it overrides the reactive functions in the environment
+plot_title <- str_glue(
+  i18n$t('plt_title_target_national'),
+  admin_level = admin_lvl_translated,
+  region = "",
+  coverage = coverage,
+  group = group,
+  rate = rate,
+  sign = sign
+)
+filtered_data %>% 
+  plot(
+    title = plot_title,
+    y_axis = i18n$t("lbl_axis_y_pct_subnat"),
+    legend_title = i18n$t("title_global_year"),
+    x_labels = translated_x_labels
+  ) + cd_report_theme()
 ```
 
 **Child Health Indicators**
+
 ```{r, fig.width=4.2, fig.height=3}
-cache$get_filtered_threshold('vaccine', 'district') %>% 
-   plot() + cd_report_theme()
+current_indicator <- 'vaccine'
+translated_x_labels <- list(
+  instlivebirths = i18n$t("opt_instlivebirths"),
+  pnc48h = i18n$t("opt_pnc48h"),
+  bcg = i18n$t("opt_bcg"),
+  penta3 = i18n$t("opt_penta3"),
+  measles1 = i18n$t("opt_measles1"),
+  dropout_penta13 = i18n$t("opt_dropout_penta13"),
+  dropout_penta3mcv1 = i18n$t("opt_dropout_penta3mcv1")
+)
+
+filtered_data <- cache$get_filtered_threshold(current_indicator, 'district')
+
+admin_lvl_translated <- i18n$t(paste0("opt_", current_indicator))
+rate <- i18n$t(if (current_indicator == 'opt_dropout') 'opt_rate' else 'opt_coverage')
+sign <- if (current_indicator == 'opt_dropout') '<' else '≥'
+group <- i18n$t(paste0("opt_", current_indicator))
+coverage <- attr(filtered_data, "threshold")
+
+# FIXED: Explicitly pass named variables into str_glue so it overrides the reactive functions in the environment
+plot_title <- str_glue(
+  i18n$t('plt_title_target_national'),
+  admin_level = admin_lvl_translated,
+  region = "",
+  coverage = coverage,
+  group = group,
+  rate = rate,
+  sign = sign
+)
+filtered_data %>% 
+  plot(
+    title = plot_title,
+    y_axis = i18n$t("lbl_axis_y_pct_subnat"),
+    legend_title = i18n$t("title_global_year"),
+    x_labels = translated_x_labels
+  ) + cd_report_theme()
 ```
 
 ::: {custom-style="Style1"}
@@ -256,17 +480,42 @@ cache$get_filtered_threshold('vaccine', 'district') %>%
 `r my_multicol_start()`
 
 ```{r, fig.width=4.2}
-equiplot_area(cache$area_survey, 'instlivebirths') +
+equiplot_area(
+  cache$area_survey, 
+  'instlivebirths',
+  title = str_glue(i18n$t("plt_title_equity_area")),
+  x_title = str_glue(i18n$t("lbl_axis_y_coverage")),
+  legend_title = i18n$t("lbl_leg_equity_area"),
+  legend_labels = list(
+    "Rural" = i18n$t("lbl_equity_area_rural"),
+    "Urban" = i18n$t("lbl_equity_area_urban")
+  )) +
+cd_report_theme()
+```
+
+```{r, fig.width=4.2}
+equiplot_wealth(
+  cache$wiq_survey, 
+  'instlivebirths',
+  title = str_glue(i18n$t("plt_title_equity_wealth")),
+  x_title = str_glue(i18n$t("lbl_axis_y_coverage")),
+  legend_title = i18n$t("lbl_leg_equity_wealth")
+  ) %>%
   cd_report_theme()
 ```
 
 ```{r, fig.width=4.2}
-equiplot_wealth(cache$wiq_survey, 'instlivebirths') +
-  cd_report_theme()
-```
-
-```{r, fig.width=4.2}
-equiplot_education(cache$education_survey, 'instlivebirths') +
+equiplot_education(
+  cache$education_survey, 
+  'instlivebirths',
+  title = str_glue(i18n$t("plt_title_equity_education")),
+  x_title = str_glue(i18n$t("lbl_axis_y_coverage")),
+  legend_title = i18n$t("lbl_leg_equity_education"),
+  legend_labels = list(
+    "none" ~ i18n$t("lbl_equity_edu_none"),
+    "primary" ~ i18n$t("lbl_equity_edu_primary"),
+    "secondary+" ~ i18n$t("lbl_equity_edu_secondary")
+  )) %>%
   cd_report_theme()
 ```
 
@@ -277,17 +526,42 @@ equiplot_education(cache$education_survey, 'instlivebirths') +
 `r my_multicol_start()`
 
 ```{r, fig.width=4.2}
-equiplot_area(cache$area_survey, 'penta3') +
+equiplot_area(
+  cache$area_survey, 
+  'penta3',
+  title = str_glue(i18n$t("plt_title_equity_area")),
+  x_title = str_glue(i18n$t("lbl_axis_y_coverage")),
+  legend_title = i18n$t("lbl_leg_equity_area"),
+  legend_labels = list(
+    "Rural" = i18n$t("lbl_equity_area_rural"),
+    "Urban" = i18n$t("lbl_equity_area_urban")
+  )) +
+cd_report_theme()
+```
+
+```{r, fig.width=4.2}
+equiplot_wealth(
+  cache$wiq_survey, 
+  'penta3',
+  title = str_glue(i18n$t("plt_title_equity_wealth")),
+  x_title = str_glue(i18n$t("lbl_axis_y_coverage")),
+  legend_title = i18n$t("lbl_leg_equity_wealth")
+  ) +
   cd_report_theme()
 ```
 
 ```{r, fig.width=4.2}
-equiplot_wealth(cache$wiq_survey, 'penta3') +
-  cd_report_theme()
-```
-
-```{r, fig.width=4.2}
-equiplot_education(cache$education_survey, 'penta3') +
+equiplot_education(
+  cache$education_survey, 
+  'penta3',
+  title = str_glue(i18n$t("plt_title_equity_education")),
+  x_title = str_glue(i18n$t("lbl_axis_y_coverage")),
+  legend_title = i18n$t("lbl_leg_equity_education"),
+  legend_labels = list(
+    "none" ~ i18n$t("lbl_equity_edu_none"),
+    "primary" ~ i18n$t("lbl_equity_edu_primary"),
+    "secondary+" ~ i18n$t("lbl_equity_edu_secondary")
+  )) %>%
   cd_report_theme()
 ```
 
@@ -310,15 +584,39 @@ equiplot_education(cache$education_survey, 'penta3') +
 
 **InstituionalLive Births**
 ```{r, fig.width=6.3}
-cache$get_filtered_inequality('instlivebirths', 'adminlevel_1') %>% 
-  plot() + cd_report_theme()
+current_indicator <- 'instlivebirths'
+indicator <- i18n$t(paste0("opt_", current_indicator))
+cache$get_filtered_inequality(indicator = current_indicator, admin_level = 'adminlevel_1') %>% 
+  plot(
+    title = indicator,
+    subtitle = str_glue(i18n$t('lbl_inequ_subnat_admin1')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = i18n$t(paste0("plt_caption_equity_", cache$get_denominator(current_indicator))),
+    legend_labels = list(
+      subnational = i18n$t("lbl_inequ_coverage_subnat"),
+      national = str_glue(i18n$t('title_coverage_national'))
+    )
+  ) + cd_report_theme()
 ```
 
 **Pentavalent 3rd Dose**
 
 ```{r, fig.width=6.3}
-cache$get_filtered_inequality('penta3', 'adminlevel_1') %>% 
-  plot() + cd_report_theme()
+current_indicator <- 'penta3'
+indicator <- i18n$t(paste0("opt_", current_indicator))
+cache$get_filtered_inequality(indicator = current_indicator, admin_level = 'adminlevel_1') %>% 
+  plot(
+    title = indicator,
+    subtitle = str_glue(i18n$t('lbl_inequ_subnat_admin1')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = i18n$t(paste0("plt_caption_equity_", cache$get_denominator(current_indicator))),
+    legend_labels = list(
+      subnational = i18n$t("lbl_inequ_coverage_subnat"),
+      national = str_glue(i18n$t('title_coverage_national'))
+    )
+  ) + cd_report_theme()
 ```
 
 `r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
@@ -326,13 +624,27 @@ cache$get_filtered_inequality('penta3', 'adminlevel_1') %>%
 `r my_multicol_start()`
 
 ```{r, fig.width=3.1}
-cache$get_filtered_mapping_data('instlivebirths', 'adminlevel_1', 'Greens', c(first_year, last_year)) %>% 
-  plot() + cd_report_theme()
+current_indicator <- 'instlivebirths'
+min_year <- min(cache$data_years)
+max_year <- robust_max(cache$data_years)
+years <- if (is.null(cache$mapping_years)) c(min_year, max_year) else cache$mapping_years
+
+cache$get_filtered_mapping_data(current_indicator, "adminlevel_1", 'Blues', plot_year = years) %>% 
+  plot(
+    title = str_glue(i18n$t("plt_title_map_dist")),
+    caption = i18n$t("plt_caption_map_dhis2"),
+    legend = str_glue(i18n$t("lbl_axis_y_coverage"))
+  ) + cd_report_theme()
 ```
 
 ```{r, fig.width=3.1}
-cache$get_filtered_mapping_data('penta3', 'adminlevel_1', 'Blues', c(first_year, last_year)) %>% 
-  plot() + cd_report_theme()
+current_indicator <- 'penta3'
+cache$get_filtered_mapping_data(current_indicator, "adminlevel_1", 'Blues', plot_year = years) %>% 
+  plot(
+    title = str_glue(i18n$t("plt_title_map_dist")),
+    caption = i18n$t("plt_caption_map_dhis2"),
+    legend = str_glue(i18n$t("lbl_axis_y_coverage"))
+  ) + cd_report_theme()
 ```
 
 ::: {custom-style="Style1"}
@@ -410,7 +722,18 @@ Ratio stillbirth to maternal deaths in the health facility data at national leve
 `r my_multicol_start()`
 
 ```{r, fig.width=6.3}
-plot(cache$mortality_summary, indicator = 'ratio_md_sb') +
+current_indicator <- "ratio_md_sb"
+plot_mortality_plausibility(
+  mortality_summary, 
+  indicator = current_indicator,
+  title = full_title,
+  y_axis = i18n$t(paste0("ylab_", current_indicator)),
+  x_axis = i18n$t("title_global_year"),
+  note = i18n$t(paste0("note_", current_indicator)),
+  legend_labels = list(
+    median = i18n$t("lbl_median"),
+    plausible = i18n$t("lbl_plausible")
+  )) +
   cd_report_theme()
 ```
 
@@ -515,7 +838,17 @@ cache$filter_service_utilization('national', 'ipd') %>%
 
 ```{r, fig.width=6.3}
 cache$generate_admin1_mch_curative_index() %>% 
-  plot() + cd_report_theme()
+  plot(
+    labels = list(
+      title          = i18n$t("lbl_mch_curative_title"),
+      x_axis         = i18n$t("lbl_mch_prev_index_x"),
+      y_axis         = i18n$t("lbl_curative_index_y"),
+      q_top_left     = i18n$t("lbl_quad_low_prev_high_cur"),
+      q_top_right    = i18n$t("lbl_quad_high_prev_high_cur"),
+      q_bottom_left  = i18n$t("lbl_quad_low_prev_low_cur"),
+      q_bottom_right = i18n$t("lbl_quad_high_prev_low_cur")
+    )
+  ) + cd_report_theme()
 ```
 
 ::: {custom-style="Style1"}
@@ -538,8 +871,37 @@ cache$generate_admin1_mch_curative_index() %>%
 `r my_multicol_start()`
 
 ```{r, fig.width=6.3, fig.height = 3.5}
-cache$generate_health_system_table() %>% 
-  plot(latest_year = 2025) %>% 
+latest_year <- max(cache$data_years)
+
+cache$generate_health_system_table(
+  labels = list(
+    section = list(
+      infrastructure = i18n$t("sec_infrastructure"),
+      workforce      = i18n$t("sec_workforce"),
+      private_sector = i18n$t("sec_private_sector")
+    ),
+    indicator = list(
+      fac_density   = i18n$t("ind_fac_density"),
+      hosp_share    = i18n$t("ind_hosp_share"),
+      hosp_density  = i18n$t("ind_hosp_density"),
+      bed_density   = i18n$t("ind_bed_density"),
+      hwf_density   = i18n$t("ind_hwf_density"),
+      skill_mix     = i18n$t("ind_skill_mix"),
+      private_share = i18n$t("ind_private_share"),
+      ngo_share     = i18n$t("ind_ngo_share")
+    ),
+    unit = list(
+      per_10k  = i18n$t("unit_per_10k"),
+      per_100k = i18n$t("unit_per_100k"),
+      pct      = "%"
+    )
+  )) %>%
+  plot(
+    year = latest_year, 
+    indicator_label = i18n$t("title_global_indicator"),
+    value_label     = i18n$t("lbl_value"),
+    unit_label      = i18n$t("lbl_unit")
+  ) %>% 
   padding(padding = 1.5, part = 'all')
 ```
 
@@ -563,24 +925,57 @@ Health workforce density (Benchmark: 23 – needed to make major progress in red
 `r my_multicol_start()`
 
 ```{r, fig.width=4.2}
-national_metrics <- cache$health_system_metrics_national
+nat_metrics <- cache$health_system_metrics_national
+current_indicator <- "ratio_fac_pop"
 cache$health_system_metrics_admin1 %>%
-  plot(indicator = 'ratio_fac_pop',
-       national_value = national_metrics$ratio_fac_pop) +
+  plot(
+    indicator = current_indicator,
+    national_value = nat_metrics[[current_indicator]],
+    title         = i18n$t(paste0('title_metric_', current_indicator)),
+    x_axis        = i18n$t(paste0('xlab_metric_', current_indicator)),
+    legend_labels = list(
+      "FALSE" = i18n$t("lbl_below_benchmark"),
+      "TRUE"  = i18n$t("lbl_meets_benchmark"),
+      "threshold_line" = i18n$t("lbl_target_benchmark"), 
+      "national_line"  = i18n$t("lbl_national_average")
+    )
+  ) +
   cd_report_theme()
 ```
 
 ```{r, fig.width=4.2}
+current_indicator <- "ratio_hos_pop"
 cache$health_system_metrics_admin1 %>%
-  plot(indicator = 'ratio_hos_pop',
-       national_value = national_metrics$ratio_hos_pop) +
+  plot(
+    indicator = current_indicator,
+    national_value = nat_metrics[[current_indicator]],
+    title         = i18n$t(paste0('title_metric_', current_indicator)),
+    x_axis        = i18n$t(paste0('xlab_metric_', current_indicator)),
+    legend_labels = list(
+      "FALSE" = i18n$t("lbl_below_benchmark"),
+      "TRUE"  = i18n$t("lbl_meets_benchmark"),
+      "threshold_line" = i18n$t("lbl_target_benchmark"), 
+      "national_line"  = i18n$t("lbl_national_average")
+    )
+  ) +
   cd_report_theme()
 ```
 
 ```{r, fig.width=4.2}
+current_indicator <- "ratio_hstaff_pop"
 cache$health_system_metrics_admin1 %>%
-  plot(indicator = 'ratio_hstaff_pop',
-       national_value =  national_metrics$ratio_hstaff_pop) +
+  plot(
+    indicator = current_indicator,
+    national_value = nat_metrics[[current_indicator]],
+    title         = i18n$t(paste0('title_metric_', current_indicator)),
+    x_axis        = i18n$t(paste0('xlab_metric_', current_indicator)),
+    legend_labels = list(
+      "FALSE" = i18n$t("lbl_below_benchmark"),
+      "TRUE"  = i18n$t("lbl_meets_benchmark"),
+      "threshold_line" = i18n$t("lbl_target_benchmark"), 
+      "national_line"  = i18n$t("lbl_national_average")
+    )
+  ) +
   cd_report_theme()
 ```
 
@@ -604,8 +999,20 @@ cache$health_system_metrics_admin1 %>%
 `r my_multicol_start()`
 
 ```{r, fig.width=6.3}
-cache$generate_phc_scatter_data(indicator = 'ratio_fac_pop') %>% 
-  plot() + cd_report_theme()
+current_indicator <- "ratio_fac_pop"
+cache$generate_phc_scatter_data(indicator = current_indicator) %>%
+  plot(
+    title  = i18n$t(paste0("title_scatter_", current_indicator)),
+    x_axis = i18n$t(paste0("xlab_", current_indicator)),
+    y_axis = i18n$t("ylab_phc_scatter"),
+    quad_labels = list(
+      high_high = i18n$t(paste0("lbl_hh_", current_indicator)),
+      low_high  = i18n$t(paste0("lbl_lh_", current_indicator)),
+      high_low  = i18n$t(paste0("lbl_hl_", current_indicator)),
+      low_low   = i18n$t(paste0("lbl_ll_", current_indicator))
+    )
+  ) + 
+  cd_report_theme()
 ```
 
 ::: {custom-style="Style1"}

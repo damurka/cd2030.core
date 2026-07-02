@@ -5,6 +5,7 @@ output:
     reference_docx: subnational-one-pager-template.docx
 params:
   cache: NULL
+  i18n: NULL
   country: NULL
   adminlevel_1: NULL
 ---
