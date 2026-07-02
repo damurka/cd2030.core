@@ -14,6 +14,8 @@ output:
     latex_engine: lualatex
 params:
   cache: NULL
+  i18n: NULL
+
   adminlevel_1: NULL
   country: NULL
 editor_options: 
@@ -41,25 +43,35 @@ library(officedown)
 library(officer)
 
 cache <- params$cache
+i18n <- params$i18n
 ```
 
 ## National Ownership of Health Facilities
 
 ```{r}
-  cache$generate_private_sector_data() %>% 
-  plot() + cd_report_theme()
+  cache$generate_private_sector_data(
+    legend_labels = list(
+      Private = i18n$t("lbl_private"),
+      NGO     = i18n$t("lbl_ngo"),
+      Public  = i18n$t("lbl_public")
+    )) %>% 
+    plot(
+      title  = i18n$t("title_private_sector_graph"),
+      x_axis = i18n$t("xlab_private_sector"),
+      y_axis = i18n$t("ylab_private_sector")
+    ) + cd_report_theme()
 ```
 
 ## National Private Share of Services
 
 ```{r}
   cache$national_private_share %>% 
-  plot() + cd_report_theme()
+    plot(i18n = i18n) + cd_report_theme()
 ```
 
 ## Sub-National Private Share of Services by Area
 
 ```{r}
   cache$area_private_share %>% 
-  plot() + cd_report_theme()
+    plot(i18n = i18n) + cd_report_theme()
 ```

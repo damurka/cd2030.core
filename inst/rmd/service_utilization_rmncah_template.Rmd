@@ -14,6 +14,8 @@ output:
     latex_engine: lualatex
 params:
   cache: NULL
+  i18n: NULL
+
   country: NULL
   adminlevel_1: NULL
 ---
@@ -38,6 +40,7 @@ library(officedown)
 library(officer)
 
 cache <- params$cache
+i18n <- params$i18n
 first_year <- min(cache$data_years)
 last_year <- max(cache$data_years)
 ```
@@ -51,8 +54,30 @@ Data on inpatient admissions among under-fives are indicators of access to curat
 ### Service Utilization DQA
 
 ```{r}
-cache$calculate_service_dqa_summary('national') %>%
-  plot(years = cache$data_years)
+translated_labels <- list(
+  header = list(
+    h1 = i18n$t("title_score_monthly_complete"),
+    h2 = i18n$t("title_score_extreme_outliers"),
+    h3 = i18n$t("title_score_service_dqa") # Ensure you have a translation key for this
+  ),
+  indicator = list(
+    opd_rr                   = i18n$t("lbl_opd_rr"), 
+    district_opd_rr          = paste0(i18n$t("lbl_score_1b_prefix"), cache$performance_threshold),
+    mis_opd_under5           = i18n$t("lbl_mis_opd_under5"),
+    mis_ipd_under5           = i18n$t("lbl_mis_ipd_under5"),
+    districts_no_missing_opd = i18n$t("lbl_districts_no_missing_opd"),
+    districts_no_missing_ipd = i18n$t("lbl_districts_no_missing_ipd"),
+    
+    opd_under5_outlier5std   = i18n$t("lbl_opd_under5_outlier5std"),
+    district_no_outlier_opd  = i18n$t("lbl_district_no_outlier_opd"),
+    
+    ratio_opd_u5_ipd_u5      = i18n$t("lbl_ratio_opd_u5_ipd_u5"),
+    perc_opd_under5          = i18n$t("lbl_perc_opd_under5"),
+    perc_ipd_under5          = i18n$t("lbl_perc_ipd_under5")
+  )
+)
+cache$calculate_service_dqa_summary("national", labels = translated_labels) %>%
+  plot(years = cache$data_years, title = i18n$t("lbl_score_metric_header"))
 ```
 
 ```{r, fig.cap='Figure 6a: OPD service use by children and all ages, national'}
@@ -118,7 +143,16 @@ What can be said about admissions per 100 children under-5 per year by region/pr
 ### MCH Preventive vs Curative Index
 
 ```{r}
-cache$generate_admin1_mch_curative_index() |> 
-  plot() + cd_report_theme()
-
+cache$generate_admin1_mch_curative_index() %>% 
+  plot(
+    labels = list(
+      title          = i18n$t("lbl_mch_curative_title"),
+      x_axis         = i18n$t("lbl_mch_prev_index_x"),
+      y_axis         = i18n$t("lbl_curative_index_y"),
+      q_top_left     = i18n$t("lbl_quad_low_prev_high_cur"),
+      q_top_right    = i18n$t("lbl_quad_high_prev_high_cur"),
+      q_bottom_left  = i18n$t("lbl_quad_low_prev_low_cur"),
+      q_bottom_right = i18n$t("lbl_quad_high_prev_low_cur")
+    )
+  ) + cd_report_theme()
 ```

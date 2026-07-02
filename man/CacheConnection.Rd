@@ -9,177 +9,189 @@ An \link[R6:R6Class]{R6::R6Class} generator object.
 }
 \description{
 An R6 class that handles persistent or in-memory caching of data used in the Countdown 2030
-analysis and reporting workflows. It supports tracking of various internal data objects,
-reactive updates (for Shiny apps), note-taking for report annotations, and saving/loading
-from \code{.rds} files.
+analysis and reporting workflows.
+
+\strong{Dependency Architecture:}
+\itemize{
+\item \strong{Layer 0 (Core Data):} Raw \code{countdown_data}, thresholds, external surveys (\code{un_estimates}).
+\item \strong{Layer 1 (DQA & Adjustments):} Depends on Layer 0. Includes \code{adjusted_data}, reporting rates, completeness, overall scores.
+\item \strong{Layer 2 (Coverage & Denominators):} Depends on Layer 1. Includes derived coverages at national, admin1, and district levels.
+\item \strong{Layer 3 (Inequality & Health Systems):} Depends on Layer 2 (Coverage). Includes inequalities, mortality ratios, and service utilization summaries.
+}
 }
 \keyword{internal}
 \section{Public fields}{
   \if{html}{\out{<div class="r6-fields">}}
   \describe{
-    \item{\code{data_version}}{Define the current data version.}
+    \item{\code{data_version}}{Defines the current internal data version to handle backward compatibility.}
   }
   \if{html}{\out{</div>}}
 }
 \section{Active bindings}{
   \if{html}{\out{<div class="r6-active-bindings">}}
   \describe{
-    \item{\code{language}}{Get the UI language.}
+    \item{\code{language}}{Active Binding: Gets the UI language.}
 
-    \item{\code{cache_path}}{Get cache path.}
+    \item{\code{cache_path}}{Active Binding: Gets the physical disk path for the \code{.rds} cache.}
 
-    \item{\code{countdown_data}}{Get countdown data.}
+    \item{\code{countdown_data}}{Active Binding: Gets the raw, unadjusted countdown tibble.}
 
-    \item{\code{data_years}}{Get countdown data.}
+    \item{\code{data_years}}{Active Binding: Extracts unique years present in the raw data.}
 
-    \item{\code{subnational_regions}}{Get countdown data.}
+    \item{\code{subnational_regions}}{Active Binding: Extracts unique admin1 and district combinations.}
 
-    \item{\code{country}}{Get country name.}
+    \item{\code{country}}{Active Binding: Gets the text string representing the focal country. Readonly.}
 
-    \item{\code{country_iso}}{Get country ISO3 code.}
+    \item{\code{country_iso}}{Active Binding: Gets the 3-letter ISO code for the country. Readonly.}
 
-    \item{\code{adjusted_data}}{Gets adjusted data.}
+    \item{\code{adjusted_data}}{Active Binding: Gets countdown data with K-factors applied. Adjusts automatically if flags are met.}
 
-    \item{\code{data_with_excluded_years}}{Get data with excluded years removed.}
+    \item{\code{data_with_excluded_years}}{Active Binding: Raw data filtered to remove user-excluded years. Readonly.}
 
-    \item{\code{performance_threshold}}{Gets performance threshold.}
+    \item{\code{performance_threshold}}{Active Binding: Gets the integer threshold used for DQA success checks.}
 
-    \item{\code{excluded_years}}{Gets excluded years.}
+    \item{\code{excluded_years}}{Active Binding: Gets the numeric vector of years blocked from modeling.}
 
-    \item{\code{k_factors}}{Gets k-factors.}
+    \item{\code{k_factors}}{Active Binding: Gets the named vector of numeric adjustment ratios.}
 
-    \item{\code{adjusted_flag}}{Gets adjusted flag.}
+    \item{\code{adjusted_flag}}{Active Binding: Gets boolean representing if adjustments are active.}
 
-    \item{\code{derivation_population}}{Gets adjusted flag.}
+    \item{\code{derivation_population}}{Active Binding: Gets the string indicating the origin population indicator.}
 
-    \item{\code{indicator_coverage_national}}{Gets adjusted data.}
+    \item{\code{reporting_rate_national}}{Active Binding: Gets the cached national reporting rate dataset.}
 
-    \item{\code{indicator_coverage_admin1}}{Gets adjusted data.}
+    \item{\code{reporting_rate_admin1}}{Active Binding: Gets the cached region-level reporting rate dataset.}
 
-    \item{\code{indicator_coverage_district}}{Gets adjusted data.}
+    \item{\code{reporting_rate_district}}{Active Binding: Gets the cached district-level reporting rate dataset.}
 
-    \item{\code{survey_estimates}}{Gets survey estimates.}
+    \item{\code{district_reporting_rate}}{Active Binding: Gets percentage of districts passing the reporting threshold.}
 
-    \item{\code{national_estimates}}{Gets national estimates.}
+    \item{\code{completeness_national}}{Active Binding: Gets non-missing values percentage at national level.}
 
-    \item{\code{admin1_estimates}}{Gets national estimates.}
+    \item{\code{completeness_admin1}}{Active Binding: Gets non-missing values percentage at region level.}
 
-    \item{\code{survey_years}}{Get survey years.}
+    \item{\code{completeness_district}}{Active Binding: Gets non-missing values percentage at district level.}
 
-    \item{\code{survey_source}}{Gets survey source of information.}
+    \item{\code{district_completeness}}{Active Binding: Gets \% of districts passing completeness thresholds.}
 
-    \item{\code{survey_year}}{Gets survey year of survey estimates.}
+    \item{\code{outliers_national}}{Active Binding: Gets percentage of non-outlier values at national level.}
 
-    \item{\code{start_survey_year}}{Gets start survey year.}
+    \item{\code{outliers_admin1}}{Active Binding: Gets percentage of non-outlier values at region level.}
 
-    \item{\code{denominator}}{Gets denominator.}
+    \item{\code{outliers_district}}{Active Binding: Gets percentage of non-outlier values at district level.}
 
-    \item{\code{maternal_denominator}}{Gets denominator.}
+    \item{\code{district_outliers_summary}}{Active Binding: Gets \% of districts passing outlier safety checks.}
 
-    \item{\code{selected_admin_level_1}}{Gets selected region.}
+    \item{\code{list_outlier_units}}{Active Binding: Generates a table of facilities identified as severe outliers.}
 
-    \item{\code{selected_district}}{Gets selected district.}
+    \item{\code{ratios_summary}}{Active Binding: Summarizes adequacy ratios (like ANC1/Penta1) over time.}
 
-    \item{\code{mortality_mapping_years}}{Gets mapping years.}
+    \item{\code{adequacy_ratios}}{Active Binding: Calculates district-by-district chronological indicator consistency.}
 
-    \item{\code{utilization_mapping_years}}{Gets mapping years.}
+    \item{\code{overall_score}}{Active Binding: Merges DQA tables to formulate the master health score grade.}
 
-    \item{\code{mapping_years}}{Gets mapping years.}
+    \item{\code{denominator_metrics}}{Active Binding: Compiles demographic targets from DHIS2 and UN data.}
 
-    \item{\code{fpet_data}}{Gets FPET data.}
+    \item{\code{indicator_coverage_national}}{Active Binding: Gets national-level indicator coverage calculations.}
 
-    \item{\code{un_estimates}}{Gets UN estimates.}
+    \item{\code{indicator_coverage_admin1}}{Active Binding: Gets region-level indicator coverage calculations.}
 
-    \item{\code{un_mortality_estimates}}{Gets UN mortality estimates.}
+    \item{\code{indicator_coverage_district}}{Active Binding: Gets district-level indicator coverage calculations.}
 
-    \item{\code{wuenic_estimates}}{Gets WUENIC estimates.}
+    \item{\code{survey_estimates}}{Active Binding: Extracts and formats targeted rates from the master survey.}
 
-    \item{\code{national_survey}}{Gets national survey.}
+    \item{\code{national_estimates}}{Active Binding: Fetches the configured national baseline estimates list.}
 
-    \item{\code{regional_survey}}{Gets regional survey.}
+    \item{\code{admin1_estimates}}{Active Binding: Fetches merged regional estimates from survey mapping.}
 
-    \item{\code{wiq_survey}}{Gets WIQ survey.}
+    \item{\code{survey_years}}{Active Binding: Fetches a unique list of survey years available.}
 
-    \item{\code{area_survey}}{Gets area survey.}
+    \item{\code{survey_year}}{Active Binding: Fetches the anchor integer year used for survey calculations.}
 
-    \item{\code{education_survey}}{Gets  education survey.}
+    \item{\code{start_survey_year}}{Active Binding: Fetches the chronological starting boundary for models.}
 
-    \item{\code{survey_mapping}}{Gets survey mapping.}
+    \item{\code{denominator}}{Active Binding: Fetches standard analysis denominator.}
 
-    \item{\code{map_mapping}}{Gets map mapping.}
+    \item{\code{maternal_denominator}}{Active Binding: Fetches maternal-specific analysis denominator.}
 
-    \item{\code{sector_national_estimates}}{Gets map mapping.}
+    \item{\code{selected_admin_level_1}}{Active Binding: Dashboard specific Region selection.}
 
-    \item{\code{sector_area_estimates}}{Gets map mapping.}
+    \item{\code{selected_district}}{Active Binding: Dashboard specific District selection.}
 
-    \item{\code{csection_national_estimates}}{Gets map mapping.}
+    \item{\code{mortality_mapping_years}}{Active Binding: Fetches years requested for mortality charts.}
 
-    \item{\code{csection_area_estimates}}{Gets map mapping.}
+    \item{\code{utilization_mapping_years}}{Active Binding: Fetches years requested for utilization charts.}
 
-    \item{\code{check_inequality_params}}{checks if inputs for inequality calculations are available}
+    \item{\code{mapping_years}}{Active Binding: Fetches years requested for standard map generation.}
 
-    \item{\code{check_coverage_params}}{checks if inputs for coverage calculations are available}
+    \item{\code{fpet_data}}{Active Binding: Fetches FPET metrics (loads from global if missing).}
 
-    \item{\code{check_mortality_params}}{checks if inputs for mortality calculations are available}
+    \item{\code{un_estimates}}{Active Binding: Fetches demographic targets set by the UN.}
 
-    \item{\code{check_sector_params}}{checks if inputs for mortality calculations are available}
+    \item{\code{un_mortality_estimates}}{Active Binding: Fetches mortality targets set by the UN.}
 
-    \item{\code{reporting_rate_national}}{Get cached national reporting rates.}
+    \item{\code{wuenic_estimates}}{Active Binding: Fetches immunization estimates tracked by WHO.}
 
-    \item{\code{reporting_rate_admin1}}{Get cached admin1 reporting rates.}
+    \item{\code{national_survey}}{Active Binding: Fetches overall national survey raw frame.}
 
-    \item{\code{reporting_rate_district}}{Get cached district reporting rates.}
+    \item{\code{regional_survey}}{Active Binding: Fetches regional survey raw frame.}
 
-    \item{\code{district_reporting_rate}}{Get cached district reporting rates.}
+    \item{\code{wiq_survey}}{Active Binding: Fetches wealth inequality (WIQ) survey raw frame.}
 
-    \item{\code{completeness_national}}{Get cached district reporting rates.}
+    \item{\code{area_survey}}{Active Binding: Fetches area based (urban/rural) survey frame.}
 
-    \item{\code{completeness_admin1}}{Get cached district reporting rates.}
+    \item{\code{education_survey}}{Active Binding: Fetches maternal education level survey frame.}
 
-    \item{\code{completeness_district}}{Get cached district reporting rates.}
+    \item{\code{survey_mapping}}{Active Binding: Retrieves text mapping linking survey regions to raw regions.}
 
-    \item{\code{district_completeness}}{Get cached district reporting rates.}
+    \item{\code{map_mapping}}{Active Binding: Retrieves mapping linking map coordinates to raw regions.}
 
-    \item{\code{outliers_national}}{Get cached district reporting rates.}
+    \item{\code{sector_national_estimates}}{Active Binding: Returns cache of national sector breakdown.}
 
-    \item{\code{outliers_admin1}}{Get cached district reporting rates.}
+    \item{\code{sector_area_estimates}}{Active Binding: Returns cache of sub-area sector breakdown.}
 
-    \item{\code{outliers_district}}{Get cached district reporting rates.}
+    \item{\code{csection_national_estimates}}{Active Binding: Returns cached national csection estimates.}
 
-    \item{\code{district_outliers_summary}}{Get cached district reporting rates.}
+    \item{\code{csection_area_estimates}}{Active Binding: Returns cached sub-area csection estimates.}
 
-    \item{\code{list_outlier_units}}{Get cached district reporting rates.}
+    \item{\code{check_inequality_params}}{Active Binding: Returns boolean if data necessary for inequality calculations exists.}
 
-    \item{\code{ratios_summary}}{Get cached district reporting rates.}
+    \item{\code{check_coverage_params}}{Active Binding: Returns boolean if data necessary for coverage calculations exists.}
 
-    \item{\code{adequacy_ratios}}{Get cached district reporting rates.}
+    \item{\code{check_mortality_params}}{Active Binding: Returns boolean if data necessary for mortality calculations exists.}
 
-    \item{\code{overall_score}}{Get cached national overall score.}
+    \item{\code{check_sector_params}}{Active Binding: Returns boolean if data necessary for public/private sector calculations exists.}
 
-    \item{\code{denominator_metrics}}{Get cached national overall score.}
+    \item{\code{inequality_admin1}}{Active Binding: Automatically calculates and caches Admin1 inequality matrices.}
 
-    \item{\code{inequality_admin1}}{Gets cached inequality data for admin level 1.}
+    \item{\code{inequality_district}}{Active Binding: Automatically calculates and caches District inequality matrices.}
 
-    \item{\code{inequality_district}}{Gets cached inequality data for district level.}
+    \item{\code{mortality_summary}}{Active Binding: Calculates mortality summaries combining live births and still births.}
 
-    \item{\code{mortality_summary}}{Creates the mortality summary.}
+    \item{\code{mortality_ratios}}{Active Binding: Calculates precise mortality ratios comparing internal data with UN estimates.}
 
-    \item{\code{mortality_ratios}}{Creates the mortality summary.}
+    \item{\code{service_utilization_national}}{Active Binding: Caches OPD/IPD utilizations summed to the National scale.}
 
-    \item{\code{service_utilization_national}}{Gets adjusted data.}
+    \item{\code{service_utilization_admin1}}{Active Binding: Caches OPD/IPD utilizations parsed by Admin 1 level.}
 
-    \item{\code{service_utilization_admin1}}{Gets adjusted data.}
+    \item{\code{health_system_comparison}}{Active Binding: Summarizes health system efficiency linking resources to coverage.}
 
-    \item{\code{health_system_comparison}}{coverage calculation using stored model parameters.}
+    \item{\code{health_system_metrics_national}}{Active Binding: Compiles core indicators (staff density, beds) at the National scale.}
 
-    \item{\code{health_system_metrics_national}}{coverage calculation using stored model parameters.}
+    \item{\code{health_system_metrics_admin1}}{Active Binding: Compiles core indicators (staff density, beds) at the Admin 1 scale.}
 
-    \item{\code{health_system_metrics_admin1}}{coverage calculation using stored model parameters.}
+    \item{\code{national_private_share}}{Active Binding: Returns baseline metrics regarding private sector operations (National).}
 
-    \item{\code{national_private_share}}{National private share data.}
-
-    \item{\code{area_private_share}}{National private share data.
-Update a field (with change tracking)}
+    \item{\code{area_private_share}}{Active Binding: Returns baseline metrics regarding private sector operations (Area/Region).
+Invalidate entirely (Usually triggered on initial data load)
+Invalidate downstream computations (Coverage, Mortality, etc.) derived from adjustments
+Invalidate Data Quality Cache
+Invalidate Denominator Cache
+Invalidate Coverage Cache (Automatically cascades to Inequality & Health Systems)
+Invalidate Inequality Cache
+Invalidate Mortality Cache
+Invalidate Utilization Cache
+Invalidate Health Systems Cache}
   }
   \if{html}{\out{</div>}}
 }
@@ -214,7 +226,6 @@ Update a field (with change tracking)}
     \item \href{#method-CacheConnection-set_survey_estimates}{\code{CacheConnection$set_survey_estimates()}}
     \item \href{#method-CacheConnection-set_derivation_population}{\code{CacheConnection$set_derivation_population()}}
     \item \href{#method-CacheConnection-set_national_estimates}{\code{CacheConnection$set_national_estimates()}}
-    \item \href{#method-CacheConnection-set_survey_source}{\code{CacheConnection$set_survey_source()}}
     \item \href{#method-CacheConnection-set_survey_year}{\code{CacheConnection$set_survey_year()}}
     \item \href{#method-CacheConnection-set_start_survey_year}{\code{CacheConnection$set_start_survey_year()}}
     \item \href{#method-CacheConnection-set_denominator}{\code{CacheConnection$set_denominator()}}
@@ -279,10 +290,9 @@ Update a field (with change tracking)}
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{rds_path}}{Path to the RDS file (can be NULL).}
+      \item{\code{rds_path}}{Path to the RDS file to load state from (can be NULL).}
       \item{\code{countdown_data}}{Countdown data of class \code{cd_data}.}
-      \item{\code{data_path}}{Directory to store the cache
-Load data from disk.}
+      \item{\code{data_path}}{Directory to store the cache \code{.rds} file.}
     }
     \if{html}{\out{</div>}}
   }
@@ -292,14 +302,11 @@ Load data from disk.}
 \if{html}{\out{<a id="method-CacheConnection-load_from_disk"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-load_from_disk}{}}}
 \subsection{\code{CacheConnection$load_from_disk()}}{
+  Load cached data from the designated RDS file on disk.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$load_from_disk()}
     \if{html}{\out{</div>}}
-  }
-  \subsection{Returns}{
-    None. Updates internal state.
-Save data to disk (only if changed and RDS path is not NULL)
   }
 }
 
@@ -307,13 +314,11 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-save_to_disk"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-save_to_disk}{}}}
 \subsection{\code{CacheConnection$save_to_disk()}}{
+  Save current in-memory state to the assigned RDS file, provided state has changed.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$save_to_disk()}
     \if{html}{\out{</div>}}
-  }
-  \subsection{Returns}{
-    None. Updates file.
   }
 }
 
@@ -321,7 +326,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-adjust_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-adjust_data}{}}}
 \subsection{\code{CacheConnection$adjust_data()}}{
-  Adjusts data.
+  Processes raw data into adjusted data using excluded years and k-factors.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$adjust_data()}
@@ -333,7 +338,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-calculate_indicator_coverage"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_indicator_coverage}{}}}
 \subsection{\code{CacheConnection$calculate_indicator_coverage()}}{
-  Run coverage calculation using stored model parameters.
+  Run indicator coverage calculation using stored models and parameters.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$calculate_indicator_coverage(
@@ -346,9 +351,9 @@ Save data to disk (only if changed and RDS path is not NULL)
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{admin_level}}{Administrative level ("adminlevel_1" or "district").}
+      \item{\code{admin_level}}{Administrative level ("national", "adminlevel_1", or "district").}
       \item{\code{region}}{Optional region filter.}
-      \item{\code{show_district}}{Option whether to show the district column}
+      \item{\code{show_district}}{Logical. Whether to show the district column.}
     }
     \if{html}{\out{</div>}}
   }
@@ -358,7 +363,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-calculate_inequality"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_inequality}{}}}
 \subsection{\code{CacheConnection$calculate_inequality()}}{
-  Run inequality calculation using stored model parameters.
+  Run inequality calculation using subnational coverage compared to reference data.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$calculate_inequality(admin_level, region = NULL)}
@@ -378,7 +383,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-calculate_coverage"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_coverage}{}}}
 \subsection{\code{CacheConnection$calculate_coverage()}}{
-  Run coverage calculation using stored model parameters.
+  Integrates immunization coverage data from DHIS2, Surveys, and WUENIC.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$calculate_coverage(admin_level, region = NULL)}
@@ -387,8 +392,8 @@ Save data to disk (only if changed and RDS path is not NULL)
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{admin_level}}{Administrative level ("adminlevel_1" or "district").}
-      \item{\code{region}}{Optional}
+      \item{\code{admin_level}}{Administrative level ("national", "adminlevel_1", or "district").}
+      \item{\code{region}}{Optional region filter.}
     }
     \if{html}{\out{</div>}}
   }
@@ -398,7 +403,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-generate_coverage_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-generate_coverage_data}{}}}
 \subsection{\code{CacheConnection$generate_coverage_data()}}{
-  Generate Continuum of Care Coverage Data
+  Generate Continuum of Care Coverage Data summary format.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$generate_coverage_data(admin_level, type, region = NULL)}
@@ -408,8 +413,8 @@ Save data to disk (only if changed and RDS path is not NULL)
     \if{html}{\out{<div class="arguments">}}
     \describe{
       \item{\code{admin_level}}{Character. The geographic level to calculate and shape.}
-      \item{\code{type}}{Character. The type of data to summarise}
-      \item{\code{region}}{Character. optional}
+      \item{\code{type}}{Character. The type of data to summarise ('maternal' or 'child').}
+      \item{\code{region}}{Character. Optional region filter.}
     }
     \if{html}{\out{</div>}}
   }
@@ -419,7 +424,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-get_mapping_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_mapping_data}{}}}
 \subsection{\code{CacheConnection$get_mapping_data()}}{
-  Run coverage calculation using stored model parameters.
+  Formats base coverage data with spatial map coordinates for plotting.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$get_mapping_data(admin_level)}
@@ -428,7 +433,7 @@ Save data to disk (only if changed and RDS path is not NULL)
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{admin_level}}{Administrative level ("adminlevel_1" or "district").}
+      \item{\code{admin_level}}{Administrative level.}
     }
     \if{html}{\out{</div>}}
   }
@@ -438,7 +443,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-lbr_mean"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-lbr_mean}{}}}
 \subsection{\code{CacheConnection$lbr_mean()}}{
-  generates the mean institutional livebirths
+  Retrieves the mean of institutional livebirths from the national coverage cache.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$lbr_mean()}
@@ -450,7 +455,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-summarise_completeness_ratio"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-summarise_completeness_ratio}{}}}
 \subsection{\code{CacheConnection$summarise_completeness_ratio()}}{
-  creates mortality ratios completeness summary
+  Creates mortality completeness ratio summaries.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$summarise_completeness_ratio(indicator)}
@@ -459,7 +464,7 @@ Save data to disk (only if changed and RDS path is not NULL)
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{indicator}}{The indicator to generate the summary}
+      \item{\code{indicator}}{Character. The indicator to generate the summary for.}
     }
     \if{html}{\out{</div>}}
   }
@@ -469,7 +474,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-filter_mortality_summary"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-filter_mortality_summary}{}}}
 \subsection{\code{CacheConnection$filter_mortality_summary()}}{
-  Return the appropriate summary based on the indicator type to plot.
+  Returns the appropriate mortality summary based on the indicator type to plot.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$filter_mortality_summary(indicator, map_years = NULL)}
@@ -479,12 +484,9 @@ Save data to disk (only if changed and RDS path is not NULL)
     \if{html}{\out{<div class="arguments">}}
     \describe{
       \item{\code{indicator}}{Character. Indicator name.}
-      \item{\code{map_years}}{the years to include in a map}
+      \item{\code{map_years}}{Numeric vector. The years to include in a map.}
     }
     \if{html}{\out{</div>}}
-  }
-  \subsection{Returns}{
-    Character. Either the maternal or vaccination denominator.
   }
 }
 
@@ -492,7 +494,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-compute_service_utilization"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-compute_service_utilization}{}}}
 \subsection{\code{CacheConnection$compute_service_utilization()}}{
-  Computed service utilization for various indicators.
+  Computes service utilization for various indicators (OPD/IPD).
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$compute_service_utilization(admin_level)}
@@ -501,7 +503,7 @@ Save data to disk (only if changed and RDS path is not NULL)
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{admin_level}}{The level to aggregate data at.}
+      \item{\code{admin_level}}{The level to aggregate data at ("national", "adminlevel_1").}
     }
     \if{html}{\out{</div>}}
   }
@@ -511,7 +513,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-filter_service_utilization"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-filter_service_utilization}{}}}
 \subsection{\code{CacheConnection$filter_service_utilization()}}{
-  Return the appropriate summary based on the indicator type to plot.
+  Filters service utilization data for a specific indicator and region.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$filter_service_utilization(
@@ -524,9 +526,9 @@ Save data to disk (only if changed and RDS path is not NULL)
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{admin_level}}{The admin level}
+      \item{\code{admin_level}}{Administrative level.}
       \item{\code{indicator}}{Character. Indicator name.}
-      \item{\code{region}}{the years to include in a map}
+      \item{\code{region}}{Character. Optional region filter.}
     }
     \if{html}{\out{</div>}}
   }
@@ -536,7 +538,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-prepare_mapping_service_utlization"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-prepare_mapping_service_utlization}{}}}
 \subsection{\code{CacheConnection$prepare_mapping_service_utlization()}}{
-  Return the appropriate summary based on the indicator type to plot.
+  Prepares service utilization data mapping tables.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$prepare_mapping_service_utlization(indicator, map_years = NULL)}
@@ -545,8 +547,8 @@ Save data to disk (only if changed and RDS path is not NULL)
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{indicator}}{Character. Indicator name.}
-      \item{\code{map_years}}{the years to include in a map}
+      \item{\code{indicator}}{Character. Indicator name ('ipd', 'opd').}
+      \item{\code{map_years}}{Numeric vector. Years to include.}
     }
     \if{html}{\out{</div>}}
   }
@@ -556,7 +558,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-get_denominator"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_denominator}{}}}
 \subsection{\code{CacheConnection$get_denominator()}}{
-  Return the appropriate denominator based on the indicator type.
+  Resolves the appropriate denominator column string based on the indicator category.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$get_denominator(indicator)}
@@ -565,12 +567,9 @@ Save data to disk (only if changed and RDS path is not NULL)
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{indicator}}{Character. Indicator name.}
+      \item{\code{indicator}}{Character. The indicator name.}
     }
     \if{html}{\out{</div>}}
-  }
-  \subsection{Returns}{
-    Character. Either the maternal or vaccination denominator.
   }
 }
 
@@ -578,7 +577,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-reactive"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-reactive}{}}}
 \subsection{\code{CacheConnection$reactive()}}{
-  Return a reactive wrapper (for Shiny).
+  Returns a reactive wrapper for use within Shiny applications.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$reactive()}
@@ -590,7 +589,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_language"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_language}{}}}
 \subsection{\code{CacheConnection$set_language()}}{
-  Set the language.
+  Sets the UI Language.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_language(value)}
@@ -599,7 +598,7 @@ Save data to disk (only if changed and RDS path is not NULL)
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{value}}{A scalar string representing 2 digit string.}
+      \item{\code{value}}{A two-character language string.}
     }
     \if{html}{\out{</div>}}
   }
@@ -609,7 +608,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_cache_path"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_cache_path}{}}}
 \subsection{\code{CacheConnection$set_cache_path()}}{
-  Set cache RDS file path.
+  Sets the caching RDS path and attempts a save to disk immediately.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_cache_path(value)}
@@ -618,7 +617,7 @@ Save data to disk (only if changed and RDS path is not NULL)
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{value}}{New file path.}
+      \item{\code{value}}{Character string representing the file path.}
     }
     \if{html}{\out{</div>}}
   }
@@ -628,7 +627,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_countdown_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_countdown_data}{}}}
 \subsection{\code{CacheConnection$set_countdown_data()}}{
-  Set the countdown data.
+  Sets the core unadjusted countdown data. Wipes all derived caches.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_countdown_data(value)}
@@ -637,7 +636,7 @@ Save data to disk (only if changed and RDS path is not NULL)
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{value}}{A \code{cd_data} object.}
+      \item{\code{value}}{A \code{cd_data} tibble.}
     }
     \if{html}{\out{</div>}}
   }
@@ -647,7 +646,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_adjusted_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_adjusted_data}{}}}
 \subsection{\code{CacheConnection$set_adjusted_data()}}{
-  Set adjusted data.
+  Sets custom adjusted data. Wipes downstream coverage/health system metrics.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_adjusted_data(value)}
@@ -656,7 +655,7 @@ Save data to disk (only if changed and RDS path is not NULL)
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{value}}{A \code{cd_data} object.}
+      \item{\code{value}}{A \code{cd_data} tibble.}
     }
     \if{html}{\out{</div>}}
   }
@@ -666,7 +665,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_performance_threshold"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_performance_threshold}{}}}
 \subsection{\code{CacheConnection$set_performance_threshold()}}{
-  Set performance threshold.
+  Sets the performance threshold used for DQA score calculations.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_performance_threshold(value)}
@@ -675,7 +674,7 @@ Save data to disk (only if changed and RDS path is not NULL)
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{value}}{A numeric scalar.}
+      \item{\code{value}}{Integer scalar (e.g., 90).}
     }
     \if{html}{\out{</div>}}
   }
@@ -685,7 +684,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_excluded_years"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_excluded_years}{}}}
 \subsection{\code{CacheConnection$set_excluded_years()}}{
-  Set years to exclude.
+  Sets a list of years to manually exclude from modeling.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_excluded_years(value)}
@@ -694,7 +693,7 @@ Save data to disk (only if changed and RDS path is not NULL)
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{value}}{Numeric vector.}
+      \item{\code{value}}{Numeric vector of years.}
     }
     \if{html}{\out{</div>}}
   }
@@ -704,7 +703,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_k_factors"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_k_factors}{}}}
 \subsection{\code{CacheConnection$set_k_factors()}}{
-  Set K-factors.
+  Sets the correction factors for under-reporting.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_k_factors(value)}
@@ -713,7 +712,7 @@ Save data to disk (only if changed and RDS path is not NULL)
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{value}}{Named numeric vector.}
+      \item{\code{value}}{Named numeric vector of k-factors.}
     }
     \if{html}{\out{</div>}}
   }
@@ -723,7 +722,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_adjusted_flag"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_adjusted_flag}{}}}
 \subsection{\code{CacheConnection$set_adjusted_flag()}}{
-  Set adjusted flag.
+  Toggles the adjusted flag status.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_adjusted_flag(value)}
@@ -742,7 +741,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_survey_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_survey_estimates}{}}}
 \subsection{\code{CacheConnection$set_survey_estimates()}}{
-  Set survey estimates.
+  Manually overrides survey estimates. Clears coverage cache.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_survey_estimates(value)}
@@ -761,7 +760,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_derivation_population"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_derivation_population}{}}}
 \subsection{\code{CacheConnection$set_derivation_population()}}{
-  Set national estimates.
+  Sets the base derivation population indicator (e.g. totlivebirths_dhis2).
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_derivation_population(value)}
@@ -770,7 +769,7 @@ Save data to disk (only if changed and RDS path is not NULL)
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{value}}{Named list.}
+      \item{\code{value}}{Character scalar.}
     }
     \if{html}{\out{</div>}}
   }
@@ -780,7 +779,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_national_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_national_estimates}{}}}
 \subsection{\code{CacheConnection$set_national_estimates()}}{
-  Set national estimates.
+  Sets list of explicit national estimates (nmr, pnmr, etc.).
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_national_estimates(value)}
@@ -796,29 +795,10 @@ Save data to disk (only if changed and RDS path is not NULL)
 }
 
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-set_survey_source"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-set_survey_source}{}}}
-\subsection{\code{CacheConnection$set_survey_source()}}{
-  Set year of survey estimates.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{CacheConnection$set_survey_source(value)}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Arguments}{
-    \if{html}{\out{<div class="arguments">}}
-    \describe{
-      \item{\code{value}}{Character scalar.}
-    }
-    \if{html}{\out{</div>}}
-  }
-}
-
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_survey_year"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_survey_year}{}}}
 \subsection{\code{CacheConnection$set_survey_year()}}{
-  Set year of survey estimates.
+  Set integer year representing the source survey year.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_survey_year(value)}
@@ -837,7 +817,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_start_survey_year"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_start_survey_year}{}}}
 \subsection{\code{CacheConnection$set_start_survey_year()}}{
-  Set start year of surveys.
+  Set year the survey timeline begins filtering from.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_start_survey_year(value)}
@@ -856,7 +836,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_denominator"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_denominator}{}}}
 \subsection{\code{CacheConnection$set_denominator()}}{
-  Set denominator type.
+  Set baseline denominator (e.g. penta1).
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_denominator(value)}
@@ -875,7 +855,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_maternal_denominator"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_maternal_denominator}{}}}
 \subsection{\code{CacheConnection$set_maternal_denominator()}}{
-  Set denominator type.
+  Set maternal specific baseline denominator (e.g. anc1).
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_maternal_denominator(value)}
@@ -894,7 +874,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_selected_admin_level_1"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_selected_admin_level_1}{}}}
 \subsection{\code{CacheConnection$set_selected_admin_level_1()}}{
-  Set selected region.
+  Sets the selected Region for targeted dashboard filtering.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_selected_admin_level_1(value)}
@@ -913,7 +893,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_selected_district"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_selected_district}{}}}
 \subsection{\code{CacheConnection$set_selected_district()}}{
-  Set selected district.
+  Sets the selected District for targeted dashboard filtering.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_selected_district(value)}
@@ -932,7 +912,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_mapping_years"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_mapping_years}{}}}
 \subsection{\code{CacheConnection$set_mapping_years()}}{
-  Set mapping years.
+  Sets mapping years for generic plots.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_mapping_years(value)}
@@ -951,7 +931,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_mortality_mapping_years"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_mortality_mapping_years}{}}}
 \subsection{\code{CacheConnection$set_mortality_mapping_years()}}{
-  Set mapping years.
+  Sets mapping years explicitly for mortality dashboards.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_mortality_mapping_years(value)}
@@ -970,7 +950,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_utilization_mapping_years"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_utilization_mapping_years}{}}}
 \subsection{\code{CacheConnection$set_utilization_mapping_years()}}{
-  Set mapping years.
+  Sets mapping years explicitly for utilization dashboards.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_utilization_mapping_years(value)}
@@ -989,7 +969,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_fpet_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_fpet_data}{}}}
 \subsection{\code{CacheConnection$set_fpet_data()}}{
-  Set FPET data.
+  Sets the Family Planning Estimation Tool (FPET) dataset.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_fpet_data(value)}
@@ -1008,7 +988,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_un_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_un_estimates}{}}}
 \subsection{\code{CacheConnection$set_un_estimates()}}{
-  Set UN estimates.
+  Sets the official UN Demographic Estimates dataset. Clears denominators.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_un_estimates(value)}
@@ -1027,7 +1007,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_un_mortality_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_un_mortality_estimates}{}}}
 \subsection{\code{CacheConnection$set_un_mortality_estimates()}}{
-  Set UN mortality estimates
+  Sets the UN Mortality specific estimates dataset. Clears mortality cache.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_un_mortality_estimates(value)}
@@ -1046,7 +1026,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_wuenic_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_wuenic_estimates}{}}}
 \subsection{\code{CacheConnection$set_wuenic_estimates()}}{
-  Set WUENIC estimates.
+  Sets WUENIC estimates dataset. Clears coverage cache.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_wuenic_estimates(value)}
@@ -1065,7 +1045,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_national_survey"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_national_survey}{}}}
 \subsection{\code{CacheConnection$set_national_survey()}}{
-  Set national survey.
+  Sets overall national survey dataset and automatically extracts its estimates.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_national_survey(value)}
@@ -1084,7 +1064,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_regional_survey"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_regional_survey}{}}}
 \subsection{\code{CacheConnection$set_regional_survey()}}{
-  Set regional survey.
+  Sets the disaggregated regional survey dataset.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_regional_survey(value)}
@@ -1103,7 +1083,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_wiq_survey"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_wiq_survey}{}}}
 \subsection{\code{CacheConnection$set_wiq_survey()}}{
-  Set WIQ survey.
+  Sets wealth quantile (WIQ) survey dataset.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_wiq_survey(value)}
@@ -1122,7 +1102,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_area_survey"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_area_survey}{}}}
 \subsection{\code{CacheConnection$set_area_survey()}}{
-  Set area-level survey.
+  Sets area level (urban/rural) survey dataset.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_area_survey(value)}
@@ -1141,7 +1121,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_education_survey"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_education_survey}{}}}
 \subsection{\code{CacheConnection$set_education_survey()}}{
-  Set education-level survey.
+  Sets education level survey dataset.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_education_survey(value)}
@@ -1160,7 +1140,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_survey_mapping"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_survey_mapping}{}}}
 \subsection{\code{CacheConnection$set_survey_mapping()}}{
-  Set survey mapping table.
+  Sets survey to countdown nomenclature mapping matrix.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_survey_mapping(value)}
@@ -1179,7 +1159,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_map_mapping"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_map_mapping}{}}}
 \subsection{\code{CacheConnection$set_map_mapping()}}{
-  Set map overlay mapping.
+  Sets map coordinates to countdown nomenclature mapping matrix.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_map_mapping(value)}
@@ -1198,7 +1178,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_sector_national_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_sector_national_estimates}{}}}
 \subsection{\code{CacheConnection$set_sector_national_estimates()}}{
-  Set map overlay mapping.
+  Set sector national estimates mapping.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_sector_national_estimates(value)}
@@ -1217,7 +1197,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_sector_area_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_sector_area_estimates}{}}}
 \subsection{\code{CacheConnection$set_sector_area_estimates()}}{
-  Set map overlay mapping.
+  Set sector area estimates mapping.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_sector_area_estimates(value)}
@@ -1236,7 +1216,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_csection_national_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_csection_national_estimates}{}}}
 \subsection{\code{CacheConnection$set_csection_national_estimates()}}{
-  Set map overlay mapping.
+  Set c-section national estimates mapping.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_csection_national_estimates(value)}
@@ -1255,7 +1235,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-set_csection_area_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_csection_area_estimates}{}}}
 \subsection{\code{CacheConnection$set_csection_area_estimates()}}{
-  Set map overlay mapping.
+  Set c-section area estimates mapping.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$set_csection_area_estimates(value)}
@@ -1274,7 +1254,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-calculate_reporting_rate"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_reporting_rate}{}}}
 \subsection{\code{CacheConnection$calculate_reporting_rate()}}{
-  Calculate reporting rates (Wrapper).
+  Wrapper to calculate average reporting rates from raw countdown data.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$calculate_reporting_rate(admin_level, region = NULL)}
@@ -1283,7 +1263,7 @@ Save data to disk (only if changed and RDS path is not NULL)
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{admin_level}}{Administrative level.}
+      \item{\code{admin_level}}{Administrative level ("national", "adminlevel_1", "district").}
       \item{\code{region}}{Optional region filter.}
     }
     \if{html}{\out{</div>}}
@@ -1294,7 +1274,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-calculate_district_reporting_rate"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_district_reporting_rate}{}}}
 \subsection{\code{CacheConnection$calculate_district_reporting_rate()}}{
-  Calculate reporting rates (Wrapper).
+  Wrapper to calculate proportion of districts meeting reporting thresholds.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$calculate_district_reporting_rate(region = NULL)}
@@ -1313,7 +1293,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-calculate_completeness_summary"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_completeness_summary}{}}}
 \subsection{\code{CacheConnection$calculate_completeness_summary()}}{
-  Calculate reporting rates (Wrapper).
+  Wrapper to calculate completeness proportions from raw countdown data.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$calculate_completeness_summary(admin_level, region = NULL)}
@@ -1333,7 +1313,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-calculate_district_completeness_summary"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_district_completeness_summary}{}}}
 \subsection{\code{CacheConnection$calculate_district_completeness_summary()}}{
-  Calculate reporting rates (Wrapper).
+  Wrapper to calculate district level completeness details.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$calculate_district_completeness_summary(region = NULL)}
@@ -1352,7 +1332,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-list_missing_units"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-list_missing_units}{}}}
 \subsection{\code{CacheConnection$list_missing_units()}}{
-  Calculate reporting rates (Wrapper).
+  Locates missing/non-reporting facility units.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$list_missing_units(indicator, region = NULL)}
@@ -1361,7 +1341,7 @@ Save data to disk (only if changed and RDS path is not NULL)
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{indicator}}{Administrative level.}
+      \item{\code{indicator}}{Target indicator name.}
       \item{\code{region}}{Optional region filter.}
     }
     \if{html}{\out{</div>}}
@@ -1372,7 +1352,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-calculate_outliers_summary"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_outliers_summary}{}}}
 \subsection{\code{CacheConnection$calculate_outliers_summary()}}{
-  Calculate reporting rates (Wrapper).
+  Identifies severe outliers across administrative levels using Hampel method.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$calculate_outliers_summary(admin_level, region = NULL)}
@@ -1392,7 +1372,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-calculate_district_outlier_summary"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_district_outlier_summary}{}}}
 \subsection{\code{CacheConnection$calculate_district_outlier_summary()}}{
-  Calculate reporting rates (Wrapper).
+  Flags percentage of districts with acceptable outlier variances.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$calculate_district_outlier_summary(region = NULL)}
@@ -1411,7 +1391,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-calculate_ratios_and_adequacy"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_ratios_and_adequacy}{}}}
 \subsection{\code{CacheConnection$calculate_ratios_and_adequacy()}}{
-  Calculate reporting rates (Wrapper).
+  Calculates adequacy ratios across chronological indicator sequences (e.g. Penta1 to Penta3).
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$calculate_ratios_and_adequacy(region = NULL)}
@@ -1430,7 +1410,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-calculate_overall_score"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_overall_score}{}}}
 \subsection{\code{CacheConnection$calculate_overall_score()}}{
-  Calculate overall score (Wrapper).
+  Calculates the aggregate DQA overall score assessing reporting, completeness, and outliers.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$calculate_overall_score(
@@ -1445,7 +1425,7 @@ Save data to disk (only if changed and RDS path is not NULL)
     \describe{
       \item{\code{admin_level}}{Administrative level ("national" or "adminlevel_1").}
       \item{\code{region}}{Optional region name (required if admin_level is "adminlevel_1").}
-      \item{\code{labels}}{Optional region name (required if admin_level is "adminlevel_1").}
+      \item{\code{labels}}{Optional custom display labels.}
     }
     \if{html}{\out{</div>}}
   }
@@ -1455,7 +1435,7 @@ Save data to disk (only if changed and RDS path is not NULL)
 \if{html}{\out{<a id="method-CacheConnection-calculate_service_dqa_summary"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_service_dqa_summary}{}}}
 \subsection{\code{CacheConnection$calculate_service_dqa_summary()}}{
-  Calculate Service DQA Summary (Wrapper).
+  Calculates Service DQA Summary comparing general reporting vs specific utilization metrics.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$calculate_service_dqa_summary(
@@ -1470,8 +1450,7 @@ Save data to disk (only if changed and RDS path is not NULL)
     \describe{
       \item{\code{admin_level}}{Administrative level ("national" or "adminlevel_1").}
       \item{\code{region}}{Optional region name (required if admin_level is "adminlevel_1").}
-      \item{\code{labels}}{Optional custom labels for the summary table.
-Generate Service Utilization Admin 1 Data}
+      \item{\code{labels}}{Optional custom labels.}
     }
     \if{html}{\out{</div>}}
   }
@@ -1481,6 +1460,7 @@ Generate Service Utilization Admin 1 Data}
 \if{html}{\out{<a id="method-CacheConnection-generate_admin1_service_utilization"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-generate_admin1_service_utilization}{}}}
 \subsection{\code{CacheConnection$generate_admin1_service_utilization()}}{
+  Generates Service Utilization Admin 1 Data mapping format.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$generate_admin1_service_utilization(
@@ -1504,7 +1484,7 @@ Generate Service Utilization Admin 1 Data}
 \if{html}{\out{<a id="method-CacheConnection-generate_admin1_mch_curative_index"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-generate_admin1_mch_curative_index}{}}}
 \subsection{\code{CacheConnection$generate_admin1_mch_curative_index()}}{
-  Get formatted MCH vs Curative Index data for plotting
+  Formats Maternal Child Health vs Curative Index data for plotting.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$generate_admin1_mch_curative_index()}
@@ -1516,7 +1496,7 @@ Generate Service Utilization Admin 1 Data}
 \if{html}{\out{<a id="method-CacheConnection-get_filtered_coverage"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_filtered_coverage}{}}}
 \subsection{\code{CacheConnection$get_filtered_coverage()}}{
-  Get filtered coverage data responsive to admin level and indicator.
+  Gets filtered coverage data isolating a specific indicator for charts.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$get_filtered_coverage(indicator, admin_level, region = NULL)}
@@ -1526,8 +1506,8 @@ Generate Service Utilization Admin 1 Data}
     \if{html}{\out{<div class="arguments">}}
     \describe{
       \item{\code{indicator}}{Character. The target health indicator.}
-      \item{\code{admin_level}}{Character. Level of aggregation ("national", "adminlevel_1", "district").}
-      \item{\code{region}}{Character. Optional region or district name to filter by.}
+      \item{\code{admin_level}}{Character. Level of aggregation.}
+      \item{\code{region}}{Character. Optional region or district name.}
     }
     \if{html}{\out{</div>}}
   }
@@ -1537,7 +1517,7 @@ Generate Service Utilization Admin 1 Data}
 \if{html}{\out{<a id="method-CacheConnection-get_filtered_inequality"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_filtered_inequality}{}}}
 \subsection{\code{CacheConnection$get_filtered_inequality()}}{
-  Get filtered inequality data responsive to admin level and indicator.
+  Gets filtered inequality data targeting a single indicator.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$get_filtered_inequality(indicator, admin_level, region = NULL)}
@@ -1547,7 +1527,7 @@ Generate Service Utilization Admin 1 Data}
     \if{html}{\out{<div class="arguments">}}
     \describe{
       \item{\code{indicator}}{Character. The target health indicator.}
-      \item{\code{admin_level}}{Character. Level of aggregation ("adminlevel_1", "district").}
+      \item{\code{admin_level}}{Character. Level of aggregation.}
       \item{\code{region}}{Character. Optional region filter.}
     }
     \if{html}{\out{</div>}}
@@ -1558,18 +1538,24 @@ Generate Service Utilization Admin 1 Data}
 \if{html}{\out{<a id="method-CacheConnection-get_filtered_mapping_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_filtered_mapping_data}{}}}
 \subsection{\code{CacheConnection$get_filtered_mapping_data()}}{
-  Get filtered mapping data responsive to indicator, palette, and years.
+  Filters mapping spatial data focusing on a specific year and palette.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{CacheConnection$get_filtered_mapping_data(indicator, admin_level, palette)}
+    \preformatted{CacheConnection$get_filtered_mapping_data(
+  indicator,
+  admin_level,
+  palette,
+  plot_year = NULL
+)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
       \item{\code{indicator}}{Character. The target health indicator.}
-      \item{\code{admin_level}}{Character. Level of aggregation (defaults to "adminlevel_1").}
+      \item{\code{admin_level}}{Character. Level of aggregation.}
       \item{\code{palette}}{Character. Color palette for mapping.}
+      \item{\code{plot_year}}{Integer. Year to plot.}
     }
     \if{html}{\out{</div>}}
   }
@@ -1579,7 +1565,7 @@ Generate Service Utilization Admin 1 Data}
 \if{html}{\out{<a id="method-CacheConnection-get_base_indicator_coverage"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_base_indicator_coverage}{}}}
 \subsection{\code{CacheConnection$get_base_indicator_coverage()}}{
-  Get baseline indicator coverage data responsive to admin level and region.
+  Returns the base denominator and numerator metrics before survey interpolation.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$get_base_indicator_coverage(
@@ -1592,9 +1578,9 @@ Generate Service Utilization Admin 1 Data}
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{admin_level}}{Character. Level of aggregation ("national", "adminlevel_1", "district").}
+      \item{\code{admin_level}}{Character. Level of aggregation.}
       \item{\code{region}}{Character. Optional region filter.}
-      \item{\code{show_district}}{Optional. Whether to show the district column in when admin_level is adminlevel_11}
+      \item{\code{show_district}}{Optional. Whether to show the district column.}
     }
     \if{html}{\out{</div>}}
   }
@@ -1604,7 +1590,7 @@ Generate Service Utilization Admin 1 Data}
 \if{html}{\out{<a id="method-CacheConnection-get_filtered_threshold"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_filtered_threshold}{}}}
 \subsection{\code{CacheConnection$get_filtered_threshold()}}{
-  Get calculated threshold data responsive to target unit and region.
+  Evaluates indicator data against set threshold benchmarks (e.g. 80\% coverage).
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$get_filtered_threshold(indicator, target_unit, region = NULL)}
@@ -1613,8 +1599,8 @@ Generate Service Utilization Admin 1 Data}
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{indicator}}{Character. The target health indicator group (e.g., "vaccine", "dropout").}
-      \item{\code{target_unit}}{Character. The level being evaluated ("district" or "adminlevel_1").}
+      \item{\code{indicator}}{Character. The target health indicator group.}
+      \item{\code{target_unit}}{Character. Evaluated level ("district" or "adminlevel_1").}
       \item{\code{region}}{Character. Optional region filter.}
     }
     \if{html}{\out{</div>}}
@@ -1625,7 +1611,7 @@ Generate Service Utilization Admin 1 Data}
 \if{html}{\out{<a id="method-CacheConnection-calculate_derived_coverage"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_derived_coverage}{}}}
 \subsection{\code{CacheConnection$calculate_derived_coverage()}}{
-  Calculate and filter derived coverage for a specific indicator.
+  Derives specific complex coverage indicators based on basic survey data.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$calculate_derived_coverage(
@@ -1638,9 +1624,9 @@ Generate Service Utilization Admin 1 Data}
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{indicator}}{Character. The target health indicator to calculate.}
-      \item{\code{admin_level}}{Character. The administrative level for the data aggregation.}
-      \item{\code{region}}{Character. Optional. The name of the specific region or district to filter by.}
+      \item{\code{indicator}}{Character. The target health indicator.}
+      \item{\code{admin_level}}{Character. Administrative level.}
+      \item{\code{region}}{Character. Optional region name.}
     }
     \if{html}{\out{</div>}}
   }
@@ -1650,7 +1636,7 @@ Generate Service Utilization Admin 1 Data}
 \if{html}{\out{<a id="method-CacheConnection-get_high_performers"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_high_performers}{}}}
 \subsection{\code{CacheConnection$get_high_performers()}}{
-  Get high-performing regions based on indicator and threshold.
+  Identifies regions/districts that exceed benchmark coverage thresholds.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$get_high_performers(indicator, admin_level, region = NULL)}
@@ -1659,8 +1645,8 @@ Generate Service Utilization Admin 1 Data}
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{indicator}}{Character. The specific health indicator (e.g., "penta3").}
-      \item{\code{admin_level}}{Character. Level of aggregation ("national", "adminlevel_1", "district").}
+      \item{\code{indicator}}{Character. The target health indicator.}
+      \item{\code{admin_level}}{Character. Level of aggregation.}
       \item{\code{region}}{Character. Optional region filter.}
     }
     \if{html}{\out{</div>}}
@@ -1671,7 +1657,7 @@ Generate Service Utilization Admin 1 Data}
 \if{html}{\out{<a id="method-CacheConnection-get_regional_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_regional_estimates}{}}}
 \subsection{\code{CacheConnection$get_regional_estimates()}}{
-  Get the regional estimate.
+  Substitutes national rates with regional estimates for a specific requested sub-region.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$get_regional_estimates(admin_level, region)}
@@ -1680,8 +1666,8 @@ Generate Service Utilization Admin 1 Data}
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{admin_level}}{description}
-      \item{\code{region}}{Character. .}
+      \item{\code{admin_level}}{Character. Level of aggregation.}
+      \item{\code{region}}{Character. Region name.}
     }
     \if{html}{\out{</div>}}
   }
@@ -1691,7 +1677,7 @@ Generate Service Utilization Admin 1 Data}
 \if{html}{\out{<a id="method-CacheConnection-generate_health_system_table"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-generate_health_system_table}{}}}
 \subsection{\code{CacheConnection$generate_health_system_table()}}{
-  Generate national health system metric table.
+  Generates a formatted table of core health system metrics.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$generate_health_system_table(labels = NULL)}
@@ -1700,7 +1686,7 @@ Generate Service Utilization Admin 1 Data}
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{labels}}{Character. Labels to use on the table.}
+      \item{\code{labels}}{Character. Optional custom labels to use on the table headers.}
     }
     \if{html}{\out{</div>}}
   }
@@ -1710,7 +1696,7 @@ Generate Service Utilization Admin 1 Data}
 \if{html}{\out{<a id="method-CacheConnection-generate_phc_scatter_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-generate_phc_scatter_data}{}}}
 \subsection{\code{CacheConnection$generate_phc_scatter_data()}}{
-  Generate PHC performance scatter plot data (Admin 1).
+  Prepares scatter plot data comparing Primary Health Care performance.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$generate_phc_scatter_data(indicator)}
@@ -1729,7 +1715,7 @@ Generate Service Utilization Admin 1 Data}
 \if{html}{\out{<a id="method-CacheConnection-generate_private_sector_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-generate_private_sector_data}{}}}
 \subsection{\code{CacheConnection$generate_private_sector_data()}}{
-  Generate private sector ownership data (Admin 1).
+  Extracts private versus public sector ownership distributions.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$generate_private_sector_data(legend_labels = NULL)}
@@ -1738,7 +1724,7 @@ Generate Service Utilization Admin 1 Data}
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{legend_labels}}{(Optional) A named list to override default labels for Private, NGO, and Public.}
+      \item{\code{legend_labels}}{Named list. Optional list to override default labels for Private, NGO, and Public.}
     }
     \if{html}{\out{</div>}}
   }
@@ -1748,7 +1734,7 @@ Generate Service Utilization Admin 1 Data}
 \if{html}{\out{<a id="method-CacheConnection-get_bayes_model"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_bayes_model}{}}}
 \subsection{\code{CacheConnection$get_bayes_model()}}{
-  Get or calculate a Bayesian Coverage Model
+  Generates or retrieves a pre-calculated Bayesian mathematical model for an indicator.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{CacheConnection$get_bayes_model(admin_level, indicator)}
@@ -1757,8 +1743,8 @@ Generate Service Utilization Admin 1 Data}
   \subsection{Arguments}{
     \if{html}{\out{<div class="arguments">}}
     \describe{
-      \item{\code{admin_level}}{Administrative level ("national", "adminlevel_1")}
-      \item{\code{indicator}}{Character. Indicator name.}
+      \item{\code{admin_level}}{Administrative level ("national", "adminlevel_1").}
+      \item{\code{indicator}}{Character. Indicator name (e.g., 'penta3').}
     }
     \if{html}{\out{</div>}}
   }

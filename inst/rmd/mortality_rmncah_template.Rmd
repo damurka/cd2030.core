@@ -14,6 +14,8 @@ output:
     latex_engine: lualatex
 params:
   cache: NULL
+  i18n: NULL
+
   country: NULL
   adminlevel_1: NULL
 ---
@@ -38,6 +40,7 @@ library(officedown)
 library(officer)
 
 cache <- params$cache
+i18n <- params$i18n
 ```
 
 ## Maternal Mortality in Health Facilities
@@ -48,35 +51,37 @@ The main challenge with mortality data from health facilities is underreporting 
 
 ```{r, fig.cap='Figure 5a: Maternal mortality per 100,000 live births in health facilities, based on the reported data in DHIS2'}
 mortality_summary <- cache$mortality_summary
-plot(mortality_summary, indicator = 'mmr_inst') +
-  cd_report_theme()
-```
-
-```{r}
-mmr_plot <- cache$filter_mortality_summary('mmr')
-plot(mmr_plot) +
+plot(mortality_summary, indicator = 'mmr_inst', ) +
   cd_report_theme()
 ```
 
 
-```{r, fig.cap='Figure 5b: Ratio of stillbirths to maternal deaths in health facilities, based on the reported data in DHIS2'}
-plot(mortality_summary, indicator = 'ratio_md_sb') +
+```{r, fig.cap='Figure 5b: Ratio of stillbirths taths in health facilities, based on the reported data in DHIS2'}
+current_indicator <- "ratio_md_sb"
+base_title <- i18n$t(paste0("title_", current_indicator))
+full_title <- paste0(base_title, ", ", country_name, ", ", min_yr, "-", max_yr, ".")
+plot_mortality_plausibility(
+  mortality_summary, 
+  indicator = current_indicator,
+  title = full_title,
+  y_axis = i18n$t(paste0("ylab_", current_indicator)),
+  x_axis = i18n$t("title_global_year"),
+  note = i18n$t(paste0("note_", current_indicator)),
+  legend_labels = list(
+    median = i18n$t("lbl_median"),
+    plausible = i18n$t("lbl_plausible")
+  )) +
   cd_report_theme()
 ```
 
-```{r, fig.cap='Figure 5c: Still Birth rates per 1000 births in health facilities, based on the reported data in DHIS2'}
-plot(mortality_summary, indicator = 'sbr_inst') +
+```{r, fig.cap='Figure 5c: Still Birth rates ps in health facilities, based on the reported data in DHIS2'}
+plot(mortality_summary, indicator = 'sbr_inst', ) +
   cd_report_theme()
 ```
 
-```{r}
-sbr_plot <- cache$filter_mortality_summary('sbr')
-plot(sbr_plot) +
-  cd_report_theme()
-```
 
-```{r, fig.cap='Figure 5d: Neonatal mortality before discharge per 1,000 live births in health facilities, based on the reported data in DHIS2'}
-plot(mortality_summary, indicator = 'nn_inst') +
+```{r, fig.cap='Figure 5d: Neonatal mortalityarge per 1,000 live births in health facilities, based on the reported data in DHIS2'}
+plot(mortality_summary, indicator = 'nn_inst', ) +
   cd_report_theme()
 ```
 
@@ -109,14 +114,14 @@ What is the neonatal mortality (before discharge) nationally? How do these compa
 The main challenge with health facility data on stillbirths and neonatal deaths is underreporting.  We can estimate the level of underreporting of stillbirths based on different assumptions: 1) using population mortality estimates from the UN: lower bound, best estimate and upper bound 2) community to institutional mortality ratio: assumptions ranging from half as low to at least 2 times higher community mortality.
 
 ```{r, fig.cap='Fig 5e: Completeness of facility maternal death reporting (%), based on UN MMR estimates and community to institutional ratio'}
-mortality_ratio <- cache$summarise_completeness_ratio('mmr')
-plot(mortality_ratio) +
+cache$summarise_completeness_ratio('mmr') %>%
+  plot() +
   cd_report_theme()
 ```
 
 ```{r, fig.cap='Fig 5f: Completeness of facility stillbirth reporting (%), based on UN stillbirth estimates and community to institutional ratio'}
-mortality_ratio <- cache$summarise_completeness_ratio('sbr')
-plot(mortality_ratio) +
+cache$summarise_completeness_ratio('sbr') %>%
+  plot() +
   cd_report_theme()
 ```
 

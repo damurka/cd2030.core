@@ -1,0 +1,185 @@
+---
+title: "Sub-National Statistical Profile: `r params$adminlevel_1`"
+output: 
+  officedown::rdocx_document:
+    reference_docx: subnational-one-pager-template.docx
+    page_size:
+      width: 22.0
+      height: 17.0
+      orient: "landscape"
+    page_margins:
+      bottom: 0.25
+      top: 0.25
+      right: 0.25
+      left: 0.25
+      gutter: 0
+params:
+  cache: NULL
+  i18n: NULL
+  country: NULL
+  adminlevel_1: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  error = TRUE,
+  dpi=300
+)
+
+library(cd2030.core)
+library(dplyr)
+library(purrr)
+library(flextable)
+library(reactable)
+library(officedown)
+library(officer)
+
+cache <- params$cache
+i18n <- params$i18n
+adminlevel_1 <- params$adminlevel_1
+last_year <- robust_max(cache$data_years)
+
+# --- INITIALIZE POSTER LAYOUT (Landscape 22 x 17) ---
+layout <- cd_multicol_factory(
+  width = 22.0, 
+  height = 17.0, 
+  orient = "landscape", 
+  margins = c(0.25, 0.25, 0.25, 0.25)
+)
+
+my_multicol_start <- layout$start
+my_multicol_stop <- layout$stop
+```
+
+`r my_multicol_start()`
+
+```{r, fig.width=6.8, fig.height=1.5}
+translated_labels <- list(
+  header = list(
+    h1 = i18n$t("title_score_monthly_complete"),
+    h2 = i18n$t("title_score_extreme_outliers"),
+    h3 = i18n$t("title_score_consist_annual")
+  ),
+  section = list(
+    r1a   = i18n$t("lbl_score_1a"),
+            # Combine text + threshold number
+    r1b   = paste0(i18n$t("lbl_score_1b_prefix"), cache$performance_threshold),
+    r1c   = if (get_selected_group() == "vaccine") i18n$t("lbl_score_1c_vaccine") else i18n$t("lbl_score_1c_rmncah"),
+    r2a   = i18n$t("lbl_score_2a"),
+    r2b   = i18n$t("lbl_score_2b"),
+    score = i18n$t("lbl_score_annual_score")
+  ),
+  metric = list(
+    r_anc1_penta1    = i18n$t("lbl_consist_ratio_anc1_penta1"),
+    r_penta1_penta3  = i18n$t("lbl_consist_ratio_penta1_penta3"),
+    ok_anc1_penta1   = i18n$t("lbl_score_range_anc1_penta1"),
+    ok_penta1_penta3 = i18n$t("lbl_score_range_penta1_penta3")
+  )
+)
+cache$calculate_overall_score("adminlevel_1", region = adminlevel_1, labels = translated_labels)  %>% 
+  plot(cache$data_years, width = 6.8, title = i18n$t("lbl_score_metric_header"))
+```
+
+`r run_columnbreak()`
+
+```{r, fig.width=6.8, fig.height=3.5}
+cache$calculate_coverage('adminlevel_1') %>% 
+  plot('penta3', denominator = cache$get_denominator('penta3'), year = last_year, region = adminlevel_1, ) +
+  theme(text = element_text(size = 12))
+```
+
+```{r, fig.width=6.8, fig.height=3.5}
+current_indicator <- 'penta3'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'adminlevel_1', adminlevel_1) %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
+  cd_report_theme(base_size = 12) +
+  theme(plot.margin = margin(10, 0, 0, 0))
+```
+
+`r run_columnbreak()`
+
+```{r, fig.width=6.8, fig.height=3.5}
+# 1. Trend Line
+cache$calculate_coverage('adminlevel_1') %>% 
+  plot('instlivebirths', denominator = cache$get_denominator('instlivebirths'), year = last_year, region = adminlevel_1, ) +
+  theme(text = element_text(size = 12))
+```
+
+```{r, fig.width=6.8, fig.height=3.5}
+# 2. Bar Chart
+current_indicator <- 'instlivebirths'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'adminlevel_1', adminlevel_1) %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
+  cd_report_theme(base_size = 12) +
+  theme(plot.margin = margin(10, 0, 0, 0))
+```
+
+`r my_multicol_stop(widths = c(6.8, 6.8, 6.8), space = 0.3, sep = FALSE)`
+
+`r my_multicol_start()`
+
+```{r, fig.width=10, fig.height=2.8}
+anc4_cov <- paste0('cov_anc4_', cache$get_denominator('anc4'))
+anc1_cov <- paste0('cov_anc_1trimeter_', cache$get_denominator('anc_1trimeter'))
+births_cov <- paste0('cov_instlivebirths_', cache$get_denominator('instlivebirths'))
+cs_cov <- paste0('cov_csection_', cache$get_denominator('csection'))
+pnc_cov <- paste0('cov_pnc48h_', cache$get_denominator('pnc48h'))
+penta3_cov <- paste0('cov_penta3_', cache$get_denominator('penta3'))
+mcv1_cov <- paste0('cov_measles1_', cache$get_denominator('measles1'))
+opd_cov <- paste0('cov_opd_under5_', cache$get_denominator('opd_under5'))
+
+cache$indicator_coverage_district %>% 
+  filter(adminlevel_1 == !!adminlevel_1, year == last_year) %>% 
+  select(district, any_of(c(anc4_cov, anc1_cov, births_cov, cs_cov, pnc_cov, penta3_cov, mcv1_cov, opd_cov))) %>% 
+  arrange(district) %>% 
+  mutate(across(-district, ~ round(.x, digits = 1))) %>% 
+  flextable() %>%
+  set_header_labels(
+    values = list2(
+      !!anc4_cov := i18n$t("opt_anc4"),
+      !!anc1_cov := i18n$t("opt_anc1"),
+      !!births_cov := i18n$t("opt_instlivebirths"),
+      !!cs_cov := i18n$t("opt_csection"),
+      !!pnc_cov := i18n$t("opt_pnc48h"),
+      !!penta3_cov := i18n$t("opt_penta3"),
+      !!mcv1_cov := i18n$t("opt_mcv1"),
+      !!opd_cov := i18n$t("opt_opd_under5")
+    )
+  ) %>%
+  fontsize(part = 'body', size = 11) %>%
+  bold(part = "header", bold = TRUE) %>%
+  fontsize(part = 'header', size = 11) %>%
+  # padding(padding = 1.5, part = "all") %>%
+  # fit_to_width(max_width = 21.5)
+  autofit()
+```
+
+`r my_multicol_stop(widths = c(20.4, 0), space = 0.3, sep = FALSE)`

@@ -14,6 +14,8 @@ output:
     latex_engine: lualatex
 params:
   cache: NULL
+  i18n: NULL
+
   country: NULL
   adminlevel_1: NULL
 ---
@@ -38,7 +40,9 @@ library(officedown)
 library(officer)
 
 cache <- params$cache
+i18n <- params$i18n
 data <- cache$adjusted_data
+latest_year <- max(cache$data_years)
 ```
 
 ## Health system performance assessment: indicators
@@ -50,29 +54,109 @@ Subnational analyses of health system inputs and service outputs are critical: d
 ### National Health System Indicators
 
 ```{r}
-cache$generate_health_system_table() %>%
-  plot()
+cache$generate_health_system_table(
+  labels = list(
+    section = list(
+      infrastructure = i18n$t("sec_infrastructure"),
+      workforce      = i18n$t("sec_workforce"),
+      private_sector = i18n$t("sec_private_sector")
+    ),
+    indicator = list(
+      fac_density   = i18n$t("ind_fac_density"),
+      hosp_share    = i18n$t("ind_hosp_share"),
+      hosp_density  = i18n$t("ind_hosp_density"),
+      bed_density   = i18n$t("ind_bed_density"),
+      hwf_density   = i18n$t("ind_hwf_density"),
+      skill_mix     = i18n$t("ind_skill_mix"),
+      private_share = i18n$t("ind_private_share"),
+      ngo_share     = i18n$t("ind_ngo_share")
+    ),
+    unit = list(
+      per_10k  = i18n$t("unit_per_10k"),
+      per_100k = i18n$t("unit_per_100k"),
+      pct      = "%"
+    )
+  )) %>%
+  plot(
+    year = latest_year, 
+    indicator_label = i18n$t("title_global_indicator"),
+    value_label     = i18n$t("lbl_value"),
+    unit_label      = i18n$t("lbl_unit")
+  )
 ```
 
 ### Subnational Health System Indicators
 
 ```{r}
-plot(cache$health_system_metrics_admin1, indicator = 'ratio_fac_pop') +
+nat_metrics <- cache$health_system_metrics_national
+current_indicator <- "ratio_fac_pop"
+cache$health_system_metrics_admin1 %>%
+  plot(
+    indicator = current_indicator,
+    national_value = nat_metrics[[current_indicator]],
+    title         = i18n$t(paste0('title_metric_', current_indicator)),
+    x_axis        = i18n$t(paste0('xlab_metric_', current_indicator)),
+    legend_labels = list(
+      "FALSE" = i18n$t("lbl_below_benchmark"),
+      "TRUE"  = i18n$t("lbl_meets_benchmark"),
+      "threshold_line" = i18n$t("lbl_target_benchmark"), 
+      "national_line"  = i18n$t("lbl_national_average")
+    )
+  ) +
   cd_report_theme()
 ```
 
 ```{r}
-plot(cache$health_system_metrics_admin1, indicator = 'ratio_hos_pop') +
+current_indicator <- "ratio_hos_pop"
+cache$health_system_metrics_admin1 %>%
+  plot(
+    indicator = current_indicator,
+    national_value = nat_metrics[[current_indicator]],
+    title         = i18n$t(paste0('title_metric_', current_indicator)),
+    x_axis        = i18n$t(paste0('xlab_metric_', current_indicator)),
+    legend_labels = list(
+      "FALSE" = i18n$t("lbl_below_benchmark"),
+      "TRUE"  = i18n$t("lbl_meets_benchmark"),
+      "threshold_line" = i18n$t("lbl_target_benchmark"), 
+      "national_line"  = i18n$t("lbl_national_average")
+    )
+  ) +
   cd_report_theme()
 ```
 
 ```{r}
-plot(cache$health_system_metrics_admin1, indicator = 'ratio_hstaff_pop') +
+current_indicator <- "ratio_hstaff_pop"
+cache$health_system_metrics_admin1 %>%
+  plot(
+    indicator = current_indicator,
+    national_value = nat_metrics[[current_indicator]],
+    title         = i18n$t(paste0('title_metric_', current_indicator)),
+    x_axis        = i18n$t(paste0('xlab_metric_', current_indicator)),
+    legend_labels = list(
+      "FALSE" = i18n$t("lbl_below_benchmark"),
+      "TRUE"  = i18n$t("lbl_meets_benchmark"),
+      "threshold_line" = i18n$t("lbl_target_benchmark"), 
+      "national_line"  = i18n$t("lbl_national_average")
+    )
+  ) +
   cd_report_theme()
 ```
 
 ```{r}
-plot(cache$health_system_metrics_admin1, indicator = 'ratio_bed_pop') +
+current_indicator <- "ratio_bed_pop"
+cache$health_system_metrics_admin1 %>%
+  plot(
+    indicator = current_indicator,
+    national_value = nat_metrics[[current_indicator]],
+    title         = i18n$t(paste0('title_metric_', current_indicator)),
+    x_axis        = i18n$t(paste0('xlab_metric_', current_indicator)),
+    legend_labels = list(
+      "FALSE" = i18n$t("lbl_below_benchmark"),
+      "TRUE"  = i18n$t("lbl_meets_benchmark"),
+      "threshold_line" = i18n$t("lbl_target_benchmark"), 
+      "national_line"  = i18n$t("lbl_national_average")
+    )
+  ) +
   cd_report_theme()
 ```
 
@@ -97,13 +181,37 @@ Any reasons for unusual data?
 ## Primary Health Care Performance
 
 ```{r}
-cache$generate_phc_scatter_data(indicator = 'ratio_fac_pop') %>%
-  plot() + cd_report_theme()
+current_indicator <- "ratio_fac_pop"
+cache$generate_phc_scatter_data(indicator = current_indicator) %>%
+  plot(
+    title  = i18n$t(paste0("title_scatter_", current_indicator)),
+    x_axis = i18n$t(paste0("xlab_", current_indicator)),
+    y_axis = i18n$t("ylab_phc_scatter"),
+    quad_labels = list(
+      high_high = i18n$t(paste0("lbl_hh_", current_indicator)),
+      low_high  = i18n$t(paste0("lbl_lh_", current_indicator)),
+      high_low  = i18n$t(paste0("lbl_hl_", current_indicator)),
+      low_low   = i18n$t(paste0("lbl_ll_", current_indicator))
+    )
+  ) + 
+  cd_report_theme()
 ```
 
 ```{r}
-cache$generate_phc_scatter_data(indicator = 'ratio_hstaff_pop') %>%
-  plot() + cd_report_theme()
+current_indicator <- "ratio_hstaff_pop"
+cache$generate_phc_scatter_data(indicator = current_indicator) %>%
+  plot(
+    title  = i18n$t(paste0("title_scatter_", current_indicator)),
+    x_axis = i18n$t(paste0("xlab_", current_indicator)),
+    y_axis = i18n$t("ylab_phc_scatter"),
+    quad_labels = list(
+      high_high = i18n$t(paste0("lbl_hh_", current_indicator)),
+      low_high  = i18n$t(paste0("lbl_lh_", current_indicator)),
+      high_low  = i18n$t(paste0("lbl_hl_", current_indicator)),
+      low_low   = i18n$t(paste0("lbl_ll_", current_indicator))
+    )
+  ) + 
+  cd_report_theme()
 ```
 
 

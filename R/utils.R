@@ -200,3 +200,43 @@ check_scalar_character <- function(vec, arg = caller_arg(vec), call = caller_env
     )
   }
 }
+
+# MASTER ENGINE: Parses all surveys (National & Regional) identically
+parse_estimates_from_df = function(estimates, iso, region = NULL) {
+  if (is.null(estimates) || nrow(estimates) == 0) return(NULL)
+
+  group <- get_selected_group()
+  common_factors <- c("anc1", "instlivebirths", "bcg", "penta1", "penta3", "measles1")
+  factors <- if (group == "vaccine") c(common_factors, "opv1", "opv3") else c(common_factors, "anc4", "low_bweight", "csection")
+      
+  cols_to_keep <- c("year", factors, "nmr", "pnmr", "sbr")
+
+  # if (length(cols_to_keep) <= 1) return(NULL) # Only 'year' exists
+
+  is_region <- 'adminlevel_1' %in% names(estimates)
+  if (!is_region && !is.null(region)) {
+    cd_abort(c('x' = 'Cannot specify {.arg region} in national survey data'))
+  }
+
+  est_long <- estimates %>%
+    filter(iso3 == iso, if (is_region && !is.null(region)) adminlevel_1 == region else TRUE) %>%
+    select(year, starts_with("r_"), -ends_with("24_35")) %>%
+    rename_with(~ str_remove(.x, "r_"), starts_with("r_")) %>% 
+    select(any_of(cols_to_keep)) %>% 
+    pivot_longer(cols = -year) %>% 
+    filter(!is.na(value)) %>% 
+    slice_max(order_by = year, by = name, with_ties = FALSE)
+      
+  if (nrow(est_long) == 0) return(NULL)
+
+  # Standardize values: Mortality rates are per 1000. 
+  # We keep coverage metrics as 0-100 percentages for the UI here.
+  processed <- est_long %>%
+    mutate(value = case_when(
+      name %in% c("nmr", "pnmr", "sbr") ~ value / 1000,
+      .default = round(value, 1) 
+    ))
+        
+  named_vals <- set_names(processed$value, processed$name)
+  return(list(year = max(est_long$year), values = named_vals))
+}

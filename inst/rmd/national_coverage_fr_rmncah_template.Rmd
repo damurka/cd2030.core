@@ -1,0 +1,583 @@
+---
+title: "National Coverage for `r params$country` --- Countdown Analysis"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cerulean
+    highlight: kate
+  officedown::rdocx_document:
+    reference_docx: report-template.docx
+  pdf_document:
+    toc: false
+    latex_engine: lualatex
+params:
+  cache: NULL
+  i18n: NULL
+
+  country: NULL
+  adminlevel_1: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  error = TRUE,
+  fig.width=7, 
+  fig.height=5, 
+  dpi=1200
+)
+
+library(cd2030.core)
+library(dplyr)
+library(purrr)
+library(reactable)
+library(officedown)
+library(officer)
+
+cache <- params$cache
+i18n <- params$i18n
+
+country_name <- cache$country
+```
+
+## 5. Estimations nationales : tendances de la couverture vaccinale nationale {-}
+
+### Contexte
+
+Le suivi de la couverture des interventions est un résultat critique et direct des systèmes de santé. Il est le plus utile lorsque le plan national comporte des objectifs pertinents. Les données des établissements de santé et les enquêtes doivent être utilisées.
+
+### Indicateurs ANC
+
+**Tendances de la couverture pour ANC4**
+
+```{r}
+current_indicator <- 'anc4'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
+  cd_report_theme()
+```
+
+**Tendances de la couverture pour le premier trimestre ANC**
+```{r}
+current_indicator <- 'anc_1trimester'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+Commencez par la qualité des données : les niveaux et les tendances sont-ils plausibles ? Y a-t-il une bonne cohérence entre les données des établissements et les données d’enquête ? 
+
+Ensuite, interprétez les données si vous avez une confiance suffisante dans les niveaux et les tendances observés. Comment la couverture se compare-t-elle aux objectifs ? S’agit-il d’une tendance positive ? Existe-t-il des explications aux niveaux et aux tendances observés ?
+
+---
+
+
+### Soins d’accouchement
+
+**Tendances de la couverture pour les accouchements institutionnels**
+
+```{r}
+current_indicator <- 'ideliv'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
+  cd_report_theme()
+```
+
+**Tendances de la couverture pour les naissances vivantes institutionnelles**
+
+```{r}
+current_indicator <- 'instlivebirths'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+Commencez par la qualité des données : les niveaux et les tendances sont-ils plausibles ? Y a-t-il une bonne cohérence entre les données des établissements et les données d’enquête ? 
+
+Ensuite, interprétez les données si vous avez une confiance suffisante dans les niveaux et les tendances observés. Comment la couverture se compare-t-elle aux objectifs ? S’agit-il d’une tendance positive ? Existe-t-il des explications aux niveaux et aux tendances observés ?
+
+---
+
+### Indicateurs postnatals
+
+**Tendances de la couverture pour les soins postnatals**
+```{r}
+current_indicator <- 'pnc48h'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
+  cd_report_theme()
+```
+
+**Tendances de la couverture pour le faible poids à la naissance**
+
+```{r}
+current_indicator <- 'low_bweight'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+Commencez par la qualité des données : les niveaux et les tendances sont-ils plausibles ? Y a-t-il une bonne cohérence entre les données des établissements et les données d’enquête ? 
+
+Ensuite, interprétez les données si vous avez une confiance suffisante dans les niveaux et les tendances observés. Comment la couverture se compare-t-elle aux objectifs ? S’agit-il d’une tendance positive ? Existe-t-il des explications aux niveaux et aux tendances observés ?
+
+---
+
+:::
+
+
+### Vaccins
+
+**Tendances de la couverture pour le Penta 3**
+```{r}
+current_indicator <- 'penta3'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
+  cd_report_theme()
+```
+
+**Tendances de la couverture pour la rougeole 1**
+```{r}
+current_indicator <- 'measles1'
+indicator <- i18n$t(paste0('opt_', current_indicator))
+denominator <- i18n$t(paste0("opt_", cache$get_denominator(current_indicator)))
+cache$get_filtered_coverage(current_indicator, 'national') %>% 
+  plot(
+    title = str_glue(i18n$t('plt_title_coverage_nat_est')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = str_glue(i18n$t("plt_caption_coverage_denom")),
+    labels = list(
+      dhis2  = i18n$t("lbl_coverage_dhis2_est"),
+      wuenic = i18n$t("lbl_coverage_wuenic_est"),
+      survey = i18n$t("lbl_coverage_survey_est"),
+      ci     = i18n$t("lbl_coverage_95ci")
+    )) +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+Commencez par la qualité des données : les niveaux et les tendances sont-ils plausibles ? Y a-t-il une bonne cohérence entre les données des établissements et les données d’enquête ? 
+
+Ensuite, interprétez les données si vous avez une confiance suffisante dans les niveaux et les tendances observés. Comment la couverture se compare-t-elle aux objectifs ? S’agit-il d’une tendance positive ? Existe-t-il des explications aux niveaux et aux tendances observés ?
+
+---
+
+:::
+
+
+### Continuum de soins maternels
+
+```{r}
+cache$generate_coverage_data('national', 'maternal') %>%
+  plot(
+    type = 'profile',
+                    
+                    # Dynamic titles based on whether it's 'profile' or 'gap'
+    title    = i18n$t("title_cov_profile"),
+    subtitle = i18n$t("subtitle_cov_profile"),
+        
+        # Dynamic axes
+    x_axis   = NULL,
+    y_axis   = i18n$t("opt_coverage"),
+        
+        # Translation lists
+    source_labels = list(
+      facility = i18n$t("lbl_src_facility"),
+      survey   = i18n$t("lbl_src_survey"),
+      wuenic   = i18n$t("lbl_src_wuenic")
+    ),
+    indicator_labels = list(
+      anc_1trimester = i18n$t("opt_anc_1trimester"),
+      anc4           = i18n$t("opt_anc4"),
+      ideliv = i18n$t("opt_ideliv"),
+      instlivebirths = i18n$t("opt_instlivebirths"),
+      pnc48h         = i18n$t("opt_pnc48h"),
+      # penta3         = i18n$t("opt_penta3"),
+      # measles1       = i18n$t("opt_measles1"),
+      # bcg            = i18n$t("opt_bcg"),
+      # penta1          = i18n$t("opt_penta1"),
+    )
+  ) + cd_report_theme()
+```
+
+### Continuum de soins infantiles
+
+```{r}
+cache$generate_coverage_data('national', 'child') %>%
+  plot(
+    type = 'profile',
+                    
+        # Dynamic titles based on whether it's 'profile' or 'gap'
+    title    = i18n$t("title_cov_profile"),
+    subtitle = i18n$t("subtitle_cov_profile"),
+        
+        # Dynamic axes
+    x_axis   = NULL,
+    y_axis   = i18n$t("opt_coverage"),
+        
+        # Translation lists
+    source_labels = list(
+      facility = i18n$t("lbl_src_facility"),
+      survey   = i18n$t("lbl_src_survey"),
+      wuenic   = i18n$t("lbl_src_wuenic")
+    ),
+    indicator_labels = list(
+      # anc_1trimester = i18n$t("opt_anc_1trimester"),
+      # anc4           = i18n$t("opt_anc4"),
+      # ideliv = i18n$t("opt_ideliv"),
+      # instlivebirths = i18n$t("opt_instlivebirths"),
+      # pnc48h         = i18n$t("opt_pnc48h"),
+      penta3         = i18n$t("opt_penta3"),
+      measles1       = i18n$t("opt_measles1"),
+      bcg            = i18n$t("opt_bcg"),
+      penta1          = i18n$t("opt_penta1"),
+    )
+  ) + cd_report_theme()
+```
+
+## Tendances nationales de la couverture : planification familiale
+
+### Contexte
+
+Le suivi des progrès dans l’adoption et l’accès équitable aux services de planification familiale est essentiel pour atteindre les objectifs mondiaux de santé et de développement, en particulier l’Objectif de Développement Durable (ODD) 3.7.1, qui vise à garantir un accès universel aux services de santé sexuelle et reproductive, y compris la planification familiale, d’ici 2030. Deux indicateurs clés couramment utilisés pour évaluer la performance de la planification familiale sont la Prévalence des Méthodes Contraceptives Modernes (mCPR) et le Pourcentage de la Demande de Planification Familiale Satisfaite par une Méthode Moderne. Ces indicateurs reflètent non seulement l’étendue de l’utilisation contraceptive chez les femmes en âge de procréer, en particulier celles mariées ou en union, mais signalent également la réactivité du système de santé aux intentions et droits reproductifs. Le taux de prévalence des contraceptifs modernes (mCPR) indique le pourcentage de femmes utilisant une méthode contraceptive contemporaine, offrant une mesure directe de l’adoption de la planification familiale. En revanche, la demande satisfaite par une méthode moderne prend en compte à la fois l’utilisation actuelle et les besoins non satisfaits, offrant ainsi une mesure plus complète de la satisfaction des besoins de santé reproductive des femmes. Ensemble, ces indicateurs donnent un aperçu des dynamiques côté offre et côté demande dans le paysage de la planification familiale.
+L’analyse des tendances du mCPR et de la demande satisfaite au fil du temps permet aux décideurs, chercheurs et acteurs de programmes d’identifier si les pays progressent de manière adéquate, stagnent ou connaissent des disparités d’accès. L’outil d’estimation de la planification familiale (FPET), développé par Track20, utilise la modélisation bayésienne pour générer des estimations nationales et des projections, en tenant compte d’intervalles d’enquête irréguliers et en permettant le suivi des objectifs à l’horizon 2030. Cependant, bien que les tendances agrégées soient utiles, interpréter la relation entre le mCPR et la demande satisfaite est particulièrement crucial : un scénario où le mCPR augmente mais la demande satisfaite n’évolue pas peut suggérer des inégalités persistantes, des lacunes dans la prestation de services ou un besoin non satisfait croissant parmi certains sous‑groupes.
+
+```{r}
+cache$fpet_data %>% 
+  filter(year >= 2010) %>% 
+  plot(
+    title = paste0(i18n$t("title_graph_fpet"), ", ", country_name),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = i18n$t("ylab_fpet"),
+    caption = i18n$t("caption_fpet"),
+    
+    # Translate the legend (adjust the keys based on what they are named in your CSV/tibble)
+    indicator_labels = list(
+      prevalence = i18n$t("lbl_fpet_mcpr"),
+      demand = i18n$t("lbl_fpet_demand")
+    )
+  ) + cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+-	Quelles sont les tendances globales observées au fil du temps pour les deux indicateurs ?
+Examinez s’il existe une progression constante de la prévalence des méthodes contraceptives modernes (mCPR) et de la proportion de la demande satisfaite par une méthode moderne. Les tendances sont‑elles linéaires, exponentielles ou montrent‑elles des signes de stagnation ou de retournement ?
+-	Comment la performance du pays s’aligne‑t‑elle avec les objectifs nationaux ou mondiaux (par ex., ODD 3.7.1) ?
+Évaluez si la trajectoire observée suggère que le pays est en bonne voie pour atteindre l’objectif de l’Objectif de Développement Durable (ODD) 3.7.1 d’ici 2030, qui vise à garantir un accès universel aux services de santé sexuelle et reproductive, y compris la planification familiale.
+-	Quelles sont les implications si le mCPR augmente alors que la demande satisfaite par une méthode moderne n’évolue pas ?
+Analysez si une divergence de ces tendances peut indiquer un niveau persistamment élevé de besoins non satisfaits en planification familiale, suggérant que bien que davantage de femmes utilisent des méthodes modernes, une proportion encore plus grande ne parvient pas à répondre à leurs besoins contraceptifs.
+
+---
+
+:::
+
+```{r}
+current_indicator <- 'anc4'
+translated_x_labels <- list(
+  instlivebirths = i18n$t("opt_instlivebirths"),
+  pnc48h = i18n$t("opt_pnc48h"),
+  bcg = i18n$t("opt_bcg"),
+  penta3 = i18n$t("opt_penta3"),
+  measles1 = i18n$t("opt_measles1"),
+  dropout_penta13 = i18n$t("opt_dropout_penta13"),
+  dropout_penta3mcv1 = i18n$t("opt_dropout_penta3mcv1")
+)
+
+filtered_data <- cache$get_filtered_threshold(current_indicator, 'district')
+
+admin_lvl_translated <- i18n$t(paste0("opt_", current_indicator))
+rate <- i18n$t(if (current_indicator == 'opt_dropout') 'opt_rate' else 'opt_coverage')
+sign <- if (current_indicator == 'opt_dropout') '<' else '≥'
+group <- i18n$t(paste0("opt_", current_indicator))
+coverage <- attr(filtered_data, "threshold")
+
+# FIXED: Explicitly pass named variables into str_glue so it overrides the reactive functions in the environment
+plot_title <- str_glue(
+  i18n$t('plt_title_target_national'),
+  admin_level = admin_lvl_translated,
+  region = "",
+  coverage = coverage,
+  group = group,
+  rate = rate,
+  sign = sign
+)
+filtered_data %>% 
+  plot(
+    title = plot_title,
+    y_axis = i18n$t("lbl_axis_y_pct_subnat"),
+    legend_title = i18n$t("title_global_year"),
+    x_labels = translated_x_labels
+  ) + cd_report_theme()
+```
+## couverture sous‑nationale : évaluation du pourcentage de régions ayant atteint les objectifs internationaux
+
+### Contexte
+
+La communauté mondiale de la santé s’est engagée à éliminer les décès maternels et néonatals évitables grâce à une série d’objectifs interconnectés et de cadres stratégiques. Deux initiatives clés — Ending Preventable Maternal Mortality (EPMM) et Every Newborn Action Plan (ENAP) — offrent conjointement une feuille de route coordonnée pour renforcer les systèmes de santé, garantir un accès équitable à des soins de qualité et améliorer la responsabilité en matière de résultats maternels et néonatals. Au cœur de ces cadres se trouvent des indicateurs de couverture mesurables et des objectifs temporels qui suivent les progrès vers la couverture santé universelle et les Objectifs de Développement Durable (ODD), en particulier les ODD 3.1 et 3.2.
+
+#### ANC4 
+
+```{r}
+current_indicator <- 'instlivebirths'
+translated_x_labels <- list(
+  instlivebirths = i18n$t("opt_instlivebirths"),
+  pnc48h = i18n$t("opt_pnc48h"),
+  bcg = i18n$t("opt_bcg"),
+  penta3 = i18n$t("opt_penta3"),
+  measles1 = i18n$t("opt_measles1"),
+  dropout_penta13 = i18n$t("opt_dropout_penta13"),
+  dropout_penta3mcv1 = i18n$t("opt_dropout_penta3mcv1")
+)
+
+filtered_data <- cache$get_filtered_threshold(current_indicator, 'district')
+
+admin_lvl_translated <- i18n$t(paste0("opt_", current_indicator))
+rate <- i18n$t(if (current_indicator == 'opt_dropout') 'opt_rate' else 'opt_coverage')
+sign <- if (current_indicator == 'opt_dropout') '<' else '≥'
+group <- i18n$t(paste0("opt_", current_indicator))
+coverage <- attr(filtered_data, "threshold")
+
+# FIXED: Explicitly pass named variables into str_glue so it overrides the reactive functions in the environment
+plot_title <- str_glue(
+  i18n$t('plt_title_target_national'),
+  admin_level = admin_lvl_translated,
+  region = "",
+  coverage = coverage,
+  group = group,
+  rate = rate,
+  sign = sign
+)
+filtered_data %>% 
+  plot(
+    title = plot_title,
+    y_axis = i18n$t("lbl_axis_y_pct_subnat"),
+    legend_title = i18n$t("title_global_year"),
+    x_labels = translated_x_labels
+  ) + cd_report_theme()
+```
+
+#### Naissances vivantes institutionnelles 
+
+```{r}
+current_indicator <- 'vaccine'
+translated_x_labels <- list(
+  instlivebirths = i18n$t("opt_instlivebirths"),
+  pnc48h = i18n$t("opt_pnc48h"),
+  bcg = i18n$t("opt_bcg"),
+  penta3 = i18n$t("opt_penta3"),
+  measles1 = i18n$t("opt_measles1"),
+  dropout_penta13 = i18n$t("opt_dropout_penta13"),
+  dropout_penta3mcv1 = i18n$t("opt_dropout_penta3mcv1")
+)
+
+filtered_data <- cache$get_filtered_threshold(current_indicator, 'district')
+
+admin_lvl_translated <- i18n$t(paste0("opt_", current_indicator))
+rate <- i18n$t(if (current_indicator == 'opt_dropout') 'opt_rate' else 'opt_coverage')
+sign <- if (current_indicator == 'opt_dropout') '<' else '≥'
+group <- i18n$t(paste0("opt_", current_indicator))
+coverage <- attr(filtered_data, "threshold")
+
+# FIXED: Explicitly pass named variables into str_glue so it overrides the reactive functions in the environment
+plot_title <- str_glue(
+  i18n$t('plt_title_target_national'),
+  admin_level = admin_lvl_translated,
+  region = "",
+  coverage = coverage,
+  group = group,
+  rate = rate,
+  sign = sign
+)
+filtered_data %>% 
+  plot(
+    title = plot_title,
+    y_axis = i18n$t("lbl_axis_y_pct_subnat"),
+    legend_title = i18n$t("title_global_year"),
+    x_labels = translated_x_labels
+  ) + cd_report_theme()
+```
+
+#### Vaccins
+
+```{r}
+cache$generate_coverage_data('adminlevel_1', 'maternal') %>% 
+  plot(
+    type = 'heatmap',
+                    
+        # Dynamic titles based on whether it's 'profile' or 'gap'
+    title    = i18n$t("title_cov_profile"),
+    subtitle = i18n$t("subtitle_cov_profile"),
+        
+        # Dynamic axes
+    x_axis   = NULL,
+    y_axis   = i18n$t("opt_coverage"),
+        
+        # Translation lists
+    source_labels = list(
+      facility = i18n$t("lbl_src_facility"),
+      survey   = i18n$t("lbl_src_survey"),
+      wuenic   = i18n$t("lbl_src_wuenic")
+    ),
+    indicator_labels = list(
+      anc_1trimester = i18n$t("opt_anc_1trimester"),
+      anc4           = i18n$t("opt_anc4"),
+      ideliv = i18n$t("opt_ideliv"),
+      instlivebirths = i18n$t("opt_instlivebirths"),
+      pnc48h         = i18n$t("opt_pnc48h"),
+      # penta3         = i18n$t("opt_penta3"),
+      # measles1       = i18n$t("opt_measles1")
+    )
+  ) + cd_report_theme()
+```
+
+### Continuum de soins subnational pour enfants
+```{r}
+cache$generate_coverage_data('adminlevel_1', 'child') %>% 
+  plot(
+   type = 'heatmap',
+                    
+        # Dynamic titles based on whether it's 'profile' or 'gap'
+    title    = i18n$t("title_cov_profile"),
+    subtitle = i18n$t("subtitle_cov_profile"),
+        
+        # Dynamic axes
+    x_axis   = NULL,
+    y_axis   = i18n$t("opt_coverage"),
+        
+        # Translation lists
+    source_labels = list(
+      facility = i18n$t("lbl_src_facility"),
+      survey   = i18n$t("lbl_src_survey"),
+      wuenic   = i18n$t("lbl_src_wuenic")
+    ),
+    indicator_labels = list(
+      # anc_1trimester = i18n$t("opt_anc_1trimester"),
+      # anc4           = i18n$t("opt_anc4"),
+      # ideliv = i18n$t("opt_ideliv"),
+      # instlivebirths = i18n$t("opt_instlivebirths"),
+      # pnc48h         = i18n$t("opt_pnc48h"),
+      penta3         = i18n$t("opt_penta3"),
+      measles1       = i18n$t("opt_measles1"),
+      bcg            = i18n$t("opt_bcg"),
+      penta1          = i18n$t("opt_penta1"),
+    )
+  ) + cd_report_theme()
+```

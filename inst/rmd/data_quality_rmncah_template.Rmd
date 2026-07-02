@@ -18,6 +18,8 @@ output:
       gutter: 0
 params:
   cache: NULL
+  i18n: NULL
+
   country: NULL
   adminlevel_1: NULL
 ---
@@ -37,19 +39,17 @@ knitr::opts_chunk$set(
 library(cd2030.core)
 library(dplyr)
 library(purrr)
+library(stringr)
 library(reactable)
 library(officedown)
 library(officer)
 
 cache <- params$cache
+i18n <- params$i18n
 adminlevel_1 <- params$adminlevel_1
 
 data <- cache$countdown_data
 data_years <- cache$data_years
-
-layout <- cd_multicol_factory(width = 8.27, height = 11.69, orient = "portrait")
-my_multicol_start <- layout$start
-my_multicol_stop <- layout$stop
 ```
 
 ## 1. Health Facility Data Quality Assessment {-}
@@ -65,19 +65,53 @@ and internal consistency.
 ### Data Quality Summary Table
 
 ```{r}
+translated_labels <- list(
+  header = list(
+    h1 = i18n$t("title_score_monthly_complete"),
+    h2 = i18n$t("title_score_extreme_outliers"),
+    h3 = i18n$t("title_score_consist_annual")
+  ),
+  section = list(
+    r1a   = i18n$t("lbl_score_1a"),
+            # Combine text + threshold number
+    r1b   = paste0(i18n$t("lbl_score_1b_prefix"), cache$performance_threshold),
+    r1c   = if (get_selected_group() == "vaccine") i18n$t("lbl_score_1c_vaccine") else i18n$t("lbl_score_1c_rmncah"),
+    r2a   = i18n$t("lbl_score_2a"),
+    r2b   = i18n$t("lbl_score_2b"),
+    score = i18n$t("lbl_score_annual_score")
+  ),
+  metric = list(
+    r_anc1_penta1    = i18n$t("lbl_consist_ratio_anc1_penta1"),
+    r_penta1_penta3  = i18n$t("lbl_consist_ratio_penta1_penta3"),
+    ok_anc1_penta1   = i18n$t("lbl_score_range_anc1_penta1"),
+    ok_penta1_penta3 = i18n$t("lbl_score_range_penta1_penta3")
+  )
+)
+
 overall_score <- if (is.null(adminlevel_1)) {
-  cache$calculate_overall_score("national")
+  cache$calculate_overall_score("national", labels = translated_labels)
 } else {
-  cache$calculate_overall_score("adminlevel_1", region())
+  cache$calculate_overall_score("adminlevel_1", region = adminlevel_1, labels = translated_labels)
 }
 
-overall_score %>% plot(data_years, width = 8)
+overall_score %>% 
+  plot(data_years, width = 8, title = i18n$t("lbl_score_metric_header"))
 ```
 
 ### District Reporting Rates
 
 ```{r district-reporting-rates}
-plot(cache$calculate_district_reporting_rate(region = adminlevel_1)) +
+reporting_rate <- cache$performance_threshold
+plot(cache$calculate_district_reporting_rate(
+  region = adminlevel_1),
+  title = str_glue(i18n$t("plt_title_rr_national")),
+  caption = str_glue(i18n$t("plt_caption_rr_national")),
+  indicator_labels = c(
+    anc = i18n$t("opt_anc"),
+    idelv = i18n$t("opt_idelv"),
+    vacc = i18n$t("opt_vacc"),
+    opd = i18n$t("opt_opd")
+  )) +
   cd_report_theme()
 ```
 
@@ -101,30 +135,49 @@ Interpret the data on the percent of districts that have ANC1 to penta1 ratios w
 
 :::
 
-`r run_pagebreak()`
 
 ### ANC1/Penta1 and Penta1/Penta3 Ratios
 
 ```{r}
-plot(cache$ratios_summary) +
+plot(
+  cache$ratios_summary,
+  title = i18n$t("plt_title_consist_ratios"),
+  x_labels = c(
+    "anc1_penta1"   = i18n$t("lbl_consist_ratio_anc1_penta1"),
+    "penta1_penta3" = i18n$t("lbl_consist_ratio_penta1_penta3")
+  )) +
   cd_report_theme()
 ```
-
-`r my_multicol_start()`
 
 ```{r}
-plot_comparison_anc1_penta1(data) +
+legend <- c(
+  district = i18n$t("lbl_leg_consist_district"),
+  linear_fit = i18n$t("lbl_leg_consist_linear_fit"),
+  diagonale = i18n$t("lbl_leg_consist_diagonal")
+)
+
+vacc1 <- i18n$t("opt_anc1")
+vacc2 <- i18n$t("opt_penta1")
+plot_comparison_anc1_penta1(
+  data,
+  title = str_glue(i18n$t("plt_title_consist_checks")),
+  x_label = vacc1,
+  y_label = vacc2,
+  legend = legend) +
   cd_report_theme()
 ```
-
-`r run_columnbreak()`
 
 ```{r}
-plot_comparison_penta1_penta3(data) +
+vacc1 <- i18n$t("opt_penta1")
+vacc2 <- i18n$t("opt_penta3")
+plot_comparison_penta1_penta3(
+  data,
+  title = str_glue(i18n$t("plt_title_consist_checks")),
+  x_label = vacc1,
+  y_label = vacc2,
+  legend = legend)+
   cd_report_theme()
 ```
-
-`r my_multicol_stop(widths = c(4, 4), space = 0.2, sep = FALSE)`
 
 #### 📝 Notes 
 

@@ -14,6 +14,8 @@ output:
     latex_engine: lualatex
 params:
   cache: NULL
+  i18n: NULL
+
   country: NULL
   adminlevel_1: NULL
 ---
@@ -38,6 +40,7 @@ library(officedown)
 library(officer)
 
 cache <- params$cache
+i18n <- params$i18n
 ```
 
 ## Admin Level 1  Inequality trends {-}
@@ -51,8 +54,20 @@ facility and survey data need to be used.
 ### Regional coverage distribution: Institutional deliveries by admin1
 
 ```{r}
-cache$get_filtered_inequality(indicator = 'instlivebirths', admin_level = 'adminlevel_1') %>% 
-  plot() + cd_report_theme()
+current_indicator <- 'instlivebirths'
+indicator <- i18n$t(paste0("opt_", current_indicator))
+cache$get_filtered_inequality(indicator = current_indicator, admin_level = 'adminlevel_1') %>% 
+  plot(
+    title = indicator,
+    subtitle = str_glue(i18n$t('lbl_inequ_subnat_admin1')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = i18n$t(paste0("plt_caption_equity_", cache$get_denominator(current_indicator))),
+    legend_labels = list(
+      subnational = i18n$t("lbl_inequ_coverage_subnat"),
+      national = str_glue(i18n$t('title_coverage_national'))
+    )
+  ) + cd_report_theme()
 ```
 
 ```{r}
@@ -60,17 +75,38 @@ min_year <- min(cache$data_years)
 max_year <- robust_max(cache$data_years)
 years <- if (is.null(cache$mapping_years)) c(min_year, max_year) else cache$mapping_years
 
-cache$get_filtered_mapping_data('instlivebirths', "adminlevel_1", 'Blues', plot_year = years) %>% 
-  plot() + cd_report_theme()
+cache$get_filtered_mapping_data(current_indicator, "adminlevel_1", 'Blues', plot_year = years) %>% 
+  plot(
+    title = str_glue(i18n$t("plt_title_map_dist")),
+    caption = i18n$t("plt_caption_map_dhis2"),
+    legend = str_glue(i18n$t("lbl_axis_y_coverage"))
+  ) + cd_report_theme()
 ```
 
 ```{r, fig.cap='Institutioinal Deliveries coverage by wealth, recent surveys'}
-equiplot_wealth(cache$wiq_survey, 'instlivebirths') +
+equiplot_wealth(
+  cache$wiq_survey, 
+  current_indicator,
+  title = str_glue(i18n$t("plt_title_equity_wealth")),
+  x_title = str_glue(i18n$t("lbl_axis_y_coverage")),
+  legend_title = i18n$t("lbl_leg_equity_wealth")
+  ) +
   cd_report_theme()
 ```
 
 ```{r, fig.cap='Institutioinal Deliveries coverage by maternal education, recent surveys'}
-equiplot_education(cache$education_survey, 'instlivebirths') +
+equiplot_education(
+  cache$education_survey, 
+  current_indicator,
+  title = str_glue(i18n$t("plt_title_equity_education")),
+  x_title = str_glue(i18n$t("lbl_axis_y_coverage")),
+  legend_title = i18n$t("lbl_leg_equity_education"),
+  legend_labels = list(
+      "none" ~ i18n$t("lbl_equity_edu_none"),
+      "primary" ~ i18n$t("lbl_equity_edu_primary"),
+      "secondary+" ~ i18n$t("lbl_equity_edu_secondary")
+    )
+  ) +
   cd_report_theme()
 ```
 
@@ -97,22 +133,55 @@ Education: are the gaps in coverage by mother’s education large, have they cha
 ## Regional coverage distribution: Penta3 coverage by admin1
 
 ```{r}
-cache$get_filtered_inequality(indicator = 'penta3', admin_level = 'adminlevel_1') %>% 
-  plot() + cd_report_theme()
+current_indicator <- 'instlivebirths'
+indicator <- i18n$t(paste0("opt_", current_indicator))
+cache$get_filtered_inequality(indicator = current_indicator, admin_level = 'adminlevel_1') %>% 
+  plot(
+    title = indicator,
+    subtitle = str_glue(i18n$t('lbl_inequ_subnat_admin1')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = i18n$t(paste0("plt_caption_equity_", cache$get_denominator(current_indicator))),
+    legend_labels = list(
+      subnational = i18n$t("lbl_inequ_coverage_subnat"),
+      national = str_glue(i18n$t('title_coverage_national'))
+    )
+  ) + cd_report_theme()
 ```
 
 ```{r}
-cache$get_filtered_mapping_data('penta3', "adminlevel_1", 'Greens', plot_year = years) %>% 
-  plot() + cd_report_theme()
+cache$get_filtered_mapping_data(current_indicator, "adminlevel_1", 'Greens', plot_year = years) %>% 
+  plot(
+    title = str_glue(i18n$t("plt_title_map_dist")),
+    caption = i18n$t("plt_caption_map_dhis2"),
+    legend = str_glue(i18n$t("lbl_axis_y_coverage"))
+  ) + cd_report_theme()
 ```
 
 ```{r, fig.cap='Fig 4g: Pentavalent 3 coverage by wealth, recent surveys'}
-equiplot_wealth(cache$wiq_survey, 'penta3') +
+equiplot_wealth(
+  cache$wiq_survey, 
+  current_indicator,
+  title = str_glue(i18n$t("plt_title_equity_wealth")),
+  x_title = str_glue(i18n$t("lbl_axis_y_coverage")),
+  legend_title = i18n$t("lbl_leg_equity_wealth")
+  ) +
   cd_report_theme()
 ```
 
 ```{r, fig.cap='Fig 4g: Pentavalent 3 coverage by maternal education, recent surveys'}
-equiplot_education(cache$education_survey, 'penta3') +
+equiplot_education(
+  cache$education_survey, 
+  current_indicator,
+  title = str_glue(i18n$t("plt_title_equity_education")),
+  x_title = str_glue(i18n$t("lbl_axis_y_coverage")),
+  legend_title = i18n$t("lbl_leg_equity_education"),
+  legend_labels = list(
+    "none" ~ i18n$t("lbl_equity_edu_none"),
+    "primary" ~ i18n$t("lbl_equity_edu_primary"),
+    "secondary+" ~ i18n$t("lbl_equity_edu_secondary")
+  )
+) +
   cd_report_theme()
 ```
 
@@ -148,15 +217,39 @@ facility and survey data need to be used.
 ### Regional coverage distribution: Institutional deliveries by District
 
 ```{r}
-cache$get_filtered_inequality(indicator = 'instlivebirths', admin_level = 'district') %>% 
-  plot() + cd_report_theme()
+current_indicator <- 'instlivebirths'
+indicator <- i18n$t(paste0("opt_", current_indicator))
+cache$get_filtered_inequality(indicator = current_indicator, admin_level = 'district') %>% 
+  plot(
+    title = indicator,
+    subtitle = str_glue(i18n$t('lbl_inequ_subnat_district')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = i18n$t(paste0("plt_caption_equity_", cache$get_denominator(current_indicator))),
+    legend_labels = list(
+      subnational = i18n$t("lbl_inequ_coverage_subnat"),
+      national = str_glue(i18n$t('title_coverage_national'))
+    )
+  ) + cd_report_theme()
 ```
 
 ### Regional coverage distribution: Penta 3 by District
 
 ```{r}
-cache$get_filtered_inequality(indicator = 'penta3', admin_level = 'district') %>% 
-  plot() + cd_report_theme()
+current_indicator <- 'penta3'
+indicator <- i18n$t(paste0("opt_", current_indicator))
+cache$get_filtered_inequality(indicator = current_indicator, admin_level = 'district') %>% 
+  plot(
+    title = indicator,
+    subtitle = str_glue(i18n$t('lbl_inequ_subnat_district')),
+    x_axis = i18n$t("title_global_year"),
+    y_axis = str_glue(i18n$t("lbl_axis_y_coverage")),
+    caption = i18n$t(paste0("plt_caption_equity_", cache$get_denominator(current_indicator))),
+    legend_labels = list(
+      subnational = i18n$t("lbl_inequ_coverage_subnat"),
+      national = str_glue(i18n$t('title_coverage_national'))
+    )
+  ) + cd_report_theme()
 ```
 
 #### 📝 Notes 

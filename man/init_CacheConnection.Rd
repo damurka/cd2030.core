@@ -17,6 +17,8 @@ init_CacheConnection(
 \item{countdown_data}{Optional \code{cd_data} object to initialize in-memory cache.}
 
 \item{data_path}{Optional. Used with the countdown to support in creating the cache file.}
+
+\item{indicator_group}{Character. Specifies the indicator group to use (auto, rmncah, vaccine, custom).}
 }
 \value{
 An instance of the \code{CacheConnection} class.

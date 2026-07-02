@@ -1,0 +1,136 @@
+---
+title: "Mortality for `r params$country` --- Countdown Analysis"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: cerulean
+    highlight: kate
+  officedown::rdocx_document:
+    reference_docx: report-template.docx
+  pdf_document:
+    toc: false
+    latex_engine: lualatex
+params:
+  cache: NULL
+  i18n: NULL
+
+  country: NULL
+  adminlevel_1: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  include = TRUE,
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  error = TRUE,
+  fig.width=7, 
+  fig.height=5, 
+  dpi=1200
+)
+
+library(cd2030.core)
+library(dplyr)
+library(purrr)
+library(reactable)
+library(officedown)
+library(officer)
+
+cache <- params$cache
+i18n <- params$i18n
+```
+
+## Mortalidade Materna em Instalações de Saúde
+
+### Contexto
+
+O principal desafio com os dados de mortalidade das instalações de saúde é a subnotificação de óbitos. Os óbitos podem não ser registrados no registro de maternidade, ou não ser reportados. Além disso, óbitos maternos em outras alas do hospital têm maior probabilidade de serem perdidos, por exemplo, óbitos associados a aborto ou sepse. O objetivo principal é estimar o nível de subnotificação no DHIS2 ou MPDSR.
+
+```{r, fig.cap='Figure 5a: Maternal mortality per 100,000 live births in health facilities, based on the reported data in DHIS2'}
+mortality_summary <- cache$mortality_summary
+plot(mortality_summary, indicator = 'mmr_inst', ) +
+  cd_report_theme()
+```
+
+
+```{r, fig.cap='Figure 5b: Ratio of stillbirths taths in health facilities, based on the reported data in DHIS2'}
+current_indicator <- "ratio_md_sb"
+base_title <- i18n$t(paste0("title_", current_indicator))
+full_title <- paste0(base_title, ", ", country_name, ", ", min_yr, "-", max_yr, ".")
+plot_mortality_plausibility(
+  mortality_summary, 
+  indicator = current_indicator,
+  title = full_title,
+  y_axis = i18n$t(paste0("ylab_", current_indicator)),
+  x_axis = i18n$t("title_global_year"),
+  note = i18n$t(paste0("note_", current_indicator)),
+  legend_labels = list(
+    median = i18n$t("lbl_median"),
+    plausible = i18n$t("lbl_plausible")
+  )) +
+  cd_report_theme()
+```
+
+```{r, fig.cap='Figure 5c: Still Birth rates ps in health facilities, based on the reported data in DHIS2'}
+plot(mortality_summary, indicator = 'sbr_inst', ) +
+  cd_report_theme()
+```
+
+
+```{r, fig.cap='Figure 5d: Neonatal mortalityarge per 1,000 live births in health facilities, based on the reported data in DHIS2'}
+plot(mortality_summary, indicator = 'nn_inst', ) +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+É o nível de MMR dos dados da instalação como esperado? O que pode ser dito sobre a variação regional? Existem regiões com MMR baixo e isso é plausível?
+
+O que pode ser dito sobre a variação regional? Qual porcentagem de regiões tem MMR muito baixo (< 25) e SBR muito baixo (<6)? Isso é plausível ou a subnotificação de óbitos é provável?
+
+Qual é a proporção de natimortos para óbitos maternos? Está na faixa de 5-15? Como isso pode ser interpretado? Isso sugere subnotificação de óbitos maternos em relação aos natimortos?
+
+O nível de natimortos dos dados da instalação está como esperado? O que pode ser dito sobre a variação regional? Existem regiões com taxas baixas de natimortos, e isso é plausível?
+
+O que pode ser dito sobre o nível estimado de completude da notificação de natimortos? Quais suposições são mais plausíveis, em termos de nível populacional de SBR (por exemplo, mediana, limite inferior ou superior das estimativas da ONU) e a proporção mortalidade comunitária para institucional?
+
+Qual é a mortalidade neonatal (antes da alta) nacionalmente? Como isso se compara com a estimativa nacional de mortalidade neonatal por 1.000 nascidos vivos? O que pode ser dito sobre a completude da notificação, as taxas das instalações de saúde são plausíveis?
+
+---
+
+:::
+
+```{r, fig.cap='Fig 5e: Completeness of facility maternal death reporting (%), based on UN MMR estimates and community to institutional ratio'}
+cache$summarise_completeness_ratio('mmr') %>%
+  plot() +
+  cd_report_theme()
+```
+
+```{r, fig.cap='Fig 5f: Completeness of facility stillbirth reporting (%), based on UN stillbirth estimates and community to institutional ratio'}
+cache$summarise_completeness_ratio('sbr') %>%
+  plot() +
+  cd_report_theme()
+```
+
+#### 📝 Notes 
+
+::: {custom-style="Style1"}
+
+---
+
+O nível de natimortos dos dados da instalação está como esperado? O que pode ser dito sobre a variação regional? Existem regiões com taxas baixas de natimortos, e isso é plausível?
+
+O que pode ser dito sobre o nível estimado de completude da notificação de natimortos? Quais suposições são mais plausíveis, em termos de nível populacional de SBR (por exemplo, mediana, limite inferior ou superior das estimativas da ONU) e a proporção mortalidade comunitária para institucional?
+
+Qual é a mortalidade neonatal (antes da alta) nacionalmente? Como isso se compara com a estimativa nacional de mortalidade neonatal por 1.000 nascidos vivos? O que pode ser dito sobre a completude da notificação, as taxas das instalações de saúde são plausíveis?
+
+---
+
+:::
