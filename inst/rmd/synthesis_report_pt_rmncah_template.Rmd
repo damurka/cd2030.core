@@ -6,7 +6,6 @@ output:
 params:
   cache: NULL
   i18n: NULL
-
   adminlevel_1: NULL
   country: NULL
 ---
@@ -600,7 +599,7 @@ cache$get_filtered_inequality(indicator = current_indicator, admin_level = 'admi
   ) + cd_report_theme()
 ```
 
-**Pentavalent 3rd Dose**
+**Pentavalente 3ª Dose**
 
 ```{r, fig.width=6.3}
 current_indicator <- 'penta3'
@@ -649,11 +648,11 @@ cache$get_filtered_mapping_data(current_indicator, "adminlevel_1", 'Blues', plot
 
 ::: {custom-style="Style1"}
 
-**Interpretations**
+**Interpretações**
 
-- How has coverage evolved over time?
-- Has there been any change in inequality? Are the data points becoming more or less dispersed over time? Are the MADM (Mean Absolute Deviation from the Median) estimates changing throughout the period?
-- Which regions or districts are the best and worst performers?
+- Como a cobertura evoluiu ao longo do tempo?
+- Houve alguma mudança na desigualdade? Os pontos de dados estão se tornando mais ou menos dispersos ao longo do tempo? As estimativas de MADM (Desvio Absoluto Médio da Mediana) estão mudando ao longo do período?
+- Quais regiões ou distritos são os melhores e os piores desempenhadores?
 
 :::
 
@@ -661,9 +660,9 @@ cache$get_filtered_mapping_data(current_indicator, "adminlevel_1", 'Blues', plot
 
 `r run_pagebreak()`
 
-## 4. Institutional mortality
+## 4. Mortalidade institucional
 
-#### Institutional Mortality trends (iMMR, iSBR)
+#### Tendências de Mortalidade Institucional (iMMR, iSBR)
 
 `r my_multicol_start()`
 
@@ -681,15 +680,15 @@ plot(cache$mortality_summary, indicator = 'sbr_inst') +
 
 ::: {custom-style="Style1"}
 
-**Interpretations**
+**Interpretações**
 
-- What can be said about the level and trend? Is this in line with what is expected based on UN estimates?
+- O que pode ser dito sobre o nível e a tendência? Isso está alinhado com o que se espera com base nas estimativas da ONU?
 
 :::
 
 `r my_multicol_stop(widths = c(4.243,4.243,4.243), space = 0.2, sep = FALSE)`
 
-#### Institutional Mortality by admin1 units
+#### Mortalidade Institucional por unidades admin1
 
 `r my_multicol_start()`
 
@@ -705,19 +704,19 @@ cache$filter_mortality_summary('sbr', c(first_year, last_year)) %>%
 
 ::: {custom-style="Style1"}
 
-**Interpretations**
+**Interpretações**
 
-- What are the 3 highest iMMR regions and the lowest iMMR & iSBR regions? (name with level) Is this as expected, or does it suggest data quality issues?
-- (are these more advanced regions where mortality is expected to be lower or are there less-developed regions with low mortality,. which could be an indication of major underreporting of deaths)
+- Quais são as 3 regiões com iMMR mais altas e as regiões com iMMR e iSBR mais baixas? (nome com nível) Isso está conforme o esperado ou sugere problemas de qualidade dos dados?
+- (são essas regiões mais avançadas onde se espera que a mortalidade seja menor ou há regiões menos desenvolvidas com baixa mortalidade, o que poderia indicar subnotificação significativa de óbitos)
 
 :::
 
 `r my_multicol_stop(widths = c(4.243,4.243,4.243), space = 0.2, sep = FALSE)`
 
 
-#### Data quality metrics
+#### Métricas de qualidade dos dados
 
-Ratio stillbirth to maternal deaths in the health facility data at national level
+Razão de natimortos para óbitos maternos nos dados de unidades de saúde a nível nacional
 
 `r my_multicol_start()`
 
@@ -739,17 +738,17 @@ plot_mortality_plausibility(
 
 ::: {custom-style="Style1"}
 
-**Interpretations**
+**Interpretações**
 
-- A plausible ratio is in the range of 5 to 25 stillbirths per maternal death. Is the national ratio within the expected range?
-- What can be said about the top 3 and bottom 3 regions?
-- If the ratio is above 25, this may mean that maternal deaths are more underreported than stillbirths. If it is below 5, stillbirths are likely underreported. If the ratio is within the range, the reporting may be good if the mortality levels are in the expected range. If not, then both maternal deaths and stillbirths are underreported.
+- Uma razão plausível está na faixa de 5 a 25 natimortos por óbito materno. A razão nacional está dentro da faixa esperada?
+- O que pode ser dito sobre as 3 regiões superiores e as 3 inferiores?
+- Se a razão for superior a 25, isso pode indicar que os óbitos maternos estão mais subnotificados que os natimortos. Se for inferior a 5, os natimortos provavelmente estão subnotificados. Se a razão estiver dentro da faixa, o reporte pode ser bom se os níveis de mortalidade estiverem dentro do esperado. Caso contrário, tanto os óbitos maternos quanto os natimortos estão subnotificados.
 
 :::
 
 `r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
 
-Estimated completeness of facility maternal death and stillbirth reporting
+Estimativa de completude da notificação de óbitos maternos e natimortos nas unidades de saúde
 
 `r my_multicol_start()`
 
@@ -769,17 +768,17 @@ cache$summarise_completeness_ratio('sbr') %>%
 
 ::: {custom-style="Style1"}
 
-**Interpretations**
+**Interpretações**
 
-- Comment on the completeness of reporting of institutional MMR and SBR based on the population MMR and the Community to Institutional ratio
+- Comente sobre a completude da notificação de MMR e SBR institucionais com base no MMR populacional e na razão Comunidade para Institucional
 
 :::
 
 `r run_pagebreak()`
 
-## 5. Curative health service utilization for sick children
+## 5. Utilização de serviços de saúde curativos para crianças doentes
 
-#### Outpatient and inpatient service utilization 
+#### Utilização de serviços ambulatoriais e hospitalares 
 
 `r my_multicol_start()`
 
@@ -797,18 +796,18 @@ run_columnbreak()
 
 ::: {custom-style="Style1"}
 
-**Interpretations**
+**Interpretações**
 
-- What is the number of OPD visits per child per year during in 2024 and the trend over time?  Is it lower than 1 visit per year, which suggests low access? 
-- What can be said about the data quality for OPD & IPD visits? Is there consistency of reported numbers between years?
-- What is the number of IPD visits per 100 children per year during 2019-2024, is it increasing?  Is it lower than 2 per 100 children under-five, which suggests low access? 
-- What can be said about the OPD visits & admissions by region/province in 2024? How large is the difference between top and bottom regions? 
+- Qual é o número de visitas ambulatoriais (OPD) por criança por ano em 2024 e a tendência ao longo do tempo? É inferior a 1 visita por ano, o que sugeriria baixo acesso?
+- O que pode ser dito sobre a qualidade dos dados das visitas OPD e IPD? Há consistência nos números reportados entre os anos?
+- Qual é o número de visitas hospitalares (IPD) por 100 crianças por ano entre 2019-2024, está aumentando? É inferior a 2 por 100 crianças menores de cinco anos, o que sugeriria baixo acesso?
+- O que pode ser dito sobre as visitas OPD e admissões por região/província em 2024? Qual a magnitude da diferença entre as regiões superiores e inferiores?
 
 :::
 
 `r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
 
-#### Regional/provincial service utilization
+#### Utilização de serviços regionais/provinciais
 
 `r my_multicol_start()`
 
@@ -824,9 +823,9 @@ cache$filter_service_utilization('national', 'ipd') %>%
 
 ::: {custom-style="Style1"}
 
-**Interpretations**
+**Interpretações**
 
-- What are the 3 regions with the highest OPD and IPD rates and the 3 regions with the lowest (region name with values)? Any reason? Potential data issues?
+- Quais são as 3 regiões com as maiores taxas de OPD e IPD e as 3 regiões com as menores (nome da região com valores)? Alguma razão? Possíveis problemas de dados?
 
 :::
 
@@ -834,7 +833,7 @@ cache$filter_service_utilization('national', 'ipd') %>%
 
 `r my_multicol_start()`
 
-#### MCH Preventive vs Curative Index
+#### Índice Preventivo vs Curativo de MCH
 
 ```{r, fig.width=6.3}
 cache$generate_admin1_mch_curative_index() %>% 
@@ -853,10 +852,10 @@ cache$generate_admin1_mch_curative_index() %>%
 
 ::: {custom-style="Style1"}
 
-**Interpretations**
+**Interpretações**
 
-- What is the case fatality among admissions under-five? What are the trends?
-- What does this say about the quality of care? 
+- Qual é a taxa de letalidade entre admissões de menores de cinco anos? Quais são as tendências?
+- O que isso indica sobre a qualidade do atendimento?
 
 :::
 
@@ -864,9 +863,9 @@ cache$generate_admin1_mch_curative_index() %>%
 
 `r run_pagebreak()`
 
-## 6. Health system progress and performance
+## 6. Progresso e desempenho do sistema de saúde
 
-#### Health system inputs
+#### Insumos do sistema de saúde
 
 `r my_multicol_start()`
 
@@ -907,20 +906,20 @@ cache$generate_health_system_table(
 
 ::: {custom-style="Style1"}
 
-**Interpretations**
+**Interpretações**
 
-- Note on completeness of the data (private sector included)? 
-- What can be said about the national health system inputs? How do they compare to the benchmarks?
-Health Facility Density (Benchmark: 2)
-Bed density (Benchmark: 25)
-Health workforce density (Benchmark: 23 – needed to make major progress in reducing maternal and child mortality with high skilled birth attendance (WHO). 
-44.5 per 10,000 population to achieve universal health coverage
+- Observação sobre a completude dos dados (incluindo o setor privado)? 
+- O que pode ser dito sobre os insumos do sistema de saúde nacional? Como eles se comparam aos referenciais?
+Densidade de Unidades de Saúde (Referencial: 2)
+Densidade de leitos (Referencial: 25)
+Densidade de força de trabalho em saúde (Referencial: 23 – necessária para avançar significativamente na redução da mortalidade materna e infantil com alta taxa de partos assistidos por profissionais qualificados (OMS).
+44,5 por 10.000 habitantes para alcançar cobertura universal de saúde
 
 :::
 
 `r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
 
-#### Health system inputs by region/province
+#### Insumos do sistema de saúde por região/província
 
 `r my_multicol_start()`
 
@@ -985,16 +984,16 @@ cache$health_system_metrics_admin1 %>%
 
 ---
 
-- How does the number of health facilities vary by admin1 units?
-- How does hospital density vary by admin1 units?
-- How does health workforce density vary by admin1 units?
-- What are the top and bottom admin1 units?, are they consistent across all indicators
+- Como varia o número de unidades de saúde por unidades admin1?
+- Como varia a densidade hospitalar por unidades admin1?
+- Como varia a densidade da força de trabalho em saúde por unidades admin1?
+- Quais são as unidades admin1 superiores e inferiores? Elas são consistentes em todos os indicadores?
 
 ---
 
 :::
 
-#### Health system outputs by inputs at the subnational level
+#### Resultados do sistema de saúde por insumos a nível subnacional
 
 `r my_multicol_start()`
 
@@ -1017,16 +1016,16 @@ cache$generate_phc_scatter_data(indicator = current_indicator) %>%
 
 ::: {custom-style="Style1"}
 
-**Interpretations**
+**Interpretações**
 
-- The interpretation should focus on whether the obtained picture has validity. This may be posited if it confirms some expectations such as more developed regions doing better
-- Describe poor and good performing regions/provinces
+- A interpretação deve focar em se a imagem obtida tem validade. Isso pode ser afirmado se confirmar algumas expectativas, como regiões mais desenvolvidas apresentarem melhores resultados.
+- Descreva as regiões/províncias com desempenho ruim e bom
 
 :::
 
 `r my_multicol_stop(widths = c(6.365, 6.365), space = 0.2, sep = FALSE)`
 
-#### Private sector and RMNCAH services
+#### Serviços do setor privado e RMNCAH
 
 `r my_multicol_start()`
 
@@ -1042,10 +1041,10 @@ cache$area_private_share %>%
 
 ::: {custom-style="Style1"}
 
-**Interpretations**
+**Interpretações**
 
-- Which indicators have higher private share?
-- Are there rural/urban differences?
+- Quais indicadores têm maior participação do setor privado?
+- Existem diferenças entre áreas rurais e urbanas?
 
 :::
 

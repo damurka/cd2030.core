@@ -80,12 +80,6 @@ plot(mortality_summary, indicator = 'sbr_inst', ) +
   cd_report_theme()
 ```
 
-```{r}
-sbr_plot <- mortality_summary('sbr')
-plot(sbr_plot, ) +
-  cd_report_theme()
-```
-
 ```{r, fig.cap='Figure 5d: Neonatal mortalityarge per 1,000 live births in health facilities, based on the reported data in DHIS2'}
 plot(mortality_summary, indicator = 'nn_inst', ) +
   cd_report_theme()
