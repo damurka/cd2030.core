@@ -26,7 +26,7 @@ generate_report <- function(cache,
                             report_name,
                             adminlevel_1 = NULL,
                             i18n = NULL,
-                            language = NULL,
+                            # language = NULL,
                             output_format = c("word_document", "pdf_document", "html_document")) {
   # check_cd_data(.data)
   check_required(cache)
@@ -56,23 +56,26 @@ generate_report <- function(cache,
 
   i18n_func <- if (is.null(i18n)) {
     list(
-      t = function(text, ...) { text },
+      t = function(text, ...) { text }
     )
   } else {
     i18n
   }
 
-  if (!is.null(language)) {
-    language <- arg_match(language, c('en', 'fr', 'pt'))
-  }
+  # if (!is.null(language)) {
+  #   language <- arg_match(language, c('en', 'fr', 'pt'))
+  # }
 
-  language <- language %||% cache$language
+  # language <- language %||% cache$language
+  language <- cache$language
   language_prefix <- switch(
     language,
     en = '',
     fr = '_fr',
     pt = '_pt'
   )
+
+  print(paste0('Language: ', language, ': ', language_prefix))
 
   # Open the generated file automatically
   tryCatch(

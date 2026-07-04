@@ -5,7 +5,6 @@ output:
     reference_docx: synthesis-template.docx
 params:
   cache: NULL
-  i18n: NULL
   adminlevel_1: NULL
   country: NULL
 ---
