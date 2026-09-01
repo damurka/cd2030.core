@@ -168,6 +168,268 @@ mcp_tool_list <- function(max_sessions = 3L) {
         plot_year = ellmer::type_array(ellmer::type_integer(), "Years to include; omit to use the cache's default mapping years.", required = FALSE)
       )
     ),
+    # -----------------------------------------------------------------------
+    # Remaining read methods, added mechanically: each worker is a hardcoded
+    # one-liner (see mcp_call_cache_method()), but the tool name/description/
+    # argument schema below is still hand-written per tool, since that's what
+    # actually determines whether an LLM calls it correctly.
+    # -----------------------------------------------------------------------
+    ellmer::tool(
+      function(path, admin_level = "national", region = NULL) {
+        mcp_get_completeness_summary(path, admin_level = admin_level, region = region)
+      },
+      name = "get_completeness_summary",
+      description = "Get the DQA completeness summary (% non-missing values) at national, admin1, or district level for a loaded cache.",
+      arguments = list(
+        path = path_arg,
+        admin_level = ellmer::type_enum(c("national", "adminlevel_1", "district"), "Level to compute completeness at."),
+        region = region_arg("Optional region to filter to.")
+      )
+    ),
+    ellmer::tool(
+      function(path, admin_level = "national", region = NULL) {
+        mcp_get_coverage_raw(path, admin_level = admin_level, region = region)
+      },
+      name = "get_coverage_raw",
+      description = "Get the full, multi-indicator raw coverage merge (every indicator x denominator combination in one wide table) for a loaded cache. Use get_filtered_coverage instead if you only need one indicator.",
+      arguments = list(
+        path = path_arg,
+        admin_level = ellmer::type_enum(c("national", "adminlevel_1", "district"), "Level to compute coverage at."),
+        region = region_arg("Optional region to filter to.")
+      )
+    ),
+    ellmer::tool(
+      function(path, indicator, admin_level = "national", region = NULL) {
+        mcp_get_derived_coverage(path, indicator = indicator, admin_level = admin_level, region = region)
+      },
+      name = "get_derived_coverage",
+      description = "Get a derived coverage indicator computed from survey-based ratios, at national, admin1, or district level.",
+      arguments = list(
+        path = path_arg,
+        indicator = ellmer::type_string("Coverage indicator, e.g. penta1, anc4, measles1."),
+        admin_level = ellmer::type_enum(c("national", "adminlevel_1", "district"), "Level to compute at."),
+        region = region_arg("Optional region to filter to.")
+      )
+    ),
+    ellmer::tool(
+      function(path, region = NULL) mcp_get_district_completeness_summary(path, region = region),
+      name = "get_district_completeness_summary",
+      description = "Get the % of districts meeting completeness thresholds, per indicator and year.",
+      arguments = list(path = path_arg, region = region_arg("Optional adminlevel_1 region to filter to."))
+    ),
+    ellmer::tool(
+      function(path, region = NULL) mcp_get_district_outlier_summary(path, region = region),
+      name = "get_district_outlier_summary",
+      description = "Get the % of districts with acceptable outlier variance, per indicator and year.",
+      arguments = list(path = path_arg, region = region_arg("Optional adminlevel_1 region to filter to."))
+    ),
+    ellmer::tool(
+      function(path, region = NULL) mcp_get_district_reporting_rate(path, region = region),
+      name = "get_district_reporting_rate",
+      description = "Get the % of districts meeting reporting-rate thresholds, per indicator group and year.",
+      arguments = list(path = path_arg, region = region_arg("Optional adminlevel_1 region to filter to."))
+    ),
+    ellmer::tool(
+      function(path, admin_level = "national", region = NULL) {
+        mcp_get_outliers_summary(path, admin_level = admin_level, region = region)
+      },
+      name = "get_outliers_summary",
+      description = "Get the % of values that are not severe outliers (Hampel method), at national, admin1, or district level.",
+      arguments = list(
+        path = path_arg,
+        admin_level = ellmer::type_enum(c("national", "adminlevel_1", "district"), "Level to compute at."),
+        region = region_arg("Optional region to filter to.")
+      )
+    ),
+    ellmer::tool(
+      function(path, region = NULL) mcp_get_ratios_and_adequacy(path, region = region),
+      name = "get_ratios_and_adequacy",
+      description = "Get chronological indicator-ratio adequacy (e.g. ANC1-to-Penta1, Penta1-to-Penta3) by year.",
+      arguments = list(path = path_arg, region = region_arg("Optional adminlevel_1 region to filter to."))
+    ),
+    ellmer::tool(
+      function(path, admin_level = "national", region = NULL) {
+        mcp_get_reporting_rate(path, admin_level = admin_level, region = region)
+      },
+      name = "get_reporting_rate",
+      description = "Get the average facility reporting rate, at national, admin1, or district level.",
+      arguments = list(
+        path = path_arg,
+        admin_level = ellmer::type_enum(c("national", "adminlevel_1", "district"), "Level to compute at."),
+        region = region_arg("Optional region to filter to.")
+      )
+    ),
+    ellmer::tool(
+      function(path, admin_level = "national", region = NULL) {
+        mcp_get_service_dqa_summary(path, admin_level = admin_level, region = region)
+      },
+      name = "get_service_dqa_summary",
+      description = "Get the service-DQA summary comparing general reporting/completeness/outliers against service-utilization metrics.",
+      arguments = list(
+        path = path_arg,
+        admin_level = ellmer::type_enum(c("national", "adminlevel_1"), "Level to compute at."),
+        region = region_arg("Region name; required when admin_level is adminlevel_1, must be omitted for national.")
+      )
+    ),
+    ellmer::tool(
+      function(path, admin_level = "national") mcp_get_service_utilization_summary(path, admin_level = admin_level),
+      name = "get_service_utilization_summary",
+      description = "Get the full OPD/IPD service utilization table (visits, deaths, ratios, all metrics at once) at national, admin1, or district level. Use get_service_utilization instead if you only need one metric.",
+      arguments = list(
+        path = path_arg,
+        admin_level = ellmer::type_enum(c("national", "adminlevel_1", "district"), "Level to aggregate at.")
+      )
+    ),
+    ellmer::tool(
+      function(path) mcp_get_mch_curative_index(path),
+      name = "get_mch_curative_index",
+      description = "Get the maternal/child-health vs curative-services index, by admin1 region and year.",
+      arguments = list(path = path_arg)
+    ),
+    ellmer::tool(
+      function(path, metric_type = "opd") mcp_get_admin1_service_utilization(path, metric_type = metric_type),
+      name = "get_admin1_service_utilization",
+      description = "Get the under-5 service-utilization ratio for one metric, by admin1 region and year.",
+      arguments = list(
+        path = path_arg,
+        metric_type = ellmer::type_enum(c("opd", "ipd"), "Utilization metric to return.")
+      )
+    ),
+    ellmer::tool(
+      function(path, admin_level = "national", type = "child", region = NULL) {
+        mcp_get_coverage_data_selected(path, admin_level = admin_level, type = type, region = region)
+      },
+      name = "get_coverage_data_selected",
+      description = "Get a continuum-of-care coverage summary (a curated set of indicators) for maternal or child health, at national or admin1 level.",
+      arguments = list(
+        path = path_arg,
+        admin_level = ellmer::type_enum(c("national", "adminlevel_1"), "Level to compute at."),
+        type = ellmer::type_enum(c("maternal", "child"), "Which continuum-of-care set to return."),
+        region = region_arg("Optional adminlevel_1 region to filter to.")
+      )
+    ),
+    ellmer::tool(
+      function(path) mcp_get_health_system_table(path),
+      name = "get_health_system_table",
+      description = "Get a formatted table of core national health-system metrics (facility/health-worker density, bed ratios, etc.).",
+      arguments = list(path = path_arg)
+    ),
+    ellmer::tool(
+      function(path, indicator = "ratio_fac_pop") mcp_get_phc_scatter_data(path, indicator = indicator),
+      name = "get_phc_scatter_data",
+      description = "Get primary-health-care scatter data (facility or health-worker density vs. service coverage), by admin1 region.",
+      arguments = list(
+        path = path_arg,
+        indicator = ellmer::type_enum(c("ratio_fac_pop", "ratio_hstaff_pop"), "Which density ratio to pair with coverage.")
+      )
+    ),
+    ellmer::tool(
+      function(path, indicator) mcp_get_denominator(path, indicator = indicator),
+      name = "get_denominator",
+      description = "Resolve which denominator (the cache's standard or maternal denominator) applies to a given indicator.",
+      arguments = list(path = path_arg, indicator = ellmer::type_string("Indicator name, e.g. penta1, anc4, instlivebirths."))
+    ),
+    ellmer::tool(
+      function(path, indicator, admin_level = "national", region = NULL) {
+        mcp_get_filtered_coverage(path, indicator = indicator, admin_level = admin_level, region = region)
+      },
+      name = "get_filtered_coverage",
+      description = "Get coverage for a single indicator across years, with DHIS2/WUENIC/survey estimates -- the underlying data for get_coverage_plot.",
+      arguments = list(
+        path = path_arg,
+        indicator = ellmer::type_string("Coverage indicator, e.g. penta1, anc4, measles1."),
+        admin_level = ellmer::type_enum(c("national", "adminlevel_1", "district"), "Level to compute at."),
+        region = region_arg("Optional region to filter to.")
+      )
+    ),
+    ellmer::tool(
+      function(path, indicator, admin_level = "adminlevel_1", region = NULL) {
+        mcp_get_filtered_inequality(path, indicator = indicator, admin_level = admin_level, region = region)
+      },
+      name = "get_filtered_inequality",
+      description = "Get subnational inequality data for a single indicator. Use get_inequality instead for the raw multi-indicator matrix.",
+      arguments = list(
+        path = path_arg,
+        indicator = ellmer::type_string("Coverage indicator, e.g. penta1, anc4, measles1."),
+        admin_level = ellmer::type_enum(c("adminlevel_1", "district"), "Level to compute at."),
+        region = region_arg("Optional adminlevel_1 region to filter district-level results to.")
+      )
+    ),
+    ellmer::tool(
+      function(path, indicator = "anc4", target_unit = "district", region = NULL) {
+        mcp_get_filtered_threshold(path, indicator = indicator, target_unit = target_unit, region = region)
+      },
+      name = "get_filtered_threshold",
+      description = "Evaluate an indicator against its benchmark coverage threshold (e.g. 80%), returning the % of districts or admin1 regions meeting it.",
+      arguments = list(
+        path = path_arg,
+        indicator = ellmer::type_enum(c("anc4", "instlivebirths", "vaccine", "dropout"), "Indicator group to evaluate."),
+        target_unit = ellmer::type_enum(c("district", "adminlevel_1"), "Unit whose pass rate is reported."),
+        region = region_arg("Optional adminlevel_1 region to filter to; only valid when target_unit is district.")
+      )
+    ),
+    ellmer::tool(
+      function(path, indicator, admin_level = "national", region = NULL) {
+        mcp_get_high_performers(path, indicator = indicator, admin_level = admin_level, region = region)
+      },
+      name = "get_high_performers",
+      description = "Identify regions/districts exceeding the benchmark coverage threshold for an indicator.",
+      arguments = list(
+        path = path_arg,
+        indicator = ellmer::type_string("Coverage indicator, e.g. penta1, anc4, measles1."),
+        admin_level = ellmer::type_enum(c("national", "adminlevel_1", "district"), "Level to evaluate at."),
+        region = region_arg("Optional region to filter to.")
+      )
+    ),
+    ellmer::tool(
+      function(path, admin_level = "national", region = NULL) {
+        mcp_get_regional_estimates(path, admin_level = admin_level, region = region)
+      },
+      name = "get_regional_estimates",
+      description = "Get the national (or region-substituted) mortality/survey rate estimates (sbr, nmr, pnmr, anc1, penta1, etc.) used elsewhere in the pipeline.",
+      arguments = list(
+        path = path_arg,
+        admin_level = ellmer::type_enum(c("national", "adminlevel_1", "district"), "Level to resolve estimates at."),
+        region = region_arg("Optional region name; national estimates are returned if omitted.")
+      )
+    ),
+    ellmer::tool(
+      function(path) mcp_get_lbr_mean(path),
+      name = "get_lbr_mean",
+      description = "Get the mean institutional-livebirths coverage rate, used as the baseline for mortality-completeness-ratio calculations.",
+      arguments = list(path = path_arg)
+    ),
+    ellmer::tool(
+      function(path, indicator, region = NULL) mcp_get_missing_units(path, indicator = indicator, region = region),
+      name = "get_missing_units",
+      description = "List facility/period units with missing values for a given indicator.",
+      arguments = list(
+        path = path_arg,
+        indicator = ellmer::type_string("Indicator to check, e.g. penta1, anc1."),
+        region = region_arg("Optional adminlevel_1 region to filter to.")
+      )
+    ),
+    ellmer::tool(
+      function(path, indicator = "opd", map_years = NULL) {
+        mcp_get_service_utilization_mapping(path, indicator = indicator, map_years = map_years)
+      },
+      name = "get_service_utilization_mapping",
+      description = "Get service-utilization data prepared for map visualization (region, year, and ratio columns -- no spatial geometry).",
+      arguments = list(
+        path = path_arg,
+        indicator = ellmer::type_enum(c("ipd", "opd"), "Utilization metric to map."),
+        map_years = ellmer::type_array(ellmer::type_integer(), "Years to include; omit to use the cache's default mapping years.", required = FALSE)
+      )
+    ),
+    ellmer::tool(
+      function(path, indicator = "mmr") mcp_get_mortality_completeness_ratio(path, indicator = indicator),
+      name = "get_mortality_completeness_ratio",
+      description = "Get the completeness-adjusted mortality ratio compared against UN estimate bounds, for one mortality indicator.",
+      arguments = list(
+        path = path_arg,
+        indicator = ellmer::type_enum(c("mmr", "sbr", "nn"), "Mortality indicator: mmr (maternal), sbr (stillbirth), or nn (neonatal).")
+      )
+    ),
     ellmer::tool(
       function(path, report_name, output_format = "word_document", adminlevel_1 = NULL) {
         mcp_generate_report(path, report_name = report_name, output_format = output_format, adminlevel_1 = adminlevel_1)

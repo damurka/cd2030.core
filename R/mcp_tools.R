@@ -95,6 +95,39 @@ mcp_shape_table <- function(data, cap = getOption("cd2030.mcp_max_rows", 200L)) 
   list(data = out, meta = meta)
 }
 
+#' @describeIn mcp_tools Shape any `CacheConnection` method result for return
+#'   over MCP: tabular results go through [mcp_shape_table()] (row-capped,
+#'   with a truncation notice); scalars and lists pass through untouched,
+#'   since they're already small and directly JSON-serializable.
+#' @noRd
+mcp_shape_result <- function(x) {
+  if (is.data.frame(x)) mcp_shape_table(x) else x
+}
+
+#' @describeIn mcp_tools Same as [mcp_shape_result()], but strips any spatial
+#'   geometry column first -- raw polygon coordinates aren't useful as
+#'   returned "data" to an LLM.
+#' @noRd
+mcp_shape_result_no_geom <- function(x) {
+  if (is.data.frame(x)) {
+    x <- dplyr::select(x, -dplyr::any_of(c("geometry", "geom")))
+  }
+  mcp_shape_result(x)
+}
+
+#' @describeIn mcp_tools Call a single, hardcoded read-only `CacheConnection`
+#'   method by name and shape its result for MCP. `method` is always a
+#'   literal string baked into the caller below -- never a value coming from
+#'   an MCP tool argument -- so this cannot be used to reach an arbitrary
+#'   (e.g. mutating) method; it only removes the repetition of writing
+#'   `cache <- mcp_get_cache(path); shape(cache$foo(...))` for every one of
+#'   the ~30 read methods this file wraps.
+#' @noRd
+mcp_call_cache_method <- function(path, method, args = list(), shape = mcp_shape_result) {
+  cache <- mcp_get_cache(path)
+  shape(do.call(cache[[method]], args))
+}
+
 #' @describeIn mcp_tools Country/years/regions metadata for a loaded cache.
 #' @noRd
 mcp_get_data_overview <- function(path) {
@@ -191,6 +224,192 @@ mcp_get_mapping_data <- function(path,
     plot_year = plot_year
   )
   mcp_shape_table(dplyr::select(data, -dplyr::any_of("geometry")))
+}
+
+# =========================================================================
+# Remaining read methods (Layer 0-3), added mechanically via
+# mcp_call_cache_method() -- each is a thin, hardcoded dispatch to one
+# CacheConnection method, argument validation and defaults deferred to that
+# method itself (see mcp_call_cache_method()'s @describeIn).
+# =========================================================================
+
+#' @describeIn mcp_tools DQA completeness summary (Layer 1).
+#' @noRd
+mcp_get_completeness_summary <- function(path, admin_level = c("national", "adminlevel_1", "district"), region = NULL) {
+  mcp_call_cache_method(path, "calculate_completeness_summary", list(admin_level = admin_level, region = region))
+}
+
+#' @describeIn mcp_tools Full, multi-indicator raw coverage merge (Layer 2) --
+#'   every indicator/denominator combination in one wide table; see
+#'   [mcp_get_filtered_coverage()] for a single indicator instead.
+#' @noRd
+mcp_get_coverage_raw <- function(path, admin_level = c("national", "adminlevel_1", "district"), region = NULL) {
+  mcp_call_cache_method(path, "calculate_coverage", list(admin_level = admin_level, region = region))
+}
+
+#' @describeIn mcp_tools Derived coverage indicators from survey data (Layer 2).
+#' @noRd
+mcp_get_derived_coverage <- function(path, indicator, admin_level = c("national", "adminlevel_1", "district"), region = NULL) {
+  mcp_call_cache_method(path, "calculate_derived_coverage", list(indicator = indicator, admin_level = admin_level, region = region))
+}
+
+#' @describeIn mcp_tools District-level completeness detail (Layer 1).
+#' @noRd
+mcp_get_district_completeness_summary <- function(path, region = NULL) {
+  mcp_call_cache_method(path, "calculate_district_completeness_summary", list(region = region))
+}
+
+#' @describeIn mcp_tools District-level outlier detail (Layer 1).
+#' @noRd
+mcp_get_district_outlier_summary <- function(path, region = NULL) {
+  mcp_call_cache_method(path, "calculate_district_outlier_summary", list(region = region))
+}
+
+#' @describeIn mcp_tools District-level reporting-rate detail (Layer 1).
+#' @noRd
+mcp_get_district_reporting_rate <- function(path, region = NULL) {
+  mcp_call_cache_method(path, "calculate_district_reporting_rate", list(region = region))
+}
+
+#' @describeIn mcp_tools Outlier summary (Layer 1).
+#' @noRd
+mcp_get_outliers_summary <- function(path, admin_level = c("national", "adminlevel_1", "district"), region = NULL) {
+  mcp_call_cache_method(path, "calculate_outliers_summary", list(admin_level = admin_level, region = region))
+}
+
+#' @describeIn mcp_tools Chronological ratio/adequacy summary, e.g.
+#'   ANC1-to-Penta1 (Layer 1).
+#' @noRd
+mcp_get_ratios_and_adequacy <- function(path, region = NULL) {
+  mcp_call_cache_method(path, "calculate_ratios_and_adequacy", list(region = region))
+}
+
+#' @describeIn mcp_tools Average reporting rate (Layer 1).
+#' @noRd
+mcp_get_reporting_rate <- function(path, admin_level = c("national", "adminlevel_1", "district"), region = NULL) {
+  mcp_call_cache_method(path, "calculate_reporting_rate", list(admin_level = admin_level, region = region))
+}
+
+#' @describeIn mcp_tools Service-DQA summary comparing reporting vs.
+#'   utilization metrics (Layer 1/3).
+#' @noRd
+mcp_get_service_dqa_summary <- function(path, admin_level = c("national", "adminlevel_1"), region = NULL) {
+  mcp_call_cache_method(path, "calculate_service_dqa_summary", list(admin_level = admin_level, region = region))
+}
+
+#' @describeIn mcp_tools Full OPD/IPD service utilization table (Layer 3) --
+#'   every metric at once; see [mcp_get_service_utilization()] for a single
+#'   indicator instead.
+#' @noRd
+mcp_get_service_utilization_summary <- function(path, admin_level = c("national", "adminlevel_1", "district")) {
+  mcp_call_cache_method(path, "compute_service_utilization", list(admin_level = admin_level))
+}
+
+#' @describeIn mcp_tools Maternal/child-health vs. curative-services index,
+#'   by admin1 region (Layer 3).
+#' @noRd
+mcp_get_mch_curative_index <- function(path) {
+  mcp_call_cache_method(path, "generate_admin1_mch_curative_index")
+}
+
+#' @describeIn mcp_tools Admin1 service-utilization ratio for one metric (Layer 3).
+#' @noRd
+mcp_get_admin1_service_utilization <- function(path, metric_type = c("opd", "ipd")) {
+  mcp_call_cache_method(path, "generate_admin1_service_utilization", list(metric_type = metric_type))
+}
+
+#' @describeIn mcp_tools Continuum-of-care coverage summary for maternal or
+#'   child indicators (Layer 2).
+#' @noRd
+mcp_get_coverage_data_selected <- function(path, admin_level = c("national", "adminlevel_1"), type = c("maternal", "child"), region = NULL) {
+  mcp_call_cache_method(path, "generate_coverage_data", list(admin_level = admin_level, type = type, region = region))
+}
+
+#' @describeIn mcp_tools Formatted core health-system metrics table (Layer 3).
+#' @noRd
+mcp_get_health_system_table <- function(path) {
+  mcp_call_cache_method(path, "generate_health_system_table")
+}
+
+#' @describeIn mcp_tools Primary-health-care scatter data (facility/staff
+#'   density vs. coverage), by admin1 region (Layer 3).
+#' @noRd
+mcp_get_phc_scatter_data <- function(path, indicator = c("ratio_fac_pop", "ratio_hstaff_pop")) {
+  mcp_call_cache_method(path, "generate_phc_scatter_data", list(indicator = indicator))
+}
+
+#' @describeIn mcp_tools Resolve which denominator (standard or maternal)
+#'   applies to a given indicator.
+#' @noRd
+mcp_get_denominator <- function(path, indicator) {
+  mcp_call_cache_method(path, "get_denominator", list(indicator = indicator))
+}
+
+#' @describeIn mcp_tools Coverage for a single indicator, across years, with
+#'   DHIS2/WUENIC/survey estimates (Layer 2) -- the data backing
+#'   [mcp_render_coverage_plot()].
+#' @noRd
+mcp_get_filtered_coverage <- function(path, indicator, admin_level = c("national", "adminlevel_1", "district"), region = NULL) {
+  mcp_call_cache_method(path, "get_filtered_coverage", list(indicator = indicator, admin_level = admin_level, region = region))
+}
+
+#' @describeIn mcp_tools Inequality data for a single indicator (Layer 3) --
+#'   see [mcp_get_inequality()] for the raw multi-indicator matrix instead.
+#' @noRd
+mcp_get_filtered_inequality <- function(path, indicator, admin_level = c("adminlevel_1", "district"), region = NULL) {
+  mcp_call_cache_method(path, "get_filtered_inequality", list(indicator = indicator, admin_level = admin_level, region = region))
+}
+
+#' @describeIn mcp_tools Evaluate an indicator against its benchmark
+#'   threshold (Layer 2/3).
+#' @noRd
+mcp_get_filtered_threshold <- function(path, indicator = c("anc4", "instlivebirths", "vaccine", "dropout"), target_unit = c("district", "adminlevel_1"), region = NULL) {
+  mcp_call_cache_method(path, "get_filtered_threshold", list(indicator = indicator, target_unit = target_unit, region = region))
+}
+
+#' @describeIn mcp_tools Regions/districts exceeding a benchmark coverage
+#'   threshold for an indicator (Layer 2/3).
+#' @noRd
+mcp_get_high_performers <- function(path, indicator, admin_level = c("national", "adminlevel_1", "district"), region = NULL) {
+  mcp_call_cache_method(path, "get_high_performers", list(indicator = indicator, admin_level = admin_level, region = region))
+}
+
+#' @describeIn mcp_tools National (or region-substituted) mortality/survey
+#'   rate estimates used elsewhere in the pipeline (Layer 0).
+#' @noRd
+mcp_get_regional_estimates <- function(path, admin_level = c("national", "adminlevel_1", "district"), region = NULL) {
+  mcp_call_cache_method(path, "get_regional_estimates", list(admin_level = admin_level, region = region))
+}
+
+#' @describeIn mcp_tools Mean institutional-livebirths rate used as the
+#'   mortality-completeness-ratio baseline (Layer 3).
+#' @noRd
+mcp_get_lbr_mean <- function(path) {
+  mcp_call_cache_method(path, "lbr_mean")
+}
+
+#' @describeIn mcp_tools Facility/period units missing an indicator (Layer 1).
+#' @noRd
+mcp_get_missing_units <- function(path, indicator, region = NULL) {
+  mcp_call_cache_method(path, "list_missing_units", list(indicator = indicator, region = region))
+}
+
+#' @describeIn mcp_tools Service-utilization data prepared for map
+#'   rendering (Layer 3), stripped of its geometry column (same rationale as
+#'   [mcp_get_mapping_data()]).
+#' @noRd
+mcp_get_service_utilization_mapping <- function(path, indicator = c("ipd", "opd"), map_years = NULL) {
+  mcp_call_cache_method(
+    path, "prepare_mapping_service_utlization", list(indicator = indicator, map_years = map_years),
+    shape = mcp_shape_result_no_geom
+  )
+}
+
+#' @describeIn mcp_tools Completeness-adjusted mortality ratio vs. UN
+#'   estimate bounds (Layer 3).
+#' @noRd
+mcp_get_mortality_completeness_ratio <- function(path, indicator = c("mmr", "sbr", "nn")) {
+  mcp_call_cache_method(path, "summarise_completeness_ratio", list(indicator = indicator))
 }
 
 #' @describeIn mcp_tools Render one of the package's existing report

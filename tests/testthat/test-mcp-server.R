@@ -1,27 +1,41 @@
-test_that("mcp_tool_list builds one ellmer tool per pipeline-layer read plus load_cache/report/plot", {
+test_that("mcp_tool_list builds one ellmer tool per exposed CacheConnection read method, uniquely named", {
   skip_if_not_installed("mcptools")
   skip_if_not_installed("ellmer")
 
   tools <- mcp_tool_list(max_sessions = 3L)
   names <- vapply(tools, function(t) t@name, character(1))
 
-  expect_identical(
-    names,
-    c(
-      "load_cache",
-      "get_data_overview",
-      "get_overall_score",
-      "get_indicator_coverage",
-      "get_inequality",
-      "get_mortality_summary",
-      "get_service_utilization",
-      "get_health_system_metrics",
-      "get_private_sector_data",
-      "get_mapping_data",
-      "generate_report",
-      "get_coverage_plot"
-    )
+  expect_identical(anyDuplicated(names), 0L)
+  expect_identical(length(names), 38L)
+  expect_true(all(c(
+    "load_cache", "get_data_overview", "generate_report", "get_coverage_plot"
+  ) %in% names))
+})
+
+test_that("mcp_tool_list never exposes a CacheConnection setter or other mutating/non-data method", {
+  skip_if_not_installed("mcptools")
+  skip_if_not_installed("ellmer")
+
+  # Every worker dispatches through mcp_call_cache_method() with a hardcoded
+  # method name -- this checks that none of those hardcoded names are a
+  # setter or one of the other methods deliberately excluded (see
+  # mcp_call_cache_method()'s @describeIn).
+  ns <- asNamespace("cd2030.core")
+  all_names <- ls(ns, all.names = TRUE)
+  worker_names <- all_names[grepl("^mcp_get_|^mcp_load_cache$|^mcp_generate_report$|^mcp_render_coverage_plot$", all_names)]
+  worker_body_text <- vapply(
+    mget(worker_names, envir = ns),
+    function(f) paste(deparse(body(f)), collapse = "\n"),
+    character(1)
   )
+  all_methods <- setdiff(names(CacheConnection$public_methods), "clone")
+  setters <- grep("^set_", all_methods, value = TRUE)
+  exempt <- c("initialize", "adjust_data", "save_to_disk", "load_from_disk", "reactive", "get_bayes_model")
+
+  for (forbidden in c(setters, exempt)) {
+    hit <- grepl(paste0('"', forbidden, '"'), worker_body_text, fixed = TRUE)
+    expect_false(any(hit), info = paste("forbidden method referenced:", forbidden))
+  }
 })
 
 test_that("cd2030_mcp_server errors clearly when mcptools/ellmer aren't installed", {

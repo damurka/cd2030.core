@@ -86,6 +86,53 @@ test_that("read tools across every pipeline layer succeed against a real cache",
   expect_false("geometry" %in% names(mapping$data))
 })
 
+test_that("the 26 mechanically-added read tools succeed against a real cache", {
+  skip_if(skip_mcp_integration, "CD2030_MCP_TEST_RDS not set to an existing cache")
+  mcp_session_reset()
+  on.exit(mcp_session_reset())
+
+  mcp_load_cache(mcp_test_rds)
+
+  expect_true(mcp_get_completeness_summary(mcp_test_rds, admin_level = "national")$meta$total_rows > 0)
+  expect_true(mcp_get_coverage_raw(mcp_test_rds, admin_level = "national")$meta$total_rows > 0)
+  expect_true(mcp_get_derived_coverage(mcp_test_rds, indicator = "anc1", admin_level = "national")$meta$total_rows > 0)
+  expect_true(mcp_get_district_completeness_summary(mcp_test_rds)$meta$total_rows > 0)
+  expect_true(mcp_get_district_outlier_summary(mcp_test_rds)$meta$total_rows > 0)
+  expect_true(mcp_get_district_reporting_rate(mcp_test_rds)$meta$total_rows > 0)
+  expect_true(mcp_get_outliers_summary(mcp_test_rds, admin_level = "national")$meta$total_rows > 0)
+  expect_true(mcp_get_ratios_and_adequacy(mcp_test_rds)$meta$total_rows > 0)
+  expect_true(mcp_get_reporting_rate(mcp_test_rds, admin_level = "national")$meta$total_rows > 0)
+  expect_true(mcp_get_service_dqa_summary(mcp_test_rds, admin_level = "national")$meta$total_rows > 0)
+  expect_true(mcp_get_service_utilization_summary(mcp_test_rds, admin_level = "national")$meta$total_rows > 0)
+  expect_true(mcp_get_mch_curative_index(mcp_test_rds)$meta$total_rows > 0)
+  expect_true(mcp_get_admin1_service_utilization(mcp_test_rds, metric_type = "opd")$meta$total_rows > 0)
+  expect_true(mcp_get_coverage_data_selected(mcp_test_rds, admin_level = "national", type = "child")$meta$total_rows > 0)
+  expect_true(mcp_get_health_system_table(mcp_test_rds)$meta$total_rows > 0)
+  expect_true(mcp_get_phc_scatter_data(mcp_test_rds, indicator = "ratio_fac_pop")$meta$total_rows > 0)
+  expect_true(mcp_get_filtered_coverage(mcp_test_rds, indicator = "anc1", admin_level = "national")$meta$total_rows > 0)
+  expect_true(mcp_get_filtered_inequality(mcp_test_rds, indicator = "anc1", admin_level = "adminlevel_1")$meta$total_rows > 0)
+  expect_true(mcp_get_filtered_threshold(mcp_test_rds, indicator = "anc4", target_unit = "district")$meta$total_rows > 0)
+  expect_true(mcp_get_high_performers(mcp_test_rds, indicator = "anc1", admin_level = "national")$meta$total_rows > 0)
+  expect_true(mcp_get_mortality_completeness_ratio(mcp_test_rds, indicator = "mmr")$meta$total_rows > 0)
+
+  # zero rows here is a legitimate real answer (no missing units for this
+  # indicator), so this only checks the call succeeds and is shaped correctly
+  missing_units <- mcp_get_missing_units(mcp_test_rds, indicator = "anc1")
+  expect_true(is.list(missing_units) && !is.null(missing_units$meta))
+  expect_identical(missing_units$meta$total_rows, missing_units$meta$returned_rows)
+
+  # scalar/list passthroughs, not tabular -- must NOT go through mcp_shape_table
+  expect_identical(mcp_get_denominator(mcp_test_rds, indicator = "anc1"), "anc1")
+  expect_type(mcp_get_lbr_mean(mcp_test_rds), "double")
+  estimates <- mcp_get_regional_estimates(mcp_test_rds, admin_level = "national")
+  expect_true(is.list(estimates) && !is.data.frame(estimates))
+
+  # geometry stripped from the map-ready service utilization data
+  util_map <- mcp_get_service_utilization_mapping(mcp_test_rds, indicator = "opd")
+  expect_true(util_map$meta$total_rows > 0)
+  expect_false(any(c("geometry", "geom") %in% names(util_map$data)))
+})
+
 test_that("mcp_render_coverage_plot renders a real PNG", {
   skip_if(skip_mcp_integration, "CD2030_MCP_TEST_RDS not set to an existing cache")
   mcp_session_reset()
