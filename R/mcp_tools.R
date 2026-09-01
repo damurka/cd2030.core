@@ -165,12 +165,20 @@ mcp_get_data_overview <- function(path) {
 }
 
 #' @describeIn mcp_tools DQA "Overall Score" (metric 4, the mean of metrics
-#'   1a, 1b, 2a, 2b, 3c, 3d) (Layer 1).
+#'   1a, 1b, 2a, 2b, 3c, 3d) (Layer 1). Uses the cached `overall_score`
+#'   active binding for the national case (the only shape it covers, since
+#'   `calculate_overall_score()` requires `region` for adminlevel_1) instead
+#'   of recomputing every call.
 #' @noRd
 mcp_get_overall_score <- function(path, admin_level = c("national", "adminlevel_1"), region = NULL) {
   admin_level <- arg_match(admin_level)
   cache <- mcp_get_cache(path)
-  mcp_shape_table(cache$calculate_overall_score(admin_level = admin_level, region = region))
+  data <- if (admin_level == "national") {
+    cache$overall_score
+  } else {
+    cache$calculate_overall_score(admin_level = admin_level, region = region)
+  }
+  mcp_shape_table(data)
 }
 
 #' @describeIn mcp_tools Indicator coverage (Layer 2).
@@ -184,12 +192,20 @@ mcp_get_indicator_coverage <- function(path, admin_level = c("national", "adminl
 #' @describeIn mcp_tools The CD2030 framework's "Subnational Inequality"
 #'   (MADM, the raw multi-indicator matrix) (Layer 3) -- NOT the framework's
 #'   separate "Equity Assessment" module; see [mcp_render_equiplot_area()]
-#'   and friends for that.
+#'   and friends for that. Uses the cached `inequality_admin1`/
+#'   `inequality_district` active bindings when no `region` filter is
+#'   requested (what they cache), instead of recomputing every call --
+#'   `calculate_inequality()` itself never consults them.
 #' @noRd
 mcp_get_inequality <- function(path, admin_level = c("adminlevel_1", "district"), region = NULL) {
   admin_level <- arg_match(admin_level)
   cache <- mcp_get_cache(path)
-  mcp_shape_table(cache$calculate_inequality(admin_level = admin_level, region = region))
+  data <- if (is.null(region)) {
+    if (admin_level == "adminlevel_1") cache$inequality_admin1 else cache$inequality_district
+  } else {
+    cache$calculate_inequality(admin_level = admin_level, region = region)
+  }
+  mcp_shape_table(data)
 }
 
 #' @describeIn mcp_tools Mortality ratio summary (Layer 3) -- iMMR/MMR/cMMR
@@ -273,11 +289,29 @@ mcp_get_mapping_data <- function(path,
 # method itself (see mcp_call_cache_method()'s @describeIn).
 # =========================================================================
 
+#' @describeIn mcp_tools For the handful of DQA methods that have a matching
+#'   cached active binding per admin_level (`{binding}_national`/`_admin1`/
+#'   `_district`) covering exactly the no-region-filter case, prefer that
+#'   binding over recomputing; fall back to the method itself once a
+#'   `region` filter is requested (bindings don't support that).
+#' @noRd
+mcp_cached_by_admin_level <- function(cache, admin_level, region, binding, method) {
+  if (is.null(region)) {
+    suffix <- switch(admin_level, national = "national", adminlevel_1 = "admin1", district = "district")
+    return(cache[[paste0(binding, "_", suffix)]])
+  }
+  cache[[method]](admin_level = admin_level, region = region)
+}
+
 #' @describeIn mcp_tools DQA completeness summary -- metric 1c, "% of
-#'   districts with no missing values for the 4 forms" (Layer 1).
+#'   districts with no missing values for the 4 forms" (Layer 1). Uses the
+#'   cached `completeness_national`/`_admin1`/`_district` bindings when
+#'   unfiltered.
 #' @noRd
 mcp_get_completeness_summary <- function(path, admin_level = c("national", "adminlevel_1", "district"), region = NULL) {
-  mcp_call_cache_method(path, "calculate_completeness_summary", list(admin_level = admin_level, region = region))
+  admin_level <- arg_match(admin_level)
+  cache <- mcp_get_cache(path)
+  mcp_shape_table(mcp_cached_by_admin_level(cache, admin_level, region, "completeness", "calculate_completeness_summary"))
 }
 
 #' @describeIn mcp_tools Full, multi-indicator raw coverage merge (Layer 2) --
@@ -316,10 +350,13 @@ mcp_get_district_reporting_rate <- function(path, region = NULL) {
 
 #' @describeIn mcp_tools Outlier summary -- metric 2a, "% of monthly values
 #'   that are not extreme outliers" (a monthly value >5x MAD from that
-#'   year's monthly median) (Layer 1).
+#'   year's monthly median) (Layer 1). Uses the cached `outliers_national`/
+#'   `_admin1`/`_district` bindings when unfiltered.
 #' @noRd
 mcp_get_outliers_summary <- function(path, admin_level = c("national", "adminlevel_1", "district"), region = NULL) {
-  mcp_call_cache_method(path, "calculate_outliers_summary", list(admin_level = admin_level, region = region))
+  admin_level <- arg_match(admin_level)
+  cache <- mcp_get_cache(path)
+  mcp_shape_table(mcp_cached_by_admin_level(cache, admin_level, region, "outliers", "calculate_outliers_summary"))
 }
 
 #' @describeIn mcp_tools The CD2030 framework's "Internal Consistency" checks
@@ -331,10 +368,13 @@ mcp_get_ratios_and_adequacy <- function(path, region = NULL) {
 }
 
 #' @describeIn mcp_tools Average reporting rate -- metric 1a, "% of expected
-#'   monthly facility reports received" (Layer 1).
+#'   monthly facility reports received" (Layer 1). Uses the cached
+#'   `reporting_rate_national`/`_admin1`/`_district` bindings when unfiltered.
 #' @noRd
 mcp_get_reporting_rate <- function(path, admin_level = c("national", "adminlevel_1", "district"), region = NULL) {
-  mcp_call_cache_method(path, "calculate_reporting_rate", list(admin_level = admin_level, region = region))
+  admin_level <- arg_match(admin_level)
+  cache <- mcp_get_cache(path)
+  mcp_shape_table(mcp_cached_by_admin_level(cache, admin_level, region, "reporting_rate", "calculate_reporting_rate"))
 }
 
 #' @describeIn mcp_tools Service-DQA summary comparing reporting vs.
@@ -348,10 +388,19 @@ mcp_get_service_dqa_summary <- function(path, admin_level = c("national", "admin
 #'   every metric at once; see [mcp_get_service_utilization()] for a single
 #'   indicator instead. Includes "Mean OPD Visits per Child per Year",
 #'   "Admissions per 100 Children Under-5 per Year", and Case Fatality Rate
-#'   (see [mcp_get_service_utilization()]'s CFR/adjusted-data note).
+#'   (see [mcp_get_service_utilization()]'s CFR/adjusted-data note). Uses the
+#'   cached `service_utilization_national`/`_admin1` bindings (no district
+#'   binding exists on `CacheConnection`, so district always recomputes).
 #' @noRd
 mcp_get_service_utilization_summary <- function(path, admin_level = c("national", "adminlevel_1", "district")) {
-  mcp_call_cache_method(path, "compute_service_utilization", list(admin_level = admin_level))
+  admin_level <- arg_match(admin_level)
+  cache <- mcp_get_cache(path)
+  data <- switch(admin_level,
+    national = cache$service_utilization_national,
+    adminlevel_1 = cache$service_utilization_admin1,
+    district = cache$compute_service_utilization("district")
+  )
+  mcp_shape_table(data)
 }
 
 #' @describeIn mcp_tools Maternal/child-health vs. curative-services index,

@@ -30,3 +30,10 @@
   protect against a very wide table (e.g. `get_indicator_coverage` at
   district level, ~190 columns), where even a handful of rows produced a
   megabyte-scale response that crashed a live client connection.
+* Six MCP tools (`get_overall_score`, `get_inequality`,
+  `get_completeness_summary`, `get_outliers_summary`, `get_reporting_rate`,
+  `get_service_utilization_summary`) now read `CacheConnection`'s cached
+  active bindings (e.g. `reporting_rate_district`) instead of always calling
+  the always-recomputing `calculate_*`/`compute_*` method, whenever no
+  `region` filter is requested -- the exact case those bindings cover.
+  Verified identical output to a direct recompute for all six.

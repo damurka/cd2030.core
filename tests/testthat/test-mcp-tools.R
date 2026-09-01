@@ -108,6 +108,39 @@ test_that("read tools across every pipeline layer succeed against a real cache",
   expect_false("geometry" %in% names(mapping$data))
 })
 
+test_that("tools that prefer a cached active binding return the same data as a direct recompute", {
+  skip_if(skip_mcp_integration, "CD2030_MCP_TEST_RDS not set to an existing cache")
+  mcp_session_reset()
+  on.exit(mcp_session_reset())
+
+  mcp_load_cache(mcp_test_rds)
+  cache <- mcp_get_cache(mcp_test_rds)
+
+  # Compare the raw bindings/recomputes directly, bypassing mcp_shape_table's
+  # cell-cap truncation entirely (several of these tables are wide enough --
+  # up to 850+ columns for inequality -- that truncation would otherwise
+  # confound this comparison with a row-count mismatch unrelated to whether
+  # the binding and the recompute actually agree).
+  same_after_sort <- function(a, b) {
+    key_cols <- intersect(c("adminlevel_1", "district", "year"), names(a))
+    a <- a[do.call(order, a[key_cols]), names(a)]
+    b <- b[do.call(order, b[key_cols]), names(a)]
+    isTRUE(all.equal(a, b, check.attributes = FALSE))
+  }
+
+  expect_true(same_after_sort(cache$overall_score, cache$calculate_overall_score(admin_level = "national")))
+  expect_true(same_after_sort(cache$inequality_admin1, cache$calculate_inequality(admin_level = "adminlevel_1")))
+  expect_true(same_after_sort(cache$completeness_district, cache$calculate_completeness_summary(admin_level = "district")))
+  expect_true(same_after_sort(cache$outliers_admin1, cache$calculate_outliers_summary(admin_level = "adminlevel_1")))
+  expect_true(same_after_sort(cache$reporting_rate_district, cache$calculate_reporting_rate(admin_level = "district")))
+  expect_true(same_after_sort(cache$service_utilization_national, cache$compute_service_utilization("national")))
+
+  # a region filter must still recompute (bindings don't support it) and return valid data
+  region <- cache$subnational_regions$adminlevel_1[1]
+  filtered <- mcp_get_reporting_rate(mcp_test_rds, admin_level = "adminlevel_1", region = region)
+  expect_true(filtered$meta$total_rows > 0)
+})
+
 test_that("the 26 mechanically-added read tools succeed against a real cache", {
   skip_if(skip_mcp_integration, "CD2030_MCP_TEST_RDS not set to an existing cache")
   mcp_session_reset()
