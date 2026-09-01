@@ -263,8 +263,6 @@ generate_coverage_data <- function(.data,
   admin_level_col <- get_admin_columns(admin_level, region)
   admin_level_cols <- c(admin_level_col, 'year')
 
-  print(region)
-
   type <- arg_match(type)
   denominator <- arg_match(denominator)
   

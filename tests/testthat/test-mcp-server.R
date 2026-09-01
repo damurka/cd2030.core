@@ -6,9 +6,10 @@ test_that("mcp_tool_list builds one ellmer tool per exposed CacheConnection read
   names <- vapply(tools, function(t) t@name, character(1))
 
   expect_identical(anyDuplicated(names), 0L)
-  expect_identical(length(names), 38L)
+  expect_identical(length(names), 41L)
   expect_true(all(c(
-    "load_cache", "get_data_overview", "generate_report", "get_coverage_plot"
+    "load_cache", "get_data_overview", "generate_report", "get_coverage_plot",
+    "get_equiplot_area", "get_equiplot_wealth", "get_equiplot_education"
   ) %in% names))
 })
 
@@ -22,7 +23,7 @@ test_that("mcp_tool_list never exposes a CacheConnection setter or other mutatin
   # mcp_call_cache_method()'s @describeIn).
   ns <- asNamespace("cd2030.core")
   all_names <- ls(ns, all.names = TRUE)
-  worker_names <- all_names[grepl("^mcp_get_|^mcp_load_cache$|^mcp_generate_report$|^mcp_render_coverage_plot$", all_names)]
+  worker_names <- all_names[grepl("^mcp_get_|^mcp_load_cache$|^mcp_generate_report$|^mcp_render_coverage_plot$|^mcp_render_equiplot_", all_names)]
   worker_body_text <- vapply(
     mget(worker_names, envir = ns),
     function(f) paste(deparse(body(f)), collapse = "\n"),

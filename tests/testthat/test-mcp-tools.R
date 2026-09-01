@@ -106,12 +106,12 @@ test_that("the 26 mechanically-added read tools succeed against a real cache", {
   expect_true(mcp_get_service_utilization_summary(mcp_test_rds, admin_level = "national")$meta$total_rows > 0)
   expect_true(mcp_get_mch_curative_index(mcp_test_rds)$meta$total_rows > 0)
   expect_true(mcp_get_admin1_service_utilization(mcp_test_rds, metric_type = "opd")$meta$total_rows > 0)
-  expect_true(mcp_get_coverage_data_selected(mcp_test_rds, admin_level = "national", type = "child")$meta$total_rows > 0)
+  expect_true(mcp_get_continuum_of_care(mcp_test_rds, admin_level = "national", type = "child")$meta$total_rows > 0)
   expect_true(mcp_get_health_system_table(mcp_test_rds)$meta$total_rows > 0)
   expect_true(mcp_get_phc_scatter_data(mcp_test_rds, indicator = "ratio_fac_pop")$meta$total_rows > 0)
   expect_true(mcp_get_filtered_coverage(mcp_test_rds, indicator = "anc1", admin_level = "national")$meta$total_rows > 0)
   expect_true(mcp_get_filtered_inequality(mcp_test_rds, indicator = "anc1", admin_level = "adminlevel_1")$meta$total_rows > 0)
-  expect_true(mcp_get_filtered_threshold(mcp_test_rds, indicator = "anc4", target_unit = "district")$meta$total_rows > 0)
+  expect_true(mcp_get_coverage_targets(mcp_test_rds, indicator = "anc4", target_unit = "district")$meta$total_rows > 0)
   expect_true(mcp_get_high_performers(mcp_test_rds, indicator = "anc1", admin_level = "national")$meta$total_rows > 0)
   expect_true(mcp_get_mortality_completeness_ratio(mcp_test_rds, indicator = "mmr")$meta$total_rows > 0)
 
@@ -144,6 +144,21 @@ test_that("mcp_render_coverage_plot renders a real PNG", {
 
   expect_true(file.exists(path))
   expect_true(file.info(path)$size > 0)
+})
+
+test_that("the three equiplot renderers each produce a real PNG", {
+  skip_if(skip_mcp_integration, "CD2030_MCP_TEST_RDS not set to an existing cache")
+  mcp_session_reset()
+  on.exit(mcp_session_reset())
+
+  mcp_load_cache(mcp_test_rds)
+
+  for (renderer in list(mcp_render_equiplot_area, mcp_render_equiplot_wealth, mcp_render_equiplot_education)) {
+    path <- renderer(mcp_test_rds, indicator = "anc1")
+    on.exit(unlink(path), add = TRUE)
+    expect_true(file.exists(path))
+    expect_true(file.info(path)$size > 0)
+  }
 })
 
 test_that("multiple sessions can be open at once, keyed by path", {

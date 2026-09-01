@@ -102,9 +102,6 @@ generate_bayes_model <- function(coverage_data,
   routine_dt <- routine_dt %>% 
     left_join(dqa, by = join_by(year))
 
-  print(glimpse(baye_dt))
-  print(glimpse(routine_dt))
-
   # ---------------------------------------------------------
   # 4. Fit Model
   # ---------------------------------------------------------

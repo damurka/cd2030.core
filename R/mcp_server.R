@@ -3,10 +3,12 @@
 #' @description
 #' Starts a [Model Context Protocol](https://modelcontextprotocol.io) server,
 #' over stdio, that lets an LLM client (e.g. Claude Desktop or Claude Code)
-#' query already-processed Countdown 2030 datasets: data quality scores,
-#' coverage, inequality, mortality, service utilization, health system
-#' metrics, private-sector splits, mapping data, generated reports, and
-#' coverage charts.
+#' query already-processed Countdown 2030 datasets, following the CD2030
+#' analytical framework's own module names: data quality assessment,
+#' coverage estimation, subnational inequality (MADM), equity assessment
+#' (equiplots), mortality, service utilization, health system performance,
+#' private-sector splits, mapping data, generated reports, and coverage
+#' charts.
 #'
 #' The server is read-only: no tool can create or modify a `.rds` cache, or
 #' change any analysis parameter (denominators, k-factors, survey estimates,
@@ -81,7 +83,7 @@ mcp_tool_list <- function(max_sessions = 3L) {
         mcp_get_overall_score(path, admin_level = admin_level, region = region)
       },
       name = "get_overall_score",
-      description = "Get the data-quality-assessment overall score (reporting rate, completeness, outliers, ratios rolled into one grade) for a loaded cache.",
+      description = "Get the CD2030 DQA 'Overall Score' (metric 4 -- the mean of metrics 1a, 1b, 2a, 2b, 3c, 3d: reporting rate, completeness, outliers, and ratio-consistency checks rolled into one grade) for a loaded cache.",
       arguments = list(
         path = path_arg,
         admin_level = ellmer::type_enum(c("national", "adminlevel_1"), "Level to compute the score at."),
@@ -105,7 +107,13 @@ mcp_tool_list <- function(max_sessions = 3L) {
         mcp_get_inequality(path, admin_level = admin_level, region = region)
       },
       name = "get_inequality",
-      description = "Get subnational inequality data (coverage relative to the national reference) at admin1 or district level for a loaded cache.",
+      description = paste(
+        "Get the CD2030 framework's 'Subnational Inequality' data (MADM -- Median",
+        "Absolute Deviation from the Median -- of coverage relative to the national",
+        "reference) at admin1 or district level. This is NOT the framework's separate",
+        "'Equity Assessment' module (urban/rural, wealth, and education equiplots --",
+        "see get_equiplot_area/get_equiplot_wealth/get_equiplot_education instead)."
+      ),
       arguments = list(
         path = path_arg,
         admin_level = ellmer::type_enum(c("adminlevel_1", "district"), "Level to compute inequality at."),
@@ -117,10 +125,10 @@ mcp_tool_list <- function(max_sessions = 3L) {
         mcp_get_mortality_summary(path, indicator = indicator, map_years = map_years)
       },
       name = "get_mortality_summary",
-      description = "Get mortality ratio summaries (maternal, stillbirth, or neonatal) comparing internal data with UN estimates for a loaded cache.",
+      description = "Get mortality ratio summaries (iMMR/MMR/cMMR for maternal, iSBR/SBR/cSBR for stillbirth, or neonatal mortality before discharge) comparing internal data with UN estimates for a loaded cache.",
       arguments = list(
         path = path_arg,
-        indicator = ellmer::type_enum(c("mmr", "sbr", "nn"), "Mortality indicator: mmr (maternal), sbr (stillbirth), or nn (neonatal)."),
+        indicator = ellmer::type_enum(c("mmr", "sbr", "nn"), "Mortality indicator: mmr (maternal, iMMR/MMR/cMMR), sbr (stillbirth, iSBR/SBR/cSBR), or nn (neonatal mortality before discharge)."),
         map_years = ellmer::type_array(ellmer::type_integer(), "Years to include; omit to use the cache's default mapping years.", required = FALSE)
       )
     ),
@@ -129,7 +137,14 @@ mcp_tool_list <- function(max_sessions = 3L) {
         mcp_get_service_utilization(path, admin_level = admin_level, indicator = indicator, region = region)
       },
       name = "get_service_utilization",
-      description = "Get OPD/IPD service utilization data (visits, under-5 share, case-fatality rate, deaths) for a loaded cache.",
+      description = paste(
+        "Get OPD/IPD service utilization data (visits, under-5 share, Case Fatality",
+        "Rate, deaths) for a loaded cache. NOTE on cfr: the CD2030 framework requires",
+        "Case Fatality Rate to be computed from unadjusted admissions and deaths",
+        "exclusively; this tool's admissions denominator is k-factor-adjusted instead",
+        "(deaths themselves are correctly unadjusted). Treat cfr values as approximate",
+        "until this is reconciled."
+      ),
       arguments = list(
         path = path_arg,
         admin_level = ellmer::type_enum(c("national", "adminlevel_1"), "Level to aggregate utilization at."),
@@ -142,7 +157,7 @@ mcp_tool_list <- function(max_sessions = 3L) {
         mcp_get_health_system_metrics(path, admin_level = admin_level)
       },
       name = "get_health_system_metrics",
-      description = "Get core health system metrics (facility/health-worker density, bed ratios, etc.) at national or admin1 level for a loaded cache.",
+      description = "Get core health system metrics (Core Health Professionals per 10,000 Population, Health Facility Density, Hospital Density, Inpatient Bed Density) at national or admin1 level for a loaded cache.",
       arguments = list(
         path = path_arg,
         admin_level = ellmer::type_enum(c("national", "adminlevel_1"), "Level to compute metrics at.")
@@ -179,7 +194,7 @@ mcp_tool_list <- function(max_sessions = 3L) {
         mcp_get_completeness_summary(path, admin_level = admin_level, region = region)
       },
       name = "get_completeness_summary",
-      description = "Get the DQA completeness summary (% non-missing values) at national, admin1, or district level for a loaded cache.",
+      description = "Get the CD2030 DQA completeness summary -- metric 1c, '% of districts with no missing values for the 4 forms' -- at national, admin1, or district level for a loaded cache.",
       arguments = list(
         path = path_arg,
         admin_level = ellmer::type_enum(c("national", "adminlevel_1", "district"), "Level to compute completeness at."),
@@ -214,13 +229,13 @@ mcp_tool_list <- function(max_sessions = 3L) {
     ellmer::tool(
       function(path, region = NULL) mcp_get_district_completeness_summary(path, region = region),
       name = "get_district_completeness_summary",
-      description = "Get the % of districts meeting completeness thresholds, per indicator and year.",
+      description = "Get the CD2030 DQA metric 1b, '% of districts with completeness of facility reporting >= 90', per indicator and year.",
       arguments = list(path = path_arg, region = region_arg("Optional adminlevel_1 region to filter to."))
     ),
     ellmer::tool(
       function(path, region = NULL) mcp_get_district_outlier_summary(path, region = region),
       name = "get_district_outlier_summary",
-      description = "Get the % of districts with acceptable outlier variance, per indicator and year.",
+      description = "Get the CD2030 DQA metric 2b, '% of districts with no extreme outliers in the year', per indicator and year.",
       arguments = list(path = path_arg, region = region_arg("Optional adminlevel_1 region to filter to."))
     ),
     ellmer::tool(
@@ -234,7 +249,7 @@ mcp_tool_list <- function(max_sessions = 3L) {
         mcp_get_outliers_summary(path, admin_level = admin_level, region = region)
       },
       name = "get_outliers_summary",
-      description = "Get the % of values that are not severe outliers (Hampel method), at national, admin1, or district level.",
+      description = "Get the CD2030 DQA metric 2a, '% of monthly values that are not extreme outliers' (a monthly value >5x MAD from that year's monthly median), at national, admin1, or district level.",
       arguments = list(
         path = path_arg,
         admin_level = ellmer::type_enum(c("national", "adminlevel_1", "district"), "Level to compute at."),
@@ -244,7 +259,7 @@ mcp_tool_list <- function(max_sessions = 3L) {
     ellmer::tool(
       function(path, region = NULL) mcp_get_ratios_and_adequacy(path, region = region),
       name = "get_ratios_and_adequacy",
-      description = "Get chronological indicator-ratio adequacy (e.g. ANC1-to-Penta1, Penta1-to-Penta3) by year.",
+      description = "Get the CD2030 DQA 'Internal Consistency' checks -- metrics 3a-3d, e.g. the ANC1-to-Penta1 and Penta1-to-Penta3 ratios and the % of districts within the expected ratio range -- by year.",
       arguments = list(path = path_arg, region = region_arg("Optional adminlevel_1 region to filter to."))
     ),
     ellmer::tool(
@@ -252,7 +267,7 @@ mcp_tool_list <- function(max_sessions = 3L) {
         mcp_get_reporting_rate(path, admin_level = admin_level, region = region)
       },
       name = "get_reporting_rate",
-      description = "Get the average facility reporting rate, at national, admin1, or district level.",
+      description = "Get the CD2030 DQA metric 1a, '% of expected monthly facility reports received', at national, admin1, or district level.",
       arguments = list(
         path = path_arg,
         admin_level = ellmer::type_enum(c("national", "adminlevel_1", "district"), "Level to compute at."),
@@ -274,7 +289,13 @@ mcp_tool_list <- function(max_sessions = 3L) {
     ellmer::tool(
       function(path, admin_level = "national") mcp_get_service_utilization_summary(path, admin_level = admin_level),
       name = "get_service_utilization_summary",
-      description = "Get the full OPD/IPD service utilization table (visits, deaths, ratios, all metrics at once) at national, admin1, or district level. Use get_service_utilization instead if you only need one metric.",
+      description = paste(
+        "Get the full OPD/IPD service utilization table (Mean OPD Visits per Child",
+        "per Year, Admissions per 100 Children Under-5 per Year, Case Fatality Rate,",
+        "all metrics at once) at national, admin1, or district level. Use",
+        "get_service_utilization instead if you only need one metric; see its",
+        "description for a caveat on the cfr indicator's adjusted-data denominator."
+      ),
       arguments = list(
         path = path_arg,
         admin_level = ellmer::type_enum(c("national", "adminlevel_1", "district"), "Level to aggregate at.")
@@ -297,10 +318,10 @@ mcp_tool_list <- function(max_sessions = 3L) {
     ),
     ellmer::tool(
       function(path, admin_level = "national", type = "child", region = NULL) {
-        mcp_get_coverage_data_selected(path, admin_level = admin_level, type = type, region = region)
+        mcp_get_continuum_of_care(path, admin_level = admin_level, type = type, region = region)
       },
-      name = "get_coverage_data_selected",
-      description = "Get a continuum-of-care coverage summary (a curated set of indicators) for maternal or child health, at national or admin1 level.",
+      name = "get_continuum_of_care",
+      description = "Get the CD2030 framework's 'Continuum of Care' coverage summary (a curated set of indicators) for maternal or child health, at national or admin1 level.",
       arguments = list(
         path = path_arg,
         admin_level = ellmer::type_enum(c("national", "adminlevel_1"), "Level to compute at."),
@@ -311,13 +332,13 @@ mcp_tool_list <- function(max_sessions = 3L) {
     ellmer::tool(
       function(path) mcp_get_health_system_table(path),
       name = "get_health_system_table",
-      description = "Get a formatted table of core national health-system metrics (facility/health-worker density, bed ratios, etc.).",
+      description = "Get a formatted table of core national health-system metrics: Core Health Professionals per 10,000 Population, Health Facility Density, Hospital Density, Inpatient Bed Density.",
       arguments = list(path = path_arg)
     ),
     ellmer::tool(
       function(path, indicator = "ratio_fac_pop") mcp_get_phc_scatter_data(path, indicator = indicator),
       name = "get_phc_scatter_data",
-      description = "Get primary-health-care scatter data (facility or health-worker density vs. service coverage), by admin1 region.",
+      description = "Get the CD2030 'Health Systems Outputs by Inputs' scatter data (facility or health-worker density vs. service coverage), by admin1 region.",
       arguments = list(
         path = path_arg,
         indicator = ellmer::type_enum(c("ratio_fac_pop", "ratio_hstaff_pop"), "Which density ratio to pair with coverage.")
@@ -347,7 +368,12 @@ mcp_tool_list <- function(max_sessions = 3L) {
         mcp_get_filtered_inequality(path, indicator = indicator, admin_level = admin_level, region = region)
       },
       name = "get_filtered_inequality",
-      description = "Get subnational inequality data for a single indicator. Use get_inequality instead for the raw multi-indicator matrix.",
+      description = paste(
+        "Get the CD2030 framework's 'Subnational Inequality' (MADM) data for a single",
+        "indicator. Not the 'Equity Assessment' module -- see get_equiplot_area/",
+        "get_equiplot_wealth/get_equiplot_education for that. Use get_inequality",
+        "instead of this tool for the raw multi-indicator matrix."
+      ),
       arguments = list(
         path = path_arg,
         indicator = ellmer::type_string("Coverage indicator, e.g. penta1, anc4, measles1."),
@@ -357,10 +383,10 @@ mcp_tool_list <- function(max_sessions = 3L) {
     ),
     ellmer::tool(
       function(path, indicator = "anc4", target_unit = "district", region = NULL) {
-        mcp_get_filtered_threshold(path, indicator = indicator, target_unit = target_unit, region = region)
+        mcp_get_coverage_targets(path, indicator = indicator, target_unit = target_unit, region = region)
       },
-      name = "get_filtered_threshold",
-      description = "Evaluate an indicator against its benchmark coverage threshold (e.g. 80%), returning the % of districts or admin1 regions meeting it.",
+      name = "get_coverage_targets",
+      description = "Get the CD2030 framework's 'Global Coverage Targets' -- evaluate an indicator against its benchmark coverage threshold (e.g. 80%), returning the % of districts or admin1 regions meeting it.",
       arguments = list(
         path = path_arg,
         indicator = ellmer::type_enum(c("anc4", "instlivebirths", "vaccine", "dropout"), "Indicator group to evaluate."),
@@ -424,7 +450,7 @@ mcp_tool_list <- function(max_sessions = 3L) {
     ellmer::tool(
       function(path, indicator = "mmr") mcp_get_mortality_completeness_ratio(path, indicator = indicator),
       name = "get_mortality_completeness_ratio",
-      description = "Get the completeness-adjusted mortality ratio compared against UN estimate bounds, for one mortality indicator.",
+      description = "Get the community-to-institutional mortality ratio (Mc/Mi), completeness-adjusted and compared against UN estimate bounds, for one mortality indicator.",
       arguments = list(
         path = path_arg,
         indicator = ellmer::type_enum(c("mmr", "sbr", "nn"), "Mortality indicator: mmr (maternal), sbr (stillbirth), or nn (neonatal).")
@@ -464,6 +490,43 @@ mcp_tool_list <- function(max_sessions = 3L) {
         indicator = ellmer::type_string("Coverage indicator to plot, e.g. penta1, anc4, measles1."),
         admin_level = ellmer::type_enum(c("national", "adminlevel_1", "district"), "Level to plot coverage at."),
         region = region_arg("Optional region to filter to; required when admin_level is adminlevel_1 or district.")
+      )
+    ),
+    # -------------------------------------------------------------------------
+    # CD2030 framework "Equity Assessment" module (equiplots) -- distinct
+    # from "Subnational Inequality" (get_inequality/get_filtered_inequality)
+    # -------------------------------------------------------------------------
+    ellmer::tool(
+      function(path, indicator) {
+        ellmer::content_image_file(mcp_render_equiplot_area(path, indicator = indicator), "image/png", resize = "none")
+      },
+      name = "get_equiplot_area",
+      description = "Render the CD2030 'Equity Assessment' equiplot for one indicator, comparing urban vs. rural coverage trajectories over time, and return it as an image.",
+      arguments = list(
+        path = path_arg,
+        indicator = ellmer::type_string("Coverage indicator to plot, e.g. penta1, anc4, measles1.")
+      )
+    ),
+    ellmer::tool(
+      function(path, indicator) {
+        ellmer::content_image_file(mcp_render_equiplot_wealth(path, indicator = indicator), "image/png", resize = "none")
+      },
+      name = "get_equiplot_wealth",
+      description = "Render the CD2030 'Equity Assessment' equiplot for one indicator, comparing coverage trajectories across wealth quintiles (Q1-Q5) over time, and return it as an image. Patterns to look for: top inequality (only the richest escape), linear inequality (a wealth gradient), or bottom inequality (the poorest left behind).",
+      arguments = list(
+        path = path_arg,
+        indicator = ellmer::type_string("Coverage indicator to plot, e.g. penta1, anc4, measles1.")
+      )
+    ),
+    ellmer::tool(
+      function(path, indicator) {
+        ellmer::content_image_file(mcp_render_equiplot_education(path, indicator = indicator), "image/png", resize = "none")
+      },
+      name = "get_equiplot_education",
+      description = "Render the CD2030 'Equity Assessment' equiplot for one indicator, comparing coverage trajectories by maternal education level (none/primary/secondary+) over time, and return it as an image.",
+      arguments = list(
+        path = path_arg,
+        indicator = ellmer::type_string("Coverage indicator to plot, e.g. penta1, anc4, measles1.")
       )
     )
   )

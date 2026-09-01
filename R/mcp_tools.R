@@ -138,7 +138,8 @@ mcp_get_data_overview <- function(path) {
   )
 }
 
-#' @describeIn mcp_tools DQA overall score (Layer 1).
+#' @describeIn mcp_tools DQA "Overall Score" (metric 4, the mean of metrics
+#'   1a, 1b, 2a, 2b, 3c, 3d) (Layer 1).
 #' @noRd
 mcp_get_overall_score <- function(path, admin_level = c("national", "adminlevel_1"), region = NULL) {
   admin_level <- arg_match(admin_level)
@@ -154,7 +155,10 @@ mcp_get_indicator_coverage <- function(path, admin_level = c("national", "adminl
   mcp_shape_table(cache$get_base_indicator_coverage(admin_level = admin_level, region = region))
 }
 
-#' @describeIn mcp_tools Subnational inequality (Layer 3).
+#' @describeIn mcp_tools The CD2030 framework's "Subnational Inequality"
+#'   (MADM, the raw multi-indicator matrix) (Layer 3) -- NOT the framework's
+#'   separate "Equity Assessment" module; see [mcp_render_equiplot_area()]
+#'   and friends for that.
 #' @noRd
 mcp_get_inequality <- function(path, admin_level = c("adminlevel_1", "district"), region = NULL) {
   admin_level <- arg_match(admin_level)
@@ -162,7 +166,9 @@ mcp_get_inequality <- function(path, admin_level = c("adminlevel_1", "district")
   mcp_shape_table(cache$calculate_inequality(admin_level = admin_level, region = region))
 }
 
-#' @describeIn mcp_tools Mortality ratio summary (Layer 3).
+#' @describeIn mcp_tools Mortality ratio summary (Layer 3) -- iMMR/MMR/cMMR
+#'   (indicator = "mmr") or iSBR/SBR/cSBR (indicator = "sbr"), or neonatal
+#'   mortality before discharge (indicator = "nn").
 #' @noRd
 mcp_get_mortality_summary <- function(path, indicator = c("mmr", "sbr", "nn"), map_years = NULL) {
   indicator <- arg_match(indicator)
@@ -170,7 +176,13 @@ mcp_get_mortality_summary <- function(path, indicator = c("mmr", "sbr", "nn"), m
   mcp_shape_table(cache$filter_mortality_summary(indicator = indicator, map_years = map_years))
 }
 
-#' @describeIn mcp_tools OPD/IPD service utilization (Layer 3).
+#' @describeIn mcp_tools OPD/IPD service utilization (Layer 3). NOTE: the
+#'   "cfr" (Case Fatality Rate) indicator's denominator (admissions) is
+#'   k-factor-adjusted here, because it's computed from `adjusted_data`; the
+#'   CD2030 framework's documented methodology requires CFR to be computed
+#'   from unadjusted admissions and deaths exclusively. Deaths themselves are
+#'   correctly unadjusted (the adjustment pipeline never touches death
+#'   columns) -- only the admissions side diverges from the documented rule.
 #' @noRd
 mcp_get_service_utilization <- function(path,
                                         admin_level = c("national", "adminlevel_1"),
@@ -182,7 +194,9 @@ mcp_get_service_utilization <- function(path,
   mcp_shape_table(cache$filter_service_utilization(admin_level = admin_level, indicator = indicator, region = region))
 }
 
-#' @describeIn mcp_tools Health system metrics (Layer 3).
+#' @describeIn mcp_tools Health system metrics (Layer 3) -- Core Health
+#'   Professionals per 10,000 Population, Health Facility Density,
+#'   Hospital Density, Inpatient Bed Density.
 #' @noRd
 mcp_get_health_system_metrics <- function(path, admin_level = c("national", "adminlevel_1")) {
   admin_level <- arg_match(admin_level)
@@ -233,7 +247,8 @@ mcp_get_mapping_data <- function(path,
 # method itself (see mcp_call_cache_method()'s @describeIn).
 # =========================================================================
 
-#' @describeIn mcp_tools DQA completeness summary (Layer 1).
+#' @describeIn mcp_tools DQA completeness summary -- metric 1c, "% of
+#'   districts with no missing values for the 4 forms" (Layer 1).
 #' @noRd
 mcp_get_completeness_summary <- function(path, admin_level = c("national", "adminlevel_1", "district"), region = NULL) {
   mcp_call_cache_method(path, "calculate_completeness_summary", list(admin_level = admin_level, region = region))
@@ -253,13 +268,15 @@ mcp_get_derived_coverage <- function(path, indicator, admin_level = c("national"
   mcp_call_cache_method(path, "calculate_derived_coverage", list(indicator = indicator, admin_level = admin_level, region = region))
 }
 
-#' @describeIn mcp_tools District-level completeness detail (Layer 1).
+#' @describeIn mcp_tools District-level completeness detail -- metric 1b,
+#'   "% of districts with completeness of facility reporting >= 90" (Layer 1).
 #' @noRd
 mcp_get_district_completeness_summary <- function(path, region = NULL) {
   mcp_call_cache_method(path, "calculate_district_completeness_summary", list(region = region))
 }
 
-#' @describeIn mcp_tools District-level outlier detail (Layer 1).
+#' @describeIn mcp_tools District-level outlier detail -- metric 2b, "% of
+#'   districts with no extreme outliers in the year" (Layer 1).
 #' @noRd
 mcp_get_district_outlier_summary <- function(path, region = NULL) {
   mcp_call_cache_method(path, "calculate_district_outlier_summary", list(region = region))
@@ -271,20 +288,24 @@ mcp_get_district_reporting_rate <- function(path, region = NULL) {
   mcp_call_cache_method(path, "calculate_district_reporting_rate", list(region = region))
 }
 
-#' @describeIn mcp_tools Outlier summary (Layer 1).
+#' @describeIn mcp_tools Outlier summary -- metric 2a, "% of monthly values
+#'   that are not extreme outliers" (a monthly value >5x MAD from that
+#'   year's monthly median) (Layer 1).
 #' @noRd
 mcp_get_outliers_summary <- function(path, admin_level = c("national", "adminlevel_1", "district"), region = NULL) {
   mcp_call_cache_method(path, "calculate_outliers_summary", list(admin_level = admin_level, region = region))
 }
 
-#' @describeIn mcp_tools Chronological ratio/adequacy summary, e.g.
-#'   ANC1-to-Penta1 (Layer 1).
+#' @describeIn mcp_tools The CD2030 framework's "Internal Consistency" checks
+#'   -- metrics 3a-3d, e.g. the ANC1-to-Penta1 and Penta1-to-Penta3 ratios and
+#'   the % of districts within the expected ratio range (Layer 1).
 #' @noRd
 mcp_get_ratios_and_adequacy <- function(path, region = NULL) {
   mcp_call_cache_method(path, "calculate_ratios_and_adequacy", list(region = region))
 }
 
-#' @describeIn mcp_tools Average reporting rate (Layer 1).
+#' @describeIn mcp_tools Average reporting rate -- metric 1a, "% of expected
+#'   monthly facility reports received" (Layer 1).
 #' @noRd
 mcp_get_reporting_rate <- function(path, admin_level = c("national", "adminlevel_1", "district"), region = NULL) {
   mcp_call_cache_method(path, "calculate_reporting_rate", list(admin_level = admin_level, region = region))
@@ -299,7 +320,9 @@ mcp_get_service_dqa_summary <- function(path, admin_level = c("national", "admin
 
 #' @describeIn mcp_tools Full OPD/IPD service utilization table (Layer 3) --
 #'   every metric at once; see [mcp_get_service_utilization()] for a single
-#'   indicator instead.
+#'   indicator instead. Includes "Mean OPD Visits per Child per Year",
+#'   "Admissions per 100 Children Under-5 per Year", and Case Fatality Rate
+#'   (see [mcp_get_service_utilization()]'s CFR/adjusted-data note).
 #' @noRd
 mcp_get_service_utilization_summary <- function(path, admin_level = c("national", "adminlevel_1", "district")) {
   mcp_call_cache_method(path, "compute_service_utilization", list(admin_level = admin_level))
@@ -318,21 +341,24 @@ mcp_get_admin1_service_utilization <- function(path, metric_type = c("opd", "ipd
   mcp_call_cache_method(path, "generate_admin1_service_utilization", list(metric_type = metric_type))
 }
 
-#' @describeIn mcp_tools Continuum-of-care coverage summary for maternal or
-#'   child indicators (Layer 2).
+#' @describeIn mcp_tools The CD2030 framework's "Continuum of Care" summary
+#'   (a curated set of maternal or child-health indicators) (Layer 2).
 #' @noRd
-mcp_get_coverage_data_selected <- function(path, admin_level = c("national", "adminlevel_1"), type = c("maternal", "child"), region = NULL) {
+mcp_get_continuum_of_care <- function(path, admin_level = c("national", "adminlevel_1"), type = c("maternal", "child"), region = NULL) {
   mcp_call_cache_method(path, "generate_coverage_data", list(admin_level = admin_level, type = type, region = region))
 }
 
-#' @describeIn mcp_tools Formatted core health-system metrics table (Layer 3).
+#' @describeIn mcp_tools Formatted core health-system metrics table -- Core
+#'   Health Professionals per 10,000 Population, Health Facility Density,
+#'   Hospital Density, Inpatient Bed Density (Layer 3).
 #' @noRd
 mcp_get_health_system_table <- function(path) {
   mcp_call_cache_method(path, "generate_health_system_table")
 }
 
-#' @describeIn mcp_tools Primary-health-care scatter data (facility/staff
-#'   density vs. coverage), by admin1 region (Layer 3).
+#' @describeIn mcp_tools Primary-health-care "Health Systems Outputs by
+#'   Inputs" scatter data (facility/staff density vs. coverage), by admin1
+#'   region (Layer 3).
 #' @noRd
 mcp_get_phc_scatter_data <- function(path, indicator = c("ratio_fac_pop", "ratio_hstaff_pop")) {
   mcp_call_cache_method(path, "generate_phc_scatter_data", list(indicator = indicator))
@@ -353,17 +379,19 @@ mcp_get_filtered_coverage <- function(path, indicator, admin_level = c("national
   mcp_call_cache_method(path, "get_filtered_coverage", list(indicator = indicator, admin_level = admin_level, region = region))
 }
 
-#' @describeIn mcp_tools Inequality data for a single indicator (Layer 3) --
+#' @describeIn mcp_tools The CD2030 framework's "Subnational Inequality"
+#'   (MADM) for a single indicator (Layer 3) -- NOT the framework's separate
+#'   "Equity Assessment" module ([mcp_render_equiplot_area()] and friends);
 #'   see [mcp_get_inequality()] for the raw multi-indicator matrix instead.
 #' @noRd
 mcp_get_filtered_inequality <- function(path, indicator, admin_level = c("adminlevel_1", "district"), region = NULL) {
   mcp_call_cache_method(path, "get_filtered_inequality", list(indicator = indicator, admin_level = admin_level, region = region))
 }
 
-#' @describeIn mcp_tools Evaluate an indicator against its benchmark
-#'   threshold (Layer 2/3).
+#' @describeIn mcp_tools The CD2030 framework's "Global Coverage Targets" --
+#'   evaluate an indicator against its benchmark threshold (Layer 2/3).
 #' @noRd
-mcp_get_filtered_threshold <- function(path, indicator = c("anc4", "instlivebirths", "vaccine", "dropout"), target_unit = c("district", "adminlevel_1"), region = NULL) {
+mcp_get_coverage_targets <- function(path, indicator = c("anc4", "instlivebirths", "vaccine", "dropout"), target_unit = c("district", "adminlevel_1"), region = NULL) {
   mcp_call_cache_method(path, "get_filtered_threshold", list(indicator = indicator, target_unit = target_unit, region = region))
 }
 
@@ -405,8 +433,8 @@ mcp_get_service_utilization_mapping <- function(path, indicator = c("ipd", "opd"
   )
 }
 
-#' @describeIn mcp_tools Completeness-adjusted mortality ratio vs. UN
-#'   estimate bounds (Layer 3).
+#' @describeIn mcp_tools The community-to-institutional ratio (Mc/Mi):
+#'   completeness-adjusted mortality ratio vs. UN estimate bounds (Layer 3).
 #' @noRd
 mcp_get_mortality_completeness_ratio <- function(path, indicator = c("mmr", "sbr", "nn")) {
   mcp_call_cache_method(path, "summarise_completeness_ratio", list(indicator = indicator))
@@ -462,6 +490,54 @@ mcp_render_coverage_plot <- function(path,
   p <- plot(filtered)
 
   out_path <- tempfile("cd2030_coverage_plot_", fileext = ".png")
+  ggplot2::ggsave(out_path, plot = p, width = 768 / 96, height = 768 / 96, dpi = 96, bg = "white")
+  out_path
+}
+
+# =========================================================================
+# CD2030 framework "Equity Assessment" module (equiplots by area, wealth,
+# and education) -- distinct from the "Subnational Inequality" (MADM) tools
+# above. Not CacheConnection methods (so mcp_call_cache_method() doesn't
+# apply); these operate directly on the cache's survey active bindings.
+# =========================================================================
+
+#' @describeIn mcp_tools Render an "Equity Assessment" equiplot (Rural vs.
+#'   Urban) for one indicator to a temporary PNG file and return its path.
+#' @noRd
+mcp_render_equiplot_area <- function(path, indicator) {
+  check_required(indicator)
+  cache <- mcp_get_cache(path)
+  p <- equiplot_area(cache$area_survey, indicator = indicator)
+
+  out_path <- tempfile("cd2030_equiplot_area_", fileext = ".png")
+  ggplot2::ggsave(out_path, plot = p, width = 768 / 96, height = 768 / 96, dpi = 96, bg = "white")
+  out_path
+}
+
+#' @describeIn mcp_tools Render an "Equity Assessment" equiplot (wealth
+#'   quintiles Q1-Q5) for one indicator to a temporary PNG file and return
+#'   its path.
+#' @noRd
+mcp_render_equiplot_wealth <- function(path, indicator) {
+  check_required(indicator)
+  cache <- mcp_get_cache(path)
+  p <- equiplot_wealth(cache$wiq_survey, indicator = indicator)
+
+  out_path <- tempfile("cd2030_equiplot_wealth_", fileext = ".png")
+  ggplot2::ggsave(out_path, plot = p, width = 768 / 96, height = 768 / 96, dpi = 96, bg = "white")
+  out_path
+}
+
+#' @describeIn mcp_tools Render an "Equity Assessment" equiplot (maternal
+#'   education: none/primary/secondary+) for one indicator to a temporary
+#'   PNG file and return its path.
+#' @noRd
+mcp_render_equiplot_education <- function(path, indicator) {
+  check_required(indicator)
+  cache <- mcp_get_cache(path)
+  p <- equiplot_education(cache$education_survey, indicator = indicator)
+
+  out_path <- tempfile("cd2030_equiplot_education_", fileext = ".png")
   ggplot2::ggsave(out_path, plot = p, width = 768 / 96, height = 768 / 96, dpi = 96, bg = "white")
   out_path
 }

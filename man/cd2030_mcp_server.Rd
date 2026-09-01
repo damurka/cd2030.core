@@ -21,10 +21,12 @@ over stdio until the client disconnects.
 \description{
 Starts a \href{https://modelcontextprotocol.io}{Model Context Protocol} server,
 over stdio, that lets an LLM client (e.g. Claude Desktop or Claude Code)
-query already-processed Countdown 2030 datasets: data quality scores,
-coverage, inequality, mortality, service utilization, health system
-metrics, private-sector splits, mapping data, generated reports, and
-coverage charts.
+query already-processed Countdown 2030 datasets, following the CD2030
+analytical framework's own module names: data quality assessment,
+coverage estimation, subnational inequality (MADM), equity assessment
+(equiplots), mortality, service utilization, health system performance,
+private-sector splits, mapping data, generated reports, and coverage
+charts.
 
 The server is read-only: no tool can create or modify a \code{.rds} cache, or
 change any analysis parameter (denominators, k-factors, survey estimates,

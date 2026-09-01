@@ -15,3 +15,13 @@
 * Expanded the MCP server from 12 to 38 tools, covering every remaining
   read-only `CacheConnection` method (mutating setters and non-data methods
   remain deliberately unreachable).
+* Standardized MCP tool naming/documentation against the CD2030 analytical
+  framework's own vocabulary (`get_coverage_targets`, `get_continuum_of_care`
+  renamed to match; DQA/mortality/health-system tool descriptions now cite
+  the framework's official metric IDs and named indices), and added the
+  three "Equity Assessment" equiplot tools (`get_equiplot_area`,
+  `get_equiplot_wealth`, `get_equiplot_education`), bringing the total to 41.
+* Fixed stray `print()` debug statements in `generate_report()`,
+  `generate_coverage_data()`, and `generate_bayes_model()` that corrupted the
+  MCP server's stdio JSON-RPC stream (stdout doubles as the wire protocol,
+  so any incidental console output there breaks every client response).

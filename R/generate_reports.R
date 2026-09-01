@@ -75,8 +75,6 @@ generate_report <- function(cache,
     pt = '_pt'
   )
 
-  print(paste0('Language: ', language, ': ', language_prefix))
-
   # Open the generated file automatically
   tryCatch(
     {
