@@ -70,26 +70,52 @@ mcp_cache_summary <- function(cache) {
   )
 }
 
-#' @describeIn mcp_tools Cap a data frame at `cap` rows for return to an LLM,
-#'   noting when it was truncated so the caller knows to narrow its request.
-#'   Defaults to the `max_rows` [cd2030_mcp_server()] was started with.
+#' @describeIn mcp_tools Cap a data frame at `cap` rows (further reduced for
+#'   very wide tables, so total cell count -- and so response payload size --
+#'   stays bounded regardless of shape) for return to an LLM, noting when it
+#'   was truncated so the caller knows to narrow its request. `cap` and
+#'   `max_cells` default to the values [cd2030_mcp_server()] was started
+#'   with. A row-only cap doesn't protect against a table like
+#'   `calculate_coverage`'s ~190-column merge, where even a handful of rows
+#'   produces a multi-megabyte response and can crash the client connection.
 #' @noRd
-mcp_shape_table <- function(data, cap = getOption("cd2030.mcp_max_rows", 200L)) {
+mcp_shape_table <- function(data,
+                            cap = getOption("cd2030.mcp_max_rows", 200L),
+                            max_cells = getOption("cd2030.mcp_max_cells", 5000L)) {
   if (is.null(data) || (is.data.frame(data) && nrow(data) == 0)) {
     return(list(data = list(), meta = list(returned_rows = 0L, total_rows = 0L, truncated = FALSE)))
   }
 
   data <- tibble::as_tibble(data)
   total <- nrow(data)
-  truncated <- total > cap
-  out <- if (truncated) utils::head(data, cap) else data
+  ncols <- ncol(data)
+
+  effective_cap <- cap
+  cell_capped <- FALSE
+  if (ncols > 0) {
+    cell_cap_rows <- max(1L, max_cells %/% ncols)
+    if (cell_cap_rows < effective_cap) {
+      effective_cap <- cell_cap_rows
+      cell_capped <- TRUE
+    }
+  }
+
+  truncated <- total > effective_cap
+  out <- if (truncated) utils::head(data, effective_cap) else data
 
   meta <- list(returned_rows = nrow(out), total_rows = total, truncated = truncated)
   if (truncated) {
-    meta$notice <- sprintf(
-      "Showing %d of %d rows. Narrow the result using this tool's filter arguments (e.g. region/admin_level/year) to see more.",
-      nrow(out), total
-    )
+    meta$notice <- if (cell_capped) {
+      sprintf(
+        "Showing %d of %d rows. This table is %d columns wide, so fewer rows than usual are returned to keep the response a safe size -- narrow the result using this tool's filter arguments, or use a narrower tool for a single indicator if one exists (e.g. get_filtered_coverage instead of get_coverage_raw/get_indicator_coverage).",
+        nrow(out), total, ncols
+      )
+    } else {
+      sprintf(
+        "Showing %d of %d rows. Narrow the result using this tool's filter arguments (e.g. region/admin_level/year) to see more.",
+        nrow(out), total
+      )
+    }
   }
 
   list(data = out, meta = meta)

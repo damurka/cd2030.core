@@ -25,3 +25,8 @@
   `generate_coverage_data()`, and `generate_bayes_model()` that corrupted the
   MCP server's stdio JSON-RPC stream (stdout doubles as the wire protocol,
   so any incidental console output there breaks every client response).
+* MCP tool results are now also capped by total cell count
+  (`max_cells`, default 5000), not just row count: a row-only cap doesn't
+  protect against a very wide table (e.g. `get_indicator_coverage` at
+  district level, ~190 columns), where even a handful of rows produced a
+  megabyte-scale response that crashed a live client connection.

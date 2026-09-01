@@ -20,6 +20,28 @@ test_that("mcp_shape_table truncates and adds a notice when over the cap", {
   expect_match(out$meta$notice, "Showing 200 of 250 rows")
 })
 
+test_that("mcp_shape_table caps rows further for a wide table, even under the row cap", {
+  # 174 rows would normally fit under cap = 200, but at 200 columns each,
+  # returning all of them would be a huge payload -- this is the real shape
+  # that crashed a live MCP connection (get_indicator_coverage at district
+  # level: 174 rows x 208 columns, >1M characters of JSON).
+  wide_df <- tibble::as_tibble(as.data.frame(matrix(1, nrow = 174, ncol = 200)))
+  out <- mcp_shape_table(wide_df, cap = 200L, max_cells = 5000L)
+
+  expect_true(nrow(out$data) < 174L)
+  expect_identical(nrow(out$data) * 200L <= 5000L, TRUE)
+  expect_true(out$meta$truncated)
+  expect_match(out$meta$notice, "200 columns wide")
+})
+
+test_that("mcp_shape_table's cell cap doesn't kick in for narrow tables", {
+  df <- tibble::tibble(x = 1:250)
+  out <- mcp_shape_table(df, cap = 200L, max_cells = 5000L)
+
+  expect_identical(nrow(out$data), 200L)
+  expect_match(out$meta$notice, "Narrow the result")
+})
+
 test_that("mcp_shape_table handles NULL and empty data frames", {
   out_null <- mcp_shape_table(NULL)
   expect_identical(out_null$meta$total_rows, 0L)

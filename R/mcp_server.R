@@ -25,6 +25,11 @@
 #' @param max_rows Maximum number of rows any single tool call returns before
 #'   truncating (with a notice telling the caller how to narrow the request).
 #'   Default `200`.
+#' @param max_cells Maximum number of table cells (rows x columns) any single
+#'   tool call returns before truncating further -- protects against very
+#'   wide tables (e.g. a ~190-column multi-indicator merge), where even a
+#'   handful of rows can produce a response large enough to crash the
+#'   client connection. Default `5000`.
 #'
 #' @details
 #' This requires the `mcptools` and `ellmer` packages, which are optional
@@ -41,9 +46,9 @@
 #'   over stdio until the client disconnects.
 #'
 #' @export
-cd2030_mcp_server <- function(max_sessions = 3L, max_rows = 200L) {
+cd2030_mcp_server <- function(max_sessions = 3L, max_rows = 200L, max_cells = 5000L) {
   check_installed(c("mcptools", "ellmer"), reason = "to run the cd2030.core MCP server")
-  withr::local_options(cd2030.mcp_max_rows = max_rows)
+  withr::local_options(cd2030.mcp_max_rows = max_rows, cd2030.mcp_max_cells = max_cells)
   tools <- mcp_tool_list(max_sessions = max_sessions)
   mcptools::mcp_server(tools = tools, type = "stdio")
 }

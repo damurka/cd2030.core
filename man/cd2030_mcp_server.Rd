@@ -4,7 +4,7 @@
 \alias{cd2030_mcp_server}
 \title{Run the cd2030.core MCP Server}
 \usage{
-cd2030_mcp_server(max_sessions = 3L, max_rows = 200L)
+cd2030_mcp_server(max_sessions = 3L, max_rows = 200L, max_cells = 5000L)
 }
 \arguments{
 \item{max_sessions}{Maximum number of \code{.rds} caches to keep open at once.
@@ -13,6 +13,12 @@ Loading beyond this evicts the least-recently-used cache. Default \code{3}.}
 \item{max_rows}{Maximum number of rows any single tool call returns before
 truncating (with a notice telling the caller how to narrow the request).
 Default \code{200}.}
+
+\item{max_cells}{Maximum number of table cells (rows x columns) any single
+tool call returns before truncating further -- protects against very
+wide tables (e.g. a ~190-column multi-indicator merge), where even a
+handful of rows can produce a response large enough to crash the
+client connection. Default \code{5000}.}
 }
 \value{
 Does not return; blocks the R process serving the MCP protocol
