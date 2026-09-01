@@ -191,7 +191,8 @@ mcp_tool_list <- function(max_sessions = 3L) {
       function(path, indicator, admin_level = "national", region = NULL) {
         ellmer::content_image_file(
           mcp_render_coverage_plot(path, indicator = indicator, admin_level = admin_level, region = region),
-          "image/png"
+          "image/png",
+          resize = "none"
         )
       },
       name = "get_coverage_plot",
