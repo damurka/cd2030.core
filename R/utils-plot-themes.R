@@ -28,9 +28,20 @@ cd_plot_theme <- function(title = NULL, subtitle = NULL, x_axis = NULL, y_axis =
   )
 }
 
+# The theme report charts are given (`plot(...) + cd_report_theme()`). It also carries a marker that puts back the chart options
+# saved for the chart (see cd_finish_plot()), which the theme would otherwise overwrite: fonts, sizes, grid, colours.
 cd_report_theme <- function(base_size = 10, base_family = "",
                             base_line_size = base_size / 22,
                             base_rect_size = base_size / 22) {
+  list(
+    .cd_report_theme_base(base_size, base_family, base_line_size, base_rect_size),
+    structure(list(), class = "cd_chart_options_reapply")
+  )
+}
+
+.cd_report_theme_base <- function(base_size = 10, base_family = "",
+                                  base_line_size = base_size / 22,
+                                  base_rect_size = base_size / 22) {
   # theme(
   #   panel.background = element_blank(),
   #   panel.border = element_rect(color = "black", fill = NA, linewidth = 0.8),
@@ -284,4 +295,14 @@ cd_categorized_heatmap <- function(data,
       y_axis = y_lab %||% y_col,
       legend = legend_lab %||% paste0(value_col, " Category")
     )
+}
+
+# Adding the marker to a plot applies the options the plot was finished with once more, on top of the theme just added.
+#' @exportS3Method ggplot2::ggplot_add
+ggplot_add.cd_chart_options_reapply <- function(object, plot, ...) {
+  options <- attr(plot, "cd_chart_options", exact = TRUE)
+  if (is.null(options)) return(plot)
+  plot <- apply_chart_options(plot, options)
+  attr(plot, "cd_chart_options") <- options
+  plot
 }

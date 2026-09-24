@@ -273,7 +273,11 @@ resolve_chart_options <- function(options = NULL, ...) {
 #' @return The ggplot with the options applied.
 #' @export
 cd_finish_plot <- function(p, options = NULL, ..., .source = NULL) {
-  apply_chart_options(p, merge_chart_options(.report_options_for(p, .source), resolve_chart_options(options, ...)))
+  merged <- merge_chart_options(.report_options_for(p, .source), resolve_chart_options(options, ...))
+  finished <- apply_chart_options(p, merged)
+  # kept on the plot so cd_report_theme(), which a report adds afterwards, can put them back over its own theme
+  if (inherits(finished, "ggplot") && length(merged)) attr(finished, "cd_chart_options") <- merged
+  finished
 }
 
 #' The id of a chart

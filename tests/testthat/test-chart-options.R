@@ -295,3 +295,16 @@ test_that("cd_chart_catalog lists the charts with saved options", {
   expect_identical(row$group, "coverage_filtered.national")
   expect_identical(row$n_options, 2L)
 })
+
+test_that("a report's theme does not wipe the options a chart was finished with", {
+  p <- marks_plot()
+  withr::local_options(cd2030.report_chart_options = list(default = cd_chart_options(font_family = "serif", grid = "none"), types = list()))
+  q <- cd_finish_plot(p) + cd_report_theme()
+  th <- ggplot2::theme_get() + q$theme
+  expect_identical(th$text@family, "serif")                       # cd_report_theme() sets its own family; ours is put back
+  expect_s3_class(th$panel.grid.major.x, "ggplot2::element_blank")
+
+  # without options the theme is exactly what it was
+  r <- p + cd_report_theme()
+  expect_identical((ggplot2::theme_get() + r$theme)$text@family, "")
+})
