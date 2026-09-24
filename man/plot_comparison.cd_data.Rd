@@ -13,7 +13,8 @@
   y_label = NULL,
   legend = NULL,
   call = caller_env(),
-  ...
+  ...,
+  options = NULL
 )
 }
 \arguments{
@@ -32,6 +33,9 @@
 \item{call}{The calling environment.}
 
 \item{...}{Additional arguments for customization, such as \code{size}, \code{color}, or \code{linetype}, for finer control over plot appearance.}
+
+\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
 }
 \value{
 A ggplot2 object showing the comparison plot of two indicators with linear regression and R-squared values.

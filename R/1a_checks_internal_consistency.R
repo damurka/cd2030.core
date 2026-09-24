@@ -23,6 +23,8 @@
 #' - PENTA1 vs PENTA3
 #' - OPV1 vs OPV3
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A ggplot2 object showing the comparison plot of two indicators with linear regression and R-squared values.
 #'
 #' @examples
@@ -32,6 +34,13 @@
 #'
 #' @export
 plot_comparison.cd_data <- function(
+    .data, x_var, y_var, title = NULL,
+    x_label = NULL, y_label = NULL, legend = NULL,
+    call = caller_env(), ..., options = NULL) {
+  cd_finish_plot(.plot_comparison_cd_data_impl(.data, x_var = x_var, y_var = y_var, title = title, x_label = x_label, y_label = y_label, legend = legend, call = call, ...), options, ..., .source = .data)
+}
+
+.plot_comparison_cd_data_impl <- function(
     .data, x_var, y_var, title = NULL,
     x_label = NULL, y_label = NULL, legend = NULL,
     call = caller_env(), ...) {
@@ -184,6 +193,7 @@ plot_comparison <- function(.data, x_var, y_var, title = NULL, x_label = NULL, y
 #'
 #' `plot_comparison_penta1_anc1` compares Penta1 and ANC1 indicators across.
 #'
+#' @param options A [cd_chart_options()] object; see [plot_comparison()].
 #' @rdname internal_consistency
 #'
 #' @export
@@ -192,7 +202,9 @@ plot_comparison_anc1_penta1 <- function(
     title = "Comparison of numbers of ANC1 and Penta1 by year",
     x_label = "ANC1",
     y_label = "Penta1",
-    legend = NULL) {
+    legend = NULL,
+    ...,
+    options = NULL) {
   .data %>%
     plot_comparison(
       x_var = "anc1",
@@ -200,7 +212,9 @@ plot_comparison_anc1_penta1 <- function(
       title = title,
       x_label = x_label,
       y_label = y_label,
-      legend = legend
+      legend = legend,
+      ...,
+      options = options
     )
 }
 
@@ -216,7 +230,9 @@ plot_comparison_penta1_penta3 <- function(
     title = "Comparison of numbers of Penta1 and Penta3 by year",
     x_label = "Penta1",
     y_label = "Penta3",
-    legend = NULL) {
+    legend = NULL,
+    ...,
+    options = NULL) {
   .data %>%
     plot_comparison(
       x_var = "penta1",
@@ -224,7 +240,9 @@ plot_comparison_penta1_penta3 <- function(
       title = title,
       x_label = x_label,
       y_label = y_label,
-      legend = legend
+      legend = legend,
+      ...,
+      options = options
     )
 }
 
@@ -240,7 +258,9 @@ plot_comparison_opv1_opv3 <- function(
     title = "Comparison of numbers of Penta1 and Penta3 by year",
     x_label = "Penta1",
     y_label = "Penta3",
-    legend = NULL) {
+    legend = NULL,
+    ...,
+    options = NULL) {
   .data %>%
     plot_comparison(
       x_var = "opv1",
@@ -248,6 +268,8 @@ plot_comparison_opv1_opv3 <- function(
       title = title,
       x_label = x_label,
       y_label = y_label,
-      legend = legend
+      legend = legend,
+      ...,
+      options = options
     )
 }

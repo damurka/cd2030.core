@@ -24,7 +24,9 @@ plot_comparison_anc1_penta1(
   title = "Comparison of numbers of ANC1 and Penta1 by year",
   x_label = "ANC1",
   y_label = "Penta1",
-  legend = NULL
+  legend = NULL,
+  ...,
+  options = NULL
 )
 
 plot_comparison_penta1_penta3(
@@ -32,7 +34,9 @@ plot_comparison_penta1_penta3(
   title = "Comparison of numbers of Penta1 and Penta3 by year",
   x_label = "Penta1",
   y_label = "Penta3",
-  legend = NULL
+  legend = NULL,
+  ...,
+  options = NULL
 )
 
 plot_comparison_opv1_opv3(
@@ -40,7 +44,9 @@ plot_comparison_opv1_opv3(
   title = "Comparison of numbers of Penta1 and Penta3 by year",
   x_label = "Penta1",
   y_label = "Penta3",
-  legend = NULL
+  legend = NULL,
+  ...,
+  options = NULL
 )
 }
 \arguments{
@@ -59,6 +65,8 @@ plot_comparison_opv1_opv3(
 \item{call}{The calling environment, used for error handling. Default is \code{caller_env()}.}
 
 \item{...}{Additional parameters for further customization, such as point size, line type, or color.}
+
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object; see \code{\link[=plot_comparison]{plot_comparison()}}.}
 }
 \value{
 A \code{ggplot2} object, comprising:

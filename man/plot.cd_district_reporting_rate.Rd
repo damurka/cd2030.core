@@ -12,7 +12,8 @@
   caption = NULL,
   indicator_labels = NULL,
   facet_ncol = 3,
-  ...
+  ...,
+  options = NULL
 )
 }
 \arguments{
@@ -24,6 +25,9 @@ param existed -- e.g. 4 services lay out 3-then-1). Additive: every existing cal
 layout unless it explicitly asks for a different one.}
 
 \item{...}{Additional parameters passed to the plotting function.}
+
+\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
 }
 \value{
 A ggplot object visualizing reporting rates across indicators and years.

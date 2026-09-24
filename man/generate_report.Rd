@@ -10,7 +10,8 @@ generate_report(
   report_name,
   adminlevel_1 = NULL,
   i18n = NULL,
-  output_format = c("word_document", "pdf_document", "html_document")
+  output_format = c("word_document", "pdf_document", "html_document"),
+  use_chart_options = TRUE
 )
 }
 \arguments{
@@ -22,6 +23,11 @@ generate_report(
 
 \item{output_format}{A character vector specifying the output format, either
 \code{'html_document'} or \code{'officedown::rdocx_document'}.}
+
+\item{use_chart_options}{If \code{TRUE} (the default) the chart options saved for reports in the cache are applied to the
+report's charts: the dataset-wide ones (\code{cache$set_chart_options("default", ...)}), then those saved for each type of
+graph (\code{"report/<cd_chart_type()>"}, set from the app's customize panel with \emph{Report} or \emph{Both}). Options a report
+template passes to a plot itself win.}
 }
 \value{
 The function renders the report to the specified file in the chosen format.

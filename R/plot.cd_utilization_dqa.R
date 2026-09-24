@@ -6,8 +6,14 @@
 #' @param width (Optional) Total width in inches. If NULL, autofit is used.
 #' @param ... Additional arguments
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @export
-plot.cd_utilization_dqa <- function(x, years = NULL, title = NULL, width = NULL, ...) {
+plot.cd_utilization_dqa <- function(x, years = NULL, title = NULL, width = NULL, ..., options = NULL) {
+  cd_finish_plot(.plot_cd_utilization_dqa_impl(x, years = years, title = title, width = width, ...), options, ..., .source = x)
+}
+
+.plot_cd_utilization_dqa_impl <- function(x, years = NULL, title = NULL, width = NULL, ...) {
   if (is.null(years) || !is.numeric(years)) {
     cd_abort(c("x" = "{.arg years} cannot be null"))
   }

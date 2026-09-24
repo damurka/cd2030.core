@@ -4,12 +4,15 @@
 \alias{plot.cd_mortality_ratio_summarised}
 \title{Plot Completeness of Facility Reporting Ratios}
 \usage{
-\method{plot}{cd_mortality_ratio_summarised}(x, ...)
+\method{plot}{cd_mortality_ratio_summarised}(x, ..., options = NULL)
 }
 \arguments{
 \item{x}{A \code{cd_mortality_ratio_summarised } object from completeness estimation.}
 
 \item{...}{Additional arguments (not used).}
+
+\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
 }
 \value{
 A ggplot object with ratio lines, labels, and reference points.

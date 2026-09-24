@@ -136,7 +136,7 @@ cd_report_theme <- function(base_size = 10, base_family = "",
 #'
 #' @return A ggplot object.
 #' @export
-plot_line_graph <- function(.data, x, y_vars, title, y_axis, x_axis, legend_labels, hline = NULL, hline_style = "dashed") {
+plot_line_graph <- function(.data, x, y_vars, title, y_axis, x_axis, legend_labels, hline = NULL, hline_style = "dashed", options = NULL, ...) {
   variable <- value <- NULL
 
   # 1. Validation
@@ -191,7 +191,7 @@ plot_line_graph <- function(.data, x, y_vars, title, y_axis, x_axis, legend_labe
       geom_hline(yintercept = hline, linetype = hline_style, color = "grey40")
   }
 
-  return(p)
+  cd_finish_plot(p, options, ...)
 }
 
 

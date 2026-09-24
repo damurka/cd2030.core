@@ -9,6 +9,10 @@
 #' @param report_name The name of report to generate
 #' @param output_format A character vector specifying the output format, either
 #'   `'html_document'` or `'officedown::rdocx_document'`.
+#' @param use_chart_options If `TRUE` (the default) the chart options saved for reports in the cache are applied to the
+#'   report's charts: the dataset-wide ones (`cache$set_chart_options("default", ...)`), then those saved for each type of
+#'   graph (`"report/<cd_chart_type()>"`, set from the app's customize panel with *Report* or *Both*). Options a report
+#'   template passes to a plot itself win.
 #'
 #' @return The function renders the report to the specified file in the chosen format.
 #'
@@ -27,7 +31,8 @@ generate_report <- function(cache,
                             adminlevel_1 = NULL,
                             i18n = NULL,
                             # language = NULL,
-                            output_format = c("word_document", "pdf_document", "html_document")) {
+                            output_format = c("word_document", "pdf_document", "html_document"),
+                            use_chart_options = TRUE) {
   # check_cd_data(.data)
   check_required(cache)
   check_required(output_file)
@@ -74,6 +79,16 @@ generate_report <- function(cache,
     fr = '_fr',
     pt = '_pt'
   )
+
+  # every chart drawn while the report renders starts from the options saved for reports: the dataset-wide ones, then those
+  # saved for its type of graph (cache$set_chart_options("report/<cd_chart_type()>", ...), from the app's customize panel)
+  if (isTRUE(use_chart_options)) {
+    saved <- cache$chart_options
+    types <- saved[startsWith(names(saved), "report/")]
+    names(types) <- sub("^report/", "", names(types))
+    old_options <- options(cd2030.report_chart_options = list(default = cache$get_chart_options("default"), types = types))
+    on.exit(options(old_options), add = TRUE)
+  }
 
   # Open the generated file automatically
   tryCatch(

@@ -4,7 +4,15 @@
 \alias{plot.cd_ratios_summary}
 \title{Plot Ratios Summary for Indicator Ratios Summary Object}
 \usage{
-\method{plot}{cd_ratios_summary}(x, title = NULL, x_axis = NULL, y_axis = NULL, x_labels = NULL, ...)
+\method{plot}{cd_ratios_summary}(
+  x,
+  title = NULL,
+  x_axis = NULL,
+  y_axis = NULL,
+  x_labels = NULL,
+  ...,
+  options = NULL
+)
 }
 \arguments{
 \item{x}{A \code{cd_ratios_summary} object created by the \code{calculate_ratios_summary} function.
@@ -12,6 +20,9 @@ It should contain a \code{year} column and one or more columns with names starti
 representing the calculated indicator ratios.}
 
 \item{...}{Additional arguments passed to other methods (currently unused).}
+
+\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
 }
 \value{
 A \code{ggplot} object representing a bar plot of indicator ratios by year.

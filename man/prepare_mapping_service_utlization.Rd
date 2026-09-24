@@ -8,7 +8,8 @@ prepare_mapping_service_utlization(
   .data,
   indicator = c("ipd", "opd"),
   plot_years = NULL,
-  subnational_map = NULL
+  subnational_map = NULL,
+  palette = c("Purples", "Blues", "Greens", "Reds", "YlGnBu")
 )
 }
 \arguments{

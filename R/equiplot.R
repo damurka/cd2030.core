@@ -101,8 +101,17 @@ equiplot <- function(.data, variables, group_by,
 }
 
 #' A Specialized Dot Plot for Area of Residence Analysis
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @export
 equiplot_area <- function(.data, indicator,
+                          title = NULL, subtitle = NULL, caption = NULL,
+                          x_title = NULL, legend_title = NULL, legend_labels = NULL,
+                          dot_size = NULL, ..., options = NULL) {
+  cd_finish_plot(.equiplot_area_impl(.data, indicator = indicator, title = title, subtitle = subtitle, caption = caption, x_title = x_title, legend_title = legend_title, legend_labels = legend_labels, dot_size = dot_size), options, ..., .source = .data)
+}
+
+.equiplot_area_impl <- function(.data, indicator,
                           title = NULL, subtitle = NULL, caption = NULL,
                           x_title = NULL, legend_title = NULL, legend_labels = NULL,
                           dot_size = NULL) {
@@ -131,8 +140,17 @@ equiplot_area <- function(.data, indicator,
 }
 
 #' A Specialized Dot Plot for Maternal Education Analysis
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @export
 equiplot_education <- function(.data, indicator,
+                               title = NULL, subtitle = NULL, caption = NULL,
+                               x_title = NULL, legend_title = NULL, legend_labels = NULL,
+                               dot_size = NULL, ..., options = NULL) {
+  cd_finish_plot(.equiplot_education_impl(.data, indicator = indicator, title = title, subtitle = subtitle, caption = caption, x_title = x_title, legend_title = legend_title, legend_labels = legend_labels, dot_size = dot_size), options, ..., .source = .data)
+}
+
+.equiplot_education_impl <- function(.data, indicator,
                                title = NULL, subtitle = NULL, caption = NULL,
                                x_title = NULL, legend_title = NULL, legend_labels = NULL,
                                dot_size = NULL) {
@@ -168,8 +186,17 @@ equiplot_education <- function(.data, indicator,
 }
 
 #' A Specialized Dot Plot for Wealth Quintile Analysis
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @export
 equiplot_wealth <- function(.data, indicator,
+                            title = NULL, subtitle = NULL, caption = NULL,
+                            x_title = NULL, legend_title = NULL, legend_labels = NULL,
+                            dot_size = NULL, ..., options = NULL) {
+  cd_finish_plot(.equiplot_wealth_impl(.data, indicator = indicator, title = title, subtitle = subtitle, caption = caption, x_title = x_title, legend_title = legend_title, legend_labels = legend_labels, dot_size = dot_size), options, ..., .source = .data)
+}
+
+.equiplot_wealth_impl <- function(.data, indicator,
                             title = NULL, subtitle = NULL, caption = NULL,
                             x_title = NULL, legend_title = NULL, legend_labels = NULL,
                             dot_size = NULL) {

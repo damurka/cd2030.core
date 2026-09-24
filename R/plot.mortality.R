@@ -6,10 +6,16 @@
 #' @param indicator One of `"mmr_inst"`, `"ratio_md_sb"`, `"sbr_inst"`, or `"nn_inst"`.
 #' @param ... Additional arguments passed to methods.
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A ggplot object.
 #'
 #' @export
-plot.cd_mortality_summary <- function(x, indicator = c('mmr_inst', 'ratio_md_sb', 'sbr_inst', 'nn_inst'), ...) {
+plot.cd_mortality_summary <- function(x, indicator = c('mmr_inst', 'ratio_md_sb', 'sbr_inst', 'nn_inst'), ..., options = NULL) {
+  cd_finish_plot(.plot_cd_mortality_summary_impl(x, indicator = indicator, ...), options, ..., .source = x)
+}
+
+.plot_cd_mortality_summary_impl <- function(x, indicator = c('mmr_inst', 'ratio_md_sb', 'sbr_inst', 'nn_inst'), ...) {
   indicator <- arg_match(indicator)
 
   label <- switch(
@@ -61,10 +67,16 @@ plot.cd_mortality_summary <- function(x, indicator = c('mmr_inst', 'ratio_md_sb'
 #' @param x A `cd_mortality_ratio_summarised ` object from completeness estimation.
 #' @param ... Additional arguments (not used).
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A ggplot object with ratio lines, labels, and reference points.
 #'
 #' @export
-plot.cd_mortality_ratio_summarised <- function(x, ...) {
+plot.cd_mortality_ratio_summarised <- function(x, ..., options = NULL) {
+  cd_finish_plot(.plot_cd_mortality_ratio_summarised_impl(x, ...), options, ..., .source = x)
+}
+
+.plot_cd_mortality_ratio_summarised_impl <- function(x, ...) {
 
   plot_type <- attr_or_abort(x, 'plot_type')
 
@@ -115,6 +127,8 @@ plot.cd_mortality_ratio_summarised <- function(x, ...) {
 #' @param x A `cd_mortality_summary_filtered` object.
 #' @param ... Additional arguments (not used).
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A `ggplot2` object. This function is called for its side effect of rendering a map.
 #'
 #' @details
@@ -131,7 +145,11 @@ plot.cd_mortality_ratio_summarised <- function(x, ...) {
 #' }
 #'
 #' @export
-plot.cd_mortality_summary_filtered <- function(x, ...) {
+plot.cd_mortality_summary_filtered <- function(x, ..., options = NULL) {
+  cd_finish_plot(.plot_cd_mortality_summary_filtered_impl(x, ...), options, ..., .source = x)
+}
+
+.plot_cd_mortality_summary_filtered_impl <- function(x, ...) {
   indicator <- attr_or_abort(x, 'indicator')
 
   title <- switch (

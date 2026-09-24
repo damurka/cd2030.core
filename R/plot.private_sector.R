@@ -9,6 +9,8 @@
 #' @param country_name Optional character string to override the default country name used
 #'   in the plot title. If `NULL`, uses the unique value in the `country` column if present.
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A `ggplot` object with:
 #'   - Stacked bars for public/private sector share
 #'   - Facets by indicator for area-level plots
@@ -34,7 +36,11 @@
 #' }
 #'
 #' @export
-plot.cd_private_sector_plot_data <- function(x, ..., country_name = NULL) {
+plot.cd_private_sector_plot_data <- function(x, ..., country_name = NULL, options = NULL) {
+  cd_finish_plot(.plot_cd_private_sector_plot_data_impl(x, ..., country_name = country_name), options, ..., .source = x)
+}
+
+.plot_cd_private_sector_plot_data_impl <- function(x, ..., country_name = NULL) {
   data_level <- attr_or_abort(x, "level")
   data_level_col <- if (data_level == "area") 'area' else NULL
 

@@ -4,7 +4,15 @@
 \alias{plot.cd_missing_district}
 \title{Plot Percent of Districts with Complete Data}
 \usage{
-\method{plot}{cd_missing_district}(x, indicator = NULL, title = NULL, x_axis = NULL, y_axis = NULL, ...)
+\method{plot}{cd_missing_district}(
+  x,
+  indicator = NULL,
+  title = NULL,
+  x_axis = NULL,
+  y_axis = NULL,
+  ...,
+  options = NULL
+)
 }
 \arguments{
 \item{x}{A \code{cd_missing_district} (or compatible) object containing
@@ -21,6 +29,9 @@ Must be one of the values returned by \code{get_all_indicators()}.}
 \item{y_axis}{Optional character string to override the y-axis label.}
 
 \item{...}{Additional arguments reserved for future use.}
+
+\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
 }
 \value{
 A \code{ggplot} object.

@@ -4,7 +4,15 @@
 \alias{plot.cd_adjustment_values_filtered}
 \title{Plot Adjusted vs. Unadjusted Data for Health Indicators}
 \usage{
-\method{plot}{cd_adjustment_values_filtered}(x, title = NULL, x_axis = NULL, y_axis = NULL, legend_labels = NULL, ...)
+\method{plot}{cd_adjustment_values_filtered}(
+  x,
+  title = NULL,
+  x_axis = NULL,
+  y_axis = NULL,
+  legend_labels = NULL,
+  ...,
+  options = NULL
+)
 }
 \arguments{
 \item{x}{A data frame containing the \code{year} column and columns for the raw
@@ -20,6 +28,9 @@ the second element is for the adjusted data. If \code{NULL}, default labels
 are generated.}
 
 \item{...}{Additional arguments (currently not used).}
+
+\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
 
 \item{indicator}{A character string specifying the prefix of the indicator to
 plot (e.g., \code{"ideliv"}). Only the provided indicators will be plotted.}

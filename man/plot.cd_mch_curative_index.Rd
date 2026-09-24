@@ -4,7 +4,7 @@
 \alias{plot.cd_mch_curative_index}
 \title{Plot S3 method for MCH vs Curative Index}
 \usage{
-\method{plot}{cd_mch_curative_index}(x, labels = NULL, ...)
+\method{plot}{cd_mch_curative_index}(x, labels = NULL, ..., options = NULL)
 }
 \arguments{
 \item{x}{Object of class cd_mch_curative_index.}
@@ -12,6 +12,9 @@
 \item{labels}{List. Optional translations containing axes, title, and quadrant labels.}
 
 \item{...}{Additional arguments.}
+
+\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
 }
 \description{
 Plot S3 method for MCH vs Curative Index

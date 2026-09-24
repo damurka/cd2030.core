@@ -11,7 +11,8 @@
   x_label = NULL,
   y_label = NULL,
   legend_labels = list(),
-  ...
+  ...,
+  options = NULL
 )
 }
 \arguments{
@@ -29,7 +30,10 @@
 \item{legend_labels}{(Optional) A named list of character strings to override specific
 default legend labels (e.g., \code{list(penta1derived = "Custom Penta1")}).}
 
-\item{...}{Additional arguments passed to \code{ggplot2} layers (not used).}
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}); other arguments are ignored.}
+
+\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes the user changed. Applied last, so it wins over
+\code{title} and the other arguments above. Any chart option can also be given by name in \code{...}.}
 }
 \value{
 A \code{ggplot} object showing coverage trends over time.

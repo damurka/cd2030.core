@@ -12,11 +12,13 @@
 #' @param y_label (Optional) A scalar character string to override the default y-axis label. Defaults to `NULL`.
 #' @param legend_labels (Optional) A named list of character strings to override specific
 #'   default legend labels (e.g., `list(penta1derived = "Custom Penta1")`).
-#' @param ... Additional arguments passed to `ggplot2` layers (not used).
+#' @param ... Chart options by name (see [cd_chart_options()]); other arguments are ignored.
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes the user changed. Applied last, so it wins over
+#'   `title` and the other arguments above. Any chart option can also be given by name in `...`.
 #'
 #' @return A `ggplot` object showing coverage trends over time.
 #' @export
-plot.cd_derived_coverage <- function(x, type = c('bar', 'trend'), title = NULL, x_label = NULL, y_label = NULL, legend_labels = list(), ...) {
+plot.cd_derived_coverage <- function(x, type = c('bar', 'trend'), title = NULL, x_label = NULL, y_label = NULL, legend_labels = list(), ..., options = NULL) {
   
   # 1. Metadata Extraction & Validation
   admin_level <- attr_or_abort(x, "admin_level")
@@ -122,7 +124,7 @@ plot.cd_derived_coverage <- function(x, type = c('bar', 'trend'), title = NULL, 
   }
 
   # 5. Generate the Plot
-  if (type == "bar") {
+  p <- if (type == "bar") {
 
     data <- x %>%
         mutate(year = if_else(year == survey_year, data_year, year)) %>%
@@ -224,4 +226,6 @@ plot.cd_derived_coverage <- function(x, type = c('bar', 'trend'), title = NULL, 
         y_axis = final_y_label  
       )
   }
+
+  cd_finish_plot(p, options, ..., .source = x)
 }

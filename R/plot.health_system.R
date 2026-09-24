@@ -11,10 +11,27 @@
 #' @param caption (Optional) Custom caption text (R-squared will automatically be prepended to this).
 #' @param legend_labels (Optional) A named list to override default legend labels (keys: 'admin', 'linear').
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A ggplot object.
 #'
 #' @export
 plot.cd_health_system_comparison <- function(x,
+                                              indicator = c(
+                                                'cov_instdeliveries_hstaff',
+                                                'ratio_opd_u5_hstaff',
+                                                'ratio_ipd_u5_hos',
+                                                'ratio_ipd_u5_bed'),
+                                              denominator = NULL,
+                                              title = NULL,
+                                              x_axis = NULL,
+                                              y_axis = NULL,
+                                              caption = NULL,
+                                              legend_labels = NULL, ..., options = NULL) {
+  cd_finish_plot(.plot_cd_health_system_comparison_impl(x, indicator = indicator, denominator = denominator, title = title, x_axis = x_axis, y_axis = y_axis, caption = caption, legend_labels = legend_labels), options, ..., .source = x)
+}
+
+.plot_cd_health_system_comparison_impl <- function(x,
                                               indicator = c(
                                                 'cov_instdeliveries_hstaff',
                                                 'ratio_opd_u5_hstaff',
@@ -124,10 +141,28 @@ plot.cd_health_system_comparison <- function(x,
 #' @param y_axis (Optional) Custom label for the y-axis.
 #' @param legend_labels (Optional) A named list to override default legend labels (e.g. for translation).
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A ggplot object.
 #'
 #' @export
 plot.cd_health_system_metric <- function(x,
+                                         indicator = c(
+                                           'ratio_fac_pop',
+                                           'ratio_hos_pop',
+                                           'ratio_bed_pop',
+                                           'ratio_hstaff_pop',
+                                           'skill_mix'
+                                         ),
+                                         national_value = NA_real_,
+                                         title = NULL,
+                                         x_axis = NULL,
+                                         y_axis = NULL,
+                                         legend_labels = NULL, ..., options = NULL) {
+  cd_finish_plot(.plot_cd_health_system_metric_impl(x, indicator = indicator, national_value = national_value, title = title, x_axis = x_axis, y_axis = y_axis, legend_labels = legend_labels), options, ..., .source = x)
+}
+
+.plot_cd_health_system_metric_impl <- function(x,
                                          indicator = c(
                                            'ratio_fac_pop',
                                            'ratio_hos_pop',
@@ -328,8 +363,20 @@ plot_national_health_metric <- function(.data, metric = c('performance', 'densit
 #' @param unit_label (Optional) Translated label for the Unit column header
 #' @param ... Additional arguments
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @export
 plot.cd_health_system_table <- function(x, 
+                                        year = 2024, 
+                                        width = NULL, 
+                                        indicator_label = "Indicator", 
+                                        value_label = "Value", 
+                                        unit_label = "Unit", 
+                                        ..., options = NULL) {
+  cd_finish_plot(.plot_cd_health_system_table_impl(x, year = year, width = width, indicator_label = indicator_label, value_label = value_label, unit_label = unit_label, ...), options, ..., .source = x)
+}
+
+.plot_cd_health_system_table_impl <- function(x, 
                                         year = 2024, 
                                         width = NULL, 
                                         indicator_label = "Indicator", 
@@ -415,8 +462,19 @@ plot.cd_health_system_table <- function(x,
 #'   Expected keys: `high_high`, `low_high`, `high_low`, `low_low`.
 #' @param ... Additional arguments
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @export
 plot.cd_phc_scatter <- function(x,
+                                title = NULL,
+                                x_axis = NULL,
+                                y_axis = NULL,
+                                quad_labels = NULL,
+                                ..., options = NULL) {
+  cd_finish_plot(.plot_cd_phc_scatter_impl(x, title = title, x_axis = x_axis, y_axis = y_axis, quad_labels = quad_labels, ...), options, ..., .source = x)
+}
+
+.plot_cd_phc_scatter_impl <- function(x,
                                 title = NULL,
                                 x_axis = NULL,
                                 y_axis = NULL,
@@ -504,8 +562,18 @@ plot.cd_phc_scatter <- function(x,
 #' @param y_axis (Optional) Custom label for the y-axis.
 #' @param ... Additional arguments
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @export
 plot.cd_private_sector <- function(x,
+                                   title = NULL,
+                                   x_axis = NULL,
+                                   y_axis = NULL,
+                                   ..., options = NULL) {
+  cd_finish_plot(.plot_cd_private_sector_impl(x, title = title, x_axis = x_axis, y_axis = y_axis, ...), options, ..., .source = x)
+}
+
+.plot_cd_private_sector_impl <- function(x,
                                    title = NULL,
                                    x_axis = NULL,
                                    y_axis = NULL,

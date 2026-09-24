@@ -11,7 +11,8 @@
   y_axis = NULL,
   legend_title = NULL,
   x_labels = NULL,
-  ...
+  ...,
+  options = NULL
 )
 }
 \arguments{
@@ -29,6 +30,9 @@
 on the x-axis (e.g., \code{list(penta1 = "Penta 1", dropout_penta13 = "Penta 1-3 Dropout")}).}
 
 \item{...}{Additional arguments passed to the plotting function.}
+
+\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
 }
 \value{
 A \code{ggplot} object displaying a grouped bar chart of threshold attainment.

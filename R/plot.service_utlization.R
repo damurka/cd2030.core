@@ -5,6 +5,8 @@
 #' @param x A `cd_service_utilization_filtered` object created by [filter_service_utilization()].
 #' @param ... not used
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A `ggplot2` plot object.
 #'
 #' @examples
@@ -13,7 +15,11 @@
 #' }
 #'
 #' @export
-plot.cd_service_utilization_filtered <- function(x, ...) {
+plot.cd_service_utilization_filtered <- function(x, ..., options = NULL) {
+  cd_finish_plot(.plot_cd_service_utilization_filtered_impl(x, ...), options, ..., .source = x)
+}
+
+.plot_cd_service_utilization_filtered_impl <- function(x, ...) {
 
   indicator <- attr_or_abort(x, 'indicator')
 
@@ -88,6 +94,8 @@ plot.cd_service_utilization_filtered <- function(x, ...) {
 #' @param x A `cd_service_utilization_prepared` object returned by [prepare_mapping_service_utlization()].
 #' @param ... Additional arguments (currently unused).
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A `ggplot2` object representing faceted service utilization maps by year.
 #'
 #' @details
@@ -103,7 +111,11 @@ plot.cd_service_utilization_filtered <- function(x, ...) {
 #' }
 #'
 #' @export
-plot.cd_service_utilization_prepared <- function(x, ...) {
+plot.cd_service_utilization_prepared <- function(x, ..., options = NULL) {
+  cd_finish_plot(.plot_cd_service_utilization_prepared_impl(x, ...), options, ..., .source = x)
+}
+
+.plot_cd_service_utilization_prepared_impl <- function(x, ...) {
 
   indicator <- attr_or_abort(x, 'indicator')
 
@@ -155,8 +167,14 @@ plot.cd_service_utilization_prepared <- function(x, ...) {
 #' @param x_axis Character. Optional translated x-axis label.
 #' @param legend Character. Optional translated legend label.
 #' @param ... Additional arguments.
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @export
-plot.cd_service_utilization_admin1 <- function(x, title = NULL, x_axis = NULL, legend = NULL, ...) {
+plot.cd_service_utilization_admin1 <- function(x, title = NULL, x_axis = NULL, legend = NULL, ..., options = NULL) {
+  cd_finish_plot(.plot_cd_service_utilization_admin1_impl(x, title = title, x_axis = x_axis, legend = legend, ...), options, ..., .source = x)
+}
+
+.plot_cd_service_utilization_admin1_impl <- function(x, title = NULL, x_axis = NULL, legend = NULL, ...) {
 
   metric_type <- attr_or_abort(x, "metric_type")
 
@@ -217,8 +235,14 @@ plot.cd_service_utilization_admin1 <- function(x, title = NULL, x_axis = NULL, l
 #' @param x Object of class cd_mch_curative_index.
 #' @param labels List. Optional translations containing axes, title, and quadrant labels.
 #' @param ... Additional arguments.
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @export
-plot.cd_mch_curative_index <- function(x, labels = NULL, ...) {
+plot.cd_mch_curative_index <- function(x, labels = NULL, ..., options = NULL) {
+  cd_finish_plot(.plot_cd_mch_curative_index_impl(x, labels = labels, ...), options, ..., .source = x)
+}
+
+.plot_cd_mch_curative_index_impl <- function(x, labels = NULL, ...) {
   
   # 1. Calculate Mid-points
   x_mid <- median(x$mch_prev_services_index, na.rm = TRUE)

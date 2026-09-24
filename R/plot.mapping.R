@@ -9,7 +9,9 @@
 #' @param title (Optional) A scalar character string to override the default plot title. Defaults to `NULL`.
 #' @param caption (Optional) A scalar character string to override the default plot caption. Defaults to `NULL`.
 #' @param legend_title (Optional) A scalar character string to override the default legend title. Defaults to `NULL`.
-#' @param ... Additional arguments (currently unused).
+#' @param ... Chart options by name (see [cd_chart_options()]); other arguments are ignored.
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes the user changed. Applied last, so it wins over
+#'   `title` and the other arguments above. Any chart option can also be given by name in `...`.
 #'
 #' @return A `ggplot` object visualizing the spatial distribution of the selected indicator by region and year.
 #'
@@ -27,7 +29,7 @@
 #' @seealso [filter_mapping_data()], [get_mapping_data()]
 #'
 #' @export
-plot.cd_mapping_filtered <- function(x, title = NULL, caption = NULL, legend = NULL, ...) {
+plot.cd_mapping_filtered <- function(x, title = NULL, caption = NULL, legend = NULL, ..., options = NULL) {
   year = NULL
 
   indicator <- attr_or_abort(x, 'indicator')
@@ -55,7 +57,7 @@ plot.cd_mapping_filtered <- function(x, title = NULL, caption = NULL, legend = N
   final_caption <- caption %||% "Data Source: DHIS-2 analysis"
   final_legend_title <- legend %||% "Coverage (%)"
 
-  x %>%
+  p <- x %>%
     st_set_geometry('geometry') %>%
     st_as_sf() %>%
     st_set_crs(4326) %>%
@@ -84,4 +86,6 @@ plot.cd_mapping_filtered <- function(x, title = NULL, caption = NULL, legend = N
         strip.text = element_text(size = 12, face = "bold"),
         aspect.ratio = 1
       )
+
+  cd_finish_plot(p, options, ..., .source = x)
 }

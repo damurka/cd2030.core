@@ -13,7 +13,9 @@
   x_axis = NULL,
   y_axis = NULL,
   caption = NULL,
-  legend_labels = NULL
+  legend_labels = NULL,
+  ...,
+  options = NULL
 )
 }
 \arguments{
@@ -32,6 +34,9 @@
 \item{caption}{(Optional) Custom caption text (R-squared will automatically be prepended to this).}
 
 \item{legend_labels}{(Optional) A named list to override default legend labels (keys: 'admin', 'linear').}
+
+\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
 }
 \value{
 A ggplot object.

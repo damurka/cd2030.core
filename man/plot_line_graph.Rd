@@ -13,7 +13,9 @@ plot_line_graph(
   x_axis,
   legend_labels,
   hline = NULL,
-  hline_style = "dashed"
+  hline_style = "dashed",
+  options = NULL,
+  ...
 )
 }
 \arguments{

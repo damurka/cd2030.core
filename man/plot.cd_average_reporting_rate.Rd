@@ -13,7 +13,8 @@
   x_axis = NULL,
   y_axis = NULL,
   legend = NULL,
-  ...
+  ...,
+  options = NULL
 )
 }
 \arguments{

@@ -4,7 +4,7 @@
 \alias{plot.cd_mapping_filtered}
 \title{Plot Subnational Coverage Maps by Indicator}
 \usage{
-\method{plot}{cd_mapping_filtered}(x, title = NULL, caption = NULL, legend = NULL, ...)
+\method{plot}{cd_mapping_filtered}(x, title = NULL, caption = NULL, legend = NULL, ..., options = NULL)
 }
 \arguments{
 \item{x}{A \code{cd_mapping_filtered} object. Created using \code{\link[=filter_mapping_data]{filter_mapping_data()}}, and must
@@ -14,7 +14,10 @@ include spatial geometry and metadata attributes (\code{indicator}, \code{palett
 
 \item{caption}{(Optional) A scalar character string to override the default plot caption. Defaults to \code{NULL}.}
 
-\item{...}{Additional arguments (currently unused).}
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}); other arguments are ignored.}
+
+\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes the user changed. Applied last, so it wins over
+\code{title} and the other arguments above. Any chart option can also be given by name in \code{...}.}
 
 \item{legend_title}{(Optional) A scalar character string to override the default legend title. Defaults to \code{NULL}.}
 }

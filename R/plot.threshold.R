@@ -12,10 +12,16 @@
 #'   on the x-axis (e.g., `list(penta1 = "Penta 1", dropout_penta13 = "Penta 1-3 Dropout")`).
 #' @param ... Additional arguments passed to the plotting function.
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A `ggplot` object displaying a grouped bar chart of threshold attainment.
 #'
 #' @export
-plot.cd_threshold <- function(x, title = NULL, x_axis = NULL, y_axis = NULL, legend_title = NULL, x_labels = NULL, ...) {
+plot.cd_threshold <- function(x, title = NULL, x_axis = NULL, y_axis = NULL, legend_title = NULL, x_labels = NULL, ..., options = NULL) {
+  cd_finish_plot(.plot_cd_threshold_impl(x, title = title, x_axis = x_axis, y_axis = y_axis, legend_title = legend_title, x_labels = x_labels, ...), options, ..., .source = x)
+}
+
+.plot_cd_threshold_impl <- function(x, title = NULL, x_axis = NULL, y_axis = NULL, legend_title = NULL, x_labels = NULL, ...) {
   indicator = value = year = NULL
 
   # Extract attributes

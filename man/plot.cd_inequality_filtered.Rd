@@ -12,7 +12,8 @@
   y_axis = NULL,
   caption = NULL,
   legend_labels = NULL,
-  ...
+  ...,
+  options = NULL
 )
 }
 \arguments{
@@ -31,7 +32,10 @@
 \item{legend_labels}{(Optional) A named list or vector to override the legend keys and MADM label for translation.
 Valid keys: \code{subnational}, \code{national}, \code{madm}. Defaults to \code{NULL}.}
 
-\item{...}{Additional arguments passed to the plotting function.}
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}); other arguments are ignored.}
+
+\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes the user changed. Applied last, so it wins over
+\code{title} and the other arguments above. Any chart option can also be given by name in \code{...}.}
 }
 \value{
 A \code{ggplot} object displaying the subnational health coverage plot.

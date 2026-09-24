@@ -11,7 +11,8 @@
   y_axis = NULL,
   caption = NULL,
   labels = NULL,
-  ...
+  ...,
+  options = NULL
 )
 }
 \arguments{
@@ -29,7 +30,10 @@ coverage data for the specified indicator.}
 \item{labels}{(Optional) A named list or vector to override the legend keys for translation.
 Valid keys: \code{dhis2}, \code{wuenic}, \code{survey}, \code{ci}. Defaults to \code{NULL}.}
 
-\item{...}{Additional arguments passed to or from other methods (currently unused).}
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}); other arguments are ignored.}
+
+\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes the user changed. Applied last, so it wins over
+\code{title} and the other arguments above. Any chart option can also be given by name in \code{...}.}
 }
 \value{
 A \code{ggplot} object displaying a line plot of the coverage data.

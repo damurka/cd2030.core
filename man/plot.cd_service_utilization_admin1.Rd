@@ -4,7 +4,7 @@
 \alias{plot.cd_service_utilization_admin1}
 \title{Plot S3 method for Service Utilization Admin1}
 \usage{
-\method{plot}{cd_service_utilization_admin1}(x, title = NULL, x_axis = NULL, legend = NULL, ...)
+\method{plot}{cd_service_utilization_admin1}(x, title = NULL, x_axis = NULL, legend = NULL, ..., options = NULL)
 }
 \arguments{
 \item{x}{Object of class cd_service_utilization_admin1.}
@@ -16,6 +16,9 @@
 \item{legend}{Character. Optional translated legend label.}
 
 \item{...}{Additional arguments.}
+
+\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
 }
 \description{
 Plot S3 method for Service Utilization Admin1

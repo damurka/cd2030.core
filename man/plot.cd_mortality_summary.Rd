@@ -4,7 +4,12 @@
 \alias{plot.cd_mortality_summary}
 \title{Plot Mortality Rate Indicators}
 \usage{
-\method{plot}{cd_mortality_summary}(x, indicator = c("mmr_inst", "ratio_md_sb", "sbr_inst", "nn_inst"), ...)
+\method{plot}{cd_mortality_summary}(
+  x,
+  indicator = c("mmr_inst", "ratio_md_sb", "sbr_inst", "nn_inst"),
+  ...,
+  options = NULL
+)
 }
 \arguments{
 \item{x}{A \code{cd_mortality_summary} object.}
@@ -12,6 +17,9 @@
 \item{indicator}{One of \code{"mmr_inst"}, \code{"ratio_md_sb"}, \code{"sbr_inst"}, or \code{"nn_inst"}.}
 
 \item{...}{Additional arguments passed to methods.}
+
+\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
 }
 \value{
 A ggplot object.

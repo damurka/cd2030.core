@@ -28,9 +28,20 @@
 #' * **Births**: Compares `un_births` vs `totlivebirths_dhis2` vs `totbirths_dhis2`.
 #' * **Under 1**: Compares `un_under1` vs `totunder1_dhis2`.
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A ggplot object.
 #' @export
 plot.cd_population_metrics <- function(x, metric = c("population", "births", "under1"),
+                                       title = NULL,
+                                       x_label = NULL,
+                                       y_label = NULL,
+                                       legend_labels = NULL,
+                                       ..., options = NULL) {
+  cd_finish_plot(.plot_cd_population_metrics_impl(x, metric = metric, title = title, x_label = x_label, y_label = y_label, legend_labels = legend_labels, ...), options, ..., .source = x)
+}
+
+.plot_cd_population_metrics_impl <- function(x, metric = c("population", "births", "under1"),
                                        title = NULL,
                                        x_label = NULL,
                                        y_label = NULL,

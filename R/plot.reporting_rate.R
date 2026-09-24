@@ -60,6 +60,18 @@ plot.cd_average_reporting_rate <- function(x,
                                            x_axis = NULL,
                                            y_axis = NULL,
                                            legend = NULL,
+                                           ..., options = NULL) {
+  cd_finish_plot(.plot_cd_average_reporting_rate_impl(x, plot_type = plot_type, indicator = indicator, threshold = threshold, title = title, x_axis = x_axis, y_axis = y_axis, legend = legend, ...), options, ..., .source = x)
+}
+
+.plot_cd_average_reporting_rate_impl <- function(x,
+                                           plot_type = c("heat_map", "bar"),
+                                           indicator = c("anc_rr", "idelv_rr", "vacc_rr", "opd_rr", "ipd_rr"),
+                                           threshold = 90,
+                                           title = NULL,
+                                           x_axis = NULL,
+                                           y_axis = NULL,
+                                           legend = NULL,
                                            ...) {
   check_scalar_integerish(threshold)
 
@@ -182,6 +194,8 @@ plot.cd_average_reporting_rate <- function(x,
 #' The plot output includes a title, axis labels, and a legend for year, allowing
 #' users to identify service areas with low reporting compliance.
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A ggplot object visualizing reporting rates across indicators and years.
 #'
 #' @examples
@@ -194,6 +208,17 @@ plot.cd_average_reporting_rate <- function(x,
 #'   layout unless it explicitly asks for a different one.
 #' @export
 plot.cd_district_reporting_rate <- function(x,
+                                            title = NULL,
+                                            x_axis = NULL,
+                                            y_axis = NULL,
+                                            caption = NULL,
+                                            indicator_labels = NULL,
+                                            facet_ncol = 3,
+                                            ..., options = NULL) {
+  cd_finish_plot(.plot_cd_district_reporting_rate_impl(x, title = title, x_axis = x_axis, y_axis = y_axis, caption = caption, indicator_labels = indicator_labels, facet_ncol = facet_ncol, ...), options, ..., .source = x)
+}
+
+.plot_cd_district_reporting_rate_impl <- function(x,
                                             title = NULL,
                                             x_axis = NULL,
                                             y_axis = NULL,

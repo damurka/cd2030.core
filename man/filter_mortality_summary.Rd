@@ -9,7 +9,8 @@ filter_mortality_summary(
   country_iso,
   indicator = c("mmr", "sbr", "nn"),
   plot_year = NULL,
-  subnational_map = NULL
+  subnational_map = NULL,
+  palette = c("Reds", "Blues", "Greens", "Purples", "YlGnBu")
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ filter_mortality_summary(
 \item{plot_year}{Optional integer or vector of years to filter.}
 
 \item{subnational_map}{Optional. A data frame to join with the shapefile to add metadata.}
+
+\item{palette}{Character. RColorBrewer sequential palette for the map (default \code{"Reds"}).}
 }
 \value{
 A tibble of class \code{cd_mortality_summary_filtered}, ready for geospatial plotting.

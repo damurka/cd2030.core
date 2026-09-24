@@ -4,7 +4,7 @@
 \alias{plot.cd_private_sector}
 \title{Plot S3 method for Private Sector Ownership}
 \usage{
-\method{plot}{cd_private_sector}(x, title = NULL, x_axis = NULL, y_axis = NULL, ...)
+\method{plot}{cd_private_sector}(x, title = NULL, x_axis = NULL, y_axis = NULL, ..., options = NULL)
 }
 \arguments{
 \item{x}{An object of class \code{cd_private_sector}}
@@ -16,6 +16,9 @@
 \item{y_axis}{(Optional) Custom label for the y-axis.}
 
 \item{...}{Additional arguments}
+
+\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
 }
 \description{
 Plot S3 method for Private Sector Ownership

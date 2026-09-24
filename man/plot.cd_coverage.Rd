@@ -15,7 +15,8 @@
   y_axis = NULL,
   caption = NULL,
   labels = NULL,
-  ...
+  ...,
+  options = NULL
 )
 }
 \arguments{
@@ -41,6 +42,9 @@
 (e.g., \code{list(lower = "Low", average = "Avg", higher = "High")}).}
 
 \item{...}{Additional arguments.}
+
+\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
 }
 \description{
 Generates a bar chart comparing indicator coverage across regions, highlighting

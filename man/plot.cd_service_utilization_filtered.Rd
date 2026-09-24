@@ -4,12 +4,15 @@
 \alias{plot.cd_service_utilization_filtered}
 \title{Plot Service Utilization Indicators}
 \usage{
-\method{plot}{cd_service_utilization_filtered}(x, ...)
+\method{plot}{cd_service_utilization_filtered}(x, ..., options = NULL)
 }
 \arguments{
 \item{x}{A \code{cd_service_utilization_filtered} object created by \code{\link[=filter_service_utilization]{filter_service_utilization()}}.}
 
 \item{...}{not used}
+
+\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
 }
 \value{
 A \code{ggplot2} plot object.

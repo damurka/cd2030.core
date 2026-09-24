@@ -4,7 +4,15 @@
 \alias{plot.cd_phc_scatter}
 \title{Plot S3 method for PHC Performance Scatter}
 \usage{
-\method{plot}{cd_phc_scatter}(x, title = NULL, x_axis = NULL, y_axis = NULL, quad_labels = NULL, ...)
+\method{plot}{cd_phc_scatter}(
+  x,
+  title = NULL,
+  x_axis = NULL,
+  y_axis = NULL,
+  quad_labels = NULL,
+  ...,
+  options = NULL
+)
 }
 \arguments{
 \item{x}{An object of class \code{cd_phc_scatter}}
@@ -19,6 +27,9 @@
 Expected keys: \code{high_high}, \code{low_high}, \code{high_low}, \code{low_low}.}
 
 \item{...}{Additional arguments}
+
+\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
 }
 \description{
 Plot S3 method for PHC Performance Scatter

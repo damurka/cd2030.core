@@ -653,6 +653,35 @@ CacheConnection <- R6::R6Class(
     #' @param value Integer vector.
     set_mapping_years = function(value) private$setter("selected_mapping_years", value, is.numeric),
 
+    #' @description Stores what the user changed about how one chart (or, with `id = "default"`, every chart of this dataset)
+    #'   looks: text, legend, fonts, sizes. See [cd_chart_options()]. Saved with the dataset, so it survives reloads.
+    #' @param id Character. A chart id, by convention `"<page>/<chart>"` (e.g. `"national_coverage/anc4"`), or `"default"`
+    #'   for settings that apply to every chart (a font, a text scale).
+    #' @param options A [cd_chart_options()] object (or a list of its fields). `NULL` removes what is stored for `id`.
+    #' @return Invisibly, TRUE when something changed.
+    set_chart_options = function(id, options) {
+      if (!is_scalar_character(id) || !nzchar(id)) cd_abort(c("x" = "{.arg id} must be a single non-empty string."))
+      stored <- private$.in_memory_data[["chart_options"]] %||% list()
+      stored[[id]] <- if (is.null(options)) NULL else as_chart_options(options)
+      invisible(private$setter("chart_options", stored, is.list))
+    },
+
+    #' @description The chart options that apply to one chart: the dataset's `"default"` options with the chart's own on top.
+    #' @param id Character. A chart id (see `set_chart_options()`), or `NULL` for the defaults alone.
+    #' @return A [cd_chart_options()] object (empty when nothing is stored).
+    get_chart_options = function(id = NULL) {
+      stored <- self$chart_options
+      merge_chart_options(stored[["default"]], if (!is.null(id) && !identical(id, "default")) stored[[id]])
+    },
+
+    #' @description Forgets stored chart options.
+    #' @param id Character. The chart id to reset, or `NULL` to reset every chart and the defaults.
+    #' @return Invisibly, TRUE when something changed.
+    reset_chart_options = function(id = NULL) {
+      if (is.null(id)) return(invisible(private$setter("chart_options", list(), is.list)))
+      self$set_chart_options(id, NULL)
+    },
+
     #' @description Sets mapping years explicitly for mortality dashboards.
     #' @param value Integer vector.
     set_mortality_mapping_years = function(value) private$setter("selected_mortality_mapping_years", value, is.numeric),
@@ -1761,6 +1790,10 @@ CacheConnection <- R6::R6Class(
     #' @field mapping_years Active Binding: Fetches years requested for standard map generation.
     mapping_years = function(value) private$getter("selected_mapping_years", value),
 
+    #' @field chart_options Active Binding: every stored chart option, a named list of [cd_chart_options()] (read-only; use
+    #'   `set_chart_options()` / `get_chart_options()`).
+    chart_options = function(value) private$getter("chart_options", value),
+
     #' @field fpet_data Active Binding: Fetches FPET metrics (loads from global if missing).
     fpet_data = function(value) {
       iso <- self$country_iso
@@ -2107,6 +2140,9 @@ CacheConnection <- R6::R6Class(
       selected_mortality_mapping_years = NULL,
       selected_utilization_mapping_years = NULL,
       selected_mapping_years = NULL,
+
+      # What the user has changed about how charts look: list(default = <cd_chart_options>, `<chart id>` = <cd_chart_options>)
+      chart_options = list(),
 
       un_estimates = NULL,
       un_mortality_estimates = NULL,

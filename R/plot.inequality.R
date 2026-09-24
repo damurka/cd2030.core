@@ -13,12 +13,14 @@
 #' @param caption (Optional) A scalar character string to override the default denominator caption. Defaults to `NULL`.
 #' @param legend_labels (Optional) A named list or vector to override the legend keys and MADM label for translation.
 #'   Valid keys: `subnational`, `national`, `madm`. Defaults to `NULL`.
-#' @param ... Additional arguments passed to the plotting function.
+#' @param ... Chart options by name (see [cd_chart_options()]); other arguments are ignored.
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes the user changed. Applied last, so it wins over
+#'   `title` and the other arguments above. Any chart option can also be given by name in `...`.
 #'
 #' @return A `ggplot` object displaying the subnational health coverage plot.
 #'
 #' @export
-plot.cd_inequality_filtered <- function(x, title = NULL, subtitle = NULL, x_axis = NULL, y_axis = NULL, caption = NULL, legend_labels = NULL, ...) {
+plot.cd_inequality_filtered <- function(x, title = NULL, subtitle = NULL, x_axis = NULL, y_axis = NULL, caption = NULL, legend_labels = NULL, ..., options = NULL) {
   year = nat = madm = NULL
 
   admin_level <- attr_or_abort(x, "admin_level")
@@ -112,7 +114,7 @@ plot.cd_inequality_filtered <- function(x, title = NULL, subtitle = NULL, x_axis
   max_break <- robust_max(breaks, 0)
 
   # 4. Build Plot
-  ggplot(x) +
+  p <- ggplot(x) +
     geom_point(
       aes(x = year, y = !!sym(paste0("cov_", indicator, "_", denominator)), color = lbl_subnat),
       size = 3
@@ -147,4 +149,6 @@ plot.cd_inequality_filtered <- function(x, title = NULL, subtitle = NULL, x_axis
       legend.position = "right",
       legend.background = element_blank()
     )
+
+  cd_finish_plot(p, options, ..., .source = x)
 }

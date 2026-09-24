@@ -17,6 +17,8 @@
 #' - `"region"` and `"indicator"` use bar plots with gradient fill.
 #' - `"heat_map"` shows indicator values by year and region.
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A `ggplot` object.
 #'
 #' @examples
@@ -26,6 +28,18 @@
 #' }
 #' @export
 plot.cd_outlier <- function(x,
+                            selection_type = c("region", "indicator", "heat_map"),
+                            indicator = NULL,
+                            threshold = 90,
+                            title = NULL,
+                            x_axis = NULL,
+                            y_axis = NULL,
+                            legend = NULL,
+                            ..., options = NULL) {
+  cd_finish_plot(.plot_cd_outlier_impl(x, selection_type = selection_type, indicator = indicator, threshold = threshold, title = title, x_axis = x_axis, y_axis = y_axis, legend = legend, ...), options, ..., .source = x)
+}
+
+.plot_cd_outlier_impl <- function(x,
                             selection_type = c("region", "indicator", "heat_map"),
                             indicator = NULL,
                             threshold = 90,
@@ -187,6 +201,8 @@ plot.cd_outlier <- function(x,
 #' - Plots observed values, median trend, and 5×MAD range.
 #' - Flags outliers in red.
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A `ggplot` object.
 #'
 #' @examples
@@ -196,6 +212,19 @@ plot.cd_outlier <- function(x,
 #' }
 #' @export
 plot.cd_outlier_list <- function(x,
+                                 indicator = NULL,
+                                 year = NULL,
+                                 region = NULL,
+                                 title = NULL,
+                                 x_axis = NULL,
+                                 y_axis = NULL,
+                                 legend = NULL,
+                                 label = NULL,
+                                 ..., options = NULL) {
+  cd_finish_plot(.plot_cd_outlier_list_impl(x, indicator = indicator, year = year, region = region, title = title, x_axis = x_axis, y_axis = y_axis, legend = legend, label = label, ...), options, ..., .source = x)
+}
+
+.plot_cd_outlier_list_impl <- function(x,
                                  indicator = NULL,
                                  year = NULL,
                                  region = NULL,

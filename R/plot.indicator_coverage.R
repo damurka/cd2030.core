@@ -16,9 +16,27 @@
 #' @param legend_labels Optional character vector. Custom labels for the legend items. Must match the number of lines in the selected plot type.
 #' @param ... Additional arguments passed to the plotting function.
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A ggplot object.
 #' @export
 plot.cd_indicator_coverage <- function(x,
+                                       plot_type = c(
+                                         "anc_coverage_dhis2", "delivery_coverage_dhis2", "immunization_coverage_dhis2",
+                                         "anc_coverage_un", "delivery_coverage_un", "immunization_coverage_un",
+                                         "anc_coverage_anc1", "delivery_coverage_anc1", "immunization_coverage_anc1",
+                                         "anc_coverage_penta1", "delivery_coverage_penta1", "immunization_coverage_penta1"
+                                       ),
+                                       admin_name = NULL,
+                                       title = NULL,
+                                       x_label = NULL,
+                                       y_label = NULL,
+                                       legend_labels = NULL,
+                                       ..., options = NULL) {
+  cd_finish_plot(.plot_cd_indicator_coverage_impl(x, plot_type = plot_type, admin_name = admin_name, title = title, x_label = x_label, y_label = y_label, legend_labels = legend_labels, ...), options, ..., .source = x)
+}
+
+.plot_cd_indicator_coverage_impl <- function(x,
                                        plot_type = c(
                                          "anc_coverage_dhis2", "delivery_coverage_dhis2", "immunization_coverage_dhis2",
                                          "anc_coverage_un", "delivery_coverage_un", "immunization_coverage_un",

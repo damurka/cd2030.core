@@ -11,7 +11,8 @@
   y_axis = NULL,
   caption = NULL,
   indicator_labels = NULL,
-  ...
+  ...,
+  options = NULL
 )
 }
 \arguments{
@@ -28,6 +29,9 @@
 \item{indicator_labels}{(Optional) A named list mapping raw indicator names to translated legend labels.}
 
 \item{...}{Additional arguments.}
+
+\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
 }
 \description{
 Generates a line and ribbon plot for FPET indicators (e.g., mCPR, Demand Satisfied)

@@ -7,6 +7,8 @@
 #'   to visualize in the plot. If `NULL` all indicators will be shown.
 #' @param ... Reserved for future use.
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A `ggplot` or `plotly` object depending on the selection type.
 #'
 #' @examples
@@ -17,6 +19,17 @@
 #'
 #' @export
 plot.cd_completeness_summary <- function(x,
+                                         plot_type = c("heat_map", "trend"),
+                                         indicator = NULL,
+                                         title = NULL,
+                                         x_axis = NULL,
+                                         y_axis = NULL,
+                                         legend = NULL,
+                                         ..., options = NULL) {
+  cd_finish_plot(.plot_cd_completeness_summary_impl(x, plot_type = plot_type, indicator = indicator, title = title, x_axis = x_axis, y_axis = y_axis, legend = legend, ...), options, ..., .source = x)
+}
+
+.plot_cd_completeness_summary_impl <- function(x,
                                          plot_type = c("heat_map", "trend"),
                                          indicator = NULL,
                                          title = NULL,
@@ -159,6 +172,8 @@ plot.cd_completeness_summary <- function(x,
 #' The function produces a column chart showing the percent of districts
 #' with complete data for the selected indicator by year.
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A `ggplot` object.
 #'
 #' @examples
@@ -168,6 +183,15 @@ plot.cd_completeness_summary <- function(x,
 #'
 #' @export
 plot.cd_missing_district <- function(x,
+                                     indicator = NULL,
+                                     title = NULL,
+                                     x_axis = NULL,
+                                     y_axis = NULL,
+                                     ..., options = NULL) {
+  cd_finish_plot(.plot_cd_missing_district_impl(x, indicator = indicator, title = title, x_axis = x_axis, y_axis = y_axis, ...), options, ..., .source = x)
+}
+
+.plot_cd_missing_district_impl <- function(x,
                                      indicator = NULL,
                                      title = NULL,
                                      x_axis = NULL,

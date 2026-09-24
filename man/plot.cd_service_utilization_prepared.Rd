@@ -4,12 +4,15 @@
 \alias{plot.cd_service_utilization_prepared}
 \title{Plot Filtered Service Utilization Indicators}
 \usage{
-\method{plot}{cd_service_utilization_prepared}(x, ...)
+\method{plot}{cd_service_utilization_prepared}(x, ..., options = NULL)
 }
 \arguments{
 \item{x}{A \code{cd_service_utilization_prepared} object returned by \code{\link[=prepare_mapping_service_utlization]{prepare_mapping_service_utlization()}}.}
 
 \item{...}{Additional arguments (currently unused).}
+
+\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
 }
 \value{
 A \code{ggplot2} object representing faceted service utilization maps by year.

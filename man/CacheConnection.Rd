@@ -158,6 +158,9 @@ post-Finish page, not something the wizard itself needs a pre-merge equivalent f
 
 \item{\code{mapping_years}}{Active Binding: Fetches years requested for standard map generation.}
 
+\item{\code{chart_options}}{Active Binding: every stored chart option, a named list of \code{\link[=cd_chart_options]{cd_chart_options()}} (read-only; use
+\code{set_chart_options()} / \code{get_chart_options()}).}
+
 \item{\code{fpet_data}}{Active Binding: Fetches FPET metrics (loads from global if missing).}
 
 \item{\code{un_estimates}}{Active Binding: Fetches demographic targets set by the UN.}
@@ -283,6 +286,9 @@ Invalidate Health Systems Cache}
 \item \href{#method-CacheConnection-set_selected_admin_level_1}{\code{CacheConnection$set_selected_admin_level_1()}}
 \item \href{#method-CacheConnection-set_selected_district}{\code{CacheConnection$set_selected_district()}}
 \item \href{#method-CacheConnection-set_mapping_years}{\code{CacheConnection$set_mapping_years()}}
+\item \href{#method-CacheConnection-set_chart_options}{\code{CacheConnection$set_chart_options()}}
+\item \href{#method-CacheConnection-get_chart_options}{\code{CacheConnection$get_chart_options()}}
+\item \href{#method-CacheConnection-reset_chart_options}{\code{CacheConnection$reset_chart_options()}}
 \item \href{#method-CacheConnection-set_mortality_mapping_years}{\code{CacheConnection$set_mortality_mapping_years()}}
 \item \href{#method-CacheConnection-set_utilization_mapping_years}{\code{CacheConnection$set_utilization_mapping_years()}}
 \item \href{#method-CacheConnection-set_fpet_data}{\code{CacheConnection$set_fpet_data()}}
@@ -549,7 +555,11 @@ Creates mortality completeness ratio summaries.
 \subsection{Method \code{filter_mortality_summary()}}{
 Returns the appropriate mortality summary based on the indicator type to plot.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$filter_mortality_summary(indicator, map_years = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$filter_mortality_summary(
+  indicator,
+  map_years = NULL,
+  palette = "Reds"
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -558,6 +568,8 @@ Returns the appropriate mortality summary based on the indicator type to plot.
 \item{\code{indicator}}{Character. Indicator name.}
 
 \item{\code{map_years}}{Numeric vector. The years to include in a map.}
+
+\item{\code{palette}}{Character. RColorBrewer sequential palette for the map.}
 }
 \if{html}{\out{</div>}}
 }
@@ -610,7 +622,11 @@ Filters service utilization data for a specific indicator and region.
 \subsection{Method \code{prepare_mapping_service_utlization()}}{
 Prepares service utilization data mapping tables.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$prepare_mapping_service_utlization(indicator, map_years = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$prepare_mapping_service_utlization(
+  indicator,
+  map_years = NULL,
+  palette = "Purples"
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -619,6 +635,8 @@ Prepares service utilization data mapping tables.
 \item{\code{indicator}}{Character. Indicator name ('ipd', 'opd').}
 
 \item{\code{map_years}}{Numeric vector. Years to include.}
+
+\item{\code{palette}}{Character. RColorBrewer sequential palette for the map.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1078,6 +1096,70 @@ Sets mapping years for generic plots.
 \item{\code{value}}{Integer vector.}
 }
 \if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-set_chart_options"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_chart_options}{}}}
+\subsection{Method \code{set_chart_options()}}{
+Stores what the user changed about how one chart (or, with \code{id = "default"}, every chart of this dataset)
+looks: text, legend, fonts, sizes. See \code{\link[=cd_chart_options]{cd_chart_options()}}. Saved with the dataset, so it survives reloads.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_chart_options(id, options)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id}}{Character. A chart id, by convention \code{"<page>/<chart>"} (e.g. \code{"national_coverage/anc4"}), or \code{"default"}
+for settings that apply to every chart (a font, a text scale).}
+
+\item{\code{options}}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object (or a list of its fields). \code{NULL} removes what is stored for \code{id}.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisibly, TRUE when something changed.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-get_chart_options"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-get_chart_options}{}}}
+\subsection{Method \code{get_chart_options()}}{
+The chart options that apply to one chart: the dataset's \code{"default"} options with the chart's own on top.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_chart_options(id = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id}}{Character. A chart id (see \code{set_chart_options()}), or \code{NULL} for the defaults alone.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A \code{\link[=cd_chart_options]{cd_chart_options()}} object (empty when nothing is stored).
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-reset_chart_options"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-reset_chart_options}{}}}
+\subsection{Method \code{reset_chart_options()}}{
+Forgets stored chart options.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$reset_chart_options(id = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id}}{Character. The chart id to reset, or \code{NULL} to reset every chart and the defaults.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisibly, TRUE when something changed.
 }
 }
 \if{html}{\out{<hr>}}

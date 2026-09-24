@@ -12,12 +12,14 @@
 #' @param caption (Optional) A scalar character string to override the default denominator caption. Defaults to `NULL`.
 #' @param labels (Optional) A named list or vector to override the legend keys for translation.
 #'   Valid keys: `dhis2`, `wuenic`, `survey`, `ci`. Defaults to `NULL`.
-#' @param ... Additional arguments passed to or from other methods (currently unused).
+#' @param ... Chart options by name (see [cd_chart_options()]); other arguments are ignored.
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes the user changed. Applied last, so it wins over
+#'   `title` and the other arguments above. Any chart option can also be given by name in `...`.
 #'
 #' @return A `ggplot` object displaying a line plot of the coverage data.
 #'
 #' @export
-plot.cd_coverage_filtered <- function(x, title = NULL, x_axis = NULL, y_axis = NULL, caption = NULL, labels = NULL, ...) {
+plot.cd_coverage_filtered <- function(x, title = NULL, x_axis = NULL, y_axis = NULL, caption = NULL, labels = NULL, ..., options = NULL) {
   estimates = year = value = `Survey estimates` = `DHIS2 estimate` = `WUENIC estimates` =
     `95% CI LL` = `95% CI UL` = NULL
 
@@ -128,7 +130,7 @@ plot.cd_coverage_filtered <- function(x, title = NULL, x_axis = NULL, y_axis = N
   
   legend_colors <- set_names(legend_vals, legend_keys)
 
-  plot +
+  plot <- plot +
     scale_color_manual(values = legend_colors, name = NULL) +
     cd_plot_theme(
       title = final_title,
@@ -140,6 +142,8 @@ plot.cd_coverage_filtered <- function(x, title = NULL, x_axis = NULL, y_axis = N
       panel.grid.major.y = element_line(colour = "lightblue1", linetype = "dashed"),
       panel.grid.major.x = element_line(colour = "gray90", linetype = "dashed")
     )
+
+  cd_finish_plot(plot, options, ..., .source = x)
 }
 
 
@@ -161,8 +165,15 @@ plot.cd_coverage_filtered <- function(x, title = NULL, x_axis = NULL, y_axis = N
 #'   (e.g., `list(lower = "Low", average = "Avg", higher = "High")`).
 #' @param ... Additional arguments.
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @export
 plot.cd_coverage <- function(x, indicator = NULL, denominator = NULL, year = NULL, region = NULL,
+                             title = NULL, x_axis = NULL, y_axis = NULL, caption = NULL, labels = NULL, ..., options = NULL) {
+  cd_finish_plot(.plot_cd_coverage_impl(x, indicator = indicator, denominator = denominator, year = year, region = region, title = title, x_axis = x_axis, y_axis = y_axis, caption = caption, labels = labels, ...), options, ..., .source = x)
+}
+
+.plot_cd_coverage_impl <- function(x, indicator = NULL, denominator = NULL, year = NULL, region = NULL,
                              title = NULL, x_axis = NULL, y_axis = NULL, caption = NULL, labels = NULL, ...) {
 
   # 1. Input Validation

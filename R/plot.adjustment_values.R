@@ -18,6 +18,8 @@
 #'   are generated.
 #' @param ... Additional arguments (currently not used).
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A ggplot2 object showing the comparison of unadjusted and adjusted data
 #'   for the specified indicator over time.
 #'
@@ -43,6 +45,15 @@
 #'
 #' @export
 plot.cd_adjustment_values_filtered <- function(x,
+                                               title = NULL,
+                                               x_axis = NULL,
+                                               y_axis = NULL,
+                                               legend_labels = NULL,
+                                               ..., options = NULL) {
+  cd_finish_plot(.plot_cd_adjustment_values_filtered_impl(x, title = title, x_axis = x_axis, y_axis = y_axis, legend_labels = legend_labels, ...), options, ..., .source = x)
+}
+
+.plot_cd_adjustment_values_filtered_impl <- function(x,
                                                title = NULL,
                                                x_axis = NULL,
                                                y_axis = NULL,

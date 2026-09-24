@@ -10,8 +10,22 @@
 #' @param source_labels (Optional) Named list to translate 'facility', 'survey', 'wuenic'.
 #' @param indicator_labels (Optional) Named list to translate indicator names (e.g. 'anc4').
 #'
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @export
 plot.cd_coverage_selected <- function(x,
+                                      type = NULL,
+                                      title = NULL,
+                                      subtitle = NULL,
+                                      x_axis = NULL,
+                                      y_axis = NULL,
+                                      fill_label = NULL,
+                                      source_labels = NULL,
+                                      indicator_labels = NULL, ..., options = NULL) {
+  cd_finish_plot(.plot_cd_coverage_selected_impl(x, type = type, title = title, subtitle = subtitle, x_axis = x_axis, y_axis = y_axis, fill_label = fill_label, source_labels = source_labels, indicator_labels = indicator_labels), options, ..., .source = x)
+}
+
+.plot_cd_coverage_selected_impl <- function(x,
                                       type = NULL,
                                       title = NULL,
                                       subtitle = NULL,
