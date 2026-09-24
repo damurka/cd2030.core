@@ -9,7 +9,8 @@ new_countdown(
   class = NULL,
   indicator_group = c("auto", "vaccine", "rmncah", "custom"),
   profile_name = NULL,
-  profile = NULL
+  profile = NULL,
+  validate = TRUE
 )
 }
 \arguments{

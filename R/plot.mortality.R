@@ -155,7 +155,7 @@ plot.cd_mortality_summary_filtered <- function(x, ...) {
       geom_sf(aes(fill = !!sym(indicator)), colour = 'white') +
       facet_wrap(~ year, scales = 'fixed', ncol = 5) +
       scale_fill_gradientn(
-        colours = brewer.pal(9, 'Reds'),
+        colours = brewer.pal(9, attr_or_null(x, 'palette') %||% 'Reds'),
         na.value = 'gray90',
         name = legend
       ) +

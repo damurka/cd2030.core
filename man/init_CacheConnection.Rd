@@ -8,6 +8,7 @@ init_CacheConnection(
   rds_path = NULL,
   countdown_data = NULL,
   data_path = NULL,
+  wizard_parts = NULL,
   indicator_group = c("auto", "rmncah", "vaccine", "custom")
 )
 }
@@ -16,7 +17,13 @@ init_CacheConnection(
 
 \item{countdown_data}{Optional \code{cd_data} object to initialize in-memory cache.}
 
-\item{data_path}{Optional. Used with the countdown to support in creating the cache file.}
+\item{data_path}{Optional character. Path to the original source file
+(e.g. the \code{.xlsx} \code{countdown_data} was parsed from). Used to derive
+where the cache lives -- see \code{CacheConnection$initialize}.}
+
+\item{wizard_parts}{Optional \code{load_excel_parts()} result -- a third, mutually-exclusive mode
+alongside \code{rds_path}/\code{countdown_data} for the Load Data wizard's own in-progress state (see
+\code{CacheConnection$initialize}'s own \code{wizard_parts} doc).}
 
 \item{indicator_group}{Character. Specifies the indicator group to use (auto, rmncah, vaccine, custom).}
 }

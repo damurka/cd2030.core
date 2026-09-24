@@ -7,7 +7,7 @@
 filter_mortality_summary(
   .data,
   country_iso,
-  indicator = c("mmr", "sbr"),
+  indicator = c("mmr", "sbr", "nn"),
   plot_year = NULL,
   subnational_map = NULL
 )

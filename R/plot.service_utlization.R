@@ -126,7 +126,7 @@ plot.cd_service_utilization_prepared <- function(x, ...) {
     geom_sf(aes(fill = !!sym(indicator)), color = "white") +
     facet_wrap(~ year, scales = "fixed", ncol = 5) +
     scale_fill_gradientn(
-      colours = brewer.pal(9, "Purples"),
+      colours = brewer.pal(9, attr_or_null(x, "palette") %||% "Purples"),
       na.value = "grey90",
       name =  legend
     ) +

@@ -189,6 +189,9 @@ plot.cd_average_reporting_rate <- function(x,
 #' # Generate a plot of district reporting rates below a threshold of 90%
 #' plot(cd_district_reporting_rate(data), threshold = 90)
 #' }
+#' @param facet_ncol How many service-panel columns the facet grid uses (default 3, unchanged from before this
+#'   param existed -- e.g. 4 services lay out 3-then-1). Additive: every existing caller keeps its current
+#'   layout unless it explicitly asks for a different one.
 #' @export
 plot.cd_district_reporting_rate <- function(x,
                                             title = NULL,
@@ -196,6 +199,7 @@ plot.cd_district_reporting_rate <- function(x,
                                             y_axis = NULL,
                                             caption = NULL,
                                             indicator_labels = NULL,
+                                            facet_ncol = 3,
                                             ...) {
   year = value = indicator = low_mean_rr = NULL
 
@@ -248,7 +252,7 @@ plot.cd_district_reporting_rate <- function(x,
     ggplot(aes(x = as.factor(year), y = value, fill = as.factor(year))) +
     geom_col(position = "dodge") +
     geom_text(aes(label = round(value, 0)), position = position_dodge(width = 0.9), vjust = -1.5, color = "black", size = 3) +
-    facet_wrap(~title, scales = "free_y", ncol = 3) +
+    facet_wrap(~title, scales = "free_y", ncol = facet_ncol) +
     scale_fill_manual(values = colors) +
     scale_y_continuous(
       limits = c(0, 100),

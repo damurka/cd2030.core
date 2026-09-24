@@ -22,7 +22,6 @@ Useful links:
 
 Authors:
 \itemize{
-  \item David Kariuki \email{hello@damurka.com} (\href{https://orcid.org/0009-0003-6159-1107}{ORCID})
   \item Martin Mutua
   \item Peter Kaberia \email{pkaberia@aphrc.org}
   \item Godfrey Adero \email{gadero@aphrc.org}

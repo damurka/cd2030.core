@@ -14,7 +14,8 @@ load_cache_data(
   admin_sheet_name = NULL,
   population_sheet_name = NULL,
   reporting_sheet_name = NULL,
-  service_sheet_names = NULL
+  service_sheet_names = NULL,
+  validate = TRUE
 )
 }
 \arguments{
@@ -46,6 +47,15 @@ one of \code{"replace"}, \code{"merge"}, or \code{"error"}. Default \code{"repla
 
 \item{service_sheet_names}{Character vector of service-data sheets.
 Default: all sheets matching \code{"Service_data"} if not supplied.}
+
+\item{validate}{Logical. Whether to run Tier B quality checks (district-name
+consistency, missing months, unrecognized months -- see
+\verb{R/0_data_quality_checks.R}) as part of loading. Default \code{TRUE}, matching
+the pipeline's long-standing behavior. \code{FALSE} lets a file with data-quality
+problems (as opposed to \emph{structural} ones -- Tier A, e.g. a missing admin
+column -- which always run regardless) load anyway, for a caller that wants
+to run those checks itself later, progressively, against the already-loaded
+data (see \code{run_all_quality_checks()}) rather than as an upfront hard stop.}
 }
 \value{
 A cache/connection object as returned by \code{init_CacheConnection()}.

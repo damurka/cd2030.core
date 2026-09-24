@@ -4,7 +4,11 @@
 \alias{summarise_completeness_ratio}
 \title{Summarize Completeness-Adjusted Mortality Ratio}
 \usage{
-summarise_completeness_ratio(.data, plot_type = c("mmr", "sbr"), lbr_mean = 0)
+summarise_completeness_ratio(
+  .data,
+  plot_type = c("mmr", "sbr", "nn"),
+  lbr_mean = 0
+)
 }
 \arguments{
 \item{.data}{A data frame of class \code{cd_mortality_ratio}, containing UN estimates

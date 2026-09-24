@@ -11,12 +11,17 @@
   y_axis = NULL,
   caption = NULL,
   indicator_labels = NULL,
+  facet_ncol = 3,
   ...
 )
 }
 \arguments{
 \item{x}{A \code{cd_district_reporting_rate} data frame containing reporting rate data,
 processed by \code{\link[=calculate_district_reporting_rate]{calculate_district_reporting_rate()}}.}
+
+\item{facet_ncol}{How many service-panel columns the facet grid uses (default 3, unchanged from before this
+param existed -- e.g. 4 services lay out 3-then-1). Additive: every existing caller keeps its current
+layout unless it explicitly asks for a different one.}
 
 \item{...}{Additional parameters passed to the plotting function.}
 }

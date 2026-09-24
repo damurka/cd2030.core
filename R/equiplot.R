@@ -108,7 +108,7 @@ equiplot_area <- function(.data, indicator,
                           dot_size = NULL) {
   year <- NULL
   check_equity_data(.data)
-  indicator_arg <- arg_match(indicator, get_all_indicators())
+  indicator_arg <- arg_match(indicator, unique(c(get_all_indicators(), get_analysis_indicators())))
 
   indicator_col <- paste0("r_", indicator_arg)
 
@@ -138,7 +138,7 @@ equiplot_education <- function(.data, indicator,
                                dot_size = NULL) {
   year <- NULL
   check_equity_data(.data)
-  indicator_arg <- arg_match(indicator, get_all_indicators())
+  indicator_arg <- arg_match(indicator, unique(c(get_all_indicators(), get_analysis_indicators())))
 
   indicator_col <- paste0("r_", indicator_arg)
 
@@ -175,7 +175,7 @@ equiplot_wealth <- function(.data, indicator,
                             dot_size = NULL) {
   year <- NULL
   check_equity_data(.data)
-  indicator_arg <- arg_match(indicator, get_all_indicators())
+  indicator_arg <- arg_match(indicator, unique(c(get_all_indicators(), get_analysis_indicators())))
 
   indicator_col <- paste0("r_", indicator_arg)
 

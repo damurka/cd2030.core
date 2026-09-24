@@ -60,6 +60,14 @@
 #' )
 #' }
 #'
+#' @param validate Logical. Whether to run Tier B quality checks (district-name
+#'   consistency, missing months, unrecognized months -- see
+#'   `R/0_data_quality_checks.R`) as part of loading. Default `TRUE`, matching
+#'   the pipeline's long-standing behavior. `FALSE` lets a file with data-quality
+#'   problems (as opposed to *structural* ones -- Tier A, e.g. a missing admin
+#'   column -- which always run regardless) load anyway, for a caller that wants
+#'   to run those checks itself later, progressively, against the already-loaded
+#'   data (see `run_all_quality_checks()`) rather than as an upfront hard stop.
 #' @export
 load_data <- function(path,
                       indicator_group = c('auto', 'vaccine', 'rmncah', 'custom'),
@@ -69,7 +77,8 @@ load_data <- function(path,
                       admin_sheet_name = NULL,
                       population_sheet_name = NULL,
                       reporting_sheet_name = NULL,
-                      service_sheet_names = NULL) {
+                      service_sheet_names = NULL,
+                      validate = TRUE) {
   check_file_path(path)
   indicator_group <- arg_match(indicator_group)
   on_conflict <- arg_match(on_conflict)
@@ -87,9 +96,9 @@ load_data <- function(path,
   final_data <- if (ext %in% c('xlsx', 'xls')) {
     .load_excel_data(path, indicator_group, profile, profile_name, start_year,
                      admin_sheet_name, population_sheet_name,
-                     reporting_sheet_name, service_sheet_names)
+                     reporting_sheet_name, service_sheet_names, validate)
   } else if (ext == 'dta') {
-    .load_master_dataset(path, indicator_group, profile, profile_name)
+    .load_master_dataset(path, indicator_group, profile, profile_name, validate)
   } else {
     cd_abort(c("x" = "Unsupported file for load_data(). Use Excel or Stata"))
   }
@@ -130,7 +139,8 @@ load_cache_data <- function(path,
                             admin_sheet_name = NULL,
                             population_sheet_name = NULL,
                             reporting_sheet_name = NULL,
-                            service_sheet_names = NULL) {
+                            service_sheet_names = NULL,
+                            validate = TRUE) {
   check_file_path(path)
   indicator_group <- arg_match(indicator_group)
 
@@ -138,10 +148,16 @@ load_cache_data <- function(path,
   ext <- str_to_lower(tools::file_ext(path))
   final_data <- if (ext %in% c('xlsx', 'xls', 'dta')) {
     on_conflict <- arg_match(on_conflict)
+    # Was passing service_sheet_names twice (positionally landing in reporting_sheet_name's own slot) and
+    # never actually forwarding reporting_sheet_name at all -- a pre-existing bug, fixed in passing since it's
+    # immediately adjacent to the validate param being threaded through here.
     data <- load_data(path, indicator_group, profile, on_conflict, start_year,
-                      admin_sheet_name, population_sheet_name,service_sheet_names,
-                      service_sheet_names)
-    data_path <- if (create_cache) dirname(path) else NULL
+                      admin_sheet_name, population_sheet_name, reporting_sheet_name,
+                      service_sheet_names, validate)
+    # data_path is the original source file -- CacheConnection derives the
+    # cache's location from it and decides load-vs-create itself, so the
+    # same behavior applies uniformly regardless of caller.
+    data_path <- if (create_cache) path else NULL
     indicator_group <- get_selected_group()
     return(init_CacheConnection(countdown_data = data, data_path = data_path))
   } else if (ext == 'rds') {
@@ -167,7 +183,8 @@ load_cache_data <- function(path,
     path,
     indicator_group = c('auto', 'vaccine', 'rmncah', 'custom'),
     profile = NULL,
-    profile_name = NULL
+    profile_name = NULL,
+    validate = TRUE
 ) {
   check_file_path(path)
   indicator_group <- arg_match(indicator_group)
@@ -183,28 +200,36 @@ load_cache_data <- function(path,
   out <- read_dta(path) %>%
     mutate(across(where(is.labelled), ~ as_factor(.x)))
 
-  new_countdown(out, indicator_group = indicator_group, profile = profile, profile_name = profile_name)
+  new_countdown(out, indicator_group = indicator_group, profile = profile, profile_name = profile_name, validate = validate)
 }
 
-#' Read & clean Countdown 2030 Excel sheets
+#' Read & clean every Countdown 2030 Excel sheet, without merging them
 #'
-#' Reads the specified sheets, applies standard cleaning, merges, and returns a
-#' tibble. Group selection is not performed here; see [new_countdown()].
+#' Split out of what used to be the front half of `.load_excel_data()` (Phase 3 of the Load Data
+#' wizard redesign, `apps/rmncah`): reads and cleans every sheet, keyed by sheet name, and returns
+#' them SEPARATE -- no `merge_data()`/`standardize_data()`/`new_countdown()` here. This is what lets
+#' the wizard run its Data Quality checks per-sheet (which sheet a problem actually came from, not
+#' just "somewhere in the merged data") BEFORE committing to a merge. The only things that still
+#' abort immediately, unconditionally, here: the sheets named don't exist at all, or a sheet is
+#' missing the join-key columns `read_and_clean_sheet()` itself requires (district/year/month) --
+#' both are "there is nothing coherent to even display per-sheet" failures, not a data-QUALITY
+#' finding the way a missing indicator column or a district name mismatch is (see
+#' `merge_and_standardize()`'s own Tier A checks, and `0_data_quality_checks.R`'s new per-sheet
+#' checks, for where those now live instead).
 #'
 #' @inheritParams load_data
-#' @return A cleaned tibble.
-#' @noRd
-.load_excel_data <- function(path,
-                            indicator_group = c('auto', 'vaccine', 'rmncah', 'custom'),
-                            profile = NULL,
-                            profile_name = NULL,
-                            start_year = NULL,
-                            admin_sheet_name = NULL,
-                            population_sheet_name = NULL,
-                            reporting_sheet_name = NULL,
-                            service_sheet_names = NULL) {
+#' @return A list: `parts` (named list of cleaned per-sheet tibbles), `sheet_names`, `sheet_ids`,
+#'   `admin_sheet_name`, `population_sheet_name`, `reporting_sheet_name`, `service_sheet_names`,
+#'   `path`, `start_year` -- everything `merge_and_standardize()` needs to finish the job later,
+#'   and everything the wizard's own per-sheet quality checks need in the meantime.
+#' @export
+load_excel_parts <- function(path,
+                             start_year = NULL,
+                             admin_sheet_name = NULL,
+                             population_sheet_name = NULL,
+                             reporting_sheet_name = NULL,
+                             service_sheet_names = NULL) {
   check_file_path(path)
-  indicator_group <- arg_match(indicator_group)
 
   admin_sheet_name <-  admin_sheet_name %||% 'Admin_data'
   population_sheet_name <- population_sheet_name %||% 'Population_data'
@@ -243,11 +268,84 @@ load_cache_data <- function(path,
   excel_name <- basename(path)
 
   # Log and load each sheet with basic cleaning steps
-  cd_info(c("i" = "Loading Excel {.val {excel_name}} for `{.arg {indicator_group}}`"))
+  cd_info(c("i" = "Loading Excel {.val {excel_name}} for parts"))
   parts <- map(sheet_names, ~ suppressMessages(
     read_and_clean_sheet(path, .x, sheet_ids, start_year)
   ))
   names(parts) <- sheet_names
+
+  # Normalize month text on every sheet that has one, BEFORE merge_data() ever runs
+  # (merge_and_standardize()) -- its own join key includes "month" as raw, un-normalized text
+  # (sheet_ids$service_data above), and different sheets can legitimately use different
+  # languages/case for the same conceptual month: confirmed live against a real file, one
+  # Service_data sheet labeled a whole year in French while its sibling Service_data sheets labeled
+  # the SAME year in English. Joining on raw text before this normalization silently fails to match
+  # those rows across sheets -- whichever sheet ISN'T the merge's own anchor ends up with every one
+  # of its own columns NA for the entire mismatched period, with no error or warning anywhere. Every
+  # sheet is normalized independently and identically here (parse_month_name(), same function
+  # standardize_data() itself uses), so the join key is consistent regardless of which sheet used
+  # which language. raw_month preserves the true original text -- same field standardize_data()
+  # itself derives this from post-merge, for the OTHER pipelines (e.g. save_dhis2_master_data(),
+  # save_data.R) that still merge before normalizing.
+  parts <- map(parts, function(d) {
+    if ("month" %in% colnames(d)) {
+      d$raw_month <- d$month
+      d$month <- as.character(parse_month_name(d$month))
+    }
+    d
+  })
+
+  list(
+    parts = parts,
+    sheet_names = sheet_names,
+    sheet_ids = sheet_ids,
+    admin_sheet_name = admin_sheet_name,
+    population_sheet_name = population_sheet_name,
+    reporting_sheet_name = reporting_sheet_name,
+    service_sheet_names = service_sheet_names,
+    path = path,
+    start_year = start_year
+  )
+}
+
+#' Merge and standardize an already-`load_excel_parts()`-ed set of sheets
+#'
+#' The back half of what used to be `.load_excel_data()`: the Tier A structural checks (admin
+#' columns present, exactly one country), `merge_data()` + `standardize_data()`, then
+#' `new_countdown()` for group resolution and the Tier B quality gate. Kept as a fail-fast backstop
+#' even for a caller (the Load Data wizard) that already ran these same Tier A checks non-abortingly,
+#' earlier, against the same `parts` -- the same defense-in-depth every other blocking check in this
+#' pipeline already has between its wizard-facing non-aborting form and its abort-on-call one.
+#'
+#' @param parts_result The list returned by `load_excel_parts()`.
+#' Exported (not `@noRd`) because the Load Data wizard's own Finish action
+#' (`apps/rmncah/ui/wizard_panels.R`) calls this directly, across the package boundary, once
+#' `step_quality_complete()` is satisfied -- it's not purely an internal implementation detail of
+#' `.load_excel_data()` any more.
+#'
+#' @inheritParams load_data
+#' @return A tibble of class `cd_data`.
+#' @export
+merge_and_standardize <- function(parts_result,
+                                  indicator_group = c('auto', 'vaccine', 'rmncah', 'custom'),
+                                  profile = NULL,
+                                  profile_name = NULL,
+                                  validate = TRUE) {
+  indicator_group <- arg_match(indicator_group)
+
+  parts <- parts_result$parts
+  sheet_names <- parts_result$sheet_names
+  sheet_ids <- parts_result$sheet_ids
+  admin_sheet_name <- parts_result$admin_sheet_name
+
+  # Tier A quality checks: structural problems with the raw Admin_data sheet, caught here
+  # (before merge_data()/standardize_data()) rather than surfacing later as a confusing, unrelated
+  # error far from the actual cause -- see 0_data_quality_checks.R's own header comment for why
+  # these return problems instead of aborting individually, and are collected together instead.
+  run_quality_checks(list(
+    admin_columns = function() check_admin_columns(parts[[admin_sheet_name]]),
+    single_country = function() check_single_country(parts[[admin_sheet_name]])
+  ))
 
   # Standardize merged data
   out <- parts %>%
@@ -256,7 +354,33 @@ load_cache_data <- function(path,
 
   cd_info(c("i" = "Successfully loaded and cleaned data"), )
 
-  new_countdown(out, indicator_group = indicator_group, profile = profile, profile_name = profile_name)
+  new_countdown(out, indicator_group = indicator_group, profile = profile, profile_name = profile_name, validate = validate)
+}
+
+#' Read & clean Countdown 2030 Excel sheets
+#'
+#' Reads the specified sheets, applies standard cleaning, merges, and returns a
+#' tibble. Group selection is not performed here; see [new_countdown()].
+#'
+#' @inheritParams load_data
+#' @return A cleaned tibble.
+#' @noRd
+.load_excel_data <- function(path,
+                            indicator_group = c('auto', 'vaccine', 'rmncah', 'custom'),
+                            profile = NULL,
+                            profile_name = NULL,
+                            start_year = NULL,
+                            admin_sheet_name = NULL,
+                            population_sheet_name = NULL,
+                            reporting_sheet_name = NULL,
+                            service_sheet_names = NULL,
+                            validate = TRUE) {
+  check_file_path(path)
+  indicator_group <- arg_match(indicator_group)
+
+  parts_result <- load_excel_parts(path, start_year, admin_sheet_name, population_sheet_name,
+                                   reporting_sheet_name, service_sheet_names)
+  merge_and_standardize(parts_result, indicator_group, profile, profile_name, validate)
 }
 
 #' Create a `cd_data` object from cleaned data and resolve the indicator group
@@ -285,17 +409,39 @@ new_countdown <- function(
     class = NULL,
     indicator_group = c("auto","vaccine","rmncah","custom"),
     profile_name = NULL,
-    profile = NULL
+    profile = NULL,
+    validate = TRUE
 ) {
   check_required(.data)
 
-  .data <- .data %>% 
+  .data <- .data %>%
      rename(ideliv = any_of('instdeliveries'))
 
   column_names <- colnames(.data)
 
   resolved_group <- resolve_indicator_group(column_names, indicator_group, profile_name)
   check_required_columns_exist(.data, resolved_group)
+
+  # Tier B quality checks: need the fully merged/standardized data (district/adminlevel_1/year/
+  # month all present as real columns), unlike Tier A's raw-sheet checks in .load_excel_data().
+  # Collected together the same way -- see 0_data_quality_checks.R's header comment. Deliberately
+  # run before match_country() below rather than folded into this same run_quality_checks() call:
+  # match_country() both aborts AND returns a match result this function uses immediately
+  # afterward, so it keeps its existing single-check, fail-fast behavior unchanged.
+  #
+  # validate = FALSE skips this tier only -- a caller (the Load Data wizard, apps/rmncah) that wants
+  # to let a data-QUALITY problem (as opposed to a structural one -- required columns/country match
+  # just above and below still always run) load anyway, so it can run these same checks itself,
+  # later, progressively, against the already-loaded data (run_all_quality_checks(),
+  # 0_data_quality_checks.R) instead of as an upfront hard stop.
+  if (validate) {
+    run_quality_checks(list(
+      district_consistency = function() check_district_consistency(.data),
+      month_presence = function() check_month_presence(.data),
+      month_validity = function() check_month_validity(.data)
+    ))
+  }
+  .data <- .data %>% select(-any_of("raw_month"))
 
   set_selected_group(resolved_group)
 
@@ -383,13 +529,27 @@ read_and_clean_sheet <- function(path, sheet_name, sheet_ids, start_year = NULL,
       mutate(
         across(any_of("year"), ~ as.integer(.)), # Convert year column to integer
         across(-any_of(required_columns), ~ suppressWarnings(as.numeric(.))) # Convert other columns to numeric
-      ) %>%
-      filter(if_all(matches("year"), ~ is.null(start_year) || .x >= start_year)),
+      ),
     error = function(e) {
       clean_message <- clean_error_message(e)
       cd_abort(c("x" = paste0(clean_message), " in ", sheet_name), call = call)
     }
   )
+
+  # A row whose year didn't survive as.integer() just above (a stray header/label row bleeding
+  # into the data -- confirmed against a real file: a leftover French sub-header's "Mois" value
+  # sitting in what should have been the year column) becomes NA here, and the filter() below
+  # would otherwise drop it with zero signal -- exactly what let that row go unnoticed by every
+  # later check. Surfaced as a log line at minimum; a full in-app surfacing of "N rows dropped for
+  # an invalid year" is a reasonable smaller follow-up, not this function's own concern.
+  if ("year" %in% colnames(data)) {
+    invalid_year_n <- sum(is.na(data$year))
+    if (invalid_year_n > 0) {
+      cd_info(c("!" = "{invalid_year_n} row(s) in {.field {sheet_name}} have an invalid year value and were dropped."), call = call)
+    }
+  }
+
+  data <- data %>% filter(if_all(matches("year"), ~ is.null(start_year) || .x >= start_year))
 
   if (nrow(data) == 0 || ncol(data) == 0) {
     cd_abort(c("x" = "Sheet {.arg {sheet_name}} is empty."), call = call)
@@ -465,6 +625,34 @@ merge_data <- function(.data, sheet_names, sheet_ids, call = caller_env()) {
     arrange(district, year, month)
 }
 
+#' Parse free-text month values into a standardized, ordered month factor
+#'
+#' Shared by `standardize_data()` (post-merge) and the wizard's own pre-merge
+#' `check_month_validity_presheet()` (`0_data_quality_checks.R`) -- one place for the
+#' French/Portuguese/English/abbreviation matching so the two can never drift apart.
+#'
+#' @param month Character vector of raw month values.
+#' @return An ordered `factor(levels = month.name)`; `NA` for anything unrecognized.
+#' @noRd
+parse_month_name <- function(month) {
+  month <- str_to_lower(replace_special_chars(month))
+  case_when(
+    str_detect(month, "^jan|^jav") ~ "January",
+    str_detect(month, "^fev|^feb") ~ "February",
+    str_detect(month, "^mar") ~ "March",
+    str_detect(month, "^avr|^abr|^apr") ~ "April",
+    str_detect(month, "^mai|^may") ~ "May",
+    str_detect(month, "^juin|^jun") ~ "June",
+    str_detect(month, "^juil|^jul") ~ "July",
+    str_detect(month, "^aou|^ago|^aug") ~ "August",
+    str_detect(month, "^set|^sep") ~ "September",
+    str_detect(month, "^out|^oct") ~ "October",
+    str_detect(month, "^nov") ~ "November",
+    str_detect(month, "^dec|^dez") ~ "December",
+    .ptype = factor(levels = month.name, ordered = TRUE)
+  )
+}
+
 #' Data Preparation
 #'
 #' `standardize_data` standardizes and cleans a merged data frame by performing
@@ -511,25 +699,27 @@ standardize_data <- function(.data, call = caller_env()) {
 
   check_required(.data, call = call)
 
+  # month/raw_month may already be normalized, plain-character text -- load_excel_parts() (Phase 3
+  # of the Load Data wizard redesign) now does this BEFORE merge_data() ever runs, so its own
+  # month-inclusive join key matches consistently across sheets regardless of source language (see
+  # that function's own comment for the real, confirmed bug this fixes: a raw-text join silently
+  # dropping one sheet's columns to NA for a whole mismatched-language period). Only re-derive
+  # raw_month/month from scratch here if that hasn't already happened -- keeps this function
+  # correct, unchanged, for every OTHER caller that still merges before normalizing (e.g.
+  # save_dhis2_master_data(), save_data.R).
+  already_normalized <- "raw_month" %in% colnames(.data)
+
   data <- .data %>%
     mutate(
-      # Clean the 'Month' column by replacing special characters and standardizing month names
-      month = str_to_lower(replace_special_chars(month)),
-      month = case_when(
-        str_detect(month, "^jan|^jav") ~ "January",
-        str_detect(month, "^fev|^feb") ~ "February",
-        str_detect(month, "^mar") ~ "March",
-        str_detect(month, "^avr|^abr|^apr") ~ "April",
-        str_detect(month, "^mai|^may") ~ "May",
-        str_detect(month, "^juin|^jun") ~ "June",
-        str_detect(month, "^juil|^jul") ~ "July",
-        str_detect(month, "^aou|^ago|^aug") ~ "August",
-        str_detect(month, "^set|^sep") ~ "September",
-        str_detect(month, "^out|^oct") ~ "October",
-        str_detect(month, "^nov") ~ "November",
-        str_detect(month, "^dec|^dez") ~ "December",
-        .ptype = factor(levels = month.name, ordered = TRUE)
-      ),
+      # Preserved verbatim, before any cleaning, purely so new_countdown()'s Tier B
+      # check_month_validity() can report exactly what unparseable text looked like (a typo,
+      # different-language month name, etc.) instead of just "this row's month is NA". Dropped
+      # again by new_countdown() once that check has run -- never part of the final countdown_data.
+      raw_month = if (already_normalized) raw_month else month,
+      # Clean and standardize the 'Month' column -- see parse_month_name()'s own comment for why
+      # this is a shared helper, not inline here. Already-normalized text just needs re-typing to
+      # the ordered factor every downstream consumer expects, not re-parsing.
+      month = factor(if (already_normalized) month else parse_month_name(month), levels = month.name, ordered = TRUE),
 
       # Calculate stillbirth_total as the row-wise sum of stillbirth_fresh and stillbirth_macerated
       stillbirth_total = rowSums(select(., stillbirth_fresh, stillbirth_macerated), na.rm = TRUE),
@@ -737,6 +927,62 @@ match_country <- function(country_name, call = caller_call()) {
       )
     )
   }
+}
+
+#' Best-effort, non-aborting country resolution from a raw Admin sheet
+#'
+#' A non-aborting wrapper around `match_country()`, used by the Load Data wizard (apps/rmncah) so
+#' `CacheConnection$country`/`$country_iso` have something real to return before Finish -- see those
+#' active bindings' own comments (`CacheConnection-class.R`) for why this is deliberately separate
+#' from `check_single_country()`'s real validation, which still runs (non-blockingly, at the Data
+#' Quality step) regardless: this function's only job is not leaving `country`/`country_iso` `NULL`
+#' for the entire wizard just because `match_country()` would abort on anything ambiguous.
+#'
+#' @param admin_data The raw Admin sheet (`parts[[admin_sheet_name]]`).
+#' @return `list(country, country_iso)` -- both `NULL` if the admin sheet's own `country` column
+#'   doesn't resolve to exactly one confident match.
+#' @export
+resolve_country_best_effort <- function(admin_data) {
+  if (!"country" %in% colnames(admin_data)) {
+    return(list(country = NULL, country_iso = NULL))
+  }
+  values <- admin_data %>% distinct(country) %>% pull(country)
+  values <- values[!is.na(values)]
+  if (length(values) != 1) {
+    return(list(country = NULL, country_iso = NULL))
+  }
+  result <- tryCatch(match_country(values[1]), error = function(e) NULL)
+  if (is.null(result)) {
+    return(list(country = NULL, country_iso = NULL))
+  }
+  list(country = result$alternate, country_iso = as.character(result$iso3))
+}
+
+#' Generate a simple, stable-within-one-load synthetic key per admin-1 region
+#'
+#' The Load Data wizard's own Finish step (Phase 3 of the wizard redesign, apps/rmncah) needs a key
+#' that consistently identifies the same admin-1 region across three separately-built tables
+#' (`countdown_data`, `survey_mapping`, `map_mapping`) -- there's no real ISO-3166-2 code available
+#' for sub-national regions in general, so this is intentionally arbitrary, not a real-world
+#' identifier: `sort(unique(...))` the dataset's own admin-1 names and number them off. Applied once,
+#' from one canonical source (the dataset's own `adminlevel_1` values), then joined onto the other
+#' two tables by name -- consistency across all three is structural (the same join key everywhere),
+#' not something that can drift.
+#'
+#' Deliberately NOT stable across separate future re-uploads of the same country's data (e.g. next
+#' month's file) -- purely alphabetical, regenerated fresh every time this is called. Nothing
+#' downstream needs cross-session stability for this key today; if that's ever needed, it's a
+#' materially different feature (a persisted, append-only name-to-key lookup table), not this.
+#'
+#' @param admin1_names Character vector of admin-1 names (typically `countdown_data$adminlevel_1`).
+#' @return A tibble with one row per distinct name: `adminlevel_1`, `admin1_key` (`"A1-001"`, ...).
+#' @export
+generate_admin1_keys <- function(admin1_names) {
+  distinct_names <- sort(unique(stats::na.omit(admin1_names)))
+  tibble::tibble(
+    adminlevel_1 = distinct_names,
+    admin1_key = sprintf("A1-%03d", seq_along(distinct_names))
+  )
 }
 
 #' Parse a single profile argument (name or inline definition)

@@ -68,6 +68,7 @@ create_mortality_ratios <- function(.data, mortality_data) {
 #' @param indicator Character. Mortality indicator to filter (`"mmr"` or `"sbr"`). Defaults to `"mmr"`.
 #' @param plot_year Optional integer or vector of years to filter.
 #' @param subnational_map Optional. A data frame to join with the shapefile to add metadata.
+#' @param palette Character. RColorBrewer sequential palette for the map (default `"Reds"`).
 #'
 #' @return A tibble of class `cd_mortality_summary_filtered`, ready for geospatial plotting.
 #'
@@ -89,12 +90,14 @@ create_mortality_ratios <- function(.data, mortality_data) {
 #' }
 #'
 #' @export
-filter_mortality_summary <- function(.data, country_iso, indicator = c('mmr', 'sbr'), plot_year = NULL, subnational_map = NULL) {
+filter_mortality_summary <- function(.data, country_iso, indicator = c('mmr', 'sbr', 'nn'), plot_year = NULL, subnational_map = NULL,
+                                     palette = c('Reds', 'Blues', 'Greens', 'Purples', 'YlGnBu')) {
 
   check_cd_class(.data, expected_class = 'cd_mortality_summary')
   check_required(country_iso)
   indicator <- arg_match(indicator)
   indicator <- paste0(indicator, '_inst')
+  palette <- arg_match(palette)
 
   shapefile <- get_country_shapefile(country_iso, 'admin_level_1')
 
@@ -115,7 +118,8 @@ filter_mortality_summary <- function(.data, country_iso, indicator = c('mmr', 's
   new_tibble(
     merged_data,
     class = 'cd_mortality_summary_filtered',
-    indicator = indicator
+    indicator = indicator,
+    palette = palette
   )
 }
 
@@ -178,7 +182,7 @@ summarised_data <- function(.data, admin_level = c('national', 'adminlevel_1', '
 #' }
 #'
 #' @export
-summarise_completeness_ratio <- function(.data, plot_type = c('mmr', 'sbr'), lbr_mean = 0) {
+summarise_completeness_ratio <- function(.data, plot_type = c('mmr', 'sbr', 'nn'), lbr_mean = 0) {
 
   check_cd_class(.data, expected_class = 'cd_mortality_ratio')
 

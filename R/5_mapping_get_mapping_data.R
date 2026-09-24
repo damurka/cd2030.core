@@ -152,9 +152,62 @@ get_country_shapefile <- function(country_iso, level = c("admin_level_1", "distr
   check_file_path(shapefile_path)
 
   sf_data <- st_read(shapefile_path, layer = country_iso, quiet = TRUE)
+  validate_shapefile(sf_data)
+}
 
-  # Validate geometry and reproject to WGS84 (EPSG:4326)
+#' Validate geometry and reproject an `sf` object to WGS84 (EPSG:4326)
+#'
+#' Shared by `get_country_shapefile()` (the package-bundled shapefile) and `read_shapefile_folder()`
+#' (a user-uploaded one, Phase 3 of the Load Data wizard redesign, apps/rmncah) -- one place for this
+#' so both are held to the same standard.
+#'
+#' @param sf_data An `sf` object.
+#' @return The same object, with valid geometry, reprojected to EPSG:4326.
+#' @noRd
+validate_shapefile <- function(sf_data) {
   sf_data %>%
     st_make_valid() %>%
     st_transform(4326)
+}
+
+#' Read a user-uploaded shapefile folder
+#'
+#' Takes the same `name`/`datapath` shape a Shiny multi-file/folder `fileInput()` already produces
+#' (`apps/rmncah`'s `cdDirectoryUpload()`/`input$directory_select`) -- Shiny scatters each uploaded
+#' file into its own randomly-named temp subdirectory, but `sf::st_read()` needs a shapefile's
+#' `.shp`/`.dbf`/`.shx`/`.prj` parts physically colocated with their original basenames, so this
+#' reassembles them into one fresh temp directory first.
+#'
+#' @param files_df A data frame with `name` and `datapath` columns, one row per uploaded file.
+#' @param call The calling environment, forwarded to `cd_abort()`.
+#' @return The uploaded shapefile as a valid `sf` object, reprojected to EPSG:4326. Column names are
+#'   exactly as uploaded -- no forced rename to `NAME_1`, since a real shapefile won't necessarily
+#'   use that name (see `check_shapefile_admin_names()`'s own `name_field` parameter).
+#' @export
+read_shapefile_folder <- function(files_df, call = caller_env()) {
+  check_required(files_df, call = call)
+  required_ext <- c("shp", "dbf", "shx", "prj")
+
+  matched <- files_df[tolower(tools::file_ext(files_df$name)) %in% required_ext, , drop = FALSE]
+  missing_ext <- setdiff(required_ext, tolower(tools::file_ext(matched$name)))
+  if (length(missing_ext) > 0) {
+    cd_abort(
+      c("x" = "Shapefile folder is missing required file(s): {.val {paste0('.', missing_ext, collapse = ', ')}}."),
+      call = call
+    )
+  }
+
+  tmp_dir <- tempfile("cd_shapefile_")
+  dir.create(tmp_dir)
+  purrr::walk2(matched$datapath, matched$name, ~ file.copy(.x, file.path(tmp_dir, .y), overwrite = TRUE))
+
+  shp_name <- matched$name[tolower(tools::file_ext(matched$name)) == "shp"][1]
+  sf_data <- tryCatch(
+    st_read(file.path(tmp_dir, shp_name), quiet = TRUE),
+    error = function(e) {
+      cd_abort(c("x" = paste0("Could not read the uploaded shapefile: ", clean_error_message(e))), call = call)
+    }
+  )
+
+  validate_shapefile(sf_data)
 }

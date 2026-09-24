@@ -5,19 +5,32 @@
 #'
 #' @param rds_path Optional character. Path to an RDS file to load the cache from.
 #' @param countdown_data Optional `cd_data` object to initialize in-memory cache.
-#' @param data_path Optional. Used with the countdown to support in creating the cache file.
+#' @param data_path Optional character. Path to the original source file
+#'   (e.g. the `.xlsx` `countdown_data` was parsed from). Used to derive
+#'   where the cache lives -- see `CacheConnection$initialize`.
+#' @param wizard_parts Optional `load_excel_parts()` result -- a third, mutually-exclusive mode
+#'   alongside `rds_path`/`countdown_data` for the Load Data wizard's own in-progress state (see
+#'   `CacheConnection$initialize`'s own `wizard_parts` doc).
 #' @param indicator_group Character. Specifies the indicator group to use (auto, rmncah, vaccine, custom).
 #'
 #' @return An instance of the `CacheConnection` class.
 #'
 #' @export
-init_CacheConnection <- function(rds_path = NULL, countdown_data = NULL, data_path = NULL, indicator_group = c("auto", "rmncah", "vaccine", "custom")) {
+init_CacheConnection <- function(rds_path = NULL, countdown_data = NULL, data_path = NULL, wizard_parts = NULL, indicator_group = c("auto", "rmncah", "vaccine", "custom")) {
   indicator_group <- arg_match(indicator_group)
   cache <- CacheConnection$new(
     rds_path = rds_path,
     countdown_data = countdown_data,
-    data_path = data_path
+    data_path = data_path,
+    wizard_parts = wizard_parts
   )
+
+  if (!is.null(wizard_parts)) {
+    # Wizard-in-progress mode: no countdown_data yet, so there's no indicator group to resolve or
+    # validate against required columns for -- that happens for real at Finish, inside
+    # merge_and_standardize()'s own new_countdown() call.
+    return(cache)
+  }
 
   profile <- attr_or_null(cache$countdown_data, "profile")
   if (!is.null(profile)) {
@@ -64,62 +77,100 @@ CacheConnection <- R6::R6Class(
     #' @description Initialize a CacheConnection instance.
     #' @param rds_path Path to the RDS file to load state from (can be NULL).
     #' @param countdown_data Countdown data of class `cd_data`.
-    #' @param data_path Directory to store the cache `.rds` file.
-    initialize = function(rds_path = NULL, countdown_data = NULL, data_path = NULL) {
-      if (is.null(rds_path) && is.null(countdown_data)) {
-        cd_abort(c("x" = "Both {.arg rds_path} and {.arg countdown_data} cannot be null."))
+    #' @param data_path Path to the original source file `countdown_data` was
+    #'   built from (e.g. the picked `.xlsx`). The cache always lives at
+    #'   `<dirname(data_path)>/<stem(data_path)>.rds` -- if that file already
+    #'   exists, it's loaded instead of `countdown_data` (the fresh parse is
+    #'   discarded); otherwise it's created there. This is the only place
+    #'   that decides the cache's location and load-vs-create behavior, so
+    #'   every caller gets the same behavior regardless of how they got here.
+    #' @param wizard_parts A `load_excel_parts()` result (`list(parts, sheet_names, sheet_ids, ...)`)
+    #'   -- a third, mutually-exclusive mode alongside `rds_path`/`countdown_data`, for the Load Data
+    #'   wizard's own in-progress state (Phase 3 of the wizard redesign, apps/rmncah): the sheets
+    #'   have been read and cleaned but not yet merged/standardized into a real `cd_data` object, so
+    #'   there's no `countdown_data` yet -- see `wizard_parts`/`country`/`country_iso`'s own active
+    #'   bindings below for how the rest of the class degrades gracefully until `set_countdown_data()`
+    #'   is finally called (at Finish, once `merge_and_standardize()` has run).
+    initialize = function(rds_path = NULL, countdown_data = NULL, data_path = NULL, wizard_parts = NULL) {
+      supplied <- c(rds = !is.null(rds_path), countdown = !is.null(countdown_data), wizard = !is.null(wizard_parts))
+      if (sum(supplied) == 0) {
+        cd_abort(c("x" = "One of {.arg rds_path}, {.arg countdown_data}, or {.arg wizard_parts} must be provided."))
+      }
+      if (sum(supplied) > 1) {
+        cd_abort(c("x" = "Only one of {.arg rds_path}, {.arg countdown_data}, or {.arg wizard_parts} can have a value."))
       }
 
-      if (!is.null(rds_path) && !is.null(countdown_data)) {
-        cd_abort(c("x" = "Only one can have a value: {.arg rds_path} and {.arg countdown_data}."))
-      }
-
-      if (!is.null(countdown_data)) {
-        check_cd_data(countdown_data)
-      }
-
-      # Initialize in-memory data using the template
-      private$.in_memory_data <- private$.data_template
-      private$.in_memory_data$countdown_data <- countdown_data
-      private$.in_memory_data$rds_path <- rds_path
-
-      private$.in_memory_data$version <- self$data_version
-
-      if (!is.null(rds_path)) {
-        self$load_from_disk()
-
-        loaded_version <- private$.in_memory_data$version
-        if (is.null(loaded_version) || loaded_version != self$data_version) {
-          # Version is old or missing. Wipe the computed tables!
-          private$invalidate_cached_data()
-          
-          # Upgrade the version stamp to the current version so it doesn't trigger again
-          private$update_field("version", self$data_version)
-        }
+      if (!is.null(wizard_parts)) {
+        # Wizard-in-progress mode: no cd_data yet, and nothing gets persisted until the wizard's own
+        # Finish action explicitly calls set_cache_path() -- see apps/rmncah's upload_box.R for why
+        # nothing calls it any earlier than that. Deliberately NOT calling
+        # private$initialize_survey_estimates() here (unlike the countdown_data branch below) --
+        # country_iso isn't known yet at this point (set_wizard_country() hasn't run), and
+        # extract_national_estimates_from_survey() needs it to filter the bundled survey data to the
+        # right country; it degrades to a dplyr error on a NULL iso, not a graceful no-op. Called
+        # instead from set_wizard_country() itself, once country_iso is actually known.
+        private$.in_memory_data <- private$.data_template
+        private$.in_memory_data$wizard_parts <- wizard_parts
+        private$.in_memory_data$version <- self$data_version
       } else {
-        private$initialize_survey_estimates()
-      }
-
-      if (!is.null(countdown_data) && !is.null(data_path)) {
-        tryCatch(
-          {
-            self$set_cache_path(file.path(data_path, paste0(self$country, "_", format(Sys.time(), "%Y%m%d%H%M"), ".rds")))
-          },
-          error = function(e) {
-            error_message <- clean_error_message(e)
-            cd_warn(c("!" = error_message))
+        cache_path <- NULL
+        if (!is.null(countdown_data) && !is.null(data_path)) {
+          cache_path <- file.path(dirname(data_path), paste0(tools::file_path_sans_ext(basename(data_path)), ".rds"))
+          if (file.exists(cache_path)) {
+            # A cache for this source file already exists -- load it instead
+            # of treating the freshly-parsed countdown_data as authoritative.
+            rds_path <- cache_path
+            countdown_data <- NULL
           }
-        )
-      }
+        }
 
-      if ('instdeliveries' %in% colnames(private$.in_memory_data$countdown_data)) {
-        private$invalidate_cached_data()
-        private$.in_memory_data$countdown_data <- private$.in_memory_data$countdown_data %>% 
-          rename(ideliv = any_of('instdeliveries'))
+        if (!is.null(countdown_data)) {
+          check_cd_data(countdown_data)
+        }
 
-        if (!is.null(private$.in_memory_data$adjusted_data)) {
-          private$.in_memory_data$adjusted_data <- private$.in_memory_data$adjusted_data %>% 
+        # Initialize in-memory data using the template
+        private$.in_memory_data <- private$.data_template
+        private$.in_memory_data$countdown_data <- countdown_data
+        private$.in_memory_data$rds_path <- rds_path
+
+        private$.in_memory_data$version <- self$data_version
+
+        if (!is.null(rds_path)) {
+          self$load_from_disk()
+
+          loaded_version <- private$.in_memory_data$version
+          if (is.null(loaded_version) || loaded_version != self$data_version) {
+            # Version is old or missing. Wipe the computed tables!
+            private$invalidate_cached_data()
+
+            # Upgrade the version stamp to the current version so it doesn't trigger again
+            private$update_field("version", self$data_version)
+          }
+        } else {
+          private$initialize_survey_estimates()
+        }
+
+        if (!is.null(countdown_data) && !is.null(cache_path)) {
+          tryCatch(
+            {
+              self$set_cache_path(cache_path)
+            },
+            error = function(e) {
+              error_message <- clean_error_message(e)
+              cd_warn(c("!" = error_message))
+            }
+          )
+        }
+
+        if ('instdeliveries' %in% colnames(private$.in_memory_data$countdown_data)) {
+          private$invalidate_cached_data()
+          private$.in_memory_data$countdown_data <- private$.in_memory_data$countdown_data %>%
             rename(ideliv = any_of('instdeliveries'))
+
+          if (!is.null(private$.in_memory_data$adjusted_data)) {
+            private$.in_memory_data$adjusted_data <- private$.in_memory_data$adjusted_data %>%
+              rename(ideliv = any_of('instdeliveries'))
+          }
         }
       }
     },
@@ -291,10 +342,11 @@ CacheConnection <- R6::R6Class(
     #' @description Returns the appropriate mortality summary based on the indicator type to plot.
     #' @param indicator Character. Indicator name.
     #' @param map_years Numeric vector. The years to include in a map.
-    filter_mortality_summary = function(indicator, map_years = NULL) {
+    #' @param palette Character. RColorBrewer sequential palette for the map.
+    filter_mortality_summary = function(indicator, map_years = NULL, palette = 'Reds') {
       years <- if (is.null(map_years)) self$mortality_mapping_years else map_years
       self$mortality_summary %>%
-        filter_mortality_summary(self$country_iso, indicator, years, self$map_mapping)
+        filter_mortality_summary(self$country_iso, indicator, years, self$map_mapping, palette = palette)
     },
 
     #' @description Computes service utilization for various indicators (OPD/IPD).
@@ -324,11 +376,12 @@ CacheConnection <- R6::R6Class(
     #' @description Prepares service utilization data mapping tables.
     #' @param indicator Character. Indicator name ('ipd', 'opd').
     #' @param map_years Numeric vector. Years to include.
-    prepare_mapping_service_utlization = function(indicator, map_years = NULL) {
+    #' @param palette Character. RColorBrewer sequential palette for the map.
+    prepare_mapping_service_utlization = function(indicator, map_years = NULL, palette = 'Purples') {
       indicator <- arg_match(indicator, c('ipd', 'opd'))
       years <- if (is.null(map_years)) self$utilization_mapping_years else map_years
       self$service_utilization_admin1 %>%
-        prepare_mapping_service_utlization(indicator, years, self$map_mapping)
+        prepare_mapping_service_utlization(indicator, years, self$map_mapping, palette = palette)
     },
 
     #' @description Resolves the appropriate denominator column string based on the indicator category.
@@ -370,7 +423,7 @@ CacheConnection <- R6::R6Class(
       if (path_set) {
         private$.has_changed <- TRUE
         self$save_to_disk()
-        cd_info(c("i" = str_glue("Successfully saved to {.val value}.")))
+        cd_info(c("i" = "Successfully saved to {.val {value}}."))
       }
     },
 
@@ -380,6 +433,68 @@ CacheConnection <- R6::R6Class(
       private$setter("countdown_data", value, check_cd_data)
       private$invalidate_cached_data()
     },
+
+    #' @description Sets the Load Data wizard's own in-progress, not-yet-merged sheets
+    #'   (`load_excel_parts()`'s result). Called once, right after a fresh Excel/Stata upload, by
+    #'   `apps/rmncah`'s own `upload_box.R` -- see `wizard_parts`'s own active-binding comment for
+    #'   what this unblocks in the meantime, and `merge_and_standardize()`/Finish for where it's
+    #'   cleared.
+    #' @param value The list `load_excel_parts()` returns.
+    set_wizard_parts = function(value) private$setter("wizard_parts", value, is.list),
+
+    #' @description Clears the wizard's in-progress parts/country state once Finish has actually
+    #'   merged them into real `countdown_data` -- called right after `set_countdown_data()` at
+    #'   Finish (`wizard_panels.R`). Not just tidiness: `run_all_quality_checks()` branches on
+    #'   whether `wizard_parts` is still set, so leaving it behind would keep routing a
+    #'   now-fully-merged cache through the pre-merge check path if the wizard's own Data Quality
+    #'   step (or edit mode) is ever revisited afterward.
+    clear_wizard_parts = function() {
+      private$update_field("wizard_parts", NULL)
+      private$update_field("wizard_country", NULL)
+      private$update_field("wizard_country_iso", NULL)
+    },
+
+    #' @description Sets the wizard's best-effort, non-aborting country resolution -- see
+    #'   `country`/`country_iso`'s own active-binding comments for why this is separate from the
+    #'   real `check_single_country()` validation. Uses `update_field()` directly (not `setter()`,
+    #'   which rejects `NULL`) since `value$country`/`value$country_iso` being `NULL` -- an
+    #'   ambiguous or unmatched admin sheet -- is itself a legitimate, expected result to store: the
+    #'   `country`/`country_iso` bindings need a real `NULL` back, not a stray `NA`, to keep matching
+    #'   the `is.null()` convention every other consumer already uses. Also runs
+    #'   `initialize_survey_estimates()` once a real `country_iso` is actually known -- the
+    #'   `initialize()`-time call the non-wizard branch gets was deliberately skipped for wizard mode
+    #'   (see that branch's own comment) precisely because it needed this to have already happened.
+    #' @param value A `list(country, country_iso)`, as `resolve_country_best_effort()` returns.
+    set_wizard_country = function(value) {
+      private$update_field("wizard_country", value$country)
+      private$update_field("wizard_country_iso", value$country_iso)
+      if (!is.null(value$country_iso)) {
+        private$initialize_survey_estimates()
+      }
+    },
+
+    #' @description Marks this cache's data as having finished the Load Data wizard with its
+    #'   quality checks passed -- set once, at Finish, right before `set_cache_path()` writes it to
+    #'   disk. See `quality_confirmed`'s own active-binding comment for what reads this.
+    #' @param value Logical.
+    set_quality_confirmed = function(value) private$setter("quality_confirmed", value, is.logical),
+
+    #' @description A permanent snapshot of `run_all_quality_checks()`'s own result, taken once at
+    #'   Finish -- right before `clear_wizard_parts()` (`wizard_panels.R`, apps/rmncah), while
+    #'   `wizard_parts` is still set, so this captures the exact pre-merge, per-sheet checks the user
+    #'   actually saw during the walkthrough. Exists because `clear_wizard_parts()`'s own removal of
+    #'   `wizard_parts` (deliberate -- see its own comment) means `run_all_quality_checks()` would
+    #'   otherwise silently fall through to the POST-merge check path (`.run_post_merge_quality_checks()`)
+    #'   the moment Data Quality is revisited after Finish (a landing-page Edit link, or edit mode
+    #'   generally) -- a genuinely different set of checks, computed against the merged/standardized
+    #'   `countdown_data` instead of the original unmerged sheets, that can report different numbers
+    #'   than what was shown at upload time. Confirmed live: this is exactly the bug reported as
+    #'   "data quality is not giving the actual values given during the uploading". `wizard_parts`
+    #'   itself can't just be kept around instead -- it would grow stale the moment anything
+    #'   downstream (Remove Years, Data Adjustment) changes `countdown_data`, which this snapshot,
+    #'   frozen at the one moment it was genuinely accurate, doesn't have that problem.
+    #' @param value The list `run_all_quality_checks()` returns.
+    set_wizard_quality_results = function(value) private$setter("wizard_quality_results", value, is.list),
 
     #' @description Sets custom adjusted data. Wipes downstream coverage/health system metrics.
     #' @param value A `cd_data` tibble.
@@ -497,6 +612,15 @@ CacheConnection <- R6::R6Class(
       }
     },
 
+    #' @description Clears the survey year back to unset. See clear_un_estimates() for why this bypasses the
+    #'   public setter -- set_survey_year()'s own validation (is_scalar_integerish) rejects NULL outright, so
+    #'   there was no supported way to un-set an already-entered survey year (e.g. the user clearing the
+    #'   field by hand) until this.
+    clear_survey_year = function() {
+      private$update_field("survey_year", NULL)
+      private$invalidate_denominator_cache()
+    },
+
     #' @description Set year the survey timeline begins filtering from.
     #' @param value Integer year.
     set_start_survey_year = function(value) private$setter("start_survey_year", value, is_scalar_integerish),
@@ -550,12 +674,30 @@ CacheConnection <- R6::R6Class(
       }
     },
 
+    #' @description Clears any uploaded UN Demographic Estimates override, reverting the un_estimates active
+    #'   binding to the package's own built-in default for the current country (its own %||% fallback). The
+    #'   public setter validates its input and rejects NULL outright, so this bypasses it via update_field()
+    #'   directly, the same way invalidate_cached_data() already resets other fields to NULL internally -- there
+    #'   was no supported way to undo an override before this.
+    clear_un_estimates = function() {
+      private$update_field("un_estimates", NULL)
+      private$invalidate_denominator_cache()
+      private$invalidate_coverage_cache()
+    },
+
     #' @description Sets the UN Mortality specific estimates dataset. Clears mortality cache.
     #' @param value Data frame.
     set_un_mortality_estimates = function(value) {
       if (private$setter("un_mortality_estimates", value, check_un_mortality_data)) {
         private$invalidate_mortality_cache()
       }
+    },
+
+    #' @description Clears any uploaded UN Mortality Estimates override, reverting to the package's built-in
+    #'   default for the current country. See clear_un_estimates() for why this bypasses the public setter.
+    clear_un_mortality_estimates = function() {
+      private$update_field("un_mortality_estimates", NULL)
+      private$invalidate_mortality_cache()
     },
 
     #' @description Sets WUENIC estimates dataset. Clears coverage cache.
@@ -566,12 +708,27 @@ CacheConnection <- R6::R6Class(
       }
     },
 
+    #' @description Clears any uploaded WUENIC Estimates override, reverting to the package's built-in default
+    #'   for the current country. See clear_un_estimates() for why this bypasses the public setter.
+    clear_wuenic_estimates = function() {
+      private$update_field("wuenic_estimates", NULL)
+      private$invalidate_coverage_cache()
+    },
+
     #' @description Sets overall national survey dataset and automatically extracts its estimates.
     #' @param value Data frame.
     set_national_survey = function(value) {
       private$setter("national_survey", value, check_survey_data)
       private$extract_national_estimates_from_survey(private$.in_memory_data$national_survey)
     },
+
+    #' @description Clears an uploaded national survey override, reverting to the package's own
+    #'   built-in default. See clear_un_estimates() for why this bypasses the public setter -- unlike
+    #'   that one, this deliberately does NOT re-run extract_national_estimates_from_survey(): any
+    #'   national rate fields it already filled in are their own, separately edited values now, the
+    #'   same way clearing un_estimates never un-does anything it once fed into a downstream
+    #'   calculation either.
+    clear_national_survey = function() private$update_field("national_survey", NULL),
 
     #' @description Sets the disaggregated regional survey dataset.
     #' @param value Data frame.
@@ -581,17 +738,53 @@ CacheConnection <- R6::R6Class(
       }
     },
 
+    #' @description Clears an uploaded regional survey override, reverting to the package's own
+    #'   built-in default. See clear_un_estimates() for why this bypasses the public setter.
+    clear_regional_survey = function() {
+      private$update_field("regional_survey", NULL)
+      private$invalidate_coverage_cache()
+    },
+
+    #' @description Sets a user-uploaded shapefile override, replacing the package-bundled default
+    #'   for the current country -- see `shapefile`'s own active-binding comment for the
+    #'   override-with-fallback pattern this mirrors (`regional_survey`, above).
+    #' @param value An `sf` object (as `read_shapefile_folder()` returns).
+    set_shapefile = function(value) private$setter("shapefile", value, ~ inherits(.x, "sf")),
+
+    #' @description Clears an uploaded shapefile override, reverting to the package's built-in
+    #'   default for the current country.
+    clear_shapefile = function() private$update_field("shapefile", NULL),
+
+    #' @description Sets which column of the uploaded shapefile holds admin-1 names -- a real
+    #'   uploaded shapefile won't necessarily use the bundled shapefile's own `NAME_1` convention, so
+    #'   `check_shapefile_admin_names()` needs to be told which one to use.
+    #' @param value Character. A column name present in `self$shapefile`.
+    set_shapefile_name_field = function(value) private$setter("shapefile_name_field", value, is_scalar_character),
+
     #' @description Sets wealth quantile (WIQ) survey dataset.
     #' @param value Data frame.
     set_wiq_survey = function(value) private$setter("wiq_survey", value, check_equity_data),
+
+    #' @description Clears an uploaded WIQ survey override, reverting to the package's own built-in
+    #'   default (or NULL, for a country with no bundled equity default -- see the `wiq_survey` active
+    #'   binding). See clear_un_estimates() for why this bypasses the public setter.
+    clear_wiq_survey = function() private$update_field("wiq_survey", NULL),
 
     #' @description Sets area level (urban/rural) survey dataset.
     #' @param value Data frame.
     set_area_survey = function(value) private$setter("area_survey", value, check_equity_data),
 
+    #' @description Clears an uploaded area survey override, reverting to the package's own built-in
+    #'   default. See clear_un_estimates() for why this bypasses the public setter.
+    clear_area_survey = function() private$update_field("area_survey", NULL),
+
     #' @description Sets education level survey dataset.
     #' @param value Data frame.
     set_education_survey = function(value) private$setter("education_survey", value, check_equity_data),
+
+    #' @description Clears an uploaded education survey override, reverting to the package's own
+    #'   built-in default. See clear_un_estimates() for why this bypasses the public setter.
+    clear_education_survey = function() private$update_field("education_survey", NULL),
 
     #' @description Sets survey to countdown nomenclature mapping matrix.
     #' @param value Data frame.
@@ -600,9 +793,38 @@ CacheConnection <- R6::R6Class(
       private$invalidate_coverage_cache()
     },
 
+    #' @description Clears the survey region mapping back to "unmapped" -- unlike un_estimates/
+    #'   un_mortality_estimates/wuenic_estimates, this field has no package-bundled default to fall back to, so
+    #'   clearing it just means "ask the user to map again," not "use the built-in data."
+    clear_survey_mapping = function() {
+      private$update_field("survey_mapping", NULL)
+      private$invalidate_coverage_cache()
+    },
+
     #' @description Sets map coordinates to countdown nomenclature mapping matrix.
     #' @param value Data frame.
     set_map_mapping = function(value) private$setter("map_mapping", value, is.data.frame),
+
+    #' @description Clears the map region mapping back to "unmapped" -- see clear_survey_mapping(), same
+    #'   reasoning (no package-bundled default for this field either).
+    clear_map_mapping = function() {
+      private$update_field("map_mapping", NULL)
+    },
+
+    #' @description Checks whether a data field is still at its built-in default -- i.e. the user has not
+    #'   uploaded an override (un_estimates/un_mortality_estimates/wuenic_estimates, each with a real
+    #'   package-bundled fallback) or made a mapping (survey_mapping/map_mapping, which have no default at all,
+    #'   so this is equivalent there to asking whether anything has been set). There was previously no way to
+    #'   ask this at all: the active bindings for the first three never return NULL once a country is set (they
+    #'   fall back to the bundled dataset instead), so app-layer code checking `is.null(cache$un_estimates)` to
+    #'   mean "nothing uploaded yet" was always structurally wrong -- this checks the underlying stored value
+    #'   directly, before any fallback is applied.
+    #' @param field_name Character. The field to check (e.g. "un_estimates", "survey_mapping").
+    #' @return Logical. TRUE if nothing has been set for this field (so it's showing the built-in default, or
+    #'   is simply empty for a field with no default).
+    is_default = function(field_name) {
+      is.null(private$getter(field_name))
+    },
 
     #' @description Set sector national estimates mapping.
     #' @param value Data frame.
@@ -674,6 +896,47 @@ CacheConnection <- R6::R6Class(
     #' @param region Optional region filter.
     calculate_ratios_and_adequacy = function(region = NULL) {
       calculate_ratios_and_adequacy(.data = self$countdown_data, region = region)
+    },
+
+    # =========================================================================
+    # PHASE 2 DATA QUALITY WRAPPERS (informational -- see R/0_data_quality_checks.R)
+    # =========================================================================
+
+    #' @description Flags district-years where a service indicator looks mixed up with population data.
+    check_population_service_collision = function() {
+      check_population_service_collision(.data = self$countdown_data)
+    },
+
+    #' @description Flags indicators that are entirely empty across the whole dataset.
+    check_indicator_emptiness = function() {
+      check_indicator_emptiness(.data = self$countdown_data)
+    },
+
+    #' @description Matches survey `adminlevel_1` names against the dataset's own admin-1 names,
+    #'   skipping names already resolved via `survey_mapping`.
+    check_survey_admin_names = function() {
+      survey <- self$regional_survey
+      if (!is.null(survey) && !isTRUE(self$is_default("survey_mapping"))) {
+        mapped <- self$survey_mapping$adminlevel_1
+        survey <- survey[!survey$adminlevel_1 %in% mapped, , drop = FALSE]
+      }
+      # self$subnational_regions, not self$countdown_data directly -- it already has the
+      # `adminlevel_1` column either way, and (Phase 3 of the wizard redesign) falls back to the raw
+      # Admin sheet pre-Finish, when there's no countdown_data yet at all.
+      check_survey_admin_names(regional_survey = survey, countdown_data = self$subnational_regions)
+    },
+
+    #' @description Matches the shapefile's own admin-1 name column (`self$shapefile_name_field` --
+    #'   `self$shapefile`'s uploaded override if one exists, otherwise the bundled default) against
+    #'   the dataset's own admin-1 names, skipping names already resolved via `map_mapping`.
+    check_shapefile_admin_names = function() {
+      shapefile <- self$shapefile
+      name_field <- self$shapefile_name_field
+      if (!is.null(shapefile) && !isTRUE(self$is_default("map_mapping"))) {
+        mapped <- self$map_mapping[[name_field]]
+        shapefile <- shapefile[!shapefile[[name_field]] %in% mapped, , drop = FALSE]
+      }
+      check_shapefile_admin_names(shapefile = shapefile, countdown_data = self$subnational_regions, name_field = name_field)
     },
 
     #' @description Calculates the aggregate DQA overall score assessing reporting, completeness, and outliers.
@@ -995,43 +1258,92 @@ CacheConnection <- R6::R6Class(
     #' @field countdown_data Active Binding: Gets the raw, unadjusted countdown tibble.
     countdown_data = function(value) private$getter("countdown_data", value),
 
-    #' @field data_years Active Binding: Extracts unique years present in the raw data.
+    #' @field data_years Active Binding: Extracts unique years present in the raw data. Before
+    #'   Finish (`wizard_parts` still set, no `countdown_data` yet), falls back to the raw Population
+    #'   sheet's own `year` column -- confirmed live this matters: several other page modules read
+    #'   `cache()$data_years` unconditionally the moment `cache()` itself becomes non-NULL (e.g.
+    #'   `modules/1b_remove_years.R`'s own `req(cache()$data_years)`), and those page modules are
+    #'   instantiated at app startup the same "always running" way the wizard's own step servers are
+    #'   -- reachable well before Finish, not just after.
     data_years = function(value) {
       years <- private$getter("data_years", value)
-      if (is.null(years)) {
+      if (is.null(years) && !is.null(self$countdown_data)) {
         years <- self$countdown_data %>% distinct(year) %>% arrange(year) %>% pull(year)
         private$update_field("data_years", years)
+      } else if (is.null(years) && !is.null(self$wizard_parts)) {
+        wp <- self$wizard_parts
+        population_data <- wp$parts[[wp$population_sheet_name]]
+        if (!is.null(population_data) && "year" %in% colnames(population_data)) {
+          years <- population_data %>% distinct(year) %>% arrange(year) %>% pull(year)
+        }
       }
       return(years)
     },
 
     #' @field subnational_regions Active Binding: Extracts unique admin1 and district combinations.
+    #'   Before Finish (`wizard_parts` still set, no `countdown_data` yet), falls back to the raw
+    #'   Admin sheet's own `first_admin_level`/`district` columns -- this is what lets Map
+    #'   Survey/Map Shapefile show the real admin1 list mid-wizard, per the wizard redesign's own
+    #'   requirement that mapping happens "against the admin1 from admin sheet."
     subnational_regions = function(value) {
       regions <- private$getter("subnational_regions", value)
-      if (is.null(regions)) {
+      if (is.null(regions) && !is.null(self$countdown_data)) {
         regions <- self$countdown_data %>% distinct(adminlevel_1, district) %>% arrange(adminlevel_1, district)
         private$update_field("subnational_regions", regions)
+      } else if (is.null(regions) && !is.null(self$wizard_parts)) {
+        wp <- self$wizard_parts
+        admin_data <- wp$parts[[wp$admin_sheet_name]]
+        if (all(c("first_admin_level", "district") %in% colnames(admin_data))) {
+          regions <- admin_data %>%
+            distinct(adminlevel_1 = first_admin_level, district) %>%
+            arrange(adminlevel_1, district)
+        }
       }
       return(regions)
     },
 
     #' @field country Active Binding: Gets the text string representing the focal country. Readonly.
+    #'   Before Finish, falls back to `wizard_country` -- a best-effort, non-aborting resolution
+    #'   (`resolve_country_best_effort()`, 0_import_load_data.R) computed right after upload, since
+    #'   the real, validated `country` attribute only exists once `merge_and_standardize()`'s
+    #'   `match_country()` call has actually run. The genuine validation (is there cleanly one
+    #'   country value at all) stays `check_single_country()`'s job, surfaced at the Data Quality
+    #'   step -- this fallback's only job is unblocking everything else that needs a country before
+    #'   Finish (the header badge, national-rate/survey defaults, the bundled shapefile lookup).
     country = function(value) {
       if (missing(value)) {
-        if (is.null(self$countdown_data)) return(NULL)
-        return(attr_or_abort(self$countdown_data, "country"))
+        if (!is.null(self$countdown_data)) return(attr_or_abort(self$countdown_data, "country"))
+        return(private$getter("wizard_country"))
       }
       cd_abort(c("x" = "{.field country} is readonly."))
     },
 
     #' @field country_iso Active Binding: Gets the 3-letter ISO code for the country. Readonly.
+    #'   Same pre-Finish fallback as `country` above.
     country_iso = function(value) {
       if (missing(value)) {
-        if (is.null(self$countdown_data)) return(NULL)
-        return(attr_or_abort(self$countdown_data, "iso3"))
+        if (!is.null(self$countdown_data)) return(attr_or_abort(self$countdown_data, "iso3"))
+        return(private$getter("wizard_country_iso"))
       }
       cd_abort(c("x" = "{.field iso3} is readonly."))
     },
+
+    #' @field wizard_parts Active Binding: Gets the Load Data wizard's own in-progress,
+    #'   not-yet-merged sheets (`load_excel_parts()`'s result) -- `NULL` once Finish has merged them
+    #'   into `countdown_data`, or for any cache that was never in wizard mode to begin with.
+    wizard_parts = function(value) private$getter("wizard_parts", value),
+
+    #' @field quality_confirmed Active Binding: `TRUE` once this cache's data finished the Load Data
+    #'   wizard with its quality checks passed (set once, at Finish -- see `set_quality_confirmed()`
+    #'   below) -- persisted with everything else in the `.rds`, so it survives a resume. `FALSE` for
+    #'   a cache still mid-wizard, and for any cache built outside the wizard entirely.
+    quality_confirmed = function(value) private$getter("quality_confirmed", value),
+
+    #' @field wizard_quality_results Active Binding: Gets the frozen, pre-merge quality-check
+    #'   snapshot taken at Finish (`NULL` before Finish, and for any cache that never went through
+    #'   the wizard) -- see `set_wizard_quality_results()`'s own comment for why this exists and what
+    #'   reads it (`run_all_quality_checks()`).
+    wizard_quality_results = function(value) private$getter("wizard_quality_results", value),
 
     #' @field adjusted_data Active Binding: Gets countdown data with K-factors applied. Adjusts automatically if flags are met.
     adjusted_data = function(value) {
@@ -1049,8 +1361,11 @@ CacheConnection <- R6::R6Class(
     },
 
     #' @field data_with_excluded_years Active Binding: Raw data filtered to remove user-excluded years. Readonly.
+    #'   `NULL` before Finish (no `countdown_data` yet, mid-wizard) -- "Remove Years" is a separate,
+    #'   post-Finish page, not something the wizard itself needs a pre-merge equivalent for.
     data_with_excluded_years = function(value) {
       if (missing(value)) {
+        if (is.null(self$countdown_data)) return(NULL)
         private$depend("excluded_years")
         excluded_years <- self$excluded_years
         data <- self$countdown_data %>% filter(if (length(excluded_years) > 0) !year %in% excluded_years else TRUE)
@@ -1489,6 +1804,23 @@ CacheConnection <- R6::R6Class(
       private$filter_survey(survey)
     },
 
+    #' @field shapefile Active Binding: Fetches the shapefile to use for this country -- a
+    #'   user-uploaded override (`set_shapefile()`) if one exists, otherwise the package-bundled
+    #'   default for `country_iso`, same override-with-fallback pattern as `regional_survey` above.
+    #'   `NULL` if `country_iso` isn't known yet (mid-wizard, before the admin sheet's country
+    #'   resolves) -- there's nothing to fetch a bundled shapefile FOR yet.
+    shapefile = function(value) {
+      uploaded <- private$getter("shapefile", value)
+      if (!is.null(uploaded)) return(uploaded)
+      if (is.null(self$country_iso)) return(NULL)
+      get_country_shapefile(self$country_iso, level = "admin_level_1")
+    },
+
+    #' @field shapefile_name_field Active Binding: Which column of `self$shapefile` holds admin-1
+    #'   names -- `"NAME_1"` (the bundled shapefile's own column) unless a user-uploaded one set a
+    #'   different field via `set_shapefile_name_field()`.
+    shapefile_name_field = function(value) private$getter("shapefile_name_field", value) %||% "NAME_1",
+
     #' @field wiq_survey Active Binding: Fetches wealth inequality (WIQ) survey raw frame.
     wiq_survey = function(value) {
       survey <- private$getter("wiq_survey", value)
@@ -1732,6 +2064,28 @@ CacheConnection <- R6::R6Class(
       language = "en",
       rds_path = NULL,
       countdown_data = NULL,
+      # wizard_parts/wizard_country/wizard_country_iso/quality_confirmed: the Load Data wizard's own
+      # in-progress state (Phase 3 of the wizard redesign, apps/rmncah). NULL for every non-wizard
+      # cache (a resumed .rds, a .dta load, any programmatic init_CacheConnection(countdown_data=...)
+      # call) -- purely additive. wizard_parts holds load_excel_parts()'s result (separate,
+      # unmerged sheets) until Finish calls merge_and_standardize() + set_countdown_data() and clears
+      # it back to NULL. wizard_country/wizard_country_iso are a best-effort, non-aborting country
+      # resolution (resolve_country_best_effort(), 0_import_load_data.R) computed right after upload
+      # so country/country_iso have something to return before Finish -- see those active bindings'
+      # own comments below for why this is deliberately separate from check_single_country()'s real
+      # validation. quality_confirmed is the durable, persisted record that this cache's data
+      # actually finished the wizard with its quality checks passed -- set once, at Finish, and the
+      # only thing Phase 9's sidebar-locking condition needs (not wizard_parts, which is gone by
+      # then). wizard_quality_results is the OTHER thing set right at Finish, alongside
+      # quality_confirmed, and deliberately NOT cleared by clear_wizard_parts() -- a frozen snapshot
+      # of what the pre-merge checks found, so run_all_quality_checks() has something accurate to
+      # show if Data Quality is ever revisited after wizard_parts itself is gone (see its own setter
+      # comment for the bug this fixes).
+      wizard_parts = NULL,
+      wizard_country = NULL,
+      wizard_country_iso = NULL,
+      quality_confirmed = FALSE,
+      wizard_quality_results = NULL,
       data_years = NULL,
       subnational_regions = NULL,
       performance_threshold = 90,
@@ -1764,6 +2118,8 @@ CacheConnection <- R6::R6Class(
       education_survey = NULL,
       survey_mapping = NULL,
       map_mapping = NULL,
+      shapefile = NULL,
+      shapefile_name_field = NULL,
 
       bayesian_models = NULL,
 

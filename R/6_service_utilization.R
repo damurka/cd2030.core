@@ -110,11 +110,13 @@ compute_service_utilization <- function(.data, admin_level = c('national', 'admi
 #' }
 #'
 #' @export
-prepare_mapping_service_utlization <- function(.data, indicator = c('ipd', 'opd'), plot_years = NULL, subnational_map = NULL) {
+prepare_mapping_service_utlization <- function(.data, indicator = c('ipd', 'opd'), plot_years = NULL, subnational_map = NULL,
+                                               palette = c('Purples', 'Blues', 'Greens', 'Reds', 'YlGnBu')) {
 
   check_cd_class(.data, expected_class = 'cd_service_utilization')
   indicator <- arg_match(indicator)
   indicator <- paste0('ratio_', indicator, '_u5_pop')
+  palette <- arg_match(palette)
   admin_level <- attr_or_abort(.data, 'admin_level')
   country_iso <- attr_or_abort(.data, 'iso3')
 
@@ -141,7 +143,8 @@ prepare_mapping_service_utlization <- function(.data, indicator = c('ipd', 'opd'
   new_tibble(
     merged_data,
     class = 'cd_service_utilization_prepared',
-    indicator = indicator
+    indicator = indicator,
+    palette = palette
   )
 }
 

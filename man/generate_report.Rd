@@ -9,6 +9,7 @@ generate_report(
   output_file,
   report_name,
   adminlevel_1 = NULL,
+  i18n = NULL,
   output_format = c("word_document", "pdf_document", "html_document")
 )
 }
