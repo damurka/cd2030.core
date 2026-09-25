@@ -404,7 +404,7 @@ report_presets <- function(lang = "en", group = get_selected_group()) {
   accent = "#7d3f40", heading_color = "#7d3f40", text_color = "#2b3138", muted_color = "#5c6670",
   note_fill = "#f7f1e3", note_border = "#e6d7b0", heading_font = "Georgia", body_font = "Calibri",
   palette = c("#1c4f9c", "#7d3f40", "#1b6b45", "#a8480f", "#6b4c9a", "#5c6670"),
-  footer = "Countdown to 2030 · {country}"
+  footer = "Countdown to 2030 \u00b7 {country}"
 )
 
 # The indicators whose values are fields: {<indicator>_latest} (DHIS2, latest year) and {<indicator>_survey}
@@ -472,10 +472,19 @@ as_report_context.CacheConnection <- function(x, ...) cd_report_context(x)
   datasuite.ui::report_register(
     themes = list(countdown = .cd_report_theme_countdown),
     default_theme = "countdown",
-    cover = list(kicker = "Countdown to 2030 · {country}"),
-    kinds = function() .rb_all_kinds(),
-    presets = function(lang) report_presets(lang),
+    cover = list(kicker = "Countdown to 2030 \u00b7 {country}"),
+    # the kinds of this app's indicator group, with "analysis" (the group's analysis indicators) filled in
+    kinds = function() {
+      analysis <- tryCatch(get_analysis_indicators(), error = function(e) character())
+      lapply(report_block_kinds(getOption("cd2030.app_group", get_selected_group())), function(k) {
+        if (identical(k$indicators, "analysis")) k$indicators <- analysis
+        k
+      })
+    },
+    presets = function(lang) report_presets(lang, getOption("cd2030.app_group", get_selected_group())),
     indicator_name = function(indicator, i18n) .rb_ind_name(i18n, indicator),
-    fields = .cd_report_field_catalog()
+    fields = .cd_report_field_catalog(),
+    # a chart is known by the data it draws, so the screen and a report find its options by the same id
+    chart_id = function(data, plot) cd_chart_id(data) %||% datasuite.ui::cd_chart_type(plot)
   )
 }
