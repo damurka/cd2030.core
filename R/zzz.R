@@ -8,6 +8,9 @@
   .cd2030_state$selected_group <- NULL
   .cd2030_state$overrides <- list()
 
+  # Countdown's themes, kinds of chart, standard reports and fields, for the report builder
+  .cd_register_reports()
+
   # lock immutable defaults if present
   ns <- asNamespace(pkgname)
   if (exists(".cd2030_indicator_groups", envir = ns, inherits = FALSE)) {

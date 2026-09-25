@@ -10,6 +10,31 @@
 \alias{as_chart_options}
 \alias{chart_facet_info}
 \alias{cd_chart_type}
+\alias{export_deck}
+\alias{export_report}
+\alias{render_report_block}
+\alias{report_asset_data_url}
+\alias{report_block_size}
+\alias{report_chart_fields}
+\alias{report_converter}
+\alias{report_deck_converter}
+\alias{report_deck_layouts}
+\alias{report_default_cover}
+\alias{report_default_design}
+\alias{report_field_catalog}
+\alias{report_fields}
+\alias{report_final_pages}
+\alias{report_flag_file}
+\alias{report_fonts}
+\alias{report_page}
+\alias{report_project_blocks}
+\alias{report_resolve_block}
+\alias{report_slide_size}
+\alias{report_store_asset}
+\alias{report_theme_from_file}
+\alias{report_themes}
+\alias{save_report_chart}
+\alias{with_report_chart_options}
 \title{Objects exported from other packages}
 \keyword{internal}
 \description{
@@ -17,6 +42,6 @@ These objects are imported from other packages. Follow the links
 below to see their documentation.
 
 \describe{
-  \item{datasuite.ui}{\code{\link[datasuite.ui]{apply_chart_options}}, \code{\link[datasuite.ui]{as_chart_options}}, \code{\link[datasuite.ui]{cd_chart_options}}, \code{\link[datasuite.ui]{cd_chart_type}}, \code{\link[datasuite.ui]{chart_facet_info}}, \code{\link[datasuite.ui]{merge_chart_options}}, \code{\link[datasuite.ui]{resolve_chart_options}}}
+  \item{datasuite.ui}{\code{\link[datasuite.ui]{apply_chart_options}}, \code{\link[datasuite.ui]{as_chart_options}}, \code{\link[datasuite.ui]{cd_chart_options}}, \code{\link[datasuite.ui]{cd_chart_type}}, \code{\link[datasuite.ui]{chart_facet_info}}, \code{\link[datasuite.ui]{export_deck}}, \code{\link[datasuite.ui]{export_report}}, \code{\link[datasuite.ui]{merge_chart_options}}, \code{\link[datasuite.ui]{render_report_block}}, \code{\link[datasuite.ui]{report_asset_data_url}}, \code{\link[datasuite.ui]{report_block_size}}, \code{\link[datasuite.ui]{report_chart_fields}}, \code{\link[datasuite.ui]{report_converter}}, \code{\link[datasuite.ui]{report_deck_converter}}, \code{\link[datasuite.ui]{report_deck_layouts}}, \code{\link[datasuite.ui]{report_default_cover}}, \code{\link[datasuite.ui]{report_default_design}}, \code{\link[datasuite.ui]{report_field_catalog}}, \code{\link[datasuite.ui]{report_fields}}, \code{\link[datasuite.ui]{report_final_pages}}, \code{\link[datasuite.ui]{report_flag_file}}, \code{\link[datasuite.ui]{report_fonts}}, \code{\link[datasuite.ui]{report_page}}, \code{\link[datasuite.ui]{report_project_blocks}}, \code{\link[datasuite.ui]{report_resolve_block}}, \code{\link[datasuite.ui]{report_slide_size}}, \code{\link[datasuite.ui]{report_store_asset}}, \code{\link[datasuite.ui]{report_theme_from_file}}, \code{\link[datasuite.ui]{report_themes}}, \code{\link[datasuite.ui]{resolve_chart_options}}, \code{\link[datasuite.ui]{save_report_chart}}, \code{\link[datasuite.ui]{with_report_chart_options}}}
 }}
 

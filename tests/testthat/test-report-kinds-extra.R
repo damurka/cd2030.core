@@ -35,7 +35,7 @@ test_that("the extra kinds are offered to the groups they are for", {
 test_that("an extra kind that cannot be drawn says so instead of failing", {
   cache <- list(countdown_data = NULL, data_years = NULL, performance_threshold = 90,
                 calculate_reporting_rate = function(...) stop("no data loaded"))
-  out <- render_report_block(cache, list(type = "chart", kind = "dq_reporting_units"), NULL, NULL)
+  out <- render_report_block(cd_report_context(cache), list(type = "chart", kind = "dq_reporting_units"), NULL, NULL)
   expect_identical(out$type, "error")
   expect_match(out$message, "no data loaded")
 })

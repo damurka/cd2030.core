@@ -45,11 +45,11 @@ cd_chart_id <- function(x) {
   paste(parts, collapse = ".")
 }
 
-# What a report renders charts with: set by export_report() (with_report_chart_options()) as option cd2030.report_chart_options =
+# What a report renders charts with: set by export_report() (with_report_chart_options()) as option datasuite.report_chart_options =
 # list(default = <options>, types = list(<cd_chart_id() or cd_chart_type()> = <options>)). NULL outside a report.
 # Most general first: dataset-wide, then the type of graph, then the chart itself.
 .report_options_for <- function(p, source = NULL) {
-  report <- getOption("cd2030.report_chart_options")
+  report <- getOption("datasuite.report_chart_options")
   if (is.null(report)) return(NULL)
   type <- cd_chart_type(p)
   id <- cd_chart_id(source)

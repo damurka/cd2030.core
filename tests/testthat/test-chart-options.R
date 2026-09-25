@@ -250,7 +250,7 @@ test_that("a report renders charts with the options saved for reports, then for 
   expect_match(type, "^geom:")
   expect_null(cd_chart_type("not a plot"))
 
-  withr::local_options(cd2030.report_chart_options = list(
+  withr::local_options(datasuite.report_chart_options = list(
     default = cd_chart_options(title = "Report default", font_family = "serif"),
     types = stats::setNames(list(cd_chart_options(title = "For this type", alpha = 0.5)), type)
   ))
@@ -272,7 +272,7 @@ test_that("a chart has an id made from the data it draws, and report options can
   expect_identical(cd_chart_id(structure(list(), class = "cd_thing")), "thing")
 
   p <- marks_plot()
-  withr::local_options(cd2030.report_chart_options = list(
+  withr::local_options(datasuite.report_chart_options = list(
     default = cd_chart_options(title = "Default"),
     types = list("coverage_filtered.national.anc4" = cd_chart_options(title = "This chart"))
   ))
@@ -298,7 +298,7 @@ test_that("cd_chart_catalog lists the charts with saved options", {
 
 test_that("a report's theme does not wipe the options a chart was finished with", {
   p <- marks_plot()
-  withr::local_options(cd2030.report_chart_options = list(default = cd_chart_options(font_family = "serif", grid = "none"), types = list()))
+  withr::local_options(datasuite.report_chart_options = list(default = cd_chart_options(font_family = "serif", grid = "none"), types = list()))
   q <- cd_finish_plot(p) + cd_report_theme()
   th <- ggplot2::theme_get() + q$theme
   expect_identical(th$text@family, "serif")                       # cd_report_theme() sets its own family; ours is put back
