@@ -49,6 +49,7 @@ Imports:
     withr (>= 3.0.2)
 Remotes:
     damurka/datasuite.ui
+Additional_repositories: https://alkemalab.r-universe.dev
 Suggests:
     bayescoveragedeploy,
     bayescoveragemodel,
