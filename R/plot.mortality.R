@@ -4,6 +4,8 @@
 #'
 #' @param x A `cd_mortality_summary` object.
 #' @param indicator One of `"mmr_inst"`, `"ratio_md_sb"`, `"sbr_inst"`, or `"nn_inst"`.
+#' @param labels (Optional) A named list to override the default English text, e.g. with translations. Valid keys: `title`,
+#'   `national` (legend entry for the national line) and `regions` (legend entry for the regional points). Defaults to `NULL`.
 #' @param ... Additional arguments passed to methods.
 #'
 #' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
@@ -11,28 +13,35 @@
 #' @return A ggplot object.
 #'
 #' @export
-plot.cd_mortality_summary <- function(x, indicator = c('mmr_inst', 'ratio_md_sb', 'sbr_inst', 'nn_inst'), ..., options = NULL) {
-  cd_finish_plot(.plot_cd_mortality_summary_impl(x, indicator = indicator, ...), options, ..., .source = x)
+plot.cd_mortality_summary <- function(x, indicator = c('mmr_inst', 'ratio_md_sb', 'sbr_inst', 'nn_inst'), labels = NULL, ..., options = NULL) {
+  cd_finish_plot(.plot_cd_mortality_summary_impl(x, indicator = indicator, labels = labels, ...), options, ..., .source = x)
 }
 
-.plot_cd_mortality_summary_impl <- function(x, indicator = c('mmr_inst', 'ratio_md_sb', 'sbr_inst', 'nn_inst'), ...) {
+.plot_cd_mortality_summary_impl <- function(x, indicator = c('mmr_inst', 'ratio_md_sb', 'sbr_inst', 'nn_inst'), labels = NULL, ...) {
   indicator <- arg_match(indicator)
 
-  label <- switch(
-    indicator,
-    mmr_inst = 'National inst. MMR',
-    nn_inst = 'National NN',
-    sbr_inst = 'National inst. SBR',
-    ratio_md_sb = 'National SB/MM ratio'
+  default_labels <- list(
+    title = switch(
+      indicator,
+      mmr_inst = 'Maternal mortality per 100,000 live births in health facilities',
+      ratio_md_sb = 'Ratio number of stillbirths to maternal deaths in health facilities',
+      sbr_inst = 'Stillbirths per 1,000 births in health facilities',
+      nn_inst = 'Neonatal deaths before discharge per 1,000 live births in health facilities'
+    ),
+    national = switch(
+      indicator,
+      mmr_inst = 'National inst. MMR',
+      nn_inst = 'National NN',
+      sbr_inst = 'National inst. SBR',
+      ratio_md_sb = 'National SB/MM ratio'
+    ),
+    regions = 'Regions'
   )
+  final_labels <- utils::modifyList(default_labels, if (is.null(labels)) list() else as.list(labels))
 
-  title <- switch(
-    indicator,
-    mmr_inst = 'Maternal mortality per 100,000 live births in health facilities',
-    ratio_md_sb = 'Ratio number of stillbirths to maternal deaths in health facilities',
-    sbr_inst = 'Stillbirths per 1,000 births in health facilities',
-    nn_inst = 'Neonatal deaths before discharge per 1,000 live births in health facilities'
-  )
+  label <- final_labels$national
+  title <- final_labels$title
+  lbl_regions <- final_labels$regions
 
   national <- x %>% filter(adminlevel_1 == 'National')
   regional <- x %>% filter(adminlevel_1 != 'National')
@@ -42,7 +51,7 @@ plot.cd_mortality_summary <- function(x, indicator = c('mmr_inst', 'ratio_md_sb'
   breaks <- scales::pretty_breaks(n = 11)(limits)
 
   ggplot() +
-    geom_point(data = regional, aes(x = year, y = !!sym(indicator), color = 'Regions'), size = 2, alpha = 0.7) +
+    geom_point(data = regional, aes(x = year, y = !!sym(indicator), color = lbl_regions), size = 2, alpha = 0.7) +
     geom_line(data = national, aes(x = year, y = !!sym(indicator), color = label), linewidth = 1.2) +
     geom_point(data = national, aes(x = year, y = !!sym(indicator), color = label), size = 2) +
     geom_text(
@@ -51,10 +60,12 @@ plot.cd_mortality_summary <- function(x, indicator = c('mmr_inst', 'ratio_md_sb'
       color = 'black', vjust = -0.5, hjust = -0.1, size = 3
     ) +
     scale_y_continuous(limits = limits, breaks = breaks, expand = expansion(mult = c(0, 0.05))) +
-    scale_color_manual(values = set_names(c('forestgreen', 'orangered'), c('Regions', label))) +
+    scale_color_manual(values = set_names(c('forestgreen', 'orangered'), c(lbl_regions, label)), breaks = c(label, lbl_regions)) +
     cd_plot_theme(
       title = title
-    )
+    ) +
+    # the legend's entries say what they are; without this its title would be the name of a variable in this code
+    labs(color = NULL)
 }
 
 
@@ -65,6 +76,9 @@ plot.cd_mortality_summary <- function(x, indicator = c('mmr_inst', 'ratio_md_sb'
 #' community-to-institution ratios.
 #'
 #' @param x A `cd_mortality_ratio_summarised ` object from completeness estimation.
+#' @param labels (Optional) A named list to override the default English text, e.g. with translations. Valid keys: `title`,
+#'   `x_axis`, `y_axis`, and the legend entries `lower`, `best` and `upper` (the UN lower bound, best estimate and upper bound).
+#'   Defaults to `NULL`.
 #' @param ... Additional arguments (not used).
 #'
 #' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
@@ -72,13 +86,14 @@ plot.cd_mortality_summary <- function(x, indicator = c('mmr_inst', 'ratio_md_sb'
 #' @return A ggplot object with ratio lines, labels, and reference points.
 #'
 #' @export
-plot.cd_mortality_ratio_summarised <- function(x, ..., options = NULL) {
-  cd_finish_plot(.plot_cd_mortality_ratio_summarised_impl(x, ...), options, ..., .source = x)
+plot.cd_mortality_ratio_summarised <- function(x, labels = NULL, ..., options = NULL) {
+  cd_finish_plot(.plot_cd_mortality_ratio_summarised_impl(x, labels = labels, ...), options, ..., .source = x)
 }
 
-.plot_cd_mortality_ratio_summarised_impl <- function(x, ...) {
+.plot_cd_mortality_ratio_summarised_impl <- function(x, labels = NULL, ...) {
 
   plot_type <- attr_or_abort(x, 'plot_type')
+  user_labels <- if (is.null(labels)) list() else as.list(labels)
 
   lower_bound <- paste0('UN ', str_to_upper(plot_type),' lower bound')
   upper_bound <- paste0('UN ', str_to_upper(plot_type),' upper bound')
@@ -98,10 +113,17 @@ plot.cd_mortality_ratio_summarised <- function(x, ..., options = NULL) {
   )
 
   label_values <- labels[[plot_type]]
+  label_values$x_axis <- label_values$x
+  label_values$y_axis <- label_values$y
+  label_values <- utils::modifyList(
+    c(label_values, list(lower = lower_bound, best = best_estimates, upper = upper_bound)),
+    user_labels
+  )
 
   data <- x %>%
     pivot_longer(cols = -ciratio, values_to = 'rat', names_to = 'name') %>%
-    mutate(name = factor(name, levels = c(lower_bound, best_estimates, upper_bound)))
+    mutate(name = factor(name, levels = c(lower_bound, best_estimates, upper_bound),
+                         labels = c(label_values$lower, label_values$best, label_values$upper)))
 
   max_y <- robust_max(data$rat)
   max_y <- if (max_y < 100) 100 else max_y * 1.05
@@ -114,8 +136,8 @@ plot.cd_mortality_ratio_summarised <- function(x, ..., options = NULL) {
     scale_y_continuous(limits = c(0, max_y), breaks = scales::pretty_breaks(n = 10), expand = expansion(mult = c(0,0.05))) +
     cd_plot_theme(
       title = label_values$title,
-      x_axis = label_values$x,
-      y_axis = label_values$y
+      x_axis = label_values$x_axis,
+      y_axis = label_values$y_axis
     )
 }
 
@@ -125,6 +147,8 @@ plot.cd_mortality_ratio_summarised <- function(x, ..., options = NULL) {
 #' geographic polygons. Facets the map by year and applies a color gradient by value.
 #'
 #' @param x A `cd_mortality_summary_filtered` object.
+#' @param labels (Optional) A named list to override the default English text, e.g. with translations. Valid keys: `title` and
+#'   `legend` (the legend title). Defaults to `NULL`.
 #' @param ... Additional arguments (not used).
 #'
 #' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
@@ -145,11 +169,11 @@ plot.cd_mortality_ratio_summarised <- function(x, ..., options = NULL) {
 #' }
 #'
 #' @export
-plot.cd_mortality_summary_filtered <- function(x, ..., options = NULL) {
-  cd_finish_plot(.plot_cd_mortality_summary_filtered_impl(x, ...), options, ..., .source = x)
+plot.cd_mortality_summary_filtered <- function(x, labels = NULL, ..., options = NULL) {
+  cd_finish_plot(.plot_cd_mortality_summary_filtered_impl(x, labels = labels, ...), options, ..., .source = x)
 }
 
-.plot_cd_mortality_summary_filtered_impl <- function(x, ...) {
+.plot_cd_mortality_summary_filtered_impl <- function(x, labels = NULL, ...) {
   indicator <- attr_or_abort(x, 'indicator')
 
   title <- switch (
@@ -163,6 +187,10 @@ plot.cd_mortality_summary_filtered <- function(x, ..., options = NULL) {
     mmr_inst = 'Institutional MMR per 100,000 livebirths',
     sbr_inst = 'Institutional SBR per 1000'
   )
+
+  labels <- as.list(labels)
+  title <- labels$title %||% title
+  legend <- labels$legend %||% legend
 
   x %>%
     st_set_geometry('geometry') %>%

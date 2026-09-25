@@ -4,10 +4,14 @@
 \alias{plot.cd_service_utilization_filtered}
 \title{Plot Service Utilization Indicators}
 \usage{
-\method{plot}{cd_service_utilization_filtered}(x, ..., options = NULL)
+\method{plot}{cd_service_utilization_filtered}(x, labels = NULL, ..., options = NULL)
 }
 \arguments{
 \item{x}{A \code{cd_service_utilization_filtered} object created by \code{\link[=filter_service_utilization]{filter_service_utilization()}}.}
+
+\item{labels}{(Optional) A named list to override the default English text of the chart drawn, e.g. with translations. Valid
+keys: \code{title}, \code{x_axis}, \code{y_axis}, and the legend entries \code{y1} and \code{y2} of its two series (for \code{opd} and \code{ipd}: under-5 and
+all ages). Defaults to \code{NULL}.}
 
 \item{...}{not used}
 

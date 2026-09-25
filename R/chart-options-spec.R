@@ -15,8 +15,13 @@
   grid = c("both", "horizontal", "vertical", "none"),
   linetype = c("solid", "dashed", "dotted", "dotdash", "longdash", "twodash"),
   format = c("number", "comma", "percent", "percent_points", "scientific", "compact"),
-  theme_preset = c("grey", "minimal", "classic", "bw", "light", "linedraw", "dark", "void")
+  theme_preset = c("grey", "minimal", "classic", "bw", "light", "linedraw", "dark", "void"),
+  facet_scales = c("fixed", "free", "free_x", "free_y"),
+  strip_position = c("top", "bottom", "left", "right")
 )
+
+.chart_show_fields <- c("show_title", "show_subtitle", "show_caption", "show_x_title", "show_y_title", "show_x_text",
+                        "show_y_text", "show_legend", "show_legend_title", "show_labels", "show_strips")
 
 .chart_option_spec <- local({
   spec <- list()
@@ -44,10 +49,15 @@
   add("grid", "choice", .chart_choices$grid)
   add("grid_linetype", "choice", .chart_choices$linetype)
   add("theme_preset", "choice", .chart_choices$theme_preset)
-  add("alpha", "fraction")
+  add(c("alpha", "bar_width"), "fraction")
   add(c("legend_reverse", "axis_line", "axis_ticks", "grid_minor", "panel_border", "flip"), "logical")
+  # show / hide one element of the chart: TRUE shown, FALSE hidden (no space left for it), NULL as the chart draws it
+  add(.chart_show_fields, "logical")
   add(c("legend_labels", "category_labels"), "named_text")
   add("colors", "named_color")
+  add(c("facet_ncol", "facet_nrow"), "panel_count")
+  add("facet_scales", "choice", .chart_choices$facet_scales)
+  add("strip_position", "choice", .chart_choices$strip_position)
   spec
 })
 

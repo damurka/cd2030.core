@@ -161,6 +161,15 @@ post-Finish page, not something the wizard itself needs a pre-merge equivalent f
 \item{\code{chart_options}}{Active Binding: every stored chart option, a named list of \code{\link[=cd_chart_options]{cd_chart_options()}} (read-only; use
 \code{set_chart_options()} / \code{get_chart_options()}).}
 
+\item{\code{report_projects}}{Active Binding: the reports built in the report builder, a named list by id (read-only; use
+\code{set_report_project()}).}
+
+\item{\code{report_assets}}{Active Binding: the pictures the reports use, a named list by id of \code{list(type, data)}
+(read-only; use \code{set_report_asset()}).}
+
+\item{\code{report_themes}}{Active Binding: the themes made from Office files, a named list by id (read-only; use
+\code{set_report_theme()}).}
+
 \item{\code{fpet_data}}{Active Binding: Fetches FPET metrics (loads from global if missing).}
 
 \item{\code{un_estimates}}{Active Binding: Fetches demographic targets set by the UN.}
@@ -287,6 +296,9 @@ Invalidate Health Systems Cache}
 \item \href{#method-CacheConnection-set_selected_district}{\code{CacheConnection$set_selected_district()}}
 \item \href{#method-CacheConnection-set_mapping_years}{\code{CacheConnection$set_mapping_years()}}
 \item \href{#method-CacheConnection-set_chart_options}{\code{CacheConnection$set_chart_options()}}
+\item \href{#method-CacheConnection-set_report_project}{\code{CacheConnection$set_report_project()}}
+\item \href{#method-CacheConnection-set_report_asset}{\code{CacheConnection$set_report_asset()}}
+\item \href{#method-CacheConnection-set_report_theme}{\code{CacheConnection$set_report_theme()}}
 \item \href{#method-CacheConnection-get_chart_options}{\code{CacheConnection$get_chart_options()}}
 \item \href{#method-CacheConnection-reset_chart_options}{\code{CacheConnection$reset_chart_options()}}
 \item \href{#method-CacheConnection-set_mortality_mapping_years}{\code{CacheConnection$set_mortality_mapping_years()}}
@@ -1123,24 +1135,80 @@ Invisibly, TRUE when something changed.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-get_chart_options"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-get_chart_options}{}}}
-\subsection{Method \code{get_chart_options()}}{
+\if{html}{\out{<a id="method-CacheConnection-set_report_project"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_report_project}{}}}
+\subsection{Method \code{set_report_project()}}{
 The chart options that apply to one chart: the dataset's \code{"default"} options with the chart's own on top.
+
+
+Saves a report built in the report builder (see \code{\link[=export_report]{export_report()}}), or removes it.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_chart_options(id = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_report_project(id, project)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{id}}{Character. A chart id (see \code{set_chart_options()}), or \code{NULL} for the defaults alone.}
+
+\item{\code{id}}{Character. The report's id.}
+
+\item{\code{project}}{A list: \code{name}, \code{design} and \code{blocks} (see \code{\link[=report_presets]{report_presets()}}), or \code{NULL} to remove the report.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
 A \code{\link[=cd_chart_options]{cd_chart_options()}} object (empty when nothing is stored).
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-set_report_asset"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_report_asset}{}}}
+\subsection{Method \code{set_report_asset()}}{
+Saves a picture used by the reports (a block's \code{src} is then \code{"asset:<id>"}), or removes it. Pictures
+are kept once in the dataset rather than inside each report; the Word file and the PDF embed their own copy.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_report_asset(id, asset)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id}}{Character. The picture's id.}
+
+\item{\code{asset}}{A list: \code{type} (a MIME type such as \code{"image/png"}) and \code{data} (a raw vector), or \code{NULL} to remove it.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-set_report_theme"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_report_theme}{}}}
+\subsection{Method \code{set_report_theme()}}{
+Saves a theme made from an Office file (see \code{\link[=report_theme_from_file]{report_theme_from_file()}}), or removes it. Its template
+(the file itself) is kept as a report asset, \code{theme$template} being \code{"asset:<id>"}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_report_theme(id, theme)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id}}{Character. The theme's id.}
+
+\item{\code{theme}}{A theme list, or \code{NULL} to remove it.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-get_chart_options"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-get_chart_options}{}}}
+\subsection{Method \code{get_chart_options()}}{
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_chart_options(id = NULL)}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-reset_chart_options"></a>}}

@@ -9,7 +9,7 @@
 #' chart (`set_chart_options()`), so the choices survive reloads.
 #'
 #' A field left `NULL` means "keep what the plot draws by default"; only what is set is changed. Text fields accept `""`,
-#' which blanks that text. Colours are anything R understands (`"red"`, `"#1b7837"`, `"transparent"`). Sizes are in points
+#' which hides that text and the space it took (as the `show_*` fields do). Colours are anything R understands (`"red"`, `"#1b7837"`, `"transparent"`). Sizes are in points
 #' unless said otherwise. `x_*` and `y_*` always mean the data's x and y aesthetics, so they follow the data when the chart
 #' is flipped.
 #' @param title,subtitle,caption,tag Chart texts.
@@ -73,8 +73,28 @@
 #'   `legend_labels`); entries not named keep their colour.
 #' @param line_scale,point_scale Multiply the width of lines and the size of points (`1.5` = 50 percent bigger).
 #' @param alpha Transparency of every mark, from `0` (invisible) to `1`.
+#' @param bar_width Width of the bars (and boxes) as a share of the space each has, above `0` and up to `1`
+#'   (`0.9` is ggplot2's default).
 #' @param label_size Size in points of text drawn on the chart (data labels).
 #' @param label_angle,label_color Angle and colour of that text.
+#'
+#' @param facet_ncol,facet_nrow For a chart split into panels with `facet_wrap()`: the number of columns or rows of panels
+#'   (a whole number from 1 to 20). Setting only one lets ggplot2 work out the other. Charts split with `facet_grid()` keep
+#'   their layout (one row or column per value).
+#' @param facet_scales Whether panels share their axes: `"fixed"` (all the same), `"free"` (each its own), `"free_x"`
+#'   or `"free_y"` (only that axis varies). Ignored on maps and other charts whose coordinates cannot vary by panel.
+#' @param strip_position Where the panel labels (strips) go: `"top"`, `"bottom"`, `"left"` or `"right"`. With
+#'   `facet_grid()`, `"top"`/`"bottom"` place the column labels and `"left"`/`"right"` the row labels.
+#'   Use [chart_facet_info()] to see whether a chart has panels at all.
+#'
+#' @param show_title,show_subtitle,show_caption,show_x_title,show_y_title,show_x_text,show_y_text,show_legend,show_legend_title,show_labels,show_strips
+#'   Show or hide one element of the chart: the title, subtitle, caption, an axis title, an axis' tick labels
+#'   (`show_x_text`, `show_y_text`), the whole legend, the legend's title, the data labels drawn on the chart
+#'   (`geom_text()`, `geom_label()` and their ggrepel versions) or the panel names of a chart split into panels
+#'   (`show_strips`). `FALSE` hides it and leaves no space for it; `TRUE` shows it again where the chart itself hid it
+#'   (a legend the chart put at `"none"` goes to the right, a text the chart's theme blanked is drawn), which only works
+#'   when the chart has that text at all; `NULL` keeps what the chart draws. An empty text (`title = ""`, `x_title = ""`,
+#'   `legend_title = ""`...) hides that element the same way.
 #'
 #' @param ... The names older plot methods used: `x_axis`, `x_label` (= `x_title`), `y_axis`, `y_label` (= `y_title`),
 #'   `legend`, `fill_label` (= `legend_title`), `colours` (= `colors`).
@@ -117,8 +137,12 @@ cd_chart_options <- function(..., title = NULL, subtitle = NULL, caption = NULL,
                              grid_linetype = NULL, panel_border = NULL, panel_border_color = NULL,
                              panel_color = NULL, background_color = NULL, strip_background = NULL,
                              theme_preset = NULL,
-                             colors = NULL, line_scale = NULL, point_scale = NULL, alpha = NULL,
-                             label_size = NULL, label_angle = NULL, label_color = NULL) {
+                             colors = NULL, line_scale = NULL, point_scale = NULL, alpha = NULL, bar_width = NULL,
+                             label_size = NULL, label_angle = NULL, label_color = NULL,
+                             facet_ncol = NULL, facet_nrow = NULL, facet_scales = NULL, strip_position = NULL,
+                             show_title = NULL, show_subtitle = NULL, show_caption = NULL,
+                             show_x_title = NULL, show_y_title = NULL, show_x_text = NULL, show_y_text = NULL,
+                             show_legend = NULL, show_legend_title = NULL, show_labels = NULL, show_strips = NULL) {
   opts <- mget(setdiff(names(formals()), "..."))
 
   extra <- list(...)
@@ -157,6 +181,8 @@ cd_chart_options <- function(..., title = NULL, subtitle = NULL, caption = NULL,
       number = is.numeric(value) && length(value) == 1 && !is.na(value),
       fraction = is.numeric(value) && length(value) == 1 && !is.na(value) && value > 0 && value <= 1,
       count = is.numeric(value) && length(value) == 1 && !is.na(value) && value >= 1 && value == round(value),
+      panel_count = is.numeric(value) && length(value) == 1 && !is.na(value) && value >= 1 && value <= 20 &&
+        value == round(value),
       logical = is.logical(value) && length(value) == 1 && !is.na(value),
       color = .is_color(value),
       limits = is.numeric(value) && length(value) == 2,
@@ -193,6 +219,7 @@ cd_chart_options <- function(..., title = NULL, subtitle = NULL, caption = NULL,
     number = "must be a single number or NULL.",
     fraction = "must be a number above 0 and up to 1, or NULL.",
     count = "must be a single whole number of 1 or more, or NULL.",
+    panel_count = "must be a single whole number from 1 to 20, or NULL.",
     logical = "must be TRUE, FALSE or NULL.",
     color = "must be a single colour (a name such as \"red\", or \"#rrggbb\") or NULL.",
     limits = "must be two numbers (NA leaves an end open) or NULL.",
@@ -262,7 +289,7 @@ resolve_chart_options <- function(options = NULL, ...) {
 #' Finish a plot: apply the chart options
 #'
 #' The last step of every plot method: `resolve_chart_options()` then [apply_chart_options()]. While a report renders
-#' ([generate_report()]) the report's saved options sit underneath: the dataset-wide ones, then those saved for this type of
+#' ([export_report()]) the report's saved options sit underneath: the dataset-wide ones, then those saved for this type of
 #' graph ([cd_chart_type()]), then those saved for this very chart ([cd_chart_id()]); what the plot method or the template
 #' passes wins over all of them.
 #'
@@ -318,7 +345,7 @@ cd_chart_type <- function(p) {
   paste0("geom:", paste(sort(unique(geoms)), collapse = "+"))
 }
 
-# What a report renders charts with: set by generate_report() as option cd2030.report_chart_options =
+# What a report renders charts with: set by export_report() (with_report_chart_options()) as option cd2030.report_chart_options =
 # list(default = <options>, types = list(<cd_chart_id() or cd_chart_type()> = <options>)). NULL outside a report.
 # Most general first: dataset-wide, then the type of graph, then the chart itself.
 .report_options_for <- function(p, source = NULL) {

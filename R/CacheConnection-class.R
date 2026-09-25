@@ -669,6 +669,43 @@ CacheConnection <- R6::R6Class(
     #' @description The chart options that apply to one chart: the dataset's `"default"` options with the chart's own on top.
     #' @param id Character. A chart id (see `set_chart_options()`), or `NULL` for the defaults alone.
     #' @return A [cd_chart_options()] object (empty when nothing is stored).
+    #' @description Saves a report built in the report builder (see [export_report()]), or removes it.
+    #' @param id Character. The report's id.
+    #' @param project A list: `name`, `design` and `blocks` (see [report_presets()]), or `NULL` to remove the report.
+    set_report_project = function(id, project) {
+      if (!is_scalar_character(id) || !nzchar(id)) cd_abort(c("x" = "{.arg id} must be a single non-empty string."))
+      if (!is.null(project) && !is.list(project)) cd_abort(c("x" = "{.arg project} must be a list or NULL."))
+      stored <- private$.in_memory_data[["report_projects"]] %||% list()
+      stored[[id]] <- project
+      invisible(private$setter("report_projects", stored, is.list))
+    },
+
+    #' @description Saves a picture used by the reports (a block's `src` is then `"asset:<id>"`), or removes it. Pictures
+    #'   are kept once in the dataset rather than inside each report; the Word file and the PDF embed their own copy.
+    #' @param id Character. The picture's id.
+    #' @param asset A list: `type` (a MIME type such as `"image/png"`) and `data` (a raw vector), or `NULL` to remove it.
+    set_report_asset = function(id, asset) {
+      if (!is_scalar_character(id) || !nzchar(id)) cd_abort(c("x" = "{.arg id} must be a single non-empty string."))
+      if (!is.null(asset) && !(is.list(asset) && is.raw(asset$data) && is_scalar_character(asset$type))) {
+        cd_abort(c("x" = "{.arg asset} must be a list with {.field type} (character) and {.field data} (raw), or NULL."))
+      }
+      stored <- private$.in_memory_data[["report_assets"]] %||% list()
+      stored[[id]] <- asset
+      invisible(private$setter("report_assets", stored, is.list))
+    },
+
+    #' @description Saves a theme made from an Office file (see [report_theme_from_file()]), or removes it. Its template
+    #'   (the file itself) is kept as a report asset, `theme$template` being `"asset:<id>"`.
+    #' @param id Character. The theme's id.
+    #' @param theme A theme list, or `NULL` to remove it.
+    set_report_theme = function(id, theme) {
+      if (!is_scalar_character(id) || !nzchar(id)) cd_abort(c("x" = "{.arg id} must be a single non-empty string."))
+      if (!is.null(theme) && !is.list(theme)) cd_abort(c("x" = "{.arg theme} must be a list, or NULL."))
+      stored <- private$.in_memory_data[["report_themes"]] %||% list()
+      stored[[id]] <- theme
+      invisible(private$setter("report_themes", stored, is.list))
+    },
+
     get_chart_options = function(id = NULL) {
       stored <- self$chart_options
       merge_chart_options(stored[["default"]], if (!is.null(id) && !identical(id, "default")) stored[[id]])
@@ -1794,6 +1831,17 @@ CacheConnection <- R6::R6Class(
     #'   `set_chart_options()` / `get_chart_options()`).
     chart_options = function(value) private$getter("chart_options", value),
 
+    #' @field report_projects Active Binding: the reports built in the report builder, a named list by id (read-only; use
+    #'   `set_report_project()`).
+    report_projects = function(value) private$getter("report_projects", value),
+
+    #' @field report_assets Active Binding: the pictures the reports use, a named list by id of `list(type, data)`
+    #'   (read-only; use `set_report_asset()`).
+    report_assets = function(value) private$getter("report_assets", value),
+    #' @field report_themes Active Binding: the themes made from Office files, a named list by id (read-only; use
+    #'   `set_report_theme()`).
+    report_themes = function(value) private$getter("report_themes", value),
+
     #' @field fpet_data Active Binding: Fetches FPET metrics (loads from global if missing).
     fpet_data = function(value) {
       iso <- self$country_iso
@@ -2143,6 +2191,9 @@ CacheConnection <- R6::R6Class(
 
       # What the user has changed about how charts look: list(default = <cd_chart_options>, `<chart id>` = <cd_chart_options>)
       chart_options = list(),
+      report_projects = list(),
+      report_assets = list(),
+      report_themes = list(),
 
       un_estimates = NULL,
       un_mortality_estimates = NULL,

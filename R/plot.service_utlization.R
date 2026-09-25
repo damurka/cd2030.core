@@ -3,6 +3,9 @@
 #' Visualizes service utilization over time from a `cd_service_utilization_filtered` object.
 #'
 #' @param x A `cd_service_utilization_filtered` object created by [filter_service_utilization()].
+#' @param labels (Optional) A named list to override the default English text of the chart drawn, e.g. with translations. Valid
+#'   keys: `title`, `x_axis`, `y_axis`, and the legend entries `y1` and `y2` of its two series (for `opd` and `ipd`: under-5 and
+#'   all ages). Defaults to `NULL`.
 #' @param ... not used
 #'
 #' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
@@ -15,11 +18,12 @@
 #' }
 #'
 #' @export
-plot.cd_service_utilization_filtered <- function(x, ..., options = NULL) {
-  cd_finish_plot(.plot_cd_service_utilization_filtered_impl(x, ...), options, ..., .source = x)
+plot.cd_service_utilization_filtered <- function(x, labels = NULL, ..., options = NULL) {
+  cd_finish_plot(.plot_cd_service_utilization_filtered_impl(x, labels = labels, ...), options, ..., .source = x)
 }
 
-.plot_cd_service_utilization_filtered_impl <- function(x, ...) {
+.plot_cd_service_utilization_filtered_impl <- function(x, labels = NULL, ...) {
+  user_labels <- as.list(labels)
 
   indicator <- attr_or_abort(x, 'indicator')
 
@@ -67,6 +71,11 @@ plot.cd_service_utilization_filtered <- function(x, ..., options = NULL) {
   )
 
   labels_val <- labels[[indicator]]
+  if (!is.null(user_labels$y1)) labels_val$y1_label <- user_labels$y1
+  if (!is.null(user_labels$y2)) labels_val$y2_label <- user_labels$y2
+  if (!is.null(user_labels$title)) labels_val$title <- user_labels$title
+  if (!is.null(user_labels$y_axis)) labels_val$y_label <- user_labels$y_axis
+  x_label <- user_labels$x_axis %||% 'Year'
 
   max_y <- robust_max(c(x[[labels_val$y1]], x[[labels_val$y2]]))
   limits <- c(0, max_y)
@@ -81,7 +90,7 @@ plot.cd_service_utilization_filtered <- function(x, ..., options = NULL) {
     scale_y_continuous(limits = limits, breaks = breaks, expand = expansion(mult = c(0, 0.1))) +
     cd_plot_theme(
       title = labels_val$title,
-      x_axis = 'Year',
+      x_axis = x_label,
       y_axis = labels_val$y_label
     )
 }
@@ -92,6 +101,8 @@ plot.cd_service_utilization_filtered <- function(x, ..., options = NULL) {
 #' (admin level 1) for each available year. Uses spatial polygons filled by the selected indicator.
 #'
 #' @param x A `cd_service_utilization_prepared` object returned by [prepare_mapping_service_utlization()].
+#' @param labels (Optional) A named list to override the default English text, e.g. with translations. Valid keys: `title` and
+#'   `legend` (the legend title). Defaults to `NULL`.
 #' @param ... Additional arguments (currently unused).
 #'
 #' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
@@ -111,11 +122,11 @@ plot.cd_service_utilization_filtered <- function(x, ..., options = NULL) {
 #' }
 #'
 #' @export
-plot.cd_service_utilization_prepared <- function(x, ..., options = NULL) {
-  cd_finish_plot(.plot_cd_service_utilization_prepared_impl(x, ...), options, ..., .source = x)
+plot.cd_service_utilization_prepared <- function(x, labels = NULL, ..., options = NULL) {
+  cd_finish_plot(.plot_cd_service_utilization_prepared_impl(x, labels = labels, ...), options, ..., .source = x)
 }
 
-.plot_cd_service_utilization_prepared_impl <- function(x, ...) {
+.plot_cd_service_utilization_prepared_impl <- function(x, labels = NULL, ...) {
 
   indicator <- attr_or_abort(x, 'indicator')
 
@@ -128,6 +139,10 @@ plot.cd_service_utilization_prepared <- function(x, ..., options = NULL) {
                     ratio_opd_u5_pop = 'Mean OPD per child per year',
                     ratio_ipd_u5_pop = 'Mean IPD per 100 children per year'
   )
+
+  labels <- as.list(labels)
+  title <- labels$title %||% title
+  legend <- labels$legend %||% legend
 
   x %>%
     st_set_geometry('geometry') %>%

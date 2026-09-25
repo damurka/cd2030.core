@@ -515,9 +515,8 @@ mcp_get_mortality_completeness_ratio <- function(path, indicator = c("mmr", "sbr
   mcp_call_cache_method(path, "summarise_completeness_ratio", list(indicator = indicator))
 }
 
-#' @describeIn mcp_tools Render one of the package's existing report
-#'   templates to disk, in a `reports/` directory alongside the cache, and
-#'   return its path.
+#' @describeIn mcp_tools Write one of the standard reports ([report_presets()]) to disk, in a `reports/` directory
+#'   alongside the cache, in the dataset's language, and return its path.
 #' @noRd
 mcp_generate_report <- function(path,
                                 report_name,
@@ -527,25 +526,29 @@ mcp_generate_report <- function(path,
   check_required(report_name)
 
   cache <- mcp_get_cache(path)
+  # the old template names still work
+  id <- switch(report_name, synthesis_report = "synthesis", admin_level_1_one_pager = "one_pager", report_name)
+  lang <- cache$language %||% "en"
+  presets <- report_presets(lang)
+  if (!id %in% names(presets)) {
+    cd_abort(c("x" = "No standard report {.val {report_name}}.", "i" = "Available: {.val {names(presets)}}."))
+  }
+  project <- presets[[id]]
+  project$region <- adminlevel_1
 
   reports_dir <- file.path(dirname(cache$cache_path), "reports")
   if (!dir.exists(reports_dir)) {
     dir.create(reports_dir, recursive = TRUE)
   }
 
-  ext <- switch(output_format, word_document = "docx", pdf_document = "pdf")
+  # a slide deck (the one-pager) is written as PowerPoint instead of Word
+  ext <- switch(output_format, word_document = if (identical(project$kind, "deck")) "pptx" else "docx", pdf_document = "pdf")
   output_path <- file.path(
     reports_dir,
     sprintf("%s_%s.%s", report_name, format(Sys.time(), "%Y%m%d%H%M%S"), ext)
   )
 
-  generate_report(
-    cache = cache,
-    output_file = output_path,
-    report_name = report_name,
-    adminlevel_1 = adminlevel_1,
-    output_format = output_format
-  )
+  export_report(cache, project, output_path, format = ext)
 
   list(path = output_path, report_name = report_name, output_format = output_format)
 }

@@ -151,3 +151,80 @@
   }
   out
 }
+
+# ---- show / hide ---------------------------------------------------------------------------------------------------
+
+# The theme elements a show_* option switches: `parent` is the element several of them share (un-blanked only when the
+# chart's theme blanked it), `own` those only this one uses. Axis elements are given for the theme axis ("x" = bottom/top).
+.visibility_elements <- function(key, axis = NULL) {
+  pos <- if (identical(axis, "x")) c("top", "bottom") else c("left", "right")
+  switch(
+    key,
+    title = list(parent = NULL, own = "plot.title"),
+    subtitle = list(parent = NULL, own = "plot.subtitle"),
+    caption = list(parent = NULL, own = "plot.caption"),
+    axis_title = list(parent = "axis.title", own = c(paste0("axis.title.", axis), paste0("axis.title.", axis, ".", pos))),
+    axis_text = list(parent = "axis.text", own = c(paste0("axis.text.", axis), paste0("axis.text.", axis, ".", pos))),
+    legend_title = list(parent = NULL, own = "legend.title"),
+    strips = list(parent = NULL, own = c("strip.text", "strip.text.x", "strip.text.y", "strip.text.x.top", "strip.text.x.bottom",
+                                         "strip.text.y.left", "strip.text.y.right"))
+  )
+}
+
+# show_* options (and empty texts, which hide their element). Hidden = element_blank, which ggplot2 gives no space;
+# shown = an element the chart's theme blanked becomes a text again.
+.apply_visibility <- function(p, o, flipped) {
+  side <- function(aes) if (flipped == (aes == "x")) "y" else "x"
+  empty <- function(field) identical(o[[field]], "")
+  # element -> TRUE (show) / FALSE (hide)
+  wanted <- list(
+    list(el = .visibility_elements("title"), show = if (empty("title")) FALSE else o$show_title),
+    list(el = .visibility_elements("subtitle"), show = if (empty("subtitle")) FALSE else o$show_subtitle),
+    list(el = .visibility_elements("caption"), show = if (empty("caption")) FALSE else o$show_caption),
+    list(el = .visibility_elements("axis_title", side("x")), show = if (empty("x_title")) FALSE else o$show_x_title),
+    list(el = .visibility_elements("axis_title", side("y")), show = if (empty("y_title")) FALSE else o$show_y_title),
+    list(el = .visibility_elements("axis_text", side("x")), show = o$show_x_text),
+    list(el = .visibility_elements("axis_text", side("y")), show = o$show_y_text),
+    list(el = .visibility_elements("legend_title"), show = if (empty("legend_title")) FALSE else o$show_legend_title),
+    list(el = .visibility_elements("strips"), show = o$show_strips)
+  )
+  wanted <- Filter(function(w) !is.null(w$show), wanted)
+  if (!length(wanted) && is.null(o$show_legend)) return(p)
+
+  current <- tryCatch(ggplot2::theme_get() + p$theme, error = function(e) NULL)
+  resolved_blank <- function(name) {
+    if (is.null(current)) return(FALSE)
+    el <- tryCatch(ggplot2::calc_element(name, current), error = function(e) NULL)
+    inherits(el, "element_blank")
+  }
+  set_blank <- function(name) inherits(p$theme[[name]], "element_blank")
+
+  args <- list()
+  for (w in wanted) {
+    if (isFALSE(w$show)) {
+      for (name in w$el$own) args[[name]] <- ggplot2::element_blank()
+      next
+    }
+    # TRUE: un-blank what the theme blanked, the shared parent included; the other elements under that parent that were
+    # hidden stay hidden
+    for (name in c(w$el$parent, w$el$own)) if (set_blank(name) || resolved_blank(name)) args[[name]] <- ggplot2::element_text()
+    parent <- w$el$parent
+    if (!is.null(parent) && !is.null(args[[parent]])) {
+      for (axis in c("x", "y")) {
+        sibling <- .visibility_elements(sub("^axis\\.(title|text)$", "axis_\\1", parent), axis)$own
+        if (any(sibling %in% w$el$own)) next
+        if (resolved_blank(sibling[[1]])) for (name in sibling) args[[name]] <- args[[name]] %||% ggplot2::element_blank()
+      }
+    }
+  }
+
+  if (isFALSE(o$show_legend)) {
+    args$legend.position <- "none"
+  } else if (isTRUE(o$show_legend) && is.null(o$legend_position)) {
+    position <- if (is.null(current)) NULL else tryCatch(ggplot2::calc_element("legend.position", current), error = function(e) NULL)
+    if (identical(position, "none")) args$legend.position <- "right"
+  }
+
+  if (length(args)) p <- p + do.call(ggplot2::theme, args)
+  p
+}

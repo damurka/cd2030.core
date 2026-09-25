@@ -4,10 +4,13 @@
 \alias{plot.cd_mortality_summary_filtered}
 \title{Plot Filtered Institutional Mortality Rates}
 \usage{
-\method{plot}{cd_mortality_summary_filtered}(x, ..., options = NULL)
+\method{plot}{cd_mortality_summary_filtered}(x, labels = NULL, ..., options = NULL)
 }
 \arguments{
 \item{x}{A \code{cd_mortality_summary_filtered} object.}
+
+\item{labels}{(Optional) A named list to override the default English text, e.g. with translations. Valid keys: \code{title} and
+\code{legend} (the legend title). Defaults to \code{NULL}.}
 
 \item{...}{Additional arguments (not used).}
 

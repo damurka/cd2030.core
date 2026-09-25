@@ -467,15 +467,14 @@ mcp_tool_list <- function(max_sessions = 3L) {
       },
       name = "generate_report",
       description = paste(
-        "Render one of cd2030.core's existing report templates (e.g. data_quality,",
-        "national_coverage, national_inequality, mortality, health_system,",
-        "private_sector, service_utilization, synthesis_report) to a file in a",
-        "reports/ folder next to the cache, and return its path. Does not accept an",
-        "arbitrary destination path."
+        "Write one of cd2030.core's standard reports (report_presets(): data_quality, adjustment,",
+        "denominator_selection, national_coverage, national_inequality, mortality, service_utilization,",
+        "health_system, private_sector, synthesis, one_pager) to a file in a reports/ folder next to the",
+        "cache, in the dataset's language, and return its path. Does not accept an arbitrary destination path."
       ),
       arguments = list(
         path = path_arg,
-        report_name = ellmer::type_string("Report template name, e.g. data_quality, national_coverage, mortality, synthesis_report."),
+        report_name = ellmer::type_string("Standard report id, e.g. data_quality, national_coverage, mortality, synthesis, one_pager."),
         output_format = ellmer::type_enum(c("word_document", "pdf_document"), "Output file format."),
         adminlevel_1 = region_arg("Optional adminlevel_1 region to scope a subnational one-pager report to.")
       )

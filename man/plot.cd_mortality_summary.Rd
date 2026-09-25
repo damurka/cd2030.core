@@ -7,6 +7,7 @@
 \method{plot}{cd_mortality_summary}(
   x,
   indicator = c("mmr_inst", "ratio_md_sb", "sbr_inst", "nn_inst"),
+  labels = NULL,
   ...,
   options = NULL
 )
@@ -15,6 +16,9 @@
 \item{x}{A \code{cd_mortality_summary} object.}
 
 \item{indicator}{One of \code{"mmr_inst"}, \code{"ratio_md_sb"}, \code{"sbr_inst"}, or \code{"nn_inst"}.}
+
+\item{labels}{(Optional) A named list to override the default English text, e.g. with translations. Valid keys: \code{title},
+\code{national} (legend entry for the national line) and \code{regions} (legend entry for the regional points). Defaults to \code{NULL}.}
 
 \item{...}{Additional arguments passed to methods.}
 

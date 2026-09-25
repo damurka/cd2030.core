@@ -52,7 +52,6 @@
 #' @importFrom readr read_csv
 #' @importFrom readxl excel_sheets
 #' @importFrom readxl read_excel
-#' @importFrom rmarkdown render
 #' @importFrom sf st_as_sf
 #' @importFrom sf st_make_valid
 #' @importFrom sf st_read

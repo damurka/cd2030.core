@@ -36,20 +36,32 @@ Imports:
     readr,
     readxl (>= 1.4.3),
     rlang (>= 1.1.0),
-    rmarkdown (>= 2.29),
     scales (>= 1.3.0),
     sf,
     stringdist (>= 0.9.15),
     stringr,
     tibble (>= 3.2.1),
     tidyr (>= 1.3.1),
-    withr (>= 3.0.2)
+    withr (>= 3.0.2),
+    xml2
 Suggests:
+    chromote,
+    countrycode,
     ellmer,
+    jsonlite,
     knitr,
+    magick,
     mcptools,
+    pdftools,
+    png,
+    ragg,
+    rsvg,
+    rvg,
     spelling,
-    testthat (>= 3.0.0)
+    svglite,
+    systemfonts,
+    testthat (>= 3.0.0),
+    zip
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Depends: 

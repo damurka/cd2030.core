@@ -1,6 +1,6 @@
 # Applying chart options to a ggplot: apply_chart_options() is the one entry point and runs the steps in a fixed order
-# (preset, texts, labels and colours, orientation and range, legend layout, theme, marks). Each step lives in its own file:
-# chart-options-theme.R, chart-options-scales.R, chart-options-marks.R.
+# (preset, texts, labels and colours, orientation and range, panels, legend layout, theme, marks). Each step lives in its own
+# file: chart-options-theme.R, chart-options-scales.R, chart-options-facet.R, chart-options-marks.R.
 
 #' Apply chart options to a ggplot
 #'
@@ -40,8 +40,8 @@ apply_chart_options <- function(p, options = NULL) {
     for (i in seq_along(p$scales$scales)) {
       if (any(p$scales$scales[[i]]$aesthetics %in% legend_aes)) p$scales$scales[[i]]$name <- o$legend_title
     }
-    # and the plot theme may have blanked the legend title
-    p <- p + ggplot2::theme(legend.title = ggplot2::element_text())
+    # and the plot theme may have blanked the legend title ("" hides it: see .apply_visibility())
+    if (nzchar(o$legend_title)) p <- p + ggplot2::theme(legend.title = ggplot2::element_text())
   }
   if (!is.null(o$title_wrap)) {
     current <- ggplot2::get_labs(p)
@@ -74,6 +74,11 @@ apply_chart_options <- function(p, options = NULL) {
   flipped <- inherits(p$coordinates, "CoordFlip")
   if (!is.null(o$x_limits) || !is.null(o$y_limits)) p <- .limit_axes(p, o$x_limits, o$y_limits)
 
+  # ---- panels (facet_wrap / facet_grid): layout, shared axes, strip placement
+  if (!is.null(o$facet_ncol) || !is.null(o$facet_nrow) || !is.null(o$facet_scales) || !is.null(o$strip_position)) {
+    p <- .apply_facet_options(p, o, get_built)
+  }
+
   # ---- legend layout
   if (!is.null(o$legend_ncol) || !is.null(o$legend_nrow) || !is.null(o$legend_reverse)) {
     p <- .legend_layout(p, o, legend_aes, get_built())
@@ -81,6 +86,9 @@ apply_chart_options <- function(p, options = NULL) {
 
   # ---- theme: fonts, sizes, colours, angles, legend, grid, panel, background
   p <- .apply_theme_options(p, o, flipped)
+
+  # ---- what is shown and what is hidden (after the theme, so a hidden element stays hidden)
+  p <- .apply_visibility(p, o, flipped)
 
   # ---- marks
   .apply_layer_options(p, o)

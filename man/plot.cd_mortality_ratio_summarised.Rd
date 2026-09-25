@@ -4,10 +4,14 @@
 \alias{plot.cd_mortality_ratio_summarised}
 \title{Plot Completeness of Facility Reporting Ratios}
 \usage{
-\method{plot}{cd_mortality_ratio_summarised}(x, ..., options = NULL)
+\method{plot}{cd_mortality_ratio_summarised}(x, labels = NULL, ..., options = NULL)
 }
 \arguments{
 \item{x}{A \code{cd_mortality_ratio_summarised } object from completeness estimation.}
+
+\item{labels}{(Optional) A named list to override the default English text, e.g. with translations. Valid keys: \code{title},
+\code{x_axis}, \code{y_axis}, and the legend entries \code{lower}, \code{best} and \code{upper} (the UN lower bound, best estimate and upper bound).
+Defaults to \code{NULL}.}
 
 \item{...}{Additional arguments (not used).}
 

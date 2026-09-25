@@ -18,7 +18,7 @@ The ggplot with the options applied.
 }
 \description{
 The last step of every plot method: \code{resolve_chart_options()} then \code{\link[=apply_chart_options]{apply_chart_options()}}. While a report renders
-(\code{\link[=generate_report]{generate_report()}}) the report's saved options sit underneath: the dataset-wide ones, then those saved for this type of
+(\code{\link[=export_report]{export_report()}}) the report's saved options sit underneath: the dataset-wide ones, then those saved for this type of
 graph (\code{\link[=cd_chart_type]{cd_chart_type()}}), then those saved for this very chart (\code{\link[=cd_chart_id]{cd_chart_id()}}); what the plot method or the template
 passes wins over all of them.
 }

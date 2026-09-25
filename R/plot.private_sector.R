@@ -8,6 +8,9 @@
 #' @param ... Reserved for future use.
 #' @param country_name Optional character string to override the default country name used
 #'   in the plot title. If `NULL`, uses the unique value in the `country` column if present.
+#' @param labels (Optional) A named list to override the default English text, e.g. with translations. Valid keys: `public` and
+#'   `private` (legend entries), `share` (the text before the private share, `"Priv. share = "`), the indicator names `careany`,
+#'   `csection` and `ideliv`, and the area names `rural` and `urban`. Defaults to `NULL`.
 #'
 #' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
 #'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
@@ -36,13 +39,36 @@
 #' }
 #'
 #' @export
-plot.cd_private_sector_plot_data <- function(x, ..., country_name = NULL, options = NULL) {
-  cd_finish_plot(.plot_cd_private_sector_plot_data_impl(x, ..., country_name = country_name), options, ..., .source = x)
+plot.cd_private_sector_plot_data <- function(x, ..., country_name = NULL, labels = NULL, options = NULL) {
+  cd_finish_plot(.plot_cd_private_sector_plot_data_impl(x, ..., country_name = country_name, labels = labels), options, ..., .source = x)
 }
 
-.plot_cd_private_sector_plot_data_impl <- function(x, ..., country_name = NULL) {
+.plot_cd_private_sector_plot_data_impl <- function(x, ..., country_name = NULL, labels = NULL) {
   data_level <- attr_or_abort(x, "level")
   data_level_col <- if (data_level == "area") 'area' else NULL
+
+  default_labels <- list(
+    public = "Public",
+    private = "Private",
+    share = "Priv. share = ",
+    careany = "Careseeking for child illness",
+    csection = "C-section",
+    ideliv = "Institutional delivery"
+  )
+  final_labels <- utils::modifyList(default_labels, as.list(labels))
+  indic_levels <- c(final_labels$careany, final_labels$csection, final_labels$ideliv)
+  # the legend shows the sector names unless other labels are given for them
+  sector_labels <- if (identical(c(final_labels$public, final_labels$private), c("Public", "Private"))) {
+    waiver()
+  } else {
+    c("Public" = final_labels$public, "Private" = final_labels$private)
+  }
+
+  # Area names (rural, urban) are shown as they are in the data unless labels are given for them
+  if (data_level == "area" && any(c("rural", "urban") %in% names(final_labels))) {
+    area_map <- unlist(final_labels[intersect(c("rural", "urban"), names(final_labels))])
+    x$area <- ifelse(tolower(x$area) %in% names(area_map), unname(area_map[tolower(x$area)]), x$area)
+  }
 
   # Determine country name for plot title
   if (is.null(country_name)) {
@@ -60,10 +86,10 @@ plot.cd_private_sector_plot_data <- function(x, ..., country_name = NULL, option
       # Map indic to more descriptive labels as factors for consistent order
       indic_label = dplyr::case_match(
         indic,
-        "careany" ~ "Careseeking for child illness",
-        "csection" ~ "C-section",
-        "ideliv" ~ "Institutional delivery",
-        .ptype = factor(levels = c("Careseeking for child illness", "C-section", "Institutional delivery"))
+        "careany" ~ final_labels$careany,
+        "csection" ~ final_labels$csection,
+        "ideliv" ~ final_labels$ideliv,
+        .ptype = factor(levels = indic_levels)
       )
     )
 
@@ -88,7 +114,7 @@ plot.cd_private_sector_plot_data <- function(x, ..., country_name = NULL, option
       .by = any_of(c('indic_label', data_level_col))
     ) %>%
     mutate(
-      label = paste0("Priv. share = ", share, "%"),
+      label = paste0(final_labels$share, share, "%"),
       # Position the text slightly above the total bar height
       y_pos_text = total_prevalence + 0.05 # Adjust offset as needed
     )
@@ -101,7 +127,8 @@ plot.cd_private_sector_plot_data <- function(x, ..., country_name = NULL, option
       labels = seq(0, 100, by = 10),
       limits = c(0, robust_max(label_df$y_pos_text, 100) * 1.1) # Max Y-limit considering text position
     ),
-    scale_fill_manual(values = c("Public" = "#2196F3", "Private" = "#E91E63")), # Using more distinct blue/red
+    scale_fill_manual(values = c("Public" = "#2196F3", "Private" = "#E91E63"), # Using more distinct blue/red
+                      labels = sector_labels),
     labs(
       title = country_name,
       x = NULL, # No X-axis title

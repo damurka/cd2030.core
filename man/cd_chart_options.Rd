@@ -89,9 +89,25 @@ cd_chart_options(
   line_scale = NULL,
   point_scale = NULL,
   alpha = NULL,
+  bar_width = NULL,
   label_size = NULL,
   label_angle = NULL,
-  label_color = NULL
+  label_color = NULL,
+  facet_ncol = NULL,
+  facet_nrow = NULL,
+  facet_scales = NULL,
+  strip_position = NULL,
+  show_title = NULL,
+  show_subtitle = NULL,
+  show_caption = NULL,
+  show_x_title = NULL,
+  show_y_title = NULL,
+  show_x_text = NULL,
+  show_y_text = NULL,
+  show_legend = NULL,
+  show_legend_title = NULL,
+  show_labels = NULL,
+  show_strips = NULL
 )
 }
 \arguments{
@@ -195,9 +211,31 @@ currently shown for them), values the text to show instead.}
 
 \item{alpha}{Transparency of every mark, from \code{0} (invisible) to \code{1}.}
 
+\item{bar_width}{Width of the bars (and boxes) as a share of the space each has, above \code{0} and up to \code{1}
+(\code{0.9} is ggplot2's default).}
+
 \item{label_size}{Size in points of text drawn on the chart (data labels).}
 
 \item{label_angle, label_color}{Angle and colour of that text.}
+
+\item{facet_ncol, facet_nrow}{For a chart split into panels with \code{facet_wrap()}: the number of columns or rows of panels
+(a whole number from 1 to 20). Setting only one lets ggplot2 work out the other. Charts split with \code{facet_grid()} keep
+their layout (one row or column per value).}
+
+\item{facet_scales}{Whether panels share their axes: \code{"fixed"} (all the same), \code{"free"} (each its own), \code{"free_x"}
+or \code{"free_y"} (only that axis varies). Ignored on maps and other charts whose coordinates cannot vary by panel.}
+
+\item{strip_position}{Where the panel labels (strips) go: \code{"top"}, \code{"bottom"}, \code{"left"} or \code{"right"}. With
+\code{facet_grid()}, \code{"top"}/\code{"bottom"} place the column labels and \code{"left"}/\code{"right"} the row labels.
+Use \code{\link[=chart_facet_info]{chart_facet_info()}} to see whether a chart has panels at all.}
+
+\item{show_title, show_subtitle, show_caption, show_x_title, show_y_title, show_x_text, show_y_text, show_legend, show_legend_title, show_labels, show_strips}{Show or hide one element of the chart: the title, subtitle, caption, an axis title, an axis' tick labels
+(\code{show_x_text}, \code{show_y_text}), the whole legend, the legend's title, the data labels drawn on the chart
+(\code{geom_text()}, \code{geom_label()} and their ggrepel versions) or the panel names of a chart split into panels
+(\code{show_strips}). \code{FALSE} hides it and leaves no space for it; \code{TRUE} shows it again where the chart itself hid it
+(a legend the chart put at \code{"none"} goes to the right, a text the chart's theme blanked is drawn), which only works
+when the chart has that text at all; \code{NULL} keeps what the chart draws. An empty text (\code{title = ""}, \code{x_title = ""},
+\code{legend_title = ""}...) hides that element the same way.}
 }
 \value{
 An object of class \code{cd_chart_options} (a list of the fields that are set).
@@ -210,7 +248,7 @@ chart (\code{set_chart_options()}), so the choices survive reloads.
 }
 \details{
 A field left \code{NULL} means "keep what the plot draws by default"; only what is set is changed. Text fields accept \code{""},
-which blanks that text. Colours are anything R understands (\code{"red"}, \code{"#1b7837"}, \code{"transparent"}). Sizes are in points
+which hides that text and the space it took (as the \verb{show_*} fields do). Colours are anything R understands (\code{"red"}, \code{"#1b7837"}, \code{"transparent"}). Sizes are in points
 unless said otherwise. \verb{x_*} and \verb{y_*} always mean the data's x and y aesthetics, so they follow the data when the chart
 is flipped.
 }
