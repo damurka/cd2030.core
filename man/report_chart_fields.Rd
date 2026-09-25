@@ -19,5 +19,7 @@ The blocks, their texts filled.
 \description{
 \code{{chart_indicator}} and \code{{chart_year}} in a text, heading or caption are the indicator (its name, in the report's
 language) and the year of the first chart or table after it in the report, so a title above a chart follows the
-chart when its indicator or year is changed. A text with no chart after it keeps the field as typed.
+chart when its indicator or year is changed. \code{{chart_indicators}} names the indicators of all the charts and tables
+after it up to the next heading ("ANC 4 Visits and Measles 1"), for a heading above charts side by side. A text with
+no chart after it keeps the field as typed.
 }

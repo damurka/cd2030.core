@@ -188,7 +188,7 @@ report_page <- function(design = report_default_design()) {
 # The chart options a block was given in the builder (the chart customize panel's values)
 .rb_block_options <- function(options) {
   if (is.null(options) || !length(options)) return(NULL)
-  keep <- options[intersect(names(options), .chart_option_fields)]
+  keep <- options[intersect(names(options), datasuite.ui::chart_option_fields())]
   keep <- Filter(function(v) !is.null(v) && !identical(v, ""), keep)
   keep <- lapply(keep, function(v) {
     if (is.list(v) && !is.null(names(v))) return(unlist(v))

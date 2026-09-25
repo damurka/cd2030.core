@@ -335,3 +335,9 @@ test_that("the national coverage titles name the chart under them with {chart_in
   expect_gt(length(templated), 0)
   expect_true(any(vapply(templated, function(i) i < length(blocks) && identical(blocks[[i + 1]]$type, "chart"), logical(1))))
 })
+
+test_that("a chart's show_* options reach the report, FALSE and TRUE alike", {
+  kept <- .rb_block_options(list(show_title = FALSE, show_legend = TRUE, title = ""))
+  expect_identical(kept$show_title, FALSE)
+  expect_identical(kept$show_legend, TRUE)
+})

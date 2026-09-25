@@ -21,6 +21,7 @@ License: AGPL (>= 3)
 URL: https://aphrcwaro.github.io/cd2030.core/, https://github.com/aphrcwaro/cd2030.core
 Imports: 
     cli (>= 3.6.2),
+    datasuite.ui,
     dplyr (>= 1.1.4),
     flextable,
     forcats,

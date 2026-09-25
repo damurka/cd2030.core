@@ -23,13 +23,13 @@ test_that("cd_chart_options keeps only what is set and understands the older nam
 })
 
 test_that("cd_chart_options validates its fields", {
-  expect_error(cd_chart_options(title = 1), class = "cd2030_error")
-  expect_error(cd_chart_options(legend_position = "middle"), class = "cd2030_error")
-  expect_error(cd_chart_options(text_scale = -1), class = "cd2030_error")
-  expect_error(cd_chart_options(title_size = "big"), class = "cd2030_error")
-  expect_error(cd_chart_options(flip = "yes"), class = "cd2030_error")
-  expect_error(cd_chart_options(legend_labels = c("a", "b")), class = "cd2030_error")
-  expect_error(cd_chart_options(nonsense = 1), class = "cd2030_error")
+  expect_error(cd_chart_options(title = 1), class = "datasuite_error")
+  expect_error(cd_chart_options(legend_position = "middle"), class = "datasuite_error")
+  expect_error(cd_chart_options(text_scale = -1), class = "datasuite_error")
+  expect_error(cd_chart_options(title_size = "big"), class = "datasuite_error")
+  expect_error(cd_chart_options(flip = "yes"), class = "datasuite_error")
+  expect_error(cd_chart_options(legend_labels = c("a", "b")), class = "datasuite_error")
+  expect_error(cd_chart_options(nonsense = 1), class = "datasuite_error")
 })
 
 test_that("merge_chart_options layers later over earlier and merges the named vectors by name", {
@@ -155,7 +155,7 @@ test_that("CacheConnection stores chart options per chart and as dataset default
   expect_length(cache$chart_options, 0)
 
   expect_error(cache$set_chart_options("", cd_chart_options(title = "x")), class = "cd2030_error")
-  expect_error(cache$set_chart_options("x", list(title = 1)), class = "cd2030_error")
+  expect_error(cache$set_chart_options("x", list(title = 1)), class = "datasuite_error")
 })
 
 marks_plot <- function() {
@@ -171,12 +171,12 @@ test_that("options are matched exactly, so title does not pick up title_size", {
 })
 
 test_that("new fields are validated", {
-  expect_error(cd_chart_options(grid_color = "notacolour"), class = "cd2030_error")
-  expect_error(cd_chart_options(x_labels = "x"), class = "cd2030_error")
-  expect_error(cd_chart_options(alpha = 2), class = "cd2030_error")
-  expect_error(cd_chart_options(plot_margin = c(1, 2)), class = "cd2030_error")
-  expect_error(cd_chart_options(legend_ncol = 1.5), class = "cd2030_error")
-  expect_error(cd_chart_options(colors = c("red")), class = "cd2030_error")
+  expect_error(cd_chart_options(grid_color = "notacolour"), class = "datasuite_error")
+  expect_error(cd_chart_options(x_labels = "x"), class = "datasuite_error")
+  expect_error(cd_chart_options(alpha = 2), class = "datasuite_error")
+  expect_error(cd_chart_options(plot_margin = c(1, 2)), class = "datasuite_error")
+  expect_error(cd_chart_options(legend_ncol = 1.5), class = "datasuite_error")
+  expect_error(cd_chart_options(colors = c("red")), class = "datasuite_error")
   expect_identical(cd_chart_options(colours = c(a = "red"))$colors, c(a = "red"))
 })
 
