@@ -12,8 +12,8 @@
 #'   Each value is a named list of categories -> character vector of indicators.
 #'
 #' @examples
-#' names(.cd2030_indicator_groups)              # built-in groups
-#' .cd2030_indicator_groups$rmncah$anc          # RMNCAH ANC indicators
+#' names(cd2030.core:::.cd2030_indicator_groups)      # built-in groups
+#' cd2030.core:::.cd2030_indicator_groups$rmncah$anc  # RMNCAH ANC indicators
 #'
 #' @keywords internal
 .cd2030_indicator_groups <- list(

@@ -24,6 +24,14 @@ is \code{'national'}.}
 \item{un_estimates}{Optional. A tibble containing UN population estimates with
 columns for \code{un_population}, \code{un_births}, \code{un_popgrowth}, and related metrics.
 This parameter is only required for national-level calculations.}
+
+\item{region}{Optional name of an \code{adminlevel_1} region. If supplied, only
+that region's rows are used. Only valid with \code{admin_level = 'adminlevel_1'}.
+Default is \code{NULL}.}
+
+\item{show_district}{Logical. When \code{region} is supplied, whether to return
+metrics by district within the region (\code{TRUE}, the default) or for the
+region as a whole.}
 }
 \value{
 A tibble of class \code{cd_population_metrics} containing demographic metrics

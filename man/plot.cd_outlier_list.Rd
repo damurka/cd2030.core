@@ -21,7 +21,23 @@
 \arguments{
 \item{x}{A \code{cd_outlier_list} object from \code{list_outlier_units()}.}
 
+\item{indicator}{The indicator to plot (for example \code{"penta1"}).}
+
+\item{year}{Optional single year to plot. If \code{NULL} (the default), all
+years are shown.}
+
 \item{region}{The name of the unit to plot.}
+
+\item{title}{Optional plot title. Defaults to a title naming the indicator,
+unit and year.}
+
+\item{x_axis, y_axis}{Optional x- and y-axis titles. Default to \code{"Month"} and
+the indicator name.}
+
+\item{legend}{Optional legend title. Default is \code{NULL} (no title).}
+
+\item{label}{Optional named character vector overriding the legend labels.
+Recognised names are \code{reported}, \code{median}, \code{bounds} and \code{outliers}.}
 
 \item{...}{Not used.}
 
@@ -37,7 +53,7 @@ with outlier highlights.
 }
 \details{
 \itemize{
-\item Plots observed values, median trend, and 5×MAD range.
+\item Plots observed values, median trend, and 5xMAD range.
 \item Flags outliers in red.
 }
 }

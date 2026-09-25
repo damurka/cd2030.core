@@ -17,10 +17,22 @@
 )
 }
 \arguments{
-\item{x}{A \code{cd_outlier} object containing pre-processed outlier data.}
+\item{x}{A \code{cd_completeness_summary} object, as returned by
+\code{\link[=calculate_completeness_summary]{calculate_completeness_summary()}}.}
+
+\item{plot_type}{Either \code{"heat_map"} (missingness by unit, for one or all
+indicators) or \code{"trend"} (completeness over time for one indicator).
+Default is \code{"heat_map"}.}
 
 \item{indicator}{Optional. One of the supported indicators (\code{'opv1'}, \code{'penta3'}, etc.)
 to visualize in the plot. If \code{NULL} all indicators will be shown.}
+
+\item{title}{Optional plot title. Defaults to a title based on \code{plot_type},
+\code{indicator} and region.}
+
+\item{x_axis, y_axis}{Optional x- and y-axis titles. Default is \code{NULL}.}
+
+\item{legend}{Optional legend title. Default is \code{NULL}.}
 
 \item{...}{Reserved for future use.}
 

@@ -19,6 +19,15 @@
 It should contain a \code{year} column and one or more columns with names starting with \code{"Ratio"},
 representing the calculated indicator ratios.}
 
+\item{title}{Optional plot title. Defaults to a title describing the ANC1 to
+Penta1 and Penta1 to Penta3 ratios.}
+
+\item{x_axis, y_axis}{Optional x- and y-axis titles. Default is \code{NULL}.}
+
+\item{x_labels}{Optional named list or vector of x-axis category labels,
+keyed by ratio name (\code{anc1_penta1}, \code{opv1_opv3}, \code{penta1_penta3}).
+Supplied entries replace the defaults.}
+
 \item{...}{Additional arguments passed to other methods (currently unused).}
 
 \item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the

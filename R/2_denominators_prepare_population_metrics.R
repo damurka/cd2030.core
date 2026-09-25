@@ -15,6 +15,12 @@
 #' @param un_estimates Optional. A tibble containing UN population estimates with
 #'   columns for `un_population`, `un_births`, `un_popgrowth`, and related metrics.
 #'   This parameter is only required for national-level calculations.
+#' @param region Optional name of an `adminlevel_1` region. If supplied, only
+#'   that region's rows are used. Only valid with `admin_level = 'adminlevel_1'`.
+#'   Default is `NULL`.
+#' @param show_district Logical. When `region` is supplied, whether to return
+#'   metrics by district within the region (`TRUE`, the default) or for the
+#'   region as a whole.
 #'
 #' @return A tibble of class `cd_population_metrics` containing demographic metrics
 #'   for the specified administrative level and years. Metrics include:

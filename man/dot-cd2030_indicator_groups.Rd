@@ -22,8 +22,8 @@ Each group is a \strong{named list of categories}, where each category contains 
 character vector of indicator codes.
 }
 \examples{
-names(.cd2030_indicator_groups)              # built-in groups
-.cd2030_indicator_groups$rmncah$anc          # RMNCAH ANC indicators
+names(cd2030.core:::.cd2030_indicator_groups)      # built-in groups
+cd2030.core:::.cd2030_indicator_groups$rmncah$anc  # RMNCAH ANC indicators
 
 }
 \keyword{internal}

@@ -6,7 +6,7 @@
 #' @param path Optional. File path to a `.dta` file.
 #' @param .data Optional. A preloaded data frame.
 #' @param country_iso Character. ISO3 code of the country.
-#' @param start_year, end_year Integers. Year range to include.
+#' @param start_year,end_year Integers. First and last year (inclusive) to include.
 #'
 #' @return A tibble of class `cd_un_estimates`.
 #' @export

@@ -1,6 +1,6 @@
 Package: cd2030.core
 Title: Data Loading, Validation, and Reporting for Countdown 2030
-Version: 1.0.0.9000
+Version: 1.1.0
 Authors@R: c(
       person("David", "Kariuki", , "hello@damurka.com", role = c("aut", "cre"), 
              comment = c(ORCID = "0009-0003-6159-1107")),
@@ -21,7 +21,7 @@ License: AGPL (>= 3)
 URL: https://aphrcwaro.github.io/cd2030.core/, https://github.com/aphrcwaro/cd2030.core
 Imports: 
     cli (>= 3.6.2),
-    datasuite.ui,
+    datasuite.ui (>= 0.1.0),
     dplyr (>= 1.1.4),
     flextable,
     forcats,
@@ -42,19 +42,20 @@ Imports:
     sf,
     shiny,
     shiny.react,
-    shinyjs,
     stringdist (>= 0.9.15),
     stringr,
     tibble (>= 3.2.1),
     tidyr (>= 1.3.1),
-    withr (>= 3.0.2),
-    xml2
+    withr (>= 3.0.2)
 Remotes:
     damurka/datasuite.ui
 Suggests:
+    bayescoveragedeploy,
+    bayescoveragemodel,
     chromote,
     countrycode,
     ellmer,
+    ggrepel,
     jsonlite,
     knitr,
     magick,
@@ -68,6 +69,7 @@ Suggests:
     svglite,
     systemfonts,
     testthat (>= 3.0.0),
+    xml2,
     zip
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

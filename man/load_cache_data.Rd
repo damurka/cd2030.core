@@ -37,6 +37,10 @@ For \code{"custom"}, the profile must resolve to \strong{one} concrete name.}
 one of \code{"replace"}, \code{"merge"}, or \code{"error"}. Default \code{"replace"}.
 \code{"merge"} unions indicators per category.}
 
+\item{create_cache}{Logical. For Excel/Stata inputs, whether to pass \code{path}
+to the connection as its data path so a cache file is created or loaded
+next to it. Default is \code{FALSE} (no cache file). Ignored for \code{.rds} inputs.}
+
 \item{start_year}{Optional integer filter for minimum year.}
 
 \item{admin_sheet_name}{Excel sheet with admin data. Default \code{"Admin_data"}.}

@@ -2,37 +2,32 @@
 % Please edit documentation in R/1a_checks_outlier.R
 \name{list_outlier_units}
 \alias{list_outlier_units}
-\title{Identify Monthly Outliers for a Single Indicator}
+\title{Identify Monthly Outliers by District}
 \usage{
 list_outlier_units(.data)
 }
 \arguments{
 \item{.data}{A \code{cd_data} object with monthly data.}
-
-\item{indicator}{A single indicator name to assess.}
-
-\item{admin_level}{\code{'adminlevel_1'} or \code{'district'}.}
-
-\item{region}{Optional. Filter results to a specific \code{adminlevel_1}.}
 }
 \value{
 A \code{cd_outlier_list} tibble with:
 \itemize{
 \item Grouping columns
-\item Raw values for \code{indicator}
+\item Raw values for each indicator
 \item Median (\verb{<indicator>_med})
 \item MAD (\verb{<indicator>_mad})
 \item Outlier flag (\verb{<indicator>_outlier5std})
 }
 }
 \description{
-Flags extreme monthly values for a given immunization indicator using the Hampel method.
+Flags extreme monthly values for every indicator at district level using the
+Hampel method.
 }
 \details{
 \itemize{
-\item Aggregates by \code{year}, \code{month}, and administrative unit.
+\item Aggregates by \code{year}, \code{month}, and district.
 \item Computes median and MAD (Median Absolute Deviation).
-\item Flags outliers when values are ±5×MAD from median.
+\item Flags outliers when values are more than 5 MAD from the median.
 }
 }
 \examples{

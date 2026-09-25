@@ -200,7 +200,7 @@ summarise_completeness_ratio <- function(.data, plot_type = c('mmr', 'sbr', 'nn'
     crossing(
       ciratio = c(0.5, 1, 1.5, 2)
     ) %>%
-    pivot_longer(col = starts_with(plot_type)) %>%
+    pivot_longer(cols = starts_with(plot_type)) %>%
     mutate(
       rat = ((!!sym(mean_col) * 100) / (value / (ciratio - (ciratio - 1) * (lbr_mean / 100))))
     ) %>%

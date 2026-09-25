@@ -36,6 +36,13 @@ plot_line_graph(
 \item{hline}{Optional numeric value for a horizontal reference line.}
 
 \item{hline_style}{Style of the horizontal line.}
+
+\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts
+and sizes a user changed. Applied last, so it wins over the arguments
+above. Default is \code{NULL}.}
+
+\item{...}{Chart options (see \code{\link[=cd_chart_options]{cd_chart_options()}}) given by name, applied as
+with \code{options}.}
 }
 \value{
 A ggplot object.

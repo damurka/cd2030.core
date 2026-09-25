@@ -114,6 +114,9 @@ load_data <- function(path,
 #'
 #' @inheritParams load_data
 #' @param path Path to `.xlsx`, `.xls`, `.dta`, or `.rds`.
+#' @param create_cache Logical. For Excel/Stata inputs, whether to pass `path`
+#'   to the connection as its data path so a cache file is created or loaded
+#'   next to it. Default is `FALSE` (no cache file). Ignored for `.rds` inputs.
 #'
 #' @return A cache/connection object as returned by `init_CacheConnection()`.
 #'
@@ -324,6 +327,9 @@ load_excel_parts <- function(path,
 #' `.load_excel_data()` any more.
 #'
 #' @inheritParams load_data
+#' @param profile_name Optional. The resolved profile (indicator group) name,
+#'   used when resolving the indicator group (for example with
+#'   `indicator_group = "custom"`). Default is `NULL`.
 #' @return A tibble of class `cd_data`.
 #' @export
 merge_and_standardize <- function(parts_result,
@@ -390,8 +396,16 @@ merge_and_standardize <- function(parts_result,
 #' indicators are fully present, sets the global selection, and returns a `cd_data`.
 #'
 #' @param .data Tibble after cleaning/merge.
+#' @param class Optional character vector of extra classes to add in front of
+#'   `"cd_data"`. Default is `NULL`.
 #' @param indicator_group One of `"auto"`, `"vaccine"`, `"rmncah"`, `"custom"`.
+#' @param profile_name Optional. The resolved profile (indicator group) name,
+#'   used when resolving the indicator group (for example with
+#'   `indicator_group = "custom"`). Default is `NULL`.
 #' @param profile For `"custom"`, the group name to select (must exist). Ignored otherwise.
+#'   Stored as the `profile` attribute of the result.
+#' @param validate Logical. Whether to run the Tier B quality checks (district
+#'   consistency, month presence and month validity). Default is `TRUE`.
 #'
 #' @return A tibble with class `cd_data` and `attr(, "indicator_group")` set to
 #'   the resolved name. Also sets `options(cd2030.selected_group)` via [set_selected_group()].
@@ -822,29 +836,29 @@ standardize_data <- function(.data, call = caller_env()) {
 #' This function specifically targets and replaces diacritic characters commonly
 #'   found in various languages, along with some other symbols, converting them
 #'   to their simpler ASCII equivalents:
-#' - **Characters replaced with 'a'**: `á`, `ã`, `à`, `Á`, `À`, `Ã`, `â`, `Â`
-#' - **Characters replaced with 'e'**: `é`, `É`, `ê`, `è`, `È`, `Ê`, `&`
-#' - **Characters replaced with 'i'**: `í`, `Í`, `ï`, `ì`, `Ï`, `Ì`
-#' - **Characters replaced with 'o'**: `ó`, `ö`, `õ`, `ò`, `Ó`, `Õ`, `Ò`, `ô`, `Ô`, `Ö`, `¢`
-#' - **Characters replaced with 'u'**: `ú`, `ù`, `û`, `ü`, `Ù`, `Ú`, `Ü`, `Û`
-#' - **Character replaced with 'n'**: `ñ`
+#' - **Characters replaced with 'a'**: `?`, `?`, `?`, `?`, `?`, `?`, `?`, `?`
+#' - **Characters replaced with 'e'**: `?`, `?`, `?`, `?`, `?`, `?`, `&`
+#' - **Characters replaced with 'i'**: `?`, `?`, `?`, `?`, `?`, `?`
+#' - **Characters replaced with 'o'**: `?`, `?`, `?`, `?`, `?`, `?`, `?`, `?`, `?`, `?`, `?`
+#' - **Characters replaced with 'u'**: `?`, `?`, `?`, `?`, `?`, `?`, `?`, `?`
+#' - **Character replaced with 'n'**: `?`
 #'
 #' @return A character string or vector of character strings with the special
 #' characters replaced by their ASCII equivalents.
 #'
 #' @examples
-#' replace_special_chars("áéíóúñÁÉÍÓÚÑ") # Returns "aeiounAEIOUN"
-#' replace_special_chars("Hëllò Wörld") # Returns "Hello World"
+#' replace_special_chars("????????????") # Returns "aeiounAEIOUN"
+#' replace_special_chars("H?ll? W?rld") # Returns "Hello World"
 #'
 #' @noRd
 replace_special_chars <- function(text) {
   str_replace_all(text, c(
-    "[\u00E1\u00E3\u00E0\u00C1\u00C0\u00C3\u00E2\u00C2]" = "a", # áãàÁÀÃâÂ
-    "[\u00E9\u00C9\u00EA\u00E8\u00C8\u00CA&]" = "e", # éÉêèÈÊ
-    "[\u00ED\u00CD\u00EF\u00EC\u00CF\u00CC]" = "i", # íÍïìÏÌ
-    "[\u00F3\u00F6\u00F5\u00F2\u00D3\u00D5\u00D2\u00F4\u00D4\u00D6\u00A2]" = "o", # óöõòÓÕÒôÔÖ¢
-    "[\u00FA\u00F9\u00FB\u00FC\u00D9\u00DA\u00DC\u00DB]" = "u", # úùûüÙÚÜÛ
-    "\u00F1" = "n" # ñ
+    "[\u00E1\u00E3\u00E0\u00C1\u00C0\u00C3\u00E2\u00C2]" = "a", # ????????
+    "[\u00E9\u00C9\u00EA\u00E8\u00C8\u00CA&]" = "e", # ??????
+    "[\u00ED\u00CD\u00EF\u00EC\u00CF\u00CC]" = "i", # ??????
+    "[\u00F3\u00F6\u00F5\u00F2\u00D3\u00D5\u00D2\u00F4\u00D4\u00D6\u00A2]" = "o", # ???????????
+    "[\u00FA\u00F9\u00FB\u00FC\u00D9\u00DA\u00DC\u00DB]" = "u", # ????????
+    "\u00F1" = "n" # ?
   ))
 }
 
@@ -1030,7 +1044,7 @@ generate_admin1_keys <- function(admin1_names) {
     return(list(name = NULL, value = NULL, needs_registration = FALSE))
   }
 
-  # string → name only (no registration)
+  # string -> name only (no registration)
   if (rlang::is_string(profile)) {
     return(list(name = profile, value = NULL, needs_registration = FALSE))
   }
@@ -1044,7 +1058,7 @@ generate_admin1_keys <- function(admin1_names) {
       cd_abort(c("x" = "{.arg profile$name} must be a non-empty string"))
     }
     if (!is.list(val) || !rlang::is_named(val)) {
-      cd_abort(c("x" = "{.arg profile$value} must be a named list of categories → character vectors"))
+      cd_abort(c("x" = "{.arg profile$value} must be a named list of categories \u2192 character vectors"))
     }
     bad <- purrr::map_lgl(val, ~ !is.character(.x) || anyNA(.x))
     if (any(bad)) {

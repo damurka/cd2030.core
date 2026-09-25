@@ -51,7 +51,7 @@ plot.cd_threshold <- function(x, title = NULL, x_axis = NULL, y_axis = NULL, leg
   )
 
   rate <- if (indicator_group == 'dropout') 'rate' else 'coverage'
-  sign <- if (indicator_group == 'dropout') '<' else '≥'
+  sign <- if (indicator_group == 'dropout') '<' else '\u2265'
 
   default_title <- if (is.null(region)) {
     str_glue('Percentage of {pretty_admin} with {pretty_group} {rate} {sign} {coverage}%')

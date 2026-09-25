@@ -10,6 +10,9 @@
 #' @param title Character. The main title for the plot. Defaults to a title based on `x_var` and `y_var`.
 #' @param x_label Character. Label for the x-axis. Defaults to the value of `x_var`.
 #' @param y_label Character. Label for the y-axis. Defaults to the value of `y_var`.
+#' @param legend Optional named list or vector overriding the legend labels.
+#'   Recognised names are `district`, `linear_fit` and `diagonale`; unnamed
+#'   entries keep their defaults. Default is `NULL`.
 #' @param call The calling environment.
 #' @param ... Additional arguments for customization, such as `size`, `color`, or `linetype`, for finer control over plot appearance.
 #'
@@ -74,7 +77,7 @@ plot_comparison.cd_data <- function(
       r_squared = round(summary(stats::lm(stats::as.formula(paste(y_var, "~", x_var)), data = cur_data()))$r.squared, 4),
       .by = year
     ) %>%
-    mutate(label = paste0("R² = ", r_squared))
+    mutate(label = paste0("R\u00b2 = ", r_squared))
 
 
   # Set default title and labels if not provided
@@ -146,6 +149,9 @@ plot_comparison.cd_data <- function(
 #' @param title Character. The title for the plot. Defaults to a title based on `x_var` and `y_var`.
 #' @param x_label Character. Label for the x-axis. Defaults to `x_var`.
 #' @param y_label Character. Label for the y-axis. Defaults to `y_var`.
+#' @param legend Optional named list or vector overriding the legend labels.
+#'   Recognised names are `district`, `linear_fit` and `diagonale`. Default is
+#'   `NULL`.
 #' @param call The calling environment, used for error handling. Default is `caller_env()`.
 #' @param ... Additional parameters for further customization, such as point size, line type, or color.
 #'

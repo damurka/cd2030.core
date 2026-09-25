@@ -16,8 +16,6 @@ filter_inequality(
 \item{indicator}{A character vector of health indicators to include (e.g., \code{"penta3"}, \code{"measles1"}).}
 
 \item{denominator}{A character vector of denominators to filter by (e.g., \code{"dhis2"}, \code{"anc1"}).}
-
-\item{...}{Not used}
 }
 \value{
 A tibble containing filtered subnational inequality metrics for

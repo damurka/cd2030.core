@@ -6,6 +6,10 @@
 \usage{
 is_maternal_indicator(indicator)
 }
+\arguments{
+\item{indicator}{Character. Indicator name(s) to check, for example
+\code{"anc1"}. Always \code{FALSE} unless the selected group is \code{"rmncah"}.}
+}
 \value{
 TRUE if and indicator is maternal
 }

@@ -12,6 +12,10 @@ save_dhis2_excel(.data, filename, last_org)
 
 \item{filename}{A string specifying the file path and name where the Excel
 workbook will be saved.}
+
+\item{last_org}{Character. Name of the lowest organisation-unit column (for
+example \code{"district"}). Used as the key header column on every sheet,
+followed by \code{year} and \code{month} where relevant.}
 }
 \value{
 Saves the workbook to the specified filename.

@@ -11,24 +11,17 @@ calculate_health_system_comparison(
 )
 }
 \arguments{
-\item{.data}{A data frame containing raw health system inputs including year,
-population, coverage, and facility indicators.}
+\item{.data}{A \code{cd_data} object containing raw health system inputs including
+year, population, and facility indicators.}
 
-\item{sbr}{Numeric. The stillbirth rate (default: 0.02).}
+\item{admin1_coverage_data}{A coverage data frame at admin level 1 (with
+\code{year}, \code{adminlevel_1} and \verb{cov_*} columns), such as the output of
+\code{\link[=calculate_indicator_coverage]{calculate_indicator_coverage()}} for \code{admin_level = "adminlevel_1"}. Its
+latest year defines the year kept in the result.}
 
-\item{nmr}{Numeric. The neonatal mortality rate (default: 0.025).}
-
-\item{pnmr}{Numeric. The post-neonatal mortality rate (default: 0.024).}
-
-\item{anc1survey}{Numeric. Survey-based ANC-1 coverage rate (default: 0.98).}
-
-\item{dpt1survey}{Numeric. Survey-based Penta-1 coverage rate (default: 0.97).}
-
-\item{survey_year}{Integer. The year of Penta-1 survey provided}
-
-\item{twin}{Numeric. The twin birth rate (default: 0.015).}
-
-\item{preg_loss}{Numeric. The pregnancy loss rate (default: 0.03).}
+\item{admin2_coverage_data}{A coverage data frame at district level (with
+\code{year}, \code{adminlevel_1}, \code{district} and \verb{cov_*} columns), such as the output
+of \code{\link[=calculate_indicator_coverage]{calculate_indicator_coverage()}} for \code{admin_level = "district"}.}
 }
 \value{
 A data frame with admin 1 and district metrics joined side by side for

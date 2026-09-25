@@ -8,7 +8,7 @@
 #'   include spatial geometry and metadata attributes (`indicator`, `palette`, `column`).
 #' @param title (Optional) A scalar character string to override the default plot title. Defaults to `NULL`.
 #' @param caption (Optional) A scalar character string to override the default plot caption. Defaults to `NULL`.
-#' @param legend_title (Optional) A scalar character string to override the default legend title. Defaults to `NULL`.
+#' @param legend (Optional) A scalar character string to override the default legend title. Defaults to `NULL`.
 #' @param ... Chart options by name (see [cd_chart_options()]); other arguments are ignored.
 #' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes the user changed. Applied last, so it wins over
 #'   `title` and the other arguments above. Any chart option can also be given by name in `...`.
@@ -21,7 +21,7 @@
 #' plot(
 #'   map_data,
 #'   title = "Penta 1 Coverage by Region",
-#'   legend_title = "Coverage (%)",
+#'   legend = "Coverage (%)",
 #'   caption = "Source: DHIS2 2024"
 #' )
 #' }

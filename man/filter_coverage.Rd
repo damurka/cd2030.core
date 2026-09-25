@@ -17,6 +17,11 @@ filter_coverage(
 \item{indicator}{Coverage indicators to include (e.g., \code{"penta3"}, \code{"measles1"}).}
 
 \item{denominator}{Denominator sources for coverage calculations (e.g., \code{"dhis2"}).}
+
+\item{region}{Name of the subnational unit (at the data's \code{admin_level}) to
+keep. Required for subnational data that was not already calculated for a
+single region; must be \code{NULL} for national data or data calculated for a
+region. Default is \code{NULL}.}
 }
 \value{
 A reshaped data frame with filtered indicators and denominators.

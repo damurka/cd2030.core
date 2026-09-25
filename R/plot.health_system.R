@@ -10,6 +10,8 @@
 #' @param y_axis (Optional) Custom label for the y-axis.
 #' @param caption (Optional) Custom caption text (R-squared will automatically be prepended to this).
 #' @param legend_labels (Optional) A named list to override default legend labels (keys: 'admin', 'linear').
+#' @param ... Chart options (see [cd_chart_options()]) given by name, applied as
+#'   with `options`.
 #'
 #' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
 #'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
@@ -140,6 +142,8 @@ plot.cd_health_system_comparison <- function(x,
 #' @param x_axis (Optional) Custom label for the x-axis.
 #' @param y_axis (Optional) Custom label for the y-axis.
 #' @param legend_labels (Optional) A named list to override default legend labels (e.g. for translation).
+#' @param ... Chart options (see [cd_chart_options()]) given by name, applied as
+#'   with `options`.
 #'
 #' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
 #'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.

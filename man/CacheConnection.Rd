@@ -1138,9 +1138,6 @@ Invisibly, TRUE when something changed.
 \if{html}{\out{<a id="method-CacheConnection-set_report_project"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_report_project}{}}}
 \subsection{Method \code{set_report_project()}}{
-The chart options that apply to one chart: the dataset's \code{"default"} options with the chart's own on top.
-
-
 Saves a report built in the report builder (see \code{\link[=export_report]{export_report()}}), or removes it.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_report_project(id, project)}\if{html}{\out{</div>}}
@@ -1149,16 +1146,11 @@ Saves a report built in the report builder (see \code{\link[=export_report]{expo
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{id}}{Character. A chart id (see \code{set_chart_options()}), or \code{NULL} for the defaults alone.}
-
 \item{\code{id}}{Character. The report's id.}
 
 \item{\code{project}}{A list: \code{name}, \code{design} and \code{blocks} (see \code{\link[=report_presets]{report_presets()}}), or \code{NULL} to remove the report.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A \code{\link[=cd_chart_options]{cd_chart_options()}} object (empty when nothing is stored).
 }
 }
 \if{html}{\out{<hr>}}
@@ -1205,10 +1197,21 @@ Saves a theme made from an Office file (see \code{\link[=report_theme_from_file]
 \if{html}{\out{<a id="method-CacheConnection-get_chart_options"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_chart_options}{}}}
 \subsection{Method \code{get_chart_options()}}{
+The chart options that apply to one chart: the dataset's \code{"default"} options with the chart's own on top.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_chart_options(id = NULL)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id}}{Character. A chart id (see \code{set_chart_options()}), or \code{NULL} for the defaults alone.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A \code{\link[=cd_chart_options]{cd_chart_options()}} object (empty when nothing is stored).
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-reset_chart_options"></a>}}

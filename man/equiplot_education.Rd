@@ -19,9 +19,32 @@ equiplot_education(
 )
 }
 \arguments{
+\item{.data}{Equity survey data with \code{year}, \code{level} and \verb{r_<indicator>}
+columns.}
+
+\item{indicator}{Character. The indicator to plot; its \verb{r_<indicator>} column
+is used.}
+
+\item{title, subtitle, caption}{Optional plot title, subtitle and caption.}
+
+\item{x_title}{Optional x-axis title. Defaults to the indicator name
+followed by "Coverage".}
+
+\item{legend_title}{Optional legend title. Defaults to a title describing the
+grouping (for example \code{"Area of residence"}).}
+
+\item{legend_labels}{Optional named vector or list mapping group names to
+display labels.}
+
+\item{dot_size}{Optional dot size, clamped to 1-5. Defaults to 4.}
+
+\item{...}{Chart options (see \code{\link[=cd_chart_options]{cd_chart_options()}}) given by name, applied as
+with \code{options}.}
+
 \item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
 arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
 }
 \description{
-A Specialized Dot Plot for Maternal Education Analysis
+Plots survey estimates of an indicator by year for each level of maternal
+education.
 }

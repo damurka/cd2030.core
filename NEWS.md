@@ -1,4 +1,14 @@
-# cd2030.core (development version)
+# cd2030.core 1.1.0
+
+* Report builder: standard reports rebuilt as blocks (`report_presets()`), exported to Word, PowerPoint and PDF
+  through datasuite.ui's report engine; `cd_report_context()` is a dataset's report context.
+* The Countdown pages every Countdown app shares (data quality, denominators, coverage, equity, the Load Data
+  wizard, filters, nav sections and `cd_app()`) moved here from the apps, built on datasuite.ui.
+* Chart options (`cd_chart_options()` and friends) and the report engine now live in datasuite.ui; they are
+  imported and re-exported here, so existing code keeps working.
+* Countdown's translations (indicator names, chart titles, page texts) are in `inst/translation/cd2030.json`.
+
+# cd2030.core 1.0.0
 * Initial Release
 * `CacheConnection` now names a file-backed cache after its source file's
   basename (`<stem>.rds`) instead of `<country>_<timestamp>.rds`, and loads

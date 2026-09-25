@@ -14,12 +14,12 @@ include spatial geometry and metadata attributes (\code{indicator}, \code{palett
 
 \item{caption}{(Optional) A scalar character string to override the default plot caption. Defaults to \code{NULL}.}
 
+\item{legend}{(Optional) A scalar character string to override the default legend title. Defaults to \code{NULL}.}
+
 \item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}); other arguments are ignored.}
 
 \item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes the user changed. Applied last, so it wins over
 \code{title} and the other arguments above. Any chart option can also be given by name in \code{...}.}
-
-\item{legend_title}{(Optional) A scalar character string to override the default legend title. Defaults to \code{NULL}.}
 }
 \value{
 A \code{ggplot} object visualizing the spatial distribution of the selected indicator by region and year.
@@ -35,7 +35,7 @@ object, typically filtered for a specific indicator and denominator.
 plot(
   map_data,
   title = "Penta 1 Coverage by Region",
-  legend_title = "Coverage (\%)",
+  legend = "Coverage (\%)",
   caption = "Source: DHIS2 2024"
 )
 }

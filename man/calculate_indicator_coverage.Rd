@@ -31,14 +31,36 @@ This dataset must include columns for key population and vaccination metrics.}
 \item{admin_level}{Character. Specifies the administrative level for calculations.
 Options include:\verb{"national", "adminlevel_1"}, and \code{"district"}.}
 
+\item{derivation_population}{Character. The population column used as the base
+for the DTP1/ANC1-derived denominators (\verb{*derived} columns). One of
+\code{"totbirths_dhis2"}, \code{"totlivebirths_dhis2"}, \code{"totunder1_dhis2"},
+\code{"totpop_dhis2"}, \code{"un_population"}, \code{"un_births"} or \code{"un_under1"}.
+Defaults to the first.}
+
 \item{un_estimates}{Optional. A tibble containing UN population estimates. Required
 for national-level calculations.}
+
+\item{survey_estimates}{Optional. A data frame of subnational survey estimates
+(\verb{r_*} columns such as \code{r_anc1} and \code{r_penta1}, and optionally mortality
+rates). Used for subnational levels to replace the default rates below where
+survey values are available. Default is \code{NULL}.}
+
+\item{subnational_map}{Optional. A data frame mapping survey regions to
+\code{adminlevel_1} units, used when joining \code{survey_estimates}. Default is \code{NULL}.}
 
 \item{anc1survey}{Numeric. Survey-derived coverage rate for ANC-1 (antenatal care, first visit). Default is \code{0.98}.}
 
 \item{dpt1survey}{Numeric. Survey-derived coverage rate for Penta-1 (DPT1 vaccination). Default is \code{0.97}.}
 
 \item{survey_year}{Interger. The year of Penta-1 survey provided}
+
+\item{region}{Optional name of an \code{adminlevel_1} region to restrict the
+calculation to. Only valid with \code{admin_level = "adminlevel_1"}. Default is
+\code{NULL}.}
+
+\item{show_district}{Logical. When \code{region} is supplied, whether to return
+results by district within that region (\code{TRUE}, the default) or aggregated
+for the region.}
 
 \item{sbr}{Numeric. The stillbirth rate. Default is \code{0.02}.}
 

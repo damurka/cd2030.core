@@ -10,8 +10,25 @@
 #'   This dataset must include columns for key population and vaccination metrics.
 #' @param admin_level Character. Specifies the administrative level for calculations.
 #'   Options include:`"national", "adminlevel_1"`, and `"district"`.
+#' @param derivation_population Character. The population column used as the base
+#'   for the DTP1/ANC1-derived denominators (`*derived` columns). One of
+#'   `"totbirths_dhis2"`, `"totlivebirths_dhis2"`, `"totunder1_dhis2"`,
+#'   `"totpop_dhis2"`, `"un_population"`, `"un_births"` or `"un_under1"`.
+#'   Defaults to the first.
 #' @param un_estimates Optional. A tibble containing UN population estimates. Required
 #'   for national-level calculations.
+#' @param survey_estimates Optional. A data frame of subnational survey estimates
+#'   (`r_*` columns such as `r_anc1` and `r_penta1`, and optionally mortality
+#'   rates). Used for subnational levels to replace the default rates below where
+#'   survey values are available. Default is `NULL`.
+#' @param subnational_map Optional. A data frame mapping survey regions to
+#'   `adminlevel_1` units, used when joining `survey_estimates`. Default is `NULL`.
+#' @param region Optional name of an `adminlevel_1` region to restrict the
+#'   calculation to. Only valid with `admin_level = "adminlevel_1"`. Default is
+#'   `NULL`.
+#' @param show_district Logical. When `region` is supplied, whether to return
+#'   results by district within that region (`TRUE`, the default) or aggregated
+#'   for the region.
 #' @param sbr Numeric. The stillbirth rate. Default is `0.02`.
 #' @param nmr Numeric. Neonatal mortality rate. Default is `0.025`.
 #' @param pnmr Numeric. Post-neonatal mortality rate. Default is `0.024`.

@@ -17,7 +17,16 @@
 #'   - `"ipd_rr"`: Inpatient admissions
 #' @param threshold Numeric value (default = 90). Used only in `"heat_map"` mode to define
 #'   the boundary for high reporting rates.
-#' @param ... Reserved for future use.
+#' @param title Optional plot title. Defaults to a title naming the unit and
+#'   region.
+#' @param x_axis,y_axis Optional x- and y-axis titles. Default to labels suited
+#'   to `plot_type`.
+#' @param legend Optional legend title. Defaults to a label suited to
+#'   `plot_type`.
+#' @param ... Chart options (see [cd_chart_options()]) given by name, applied as
+#'   with `options`.
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+#'   arguments above; the plot's own defaults are used for whatever it does not set.
 #'
 #' @details
 #' Only subnational objects are accepted. If the data was computed at `"adminlevel_1"` with a
@@ -174,6 +183,15 @@ plot.cd_average_reporting_rate <- function(x,
 #'
 #' @param x A `cd_district_reporting_rate` data frame containing reporting rate data,
 #'   processed by [calculate_district_reporting_rate()].
+#' @param title Optional plot title. Defaults to a title that includes the
+#'   reporting-rate threshold.
+#' @param x_axis,y_axis Optional x- and y-axis titles. By default the x axis
+#'   has no title and the y axis is labelled with a percent sign.
+#' @param caption Optional plot caption. Defaults to a note stating the
+#'   low-reporting threshold.
+#' @param indicator_labels Optional named character vector of panel titles,
+#'   keyed by short indicator name (`anc`, `idelv`, `vacc`, `pnc`, `opd`,
+#'   `ipd`). Supplied entries replace the defaults.
 #' @param ... Additional parameters passed to the plotting function.
 #'
 #' @details

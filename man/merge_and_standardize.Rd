@@ -31,6 +31,10 @@ Default \code{"auto"}.}
 
 For \code{"custom"}, the profile must resolve to \strong{one} concrete name.}
 
+\item{profile_name}{Optional. The resolved profile (indicator group) name,
+used when resolving the indicator group (for example with
+\code{indicator_group = "custom"}). Default is \code{NULL}.}
+
 \item{validate}{Logical. Whether to run Tier B quality checks (district-name
 consistency, missing months, unrecognized months -- see
 \verb{R/0_data_quality_checks.R}) as part of loading. Default \code{TRUE}, matching

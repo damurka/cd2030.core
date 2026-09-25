@@ -7,7 +7,9 @@
 calculate_coverage(.data, survey_data, wuenic_data, subnational_map = NULL)
 }
 \arguments{
-\item{.data}{A \code{cd_data} data frame with DHIS2 coverage metrics.}
+\item{.data}{A \code{cd_indicator_coverage} data frame with DHIS2 coverage metrics
+(as returned by \code{\link[=calculate_indicator_coverage]{calculate_indicator_coverage()}}). Its \code{admin_level} and
+\code{region} attributes determine the level of the result.}
 
 \item{survey_data}{A data frame containing survey-based immunization estimates.}
 
@@ -15,28 +17,6 @@ calculate_coverage(.data, survey_data, wuenic_data, subnational_map = NULL)
 
 \item{subnational_map}{(Optional) A data frame mapping subnational regions to
 parent regions, required for subnational-level analyses. Default is \code{NULL}.}
-
-\item{admin_level}{Character. Specifies the administrative level for calculations.
-Options include:\verb{"national", "adminlevel_1"}, and \code{"district"}.}
-
-\item{un_estimates}{Optional. A tibble containing UN population estimates. Required
-for national-level calculations.}
-
-\item{sbr}{Numeric. The stillbirth rate. Default is \code{0.02}.}
-
-\item{nmr}{Numeric. Neonatal mortality rate. Default is \code{0.025}.}
-
-\item{pnmr}{Numeric. Post-neonatal mortality rate. Default is \code{0.024}.}
-
-\item{anc1survey}{Numeric. Survey-derived coverage rate for ANC-1 (antenatal care, first visit). Default is \code{0.98}.}
-
-\item{dpt1survey}{Numeric. Survey-derived coverage rate for Penta-1 (DPT1 vaccination). Default is \code{0.97}.}
-
-\item{survey_year}{Integer. The year of Penta-1 survey provided}
-
-\item{preg_loss}{Numeric. Pregnancy loss rate}
-
-\item{twin}{Numeric. Twin birth rate. Default is \code{0.015}.}
 }
 \value{
 A \code{cd_coverage} data frame containing harmonized coverage estimates

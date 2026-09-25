@@ -35,7 +35,8 @@ The function:
 }
 \examples{
 \dontrun{
-filtered <- filter_mortality_summary(mortality_data, "UGA", indicator = "mmr", plot_year = 2020:2022)
+filtered <- filter_mortality_summary(mortality_data, "UGA", indicator = "mmr",
+                                     plot_year = 2020:2022)
 plot(filtered)
 }
 

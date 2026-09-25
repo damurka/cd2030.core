@@ -69,6 +69,8 @@ calculate_threshold <- function(.data,
 #' @param .data An object of class `cd_indicator_coverage`.
 #' @param indicator A string specifying the indicator.
 #' @param denominator A string. The denominator used in coverage calculation.
+#' @param threshold Numeric. Minimum coverage (in percent, compared after
+#'   rounding) an area must reach to be kept. Default is `90`.
 #'
 #' @return A filtered data frame retaining regions meeting the threshold.
 #'

@@ -46,6 +46,9 @@ save_data <- function(.data, file = "master_dataset.dta") {
 #'    `population`, `completeness`, and `service` datasets.
 #' @param filename A string specifying the file path and name where the Excel
 #'   workbook will be saved.
+#' @param last_org Character. Name of the lowest organisation-unit column (for
+#'   example `"district"`). Used as the key header column on every sheet,
+#'   followed by `year` and `month` where relevant.
 #'
 #' @details
 #' This function generates an Excel workbook containing multiple sheets for

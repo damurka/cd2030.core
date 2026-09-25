@@ -22,7 +22,7 @@ cd_app <- function(app_name, app_version, theme, nav_sections, registry, i18n, l
     start_tab = "upload_data", open_tabs = c("introduction", "upload_data"),
     # every page header shows the denominators in use
     page_header_extra = cd_denominator_header,
-    data = function(input, output, session) {
+    data_server = function(input, output, session) {
       introduction_server("introduction", selected_language = reactive(input$selected_language))
       loaded <- upload_server("upload_data", i18n, selected_file, active = reactive(identical(input$tabs, "upload_data")))
       cache <- loaded$cache

@@ -10,6 +10,14 @@
 #'   - `"heat_map"`: Year-by-unit heat map of all or selected indicators.
 #' @param indicator Optional. Specific indicator name (e.g., `"penta3"`). Required
 #'    for `"region"` view.
+#' @param threshold Numeric. Upper cut-off (in percent) of the middle colour
+#'   band; values above it are shown as good. Default is `90`.
+#' @param title Optional plot title. Defaults to a title based on
+#'   `selection_type`.
+#' @param x_axis,y_axis Optional x- and y-axis titles. Default to `"Year"` and
+#'   a "Percent non-outliers" label.
+#' @param legend Optional legend title. Defaults to a "Percent non-outliers"
+#'   label.
 #' @param ... Not used.
 #'
 #' @details
@@ -194,11 +202,21 @@ plot.cd_outlier <- function(x,
 #' with outlier highlights.
 #'
 #' @param x A `cd_outlier_list` object from `list_outlier_units()`.
+#' @param indicator The indicator to plot (for example `"penta1"`).
+#' @param year Optional single year to plot. If `NULL` (the default), all
+#'   years are shown.
 #' @param region The name of the unit to plot.
+#' @param title Optional plot title. Defaults to a title naming the indicator,
+#'   unit and year.
+#' @param x_axis,y_axis Optional x- and y-axis titles. Default to `"Month"` and
+#'   the indicator name.
+#' @param legend Optional legend title. Default is `NULL` (no title).
+#' @param label Optional named character vector overriding the legend labels.
+#'   Recognised names are `reported`, `median`, `bounds` and `outliers`.
 #' @param ... Not used.
 #'
 #' @details
-#' - Plots observed values, median trend, and 5×MAD range.
+#' - Plots observed values, median trend, and 5xMAD range.
 #' - Flags outliers in red.
 #'
 #' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
@@ -266,14 +284,14 @@ plot.cd_outlier_list <- function(x,
   default_labels <- c(
     reported = "Reported value",
     median   = "Median",
-    bounds   = "Median ± 5×MAD",
+    bounds   = "Median \u00b1 5\u00d7MAD",
     outliers = "Outliers"
   )
 
   labels_map <- default_labels
   if (!is.null(label)) {
     # label should be a named character vector, e.g.
-    # c(reported="Valeur rapportée", median="Médiane", bounds="Médiane ± 5×MAD", outliers="Valeurs extrêmes")
+    # c(reported="Valeur rapport?e", median="M?diane", bounds="M?diane ? 5xMAD", outliers="Valeurs extr?mes")
     labels_map[names(label)] <- label
   }
 

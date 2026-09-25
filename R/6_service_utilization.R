@@ -92,6 +92,9 @@ compute_service_utilization <- function(.data, admin_level = c('national', 'admi
 #' @param indicator Character. Service indicator to map, either `"ipd"` or `"opd"`. Defaults to `"ipd"`.
 #' @param plot_years Optional. Integer or vector of years to include.
 #' @param subnational_map Optional. A mapping data frame to link `NAME_1` from the shapefile to internal admin labels.
+#' @param palette Character. RColorBrewer palette name stored on the result for
+#'   the map fill: one of `"Purples"` (default), `"Blues"`, `"Greens"`,
+#'   `"Reds"` or `"YlGnBu"`.
 #'
 #' @return A tibble of class `cd_service_utilization_prepared`, ready for faceted spatial plotting.
 #'

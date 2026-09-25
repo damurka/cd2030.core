@@ -139,7 +139,6 @@ calculate_inequality <- function(subnational_data,
 #' @param .data A `cd_inequality` tibble created by `calculate_inequality`.
 #' @param indicator A character vector of health indicators to include (e.g., `"penta3"`, `"measles1"`).
 #' @param denominator A character vector of denominators to filter by (e.g., `"dhis2"`, `"anc1"`).
-#' @param ... Not used
 #'
 #' @return A tibble containing filtered subnational inequality metrics for
 #'   the specified indicators and denominators.

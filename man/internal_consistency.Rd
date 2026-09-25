@@ -62,6 +62,10 @@ plot_comparison_opv1_opv3(
 
 \item{y_label}{Character. Label for the y-axis. Defaults to \code{y_var}.}
 
+\item{legend}{Optional named list or vector overriding the legend labels.
+Recognised names are \code{district}, \code{linear_fit} and \code{diagonale}. Default is
+\code{NULL}.}
+
 \item{call}{The calling environment, used for error handling. Default is \code{caller_env()}.}
 
 \item{...}{Additional parameters for further customization, such as point size, line type, or color.}

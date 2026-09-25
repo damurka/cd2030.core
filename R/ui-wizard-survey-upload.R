@@ -97,7 +97,7 @@ survey_upload_server <- function(id, cache, i18n) {
         output$national_error <- renderUI(NULL)
 
         tryCatch({
-          cd2030.core:::check_file_path(file_path)
+          check_file_path(file_path)
           survdata <- load_survey_data(path = file_path, country_iso = country_iso())
           cache()$set_national_survey(survdata)
           national_filename(file_name)
@@ -120,7 +120,7 @@ survey_upload_server <- function(id, cache, i18n) {
         output$regional_error <- renderUI(NULL)
 
         tryCatch({
-          cd2030.core:::check_file_path(file_path)
+          check_file_path(file_path)
           gregion <- load_survey_data(path = file_path, country_iso = country_iso(), admin_level = "adminlevel_1")
           cache()$set_regional_survey(gregion)
           regional_filename(file_name)
@@ -143,7 +143,7 @@ survey_upload_server <- function(id, cache, i18n) {
         output$area_error <- renderUI(NULL)
 
         tryCatch({
-          cd2030.core:::check_file_path(file_path)
+          check_file_path(file_path)
           area <- load_equity_data(path = file_path, country_iso = country_iso())
           cache()$set_area_survey(area)
           area_filename(file_name)
@@ -166,7 +166,7 @@ survey_upload_server <- function(id, cache, i18n) {
         output$education_error <- renderUI(NULL)
 
         tryCatch({
-          cd2030.core:::check_file_path(file_path)
+          check_file_path(file_path)
           educ <- load_equity_data(path = file_path, country_iso = country_iso())
           cache()$set_education_survey(educ)
           education_filename(file_name)
@@ -189,7 +189,7 @@ survey_upload_server <- function(id, cache, i18n) {
         output$wiq_error <- renderUI(NULL)
 
         tryCatch({
-          cd2030.core:::check_file_path(file_path)
+          check_file_path(file_path)
           wiq <- load_equity_data(path = file_path, country_iso = country_iso())
           cache()$set_wiq_survey(wiq)
           wiq_filename(file_name)

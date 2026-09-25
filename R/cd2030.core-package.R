@@ -5,6 +5,8 @@
 #' @import officer
 #' @import rlang
 #' @import tidyr
+#' @importFrom stats as.formula lm median na.omit quantile reorder setNames
+#' @importFrom utils modifyList
 "_PACKAGE"
 
 ## usethis namespace: start

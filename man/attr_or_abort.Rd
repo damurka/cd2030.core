@@ -20,11 +20,11 @@ raises an error with a clear message. Intended for internal use to enforce
 required metadata on structured objects.
 }
 \examples{
-obj <- structure(list(a = 1), attr = list(my_attr = "value"))
-attr_or_abort(obj, "my_attr")
+obj <- structure(list(a = 1), my_attr = "value")
+cd2030.core:::attr_or_abort(obj, "my_attr")
 #> "value"
 
-# attr_or_abort(obj, "missing") would throw an error
+# cd2030.core:::attr_or_abort(obj, "missing") would throw an error
 
 }
 \keyword{internal}

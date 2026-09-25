@@ -20,6 +20,10 @@ prepare_mapping_service_utlization(
 \item{plot_years}{Optional. Integer or vector of years to include.}
 
 \item{subnational_map}{Optional. A mapping data frame to link \code{NAME_1} from the shapefile to internal admin labels.}
+
+\item{palette}{Character. RColorBrewer palette name stored on the result for
+the map fill: one of \code{"Purples"} (default), \code{"Blues"}, \code{"Greens"},
+\code{"Reds"} or \code{"YlGnBu"}.}
 }
 \value{
 A tibble of class \code{cd_service_utilization_prepared}, ready for faceted spatial plotting.

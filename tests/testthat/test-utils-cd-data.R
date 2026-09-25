@@ -32,12 +32,12 @@ test_that("get_country_name fails if class is wrong", {
 
 test_that("get_indicator_groups returns expected group names", {
   result <- get_indicator_groups()
-  expect_named(result, c("anc", "idelv", "vacc"))
+  expect_named(result, c("anc", "idelv", "vacc", "opd", "ipd"))
   expect_true("penta1" %in% result$vacc)
 })
 
 test_that("get_indicator_group_names returns group names", {
-  expect_equal(get_indicator_group_names(), c("anc", "idelv", "vacc"))
+  expect_equal(get_indicator_group_names(), c("anc", "idelv", "vacc", "opd", "ipd"))
 })
 
 test_that("get_all_indicators flattens all indicators", {

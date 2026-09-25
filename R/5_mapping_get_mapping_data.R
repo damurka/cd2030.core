@@ -4,42 +4,17 @@
 #' of health indicators. It computes subnational indicator coverage using
 #' UN estimates and survey rates, and joins results with geographic features.
 #'
-#' @param .data A data frame of input data containing model output or estimates.
-#'        Must include metadata attribute `iso3` (ISO3 country code).
-#' @param admin_level Character. The subnational level of analysis.
-#'        Must be one of `"adminlevel_1"` (default) or `"district"`.
-#' @param un_estimates A data frame of UN estimates including population and birth rates.
-#' @param sbr Numeric. Stillbirth rate. Default = `0.02`.
-#' @param nmr Numeric. Neonatal mortality rate. Default = `0.025`.
-#' @param pnmr Numeric. Post-neonatal mortality rate. Default = `0.024`.
-#' @param anc1survey Numeric. Survey coverage for ANC1. Default = `0.98`.
-#' @param dpt1survey Numeric. Survey coverage for Penta1. Default = `0.97`.
-#' @param survey_year Integer. Year of survey used in indicator estimation. Default = `2019`.
-#' @param twin Numeric. Twin birth rate. Default = `0.015`.
-#' @param preg_loss Numeric. Pregnancy loss rate. Default = `0.03`.
+#' @param .data A `cd_population` object (for example the output of
+#'        [calculate_indicator_coverage()]) calculated at `admin_level = "adminlevel_1"`.
+#'        Must include metadata attributes `iso3` (ISO3 country code) and `admin_level`.
 #' @param subnational_map Optional. A data frame to join with the shapefile to add metadata.
 #'
 #' @return A `tibble` of class `"cd_mapping"` that combines the input data with shapefile geometries.
 #'
 #' @examples
 #' \dontrun{
-#' rates <- list(
-#'   sbr = 0.02, nmr = 0.03, pnmr = 0.02, anc1 = 0.8, penta1 = 0.75,
-#'   twin_rate = 0.015, preg_loss = 0.03
-#' )
-#'
-#' get_mapping_data(
-#'   .data = data,
-#'   un_estimates = un_estimates,
-#'   sbr = rates$sbr,
-#'   nmr = rates$nmr,
-#'   pnmr = rates$pnmr,
-#'   anc1survey = rates$anc1,
-#'   dpt1survey = rates$penta1,
-#'   survey_year = 2021,
-#'   twin = rates$twin_rate,
-#'   preg_loss = rates$preg_loss
-#' )
+#' coverage <- calculate_indicator_coverage(data, admin_level = "adminlevel_1")
+#' get_mapping_data(coverage)
 #' }
 #'
 #' @export

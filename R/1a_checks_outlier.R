@@ -21,7 +21,7 @@
 #'   - `mean_out_all`: average non-outlier rate across all indicators
 #'   - `mean_out_four`: average across a subset of key indicators (excluding IPD)
 #'
-#' Values are expressed as percentages (0–100).
+#' Values are expressed as percentages (0-100).
 #'
 #'  @return A tibble of class `cd_outlier`.
 #'
@@ -120,23 +120,21 @@ calculate_district_outlier_summary <- function(.data, region = NULL) {
   )
 }
 
-#' Identify Monthly Outliers for a Single Indicator
+#' Identify Monthly Outliers by District
 #'
-#' Flags extreme monthly values for a given immunization indicator using the Hampel method.
+#' Flags extreme monthly values for every indicator at district level using the
+#' Hampel method.
 #'
 #' @param .data A `cd_data` object with monthly data.
-#' @param indicator A single indicator name to assess.
-#' @param admin_level `'adminlevel_1'` or `'district'`.
-#' @param region Optional. Filter results to a specific `adminlevel_1`.
 #'
 #' @details
-#' - Aggregates by `year`, `month`, and administrative unit.
+#' - Aggregates by `year`, `month`, and district.
 #' - Computes median and MAD (Median Absolute Deviation).
-#' - Flags outliers when values are ±5×MAD from median.
+#' - Flags outliers when values are more than 5 MAD from the median.
 #'
 #' @return A `cd_outlier_list` tibble with:
 #' - Grouping columns
-#' - Raw values for `indicator`
+#' - Raw values for each indicator
 #' - Median (`<indicator>_med`)
 #' - MAD (`<indicator>_mad`)
 #' - Outlier flag (`<indicator>_outlier5std`)

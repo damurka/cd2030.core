@@ -30,6 +30,10 @@
 
 \item{y_label}{Character. Label for the y-axis. Defaults to the value of \code{y_var}.}
 
+\item{legend}{Optional named list or vector overriding the legend labels.
+Recognised names are \code{district}, \code{linear_fit} and \code{diagonale}; unnamed
+entries keep their defaults. Default is \code{NULL}.}
+
 \item{call}{The calling environment.}
 
 \item{...}{Additional arguments for customization, such as \code{size}, \code{color}, or \code{linetype}, for finer control over plot appearance.}

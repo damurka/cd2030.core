@@ -17,6 +17,9 @@ filter_high_performers(
 \item{indicator}{A string specifying the indicator.}
 
 \item{denominator}{A string. The denominator used in coverage calculation.}
+
+\item{threshold}{Numeric. Minimum coverage (in percent, compared after
+rounding) an area must reach to be kept. Default is \code{90}.}
 }
 \value{
 A filtered data frame retaining regions meeting the threshold.

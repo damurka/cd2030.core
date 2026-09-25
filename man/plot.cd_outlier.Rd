@@ -30,6 +30,18 @@
 \item{indicator}{Optional. Specific indicator name (e.g., \code{"penta3"}). Required
 for \code{"region"} view.}
 
+\item{threshold}{Numeric. Upper cut-off (in percent) of the middle colour
+band; values above it are shown as good. Default is \code{90}.}
+
+\item{title}{Optional plot title. Defaults to a title based on
+\code{selection_type}.}
+
+\item{x_axis, y_axis}{Optional x- and y-axis titles. Default to \code{"Year"} and
+a "Percent non-outliers" label.}
+
+\item{legend}{Optional legend title. Defaults to a "Percent non-outliers"
+label.}
+
 \item{...}{Not used.}
 
 \item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the

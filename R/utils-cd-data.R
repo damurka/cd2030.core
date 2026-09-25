@@ -10,11 +10,11 @@
 #' @return The value of the specified attribute.
 #'
 #' @examples
-#' obj <- structure(list(a = 1), attr = list(my_attr = "value"))
-#' attr_or_abort(obj, "my_attr")
+#' obj <- structure(list(a = 1), my_attr = "value")
+#' cd2030.core:::attr_or_abort(obj, "my_attr")
 #' #> "value"
 #'
-#' # attr_or_abort(obj, "missing") would throw an error
+#' # cd2030.core:::attr_or_abort(obj, "missing") would throw an error
 #'
 #' @keywords internal
 attr_or_abort <- function(.data, attr_name) {
@@ -35,11 +35,11 @@ attr_or_abort <- function(.data, attr_name) {
 #' @return The value of the specified attribute, or `NULL` if not present.
 #'
 #' @examples
-#' obj <- structure(list(a = 1), attr = list(my_attr = "value"))
-#' attr_or_null(obj, "my_attr")
+#' obj <- structure(list(a = 1), my_attr = "value")
+#' cd2030.core:::attr_or_null(obj, "my_attr")
 #' #> "value"
 #'
-#' attr_or_null(obj, "missing")
+#' cd2030.core:::attr_or_null(obj, "missing")
 #' #> NULL
 #'
 #' @keywords internal
@@ -74,6 +74,9 @@ get_country_iso3 <- function(.data) {
 #' Detemine if an indicator is maternal indicator
 #'
 #' Default grouping of indicators used in CD2030 coverage framework
+#'
+#' @param indicator Character. Indicator name(s) to check, for example
+#'   `"anc1"`. Always `FALSE` unless the selected group is `"rmncah"`.
 #'
 #' @return TRUE if and indicator is maternal
 #'

@@ -16,9 +16,20 @@ new_countdown(
 \arguments{
 \item{.data}{Tibble after cleaning/merge.}
 
+\item{class}{Optional character vector of extra classes to add in front of
+\code{"cd_data"}. Default is \code{NULL}.}
+
 \item{indicator_group}{One of \code{"auto"}, \code{"vaccine"}, \code{"rmncah"}, \code{"custom"}.}
 
-\item{profile}{For \code{"custom"}, the group name to select (must exist). Ignored otherwise.}
+\item{profile_name}{Optional. The resolved profile (indicator group) name,
+used when resolving the indicator group (for example with
+\code{indicator_group = "custom"}). Default is \code{NULL}.}
+
+\item{profile}{For \code{"custom"}, the group name to select (must exist). Ignored otherwise.
+Stored as the \code{profile} attribute of the result.}
+
+\item{validate}{Logical. Whether to run the Tier B quality checks (district
+consistency, month presence and month validity). Default is \code{TRUE}.}
 }
 \value{
 A tibble with class \code{cd_data} and \code{attr(, "indicator_group")} set to

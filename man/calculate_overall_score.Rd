@@ -19,6 +19,15 @@ including annual reporting rates, completeness, and consistency indicators.}
 \item{threshold}{The data reporting rate threshold.}
 
 \item{ratio_pairs}{description}
+
+\item{region}{Optional name of an \code{adminlevel_1} region. If supplied, all
+metrics are calculated for that region only. Default is \code{NULL}.}
+
+\item{labels}{Optional named list overriding the default row labels. May
+contain \code{header} (\code{h1}, \code{h2}, \code{h3}), \code{section} (\code{r1a}, \code{r1b}, \code{r1c}, \code{r2a},
+\code{r2b}, \code{score}) and \code{metric} (for example \code{r_anc1_penta1},
+\code{ok_anc1_penta1}) sub-lists; only the supplied entries are replaced.
+Default is \code{NULL}.}
 }
 \value{
 A tibble with calculated scores for each metric, including

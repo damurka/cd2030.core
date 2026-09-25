@@ -1,4 +1,4 @@
-^cd2030\.rmch\.Rproj$
+^cd2030\.core\.Rproj$
 ^\.Rproj\.user$
 ^LICENSE\.md$
 ^\.github$
@@ -8,3 +8,5 @@
 ^pkgdown$
 ^CRAN-SUBMISSION$
 ^cran-comments\.md$
+^\.mcp\.json$
+^\.claude$

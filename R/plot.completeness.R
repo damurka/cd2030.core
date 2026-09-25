@@ -2,9 +2,17 @@
 #'
 #' This method visualizes missing results for immunization indicators
 #'
-#' @param x A `cd_outlier` object containing pre-processed outlier data.
+#' @param x A `cd_completeness_summary` object, as returned by
+#'   [calculate_completeness_summary()].
+#' @param plot_type Either `"heat_map"` (missingness by unit, for one or all
+#'   indicators) or `"trend"` (completeness over time for one indicator).
+#'   Default is `"heat_map"`.
 #' @param indicator Optional. One of the supported indicators (`'opv1'`, `'penta3'`, etc.)
 #'   to visualize in the plot. If `NULL` all indicators will be shown.
+#' @param title Optional plot title. Defaults to a title based on `plot_type`,
+#'   `indicator` and region.
+#' @param x_axis,y_axis Optional x- and y-axis titles. Default is `NULL`.
+#' @param legend Optional legend title. Default is `NULL`.
 #' @param ... Reserved for future use.
 #'
 #' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the

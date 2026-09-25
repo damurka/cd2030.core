@@ -41,7 +41,7 @@ This function:
 }
 }
 
-Values are expressed as percentages (0–100).
+Values are expressed as percentages (0-100).
 
 @return A tibble of class \code{cd_outlier}.
 }

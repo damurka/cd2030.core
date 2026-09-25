@@ -10,8 +10,6 @@ calculate_derived_coverage(.data, indicator)
 \item{.data}{A \code{cd_population_metrics} object containing indicator values and DHIS2 population.}
 
 \item{indicator}{A character string specifying the indicator to calculate coverage for.}
-
-\item{survey_year}{Integer. The year from which denominator proportions are derived.}
 }
 \value{
 A \code{cd_derived_coverage} tibble with columns for old and new coverage estimates.
@@ -30,6 +28,8 @@ This allows estimating:
 }
 }
 \examples{
-calculate_derived_coverage(dhis_data, "penta1", 2019)
+\dontrun{
+calculate_derived_coverage(population_metrics, "penta1")
+}
 
 }

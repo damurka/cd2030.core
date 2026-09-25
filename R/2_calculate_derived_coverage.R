@@ -11,12 +11,13 @@
 #'
 #' @param .data A `cd_population_metrics` object containing indicator values and DHIS2 population.
 #' @param indicator A character string specifying the indicator to calculate coverage for.
-#' @param survey_year Integer. The year from which denominator proportions are derived.
 #'
 #' @return A `cd_derived_coverage` tibble with columns for old and new coverage estimates.
 #'
 #' @examples
-#' calculate_derived_coverage(dhis_data, "penta1", 2019)
+#' \dontrun{
+#' calculate_derived_coverage(population_metrics, "penta1")
+#' }
 #'
 #' @export
 calculate_derived_coverage <- function(.data, indicator) {

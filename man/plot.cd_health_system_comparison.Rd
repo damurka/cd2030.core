@@ -35,6 +35,9 @@
 
 \item{legend_labels}{(Optional) A named list to override default legend labels (keys: 'admin', 'linear').}
 
+\item{...}{Chart options (see \code{\link[=cd_chart_options]{cd_chart_options()}}) given by name, applied as
+with \code{options}.}
+
 \item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
 arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
 }

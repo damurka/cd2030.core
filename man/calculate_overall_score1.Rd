@@ -15,6 +15,34 @@ calculate_overall_score1(
   threshold = 90
 )
 }
+\arguments{
+\item{average_reporting_rate}{A \code{cd_average_reporting_rate} object with a
+\code{mean_rr} column by year.}
+
+\item{district_reporting_rate}{A \code{cd_district_reporting_rate} object.}
+
+\item{district_completeness}{A \code{cd_missing_district} object, as returned by
+\code{\link[=calculate_district_completeness_summary]{calculate_district_completeness_summary()}}.}
+
+\item{outliers_summary}{A \code{cd_outlier} object with a \code{mean_out_all} column by
+year.}
+
+\item{district_outliers_summary}{A \code{cd_district_outliers_summary} object.}
+
+\item{ratios_summary}{A \code{cd_ratios_and_adequacy} object.}
+
+\item{labels}{Optional named list overriding the default row labels, with
+\code{header}, \code{section} and \code{metric} sub-lists (see
+\code{\link[=calculate_overall_score]{calculate_overall_score()}}). Default is \code{NULL}.}
+
+\item{threshold}{Numeric. The district reporting rate threshold shown in the
+label of row 1b. Default is \code{90}.}
+}
+\value{
+A tibble with calculated scores for each metric, including a summary
+row for the annual quality score.
+}
 \description{
-Calculate Overall Quality Score from Summaries
+Builds the same score table as \code{\link[=calculate_overall_score]{calculate_overall_score()}}, but from
+summaries that have already been calculated.
 }

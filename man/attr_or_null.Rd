@@ -19,11 +19,11 @@ A safe variant of \code{attr_or_abort()} that returns \code{NULL} instead of thr
 when the specified attribute does not exist.
 }
 \examples{
-obj <- structure(list(a = 1), attr = list(my_attr = "value"))
-attr_or_null(obj, "my_attr")
+obj <- structure(list(a = 1), my_attr = "value")
+cd2030.core:::attr_or_null(obj, "my_attr")
 #> "value"
 
-attr_or_null(obj, "missing")
+cd2030.core:::attr_or_null(obj, "missing")
 #> NULL
 
 }

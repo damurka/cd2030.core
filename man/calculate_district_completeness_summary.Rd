@@ -8,6 +8,9 @@ calculate_district_completeness_summary(.data, region = NULL)
 }
 \arguments{
 \item{.data}{A \code{cd_data} object.}
+
+\item{region}{Optional name of an \code{adminlevel_1} region. If supplied, only
+districts in that region are included. Default is \code{NULL} (all districts).}
 }
 \value{
 A \code{cd_district_completeness_summary} tibble:

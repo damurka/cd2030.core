@@ -15,6 +15,13 @@ calculate_completeness_summary(
 \item{.data}{A \code{cd_data} object.}
 
 \item{admin_level}{One of \code{'national'}, \code{'adminlevel_1'}, or \code{'district'}.}
+
+\item{threshold}{Integer. Completeness threshold (in percent) stored as an
+attribute on the result and used when plotting. Default is \code{90}.}
+
+\item{region}{Optional name of an \code{adminlevel_1} region. If supplied, only
+that region's rows are kept and results are shown by district. Only valid
+with \code{admin_level = 'adminlevel_1'}. Default is \code{NULL}.}
 }
 \value{
 A \code{cd_completeness_summary} tibble:

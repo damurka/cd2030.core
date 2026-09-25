@@ -5,6 +5,26 @@
 #' equity analysis by plotting values for variables like health intervention coverage
 #' across subgroups, allowing insights into disparities.
 #'
+#' @param .data A data frame with one row per group and one column per variable
+#'   (values in percent, plotted on a 0-100 scale).
+#' @param variables Character vector of the column names to plot as dots; each
+#'   becomes a coloured series.
+#' @param group_by The column (unquoted or as a string) whose values form the
+#'   rows of the plot (y axis).
+#' @param title,subtitle,caption Optional plot title, subtitle and caption.
+#'   Each must be a single string or `NULL`.
+#' @param x_title Optional x-axis title. Defaults to a percentage label.
+#' @param legend_title Optional title of the colour legend.
+#' @param legend_labels Optional named vector or list mapping variable names to
+#'   display labels (for example translated labels).
+#' @param reverse_y_axis Logical. Whether to reverse the order of the groups on
+#'   the y axis. Default is `FALSE`.
+#' @param connect_dots Logical. Whether to draw a line connecting the dots of
+#'   each group. Default is `TRUE`.
+#' @param dot_size Optional dot size, clamped to 1-5. Defaults to 4.
+#'
+#' @return A `ggplot` object.
+#'
 #' @export
 equiplot <- function(.data, variables, group_by,
                      title = NULL, subtitle = NULL, caption = NULL,
@@ -101,6 +121,23 @@ equiplot <- function(.data, variables, group_by,
 }
 
 #' A Specialized Dot Plot for Area of Residence Analysis
+#'
+#' Plots rural and urban survey estimates of an indicator by year.
+#'
+#' @param .data Equity survey data with `year`, `level` and `r_<indicator>`
+#'   columns.
+#' @param indicator Character. The indicator to plot; its `r_<indicator>` column
+#'   is used.
+#' @param title,subtitle,caption Optional plot title, subtitle and caption.
+#' @param x_title Optional x-axis title. Defaults to the indicator name
+#'   followed by "Coverage".
+#' @param legend_title Optional legend title. Defaults to a title describing the
+#'   grouping (for example `"Area of residence"`).
+#' @param legend_labels Optional named vector or list mapping group names to
+#'   display labels.
+#' @param dot_size Optional dot size, clamped to 1-5. Defaults to 4.
+#' @param ... Chart options (see [cd_chart_options()]) given by name, applied as
+#'   with `options`.
 #' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
 #'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @export
@@ -140,6 +177,11 @@ equiplot_area <- function(.data, indicator,
 }
 
 #' A Specialized Dot Plot for Maternal Education Analysis
+#'
+#' Plots survey estimates of an indicator by year for each level of maternal
+#' education.
+#'
+#' @inheritParams equiplot_area
 #' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
 #'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @export
@@ -186,6 +228,10 @@ equiplot_education <- function(.data, indicator,
 }
 
 #' A Specialized Dot Plot for Wealth Quintile Analysis
+#'
+#' Plots survey estimates of an indicator by year for each wealth quintile.
+#'
+#' @inheritParams equiplot_area
 #' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
 #'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @export

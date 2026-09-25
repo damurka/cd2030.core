@@ -2,19 +2,27 @@
 % Please edit documentation in R/ui-layout-scoped-page.R
 \name{cd_scope}
 \alias{cd_scope}
-\title{What filters a scoped page shows.
-\itemize{
-\item "national":     none; the analysis gets admin_level "national" and no region
-\item "level":        an admin-level chip only (no region chip)
-\item "region":       a region chip only; the analysis gets \code{fixed_level} (default "adminlevel_1")
-\item "level_region": an admin-level chip and a region chip; \code{show_district} lets districts be picked as regions
-}}
+\title{Define the Scope of a Scoped Page}
 \usage{
 cd_scope(
   kind = c("national", "level", "region", "level_region"),
   fixed_level = NULL,
   show_district = FALSE
 )
+}
+\arguments{
+\item{kind}{Character. The kind of scope: one of \code{"national"}, \code{"level"},
+\code{"region"} or \code{"level_region"} (see above). Defaults to \code{"national"}.}
+
+\item{fixed_level}{Optional admin level (for example \code{"district"}) handed to
+the analysis instead of the level chosen in the filter bar. Default is
+\code{NULL} (use the chosen level).}
+
+\item{show_district}{Logical. For \code{kind = "level_region"}, whether districts
+can be picked as regions. Default is \code{FALSE}.}
+}
+\value{
+A list with elements \code{kind}, \code{fixed_level} and \code{show_district}.
 }
 \description{
 What filters a scoped page shows.

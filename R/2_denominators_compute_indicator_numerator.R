@@ -11,6 +11,12 @@
 #' @param admin_level Character. Specifies the administrative level for aggregation.
 #'   Available options are: `"national"`, `"adminlevel_1"` and `"district"`. Default
 #'   is `"national"`.
+#' @param region Optional name of an `adminlevel_1` region. If supplied, only
+#'   that region's rows are aggregated. Only valid with
+#'   `admin_level = "adminlevel_1"`. Default is `NULL`.
+#' @param show_district Logical. When `region` is supplied, whether to aggregate
+#'   by district within the region (`TRUE`, the default) or for the region as a
+#'   whole.
 #'
 #' @return A tibble containing yearly aggregated totals for each indicator at the
 #'   specified administrative level.

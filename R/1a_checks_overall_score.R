@@ -8,6 +8,13 @@
 #'   including annual reporting rates, completeness, and consistency indicators.
 #' @param threshold The data reporting rate threshold.
 #' @param ratio_pairs description
+#' @param region Optional name of an `adminlevel_1` region. If supplied, all
+#'   metrics are calculated for that region only. Default is `NULL`.
+#' @param labels Optional named list overriding the default row labels. May
+#'   contain `header` (`h1`, `h2`, `h3`), `section` (`r1a`, `r1b`, `r1c`, `r2a`,
+#'   `r2b`, `score`) and `metric` (for example `r_anc1_penta1`,
+#'   `ok_anc1_penta1`) sub-lists; only the supplied entries are replaced.
+#'   Default is `NULL`.
 #'
 #' @details
 #' `calculate_overall_score` processes multiple data quality indicators:
@@ -67,6 +74,28 @@ calculate_overall_score <- function(.data,
 }
 
 #' Calculate Overall Quality Score from Summaries
+#'
+#' Builds the same score table as [calculate_overall_score()], but from
+#' summaries that have already been calculated.
+#'
+#' @param average_reporting_rate A `cd_average_reporting_rate` object with a
+#'   `mean_rr` column by year.
+#' @param district_reporting_rate A `cd_district_reporting_rate` object.
+#' @param district_completeness A `cd_missing_district` object, as returned by
+#'   [calculate_district_completeness_summary()].
+#' @param outliers_summary A `cd_outlier` object with a `mean_out_all` column by
+#'   year.
+#' @param district_outliers_summary A `cd_district_outliers_summary` object.
+#' @param ratios_summary A `cd_ratios_and_adequacy` object.
+#' @param labels Optional named list overriding the default row labels, with
+#'   `header`, `section` and `metric` sub-lists (see
+#'   [calculate_overall_score()]). Default is `NULL`.
+#' @param threshold Numeric. The district reporting rate threshold shown in the
+#'   label of row 1b. Default is `90`.
+#'
+#' @return A tibble with calculated scores for each metric, including a summary
+#'   row for the annual quality score.
+#'
 #' @export
 calculate_overall_score1 <- function(average_reporting_rate,
                                      district_reporting_rate,

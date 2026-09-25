@@ -164,7 +164,8 @@ plot.cd_mortality_ratio_summarised <- function(x, labels = NULL, ..., options = 
 #'
 #' @examples
 #' \dontrun{
-#' filtered <- filter_mortality_summary(mortality_data, "UGA", indicator = "mmr", plot_year = 2020:2022)
+#' filtered <- filter_mortality_summary(mortality_data, "UGA", indicator = "mmr",
+#'                                      plot_year = 2020:2022)
 #' plot(filtered)
 #' }
 #'

@@ -144,6 +144,11 @@ cd_report_theme <- function(base_size = 10, base_family = "",
 #' @param legend_labels Vector of labels for the legend (must match y_vars length).
 #' @param hline Optional numeric value for a horizontal reference line.
 #' @param hline_style Style of the horizontal line.
+#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts
+#'   and sizes a user changed. Applied last, so it wins over the arguments
+#'   above. Default is `NULL`.
+#' @param ... Chart options (see [cd_chart_options()]) given by name, applied as
+#'   with `options`.
 #'
 #' @return A ggplot object.
 #' @export
@@ -210,8 +215,8 @@ cd_heatmap_theme <- function(title = NULL, x_axis = NULL, y_axis = NULL, legend 
   list(
     cd_plot_theme(
       title = title,
-      x = x_axis,
-      y = y_axis,
+      x_axis = x_axis,
+      y_axis = y_axis,
       legend = legend
     ),
     theme(
@@ -228,8 +233,8 @@ cd_bar_theme <- function(title = NULL, x_axis = NULL, y_axis = NULL, legend = NU
   list(
     cd_plot_theme(
       title = title,
-      x = x_axis,
-      y = y_axis,
+      x_axis = x_axis,
+      y_axis = y_axis,
       legend = legend
     ),
     theme(

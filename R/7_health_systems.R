@@ -92,16 +92,15 @@ calculate_health_system_metrics <- function(.data, admin_level = c("national", "
 #' Returns a merged dataset of health coverage and system metrics at district and
 #' admin level 1 for the latest year.
 #'
-#' @param .data A data frame containing raw health system inputs including year,
-#'   population, coverage, and facility indicators.
-#' @param sbr Numeric. The stillbirth rate (default: 0.02).
-#' @param nmr Numeric. The neonatal mortality rate (default: 0.025).
-#' @param pnmr Numeric. The post-neonatal mortality rate (default: 0.024).
-#' @param anc1survey Numeric. Survey-based ANC-1 coverage rate (default: 0.98).
-#' @param dpt1survey Numeric. Survey-based Penta-1 coverage rate (default: 0.97).
-#' @param survey_year Integer. The year of Penta-1 survey provided
-#' @param twin Numeric. The twin birth rate (default: 0.015).
-#' @param preg_loss Numeric. The pregnancy loss rate (default: 0.03).
+#' @param .data A `cd_data` object containing raw health system inputs including
+#'   year, population, and facility indicators.
+#' @param admin1_coverage_data A coverage data frame at admin level 1 (with
+#'   `year`, `adminlevel_1` and `cov_*` columns), such as the output of
+#'   [calculate_indicator_coverage()] for `admin_level = "adminlevel_1"`. Its
+#'   latest year defines the year kept in the result.
+#' @param admin2_coverage_data A coverage data frame at district level (with
+#'   `year`, `adminlevel_1`, `district` and `cov_*` columns), such as the output
+#'   of [calculate_indicator_coverage()] for `admin_level = "district"`.
 #'
 #' @return A data frame with admin 1 and district metrics joined side by side for
 #'   comparison.

@@ -8,6 +8,12 @@
 #' @param x A `cd_ratios_summary` object created by the `calculate_ratios_summary` function.
 #'   It should contain a `year` column and one or more columns with names starting with `"Ratio"`,
 #'   representing the calculated indicator ratios.
+#' @param title Optional plot title. Defaults to a title describing the ANC1 to
+#'   Penta1 and Penta1 to Penta3 ratios.
+#' @param x_axis,y_axis Optional x- and y-axis titles. Default is `NULL`.
+#' @param x_labels Optional named list or vector of x-axis category labels,
+#'   keyed by ratio name (`anc1_penta1`, `opv1_opv3`, `penta1_penta3`).
+#'   Supplied entries replace the defaults.
 #' @param ... Additional arguments passed to other methods (currently unused).
 #'
 #' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the

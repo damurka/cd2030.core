@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(cd2030)
+library(cd2030.core)
 
-test_check("cd2030")
+test_check("cd2030.core")

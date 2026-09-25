@@ -39,7 +39,20 @@
 \item{threshold}{Numeric value (default = 90). Used only in \code{"heat_map"} mode to define
 the boundary for high reporting rates.}
 
-\item{...}{Reserved for future use.}
+\item{title}{Optional plot title. Defaults to a title naming the unit and
+region.}
+
+\item{x_axis, y_axis}{Optional x- and y-axis titles. Default to labels suited
+to \code{plot_type}.}
+
+\item{legend}{Optional legend title. Defaults to a label suited to
+\code{plot_type}.}
+
+\item{...}{Chart options (see \code{\link[=cd_chart_options]{cd_chart_options()}}) given by name, applied as
+with \code{options}.}
+
+\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+arguments above; the plot's own defaults are used for whatever it does not set.}
 }
 \value{
 A \code{ggplot} object.

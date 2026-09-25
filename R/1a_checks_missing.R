@@ -5,6 +5,11 @@
 #'
 #' @param .data A `cd_data` object.
 #' @param admin_level One of `'national'`, `'adminlevel_1'`, or `'district'`.
+#' @param threshold Integer. Completeness threshold (in percent) stored as an
+#'   attribute on the result and used when plotting. Default is `90`.
+#' @param region Optional name of an `adminlevel_1` region. If supplied, only
+#'   that region's rows are kept and results are shown by district. Only valid
+#'   with `admin_level = 'adminlevel_1'`. Default is `NULL`.
 #'
 #' @return A `cd_completeness_summary` tibble:
 #'   - One row per year and group
@@ -63,6 +68,8 @@ calculate_completeness_summary <- function(.data,
 #' Calculates yearly % of districts with complete data for each indicator.
 #'
 #' @param .data A `cd_data` object.
+#' @param region Optional name of an `adminlevel_1` region. If supplied, only
+#'   districts in that region are included. Default is `NULL` (all districts).
 #'
 #' @return A `cd_district_completeness_summary` tibble:
 #'   - One row per year

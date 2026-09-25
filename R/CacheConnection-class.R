@@ -666,9 +666,6 @@ CacheConnection <- R6::R6Class(
       invisible(private$setter("chart_options", stored, is.list))
     },
 
-    #' @description The chart options that apply to one chart: the dataset's `"default"` options with the chart's own on top.
-    #' @param id Character. A chart id (see `set_chart_options()`), or `NULL` for the defaults alone.
-    #' @return A [cd_chart_options()] object (empty when nothing is stored).
     #' @description Saves a report built in the report builder (see [export_report()]), or removes it.
     #' @param id Character. The report's id.
     #' @param project A list: `name`, `design` and `blocks` (see [report_presets()]), or `NULL` to remove the report.
@@ -706,6 +703,9 @@ CacheConnection <- R6::R6Class(
       invisible(private$setter("report_themes", stored, is.list))
     },
 
+    #' @description The chart options that apply to one chart: the dataset's `"default"` options with the chart's own on top.
+    #' @param id Character. A chart id (see `set_chart_options()`), or `NULL` for the defaults alone.
+    #' @return A [cd_chart_options()] object (empty when nothing is stored).
     get_chart_options = function(id = NULL) {
       stored <- self$chart_options
       merge_chart_options(stored[["default"]], if (!is.null(id) && !identical(id, "default")) stored[[id]])

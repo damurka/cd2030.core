@@ -7,31 +7,11 @@
 get_mapping_data(.data, subnational_map = NULL)
 }
 \arguments{
-\item{.data}{A data frame of input data containing model output or estimates.
-Must include metadata attribute \code{iso3} (ISO3 country code).}
+\item{.data}{A \code{cd_population} object (for example the output of
+\code{\link[=calculate_indicator_coverage]{calculate_indicator_coverage()}}) calculated at \code{admin_level = "adminlevel_1"}.
+Must include metadata attributes \code{iso3} (ISO3 country code) and \code{admin_level}.}
 
 \item{subnational_map}{Optional. A data frame to join with the shapefile to add metadata.}
-
-\item{admin_level}{Character. The subnational level of analysis.
-Must be one of \code{"adminlevel_1"} (default) or \code{"district"}.}
-
-\item{un_estimates}{A data frame of UN estimates including population and birth rates.}
-
-\item{sbr}{Numeric. Stillbirth rate. Default = \code{0.02}.}
-
-\item{nmr}{Numeric. Neonatal mortality rate. Default = \code{0.025}.}
-
-\item{pnmr}{Numeric. Post-neonatal mortality rate. Default = \code{0.024}.}
-
-\item{anc1survey}{Numeric. Survey coverage for ANC1. Default = \code{0.98}.}
-
-\item{dpt1survey}{Numeric. Survey coverage for Penta1. Default = \code{0.97}.}
-
-\item{survey_year}{Integer. Year of survey used in indicator estimation. Default = \code{2019}.}
-
-\item{twin}{Numeric. Twin birth rate. Default = \code{0.015}.}
-
-\item{preg_loss}{Numeric. Pregnancy loss rate. Default = \code{0.03}.}
 }
 \value{
 A \code{tibble} of class \code{"cd_mapping"} that combines the input data with shapefile geometries.
@@ -43,23 +23,8 @@ UN estimates and survey rates, and joins results with geographic features.
 }
 \examples{
 \dontrun{
-rates <- list(
-  sbr = 0.02, nmr = 0.03, pnmr = 0.02, anc1 = 0.8, penta1 = 0.75,
-  twin_rate = 0.015, preg_loss = 0.03
-)
-
-get_mapping_data(
-  .data = data,
-  un_estimates = un_estimates,
-  sbr = rates$sbr,
-  nmr = rates$nmr,
-  pnmr = rates$pnmr,
-  anc1survey = rates$anc1,
-  dpt1survey = rates$penta1,
-  survey_year = 2021,
-  twin = rates$twin_rate,
-  preg_loss = rates$preg_loss
-)
+coverage <- calculate_indicator_coverage(data, admin_level = "adminlevel_1")
+get_mapping_data(coverage)
 }
 
 }

@@ -16,24 +16,23 @@
 }
 \arguments{
 \item{x}{A data frame containing the \code{year} column and columns for the raw
-and adjusted values of health indicators (e.g., \code{ideliv_raw}, \code{ideliv_adj}).}
+and adjusted values of health indicators (e.g., \code{ideliv_raw}, \code{ideliv_adj}).
+The indicator plotted is taken from its \code{indicator} attribute.}
 
 \item{title}{A character string for the plot title. If \code{NULL}, a default title
 based on the indicator is generated.}
 
-\item{legend_labels}{A character vector of length 2 specifying custom labels
-for the legend. The first element is used for the unadjusted (raw) data, and
-the second element is for the adjusted data. If \code{NULL}, default labels
-("N of \code{indicator} before adjustment" and "N of \code{indicator} after adjustment")
-are generated.}
+\item{x_axis, y_axis}{Optional x- and y-axis titles. Default is \code{NULL}.}
+
+\item{legend_labels}{A named list or vector of custom legend labels, with
+names \code{raw} (unadjusted data) and/or \code{adjusted}. Supplied entries replace
+the defaults ("N of \code{indicator} before adjustment" and "N of \code{indicator}
+after adjustment"). Default is \code{NULL}.}
 
 \item{...}{Additional arguments (currently not used).}
 
 \item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
 arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
-
-\item{indicator}{A character string specifying the prefix of the indicator to
-plot (e.g., \code{"ideliv"}). Only the provided indicators will be plotted.}
 }
 \value{
 A ggplot2 object showing the comparison of unadjusted and adjusted data

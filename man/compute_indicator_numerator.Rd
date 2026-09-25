@@ -19,6 +19,14 @@ by the \code{indicator_groups} attribute.}
 \item{admin_level}{Character. Specifies the administrative level for aggregation.
 Available options are: \code{"national"}, \code{"adminlevel_1"} and \code{"district"}. Default
 is \code{"national"}.}
+
+\item{region}{Optional name of an \code{adminlevel_1} region. If supplied, only
+that region's rows are aggregated. Only valid with
+\code{admin_level = "adminlevel_1"}. Default is \code{NULL}.}
+
+\item{show_district}{Logical. When \code{region} is supplied, whether to aggregate
+by district within the region (\code{TRUE}, the default) or for the region as a
+whole.}
 }
 \value{
 A tibble containing yearly aggregated totals for each indicator at the

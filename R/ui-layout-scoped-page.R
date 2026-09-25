@@ -9,11 +9,23 @@
 # The analysis module (`inner_ui(id, i18n, ...)` / `inner_server(id, cache, i18n, admin_level, region, active)`) is the
 # app's own; the filter bar, the admin-level wiring and the unwrapping of its value are shared here.
 
+#' Define the Scope of a Scoped Page
+#'
 #' What filters a scoped page shows.
 #'  - "national":     none; the analysis gets admin_level "national" and no region
 #'  - "level":        an admin-level chip only (no region chip)
 #'  - "region":       a region chip only; the analysis gets `fixed_level` (default "adminlevel_1")
 #'  - "level_region": an admin-level chip and a region chip; `show_district` lets districts be picked as regions
+#'
+#' @param kind Character. The kind of scope: one of `"national"`, `"level"`,
+#'   `"region"` or `"level_region"` (see above). Defaults to `"national"`.
+#' @param fixed_level Optional admin level (for example `"district"`) handed to
+#'   the analysis instead of the level chosen in the filter bar. Default is
+#'   `NULL` (use the chosen level).
+#' @param show_district Logical. For `kind = "level_region"`, whether districts
+#'   can be picked as regions. Default is `FALSE`.
+#'
+#' @return A list with elements `kind`, `fixed_level` and `show_district`.
 cd_scope <- function(kind = c("national", "level", "region", "level_region"), fixed_level = NULL, show_district = FALSE) {
   list(kind = match.arg(kind), fixed_level = fixed_level, show_district = show_district)
 }

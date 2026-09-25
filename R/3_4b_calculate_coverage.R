@@ -5,21 +5,11 @@
 #' WUENIC (WHO-UNICEF estimates). The combined dataset is prepared for analysis
 #' at various administrative levels.
 #'
-#' @param .data A `cd_data` data frame with DHIS2 coverage metrics.
-#' @param admin_level Character. Specifies the administrative level for calculations.
-#'   Options include:`"national", "adminlevel_1"`, and `"district"`.
+#' @param .data A `cd_indicator_coverage` data frame with DHIS2 coverage metrics
+#'   (as returned by [calculate_indicator_coverage()]). Its `admin_level` and
+#'   `region` attributes determine the level of the result.
 #' @param survey_data A data frame containing survey-based immunization estimates.
 #' @param wuenic_data A data frame containing WHO-UNICEF (WUENIC) coverage estimates.
-#' @param un_estimates Optional. A tibble containing UN population estimates. Required
-#'   for national-level calculations.
-#' @param sbr Numeric. The stillbirth rate. Default is `0.02`.
-#' @param nmr Numeric. Neonatal mortality rate. Default is `0.025`.
-#' @param pnmr Numeric. Post-neonatal mortality rate. Default is `0.024`.
-#' @param anc1survey Numeric. Survey-derived coverage rate for ANC-1 (antenatal care, first visit). Default is `0.98`.
-#' @param dpt1survey Numeric. Survey-derived coverage rate for Penta-1 (DPT1 vaccination). Default is `0.97`.
-#' @param survey_year Integer. The year of Penta-1 survey provided
-#' @param preg_loss Numeric. Pregnancy loss rate
-#' @param twin Numeric. Twin birth rate. Default is `0.015`.
 #' @param subnational_map (Optional) A data frame mapping subnational regions to
 #'   parent regions, required for subnational-level analyses. Default is `NULL`.
 #'
@@ -101,6 +91,10 @@ calculate_coverage <- function(.data,
 #' @param .data A `cd_coverage` data frame with combined immunization coverage data.
 #' @param indicator Coverage indicators to include (e.g., `"penta3"`, `"measles1"`).
 #' @param denominator Denominator sources for coverage calculations (e.g., `"dhis2"`).
+#' @param region Name of the subnational unit (at the data's `admin_level`) to
+#'   keep. Required for subnational data that was not already calculated for a
+#'   single region; must be `NULL` for national data or data calculated for a
+#'   region. Default is `NULL`.
 #'
 #' @return A reshaped data frame with filtered indicators and denominators.
 #'

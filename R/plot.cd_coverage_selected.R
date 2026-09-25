@@ -9,6 +9,8 @@
 #' @param fill_label (Optional) Custom translated legend title (for Heatmap).
 #' @param source_labels (Optional) Named list to translate 'facility', 'survey', 'wuenic'.
 #' @param indicator_labels (Optional) Named list to translate indicator names (e.g. 'anc4').
+#' @param ... Chart options (see [cd_chart_options()]) given by name, applied as
+#'   with `options`.
 #'
 #' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
 #'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.

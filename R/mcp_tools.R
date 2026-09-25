@@ -3,11 +3,11 @@
 #' @description
 #' Plain R functions backing the cd2030.core MCP server's tools. These are
 #' deliberately kept free of any `ellmer`/`mcptools` dependency so they can be
-#' called and tested directly; [mcp_tool_list()] wraps each one as an
+#' called and tested directly; `mcp_tool_list()` wraps each one as an
 #' `ellmer::tool()` for the server.
 #'
-#' Every tool (other than [mcp_load_cache()]) takes the path of a cache
-#' already opened with [mcp_load_cache()] and is read-only: none of them
+#' Every tool (other than `mcp_load_cache()`) takes the path of a cache
+#' already opened with `mcp_load_cache()` and is read-only: none of them
 #' mutate the underlying `CacheConnection`.
 #'
 #' @keywords internal
@@ -54,7 +54,7 @@ mcp_cache_indicator_group <- function(cache) {
 }
 
 #' @describeIn mcp_tools Build the small metadata summary returned by
-#'   [mcp_load_cache()] and included in [mcp_get_data_overview()].
+#'   `mcp_load_cache()` and included in [mcp_get_data_overview()].
 #' @noRd
 mcp_cache_summary <- function(cache) {
   list(

@@ -13,7 +13,7 @@ load_un_estimates(path = NULL, .data = NULL, country_iso, start_year, end_year)
 
 \item{country_iso}{Character. ISO3 code of the country.}
 
-\item{start_year, }{end_year Integers. Year range to include.}
+\item{start_year, end_year}{Integers. First and last year (inclusive) to include.}
 }
 \value{
 A tibble of class \code{cd_un_estimates}.

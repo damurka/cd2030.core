@@ -7,15 +7,14 @@
 #'
 #' @param x A data frame containing the `year` column and columns for the raw
 #'   and adjusted values of health indicators (e.g., `ideliv_raw`, `ideliv_adj`).
-#' @param indicator A character string specifying the prefix of the indicator to
-#'   plot (e.g., `"ideliv"`). Only the provided indicators will be plotted.
+#'   The indicator plotted is taken from its `indicator` attribute.
 #' @param title A character string for the plot title. If `NULL`, a default title
 #'   based on the indicator is generated.
-#' @param legend_labels A character vector of length 2 specifying custom labels
-#'   for the legend. The first element is used for the unadjusted (raw) data, and
-#'   the second element is for the adjusted data. If `NULL`, default labels
-#'   ("N of `indicator` before adjustment" and "N of `indicator` after adjustment")
-#'   are generated.
+#' @param x_axis,y_axis Optional x- and y-axis titles. Default is `NULL`.
+#' @param legend_labels A named list or vector of custom legend labels, with
+#'   names `raw` (unadjusted data) and/or `adjusted`. Supplied entries replace
+#'   the defaults ("N of `indicator` before adjustment" and "N of `indicator`
+#'   after adjustment"). Default is `NULL`.
 #' @param ... Additional arguments (currently not used).
 #'
 #' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
