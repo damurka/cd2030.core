@@ -50,8 +50,8 @@ A tibble of class `"cd_csection_estimates"` with a `"level"` attribute.
 
 ## See also
 
-[`load_private_sector_data()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/load_private_sector_data.md),
-[`prepare_private_sector_plot_data()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/prepare_private_sector_plot_data.md)
+[`load_private_sector_data()`](https://aphrcwaro.github.io/cd2030.core/reference/load_private_sector_data.md),
+[`prepare_private_sector_plot_data()`](https://aphrcwaro.github.io/cd2030.core/reference/prepare_private_sector_plot_data.md)
 
 ## Examples
 

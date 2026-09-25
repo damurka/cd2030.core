@@ -15,13 +15,13 @@ prepare_private_sector_plot_data(.data, csection_data)
 - .data:
 
   A data frame of class `"cd_private_sector_data"` returned by
-  [`load_private_sector_data()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/load_private_sector_data.md).
+  [`load_private_sector_data()`](https://aphrcwaro.github.io/cd2030.core/reference/load_private_sector_data.md).
   Must include `share_csection`, `r_raw`, and `sector` columns.
 
 - csection_data:
 
   A data frame of class `"cd_csection_estimates"` returned by
-  [`load_csection_estimates()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/load_csection_estimates.md).
+  [`load_csection_estimates()`](https://aphrcwaro.github.io/cd2030.core/reference/load_csection_estimates.md).
   Must match the level of `.data` (`"national"` or `"area"`).
 
 ## Value
@@ -54,7 +54,7 @@ This function:
 - Calculates private sector share and total prevalence.
 
 Used as input to
-[`plot.cd_private_sector_plot_data()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/plot.cd_private_sector_plot_data.md)
+[`plot.cd_private_sector_plot_data()`](https://aphrcwaro.github.io/cd2030.core/reference/plot.cd_private_sector_plot_data.md)
 for visualisation.
 
 ## Examples

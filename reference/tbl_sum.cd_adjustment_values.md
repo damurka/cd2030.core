@@ -38,5 +38,5 @@ additional details provided by the
 
 ## See also
 
-[`generate_adjustment_values()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/generate_adjustment_values.md)
+[`generate_adjustment_values()`](https://aphrcwaro.github.io/cd2030.core/reference/generate_adjustment_values.md)
 for generating the `cd_adjustment_values` object.

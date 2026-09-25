@@ -60,7 +60,7 @@ This function performs the following steps:
     service counts.
 
 3.  **Adjusted Summation**: Applies
-    [`adjust_service_data()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/adjust_service_data.md)
+    [`adjust_service_data()`](https://aphrcwaro.github.io/cd2030.core/reference/adjust_service_data.md)
     to compute adjusted values, then calculates the yearly sums.
 
 4.  **Combining Results**: Merges unadjusted and adjusted yearly counts
@@ -68,7 +68,7 @@ This function performs the following steps:
 
 ## See also
 
-[`adjust_service_data()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/adjust_service_data.md)
+[`adjust_service_data()`](https://aphrcwaro.github.io/cd2030.core/reference/adjust_service_data.md)
 for the detailed adjustment function.
 
 ## Examples

@@ -1,68 +1,49 @@
-# Create Countdown 2030 Data Object
+# Create a `cd_data` object from cleaned data and resolve the indicator group
 
-The `new_countdown` function converts cleaned and processed data into a
-tibble of class `cd_data`, with additional validation and metadata for
-analysis within the Countdown 2030 framework.
+Validates required columns, resolves the concrete indicator group name
+from the **data** (`"auto"` detection supported), ensures the selected
+group's indicators are fully present, sets the global selection, and
+returns a `cd_data`.
 
 ## Usage
 
 ``` r
-new_countdown(.data, class = NULL, call = caller_env())
+new_countdown(
+  .data,
+  class = NULL,
+  indicator_group = c("auto", "vaccine", "rmncah", "custom"),
+  profile_name = NULL,
+  profile = NULL
+)
 ```
 
 ## Arguments
 
 - .data:
 
-  A tibble. The cleaned and processed data to be converted to `cd_data`
-  class.
+  Tibble after cleaning/merge.
 
-- class:
+- indicator_group:
 
-  Optional. A character vector specifying additional classes to assign
-  to the resulting tibble.
+  One of `"auto"`, `"vaccine"`, `"rmncah"`, `"custom"`.
 
-- call:
+- profile:
 
-  The calling environment. Defaults to `caller_env()`.
+  For `"custom"`, the group name to select (must exist). Ignored
+  otherwise.
 
 ## Value
 
-A tibble of class `cd_data`, containing an `indicator_groups` attribute
-that includes validated indicator groups available in the dataset,
-categorized for analysis.
-
-## Details
-
-This function attaches metadata to the data for available indicator
-groups by validating each group against the column names in the provided
-tibble. Indicator groups represent categories of data relevant to
-Countdown 2030 analysis:
-
-- **`anc`**: Antenatal care indicators (e.g., `anc1`)
-
-- **`idelv`**: Delivery and birth outcome indicators (e.g., `ideliv`,
-  `instlivebirths`)
-
-- **`vacc`**: Vaccination indicators (e.g., `opv1`, `penta1`,
-  `measles1`)
-
-Additionally, `tracers` are specified to track core indicators, such as
-vaccination rates, within `cd_data`.
-
-Any required columns missing from the input data will trigger an error,
-with a message indicating which columns are missing.
-
-## See also
-
-[`adjust_service_data()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/adjust_service_data.md)
-for adjusting service data within the `cd_data` object.
+A tibble with class `cd_data` and `attr(, "indicator_group")` set to the
+resolved name. Also sets `options(cd2030.selected_group)` via
+[`set_selected_group()`](https://aphrcwaro.github.io/cd2030.core/reference/set_selected_group.md).
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
-# Convert processed data to `cd_data` class for Countdown 2030 analysis
-cd_data <- new_countdown(final_data)
+x <- .load_excel_data("data/country.xlsx", indicator_group = "auto")
+cd <- new_countdown(x, indicator_group = "auto")
+attr(cd, "indicator_group")
 } # }
 ```

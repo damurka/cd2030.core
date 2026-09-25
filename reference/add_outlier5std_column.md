@@ -54,7 +54,7 @@ is an outlier and `0` otherwise.
 
 ## See also
 
-[`add_mad_med_columns()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/add_mad_med_columns.md)
+[`add_mad_med_columns()`](https://aphrcwaro.github.io/cd2030.core/reference/add_mad_med_columns.md)
 for computing and appending the median and MAD columns.
 
 ## Examples

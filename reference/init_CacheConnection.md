@@ -7,7 +7,11 @@ of the arguments should be non-NULL.
 ## Usage
 
 ``` r
-init_CacheConnection(rds_path = NULL, countdown_data = NULL)
+init_CacheConnection(
+  rds_path = NULL,
+  countdown_data = NULL,
+  indicator_group = c("auto", "rmncah", "vaccine", "custom")
+)
 ```
 
 ## Arguments

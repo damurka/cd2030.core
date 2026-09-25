@@ -22,7 +22,7 @@ filter_service_utilization(
 - .data:
 
   A `cd_service_utilization` object returned by
-  [`compute_service_utilization()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/compute_service_utilization.md).
+  [`compute_service_utilization()`](https://aphrcwaro.github.io/cd2030.core/reference/compute_service_utilization.md).
 
 - country_iso:
 

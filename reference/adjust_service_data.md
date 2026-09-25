@@ -79,9 +79,9 @@ data quality and consistency:
 
 ## See also
 
-[`new_countdown()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/new_countdown.md)
+[`new_countdown()`](https://aphrcwaro.github.io/cd2030.core/reference/new_countdown.md)
 for creating `cd_data` objects and
-[`generate_adjustment_values()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/generate_adjustment_values.md)
+[`generate_adjustment_values()`](https://aphrcwaro.github.io/cd2030.core/reference/generate_adjustment_values.md)
 for generating adjustment summaries.
 
 ## Examples

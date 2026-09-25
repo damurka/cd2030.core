@@ -43,5 +43,5 @@ This allows estimating:
 
 ``` r
 calculate_derived_coverage(dhis_data, "penta1", 2019)
-#> Error: object 'dhis_data' not found
+#> Error in calculate_derived_coverage(dhis_data, "penta1", 2019): unused argument (2019)
 ```

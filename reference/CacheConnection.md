@@ -202,6 +202,8 @@ object.
 
 - [`CacheConnection$append_page_note()`](#method-CacheConnection-append_page_note)
 
+- [`CacheConnection$adjust_data()`](#method-CacheConnection-adjust_data)
+
 - [`CacheConnection$get_notes()`](#method-CacheConnection-get_notes)
 
 - [`CacheConnection$calculate_indicator_coverage()`](#method-CacheConnection-calculate_indicator_coverage)
@@ -399,6 +401,16 @@ Append a note to a page.
 
 ------------------------------------------------------------------------
 
+### Method `adjust_data()`
+
+Adjusts data.
+
+#### Usage
+
+    CacheConnection$adjust_data()
+
+------------------------------------------------------------------------
+
 ### Method `get_notes()`
 
 Retrieve notes for a given page/object.
@@ -423,7 +435,7 @@ Retrieve notes for a given page/object.
 
 ------------------------------------------------------------------------
 
-### Method [`calculate_indicator_coverage()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/calculate_indicator_coverage.md)
+### Method [`calculate_indicator_coverage()`](https://aphrcwaro.github.io/cd2030.core/reference/calculate_indicator_coverage.md)
 
 Run coverage calculation using stored model parameters.
 
@@ -443,7 +455,7 @@ Run coverage calculation using stored model parameters.
 
 ------------------------------------------------------------------------
 
-### Method [`calculate_inequality()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/calculate_inequality.md)
+### Method [`calculate_inequality()`](https://aphrcwaro.github.io/cd2030.core/reference/calculate_inequality.md)
 
 Run inequality calculation using stored model parameters.
 
@@ -463,7 +475,7 @@ Run inequality calculation using stored model parameters.
 
 ------------------------------------------------------------------------
 
-### Method [`calculate_coverage()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/calculate_coverage.md)
+### Method [`calculate_coverage()`](https://aphrcwaro.github.io/cd2030.core/reference/calculate_coverage.md)
 
 Run coverage calculation using stored model parameters.
 
@@ -479,7 +491,7 @@ Run coverage calculation using stored model parameters.
 
 ------------------------------------------------------------------------
 
-### Method [`get_mapping_data()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/get_mapping_data.md)
+### Method [`get_mapping_data()`](https://aphrcwaro.github.io/cd2030.core/reference/get_mapping_data.md)
 
 Run coverage calculation using stored model parameters.
 
@@ -495,7 +507,7 @@ Run coverage calculation using stored model parameters.
 
 ------------------------------------------------------------------------
 
-### Method [`calculate_health_system_comparison()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/calculate_health_system_comparison.md)
+### Method [`calculate_health_system_comparison()`](https://aphrcwaro.github.io/cd2030.core/reference/calculate_health_system_comparison.md)
 
 Run coverage calculation using stored model parameters.
 
@@ -505,7 +517,7 @@ Run coverage calculation using stored model parameters.
 
 ------------------------------------------------------------------------
 
-### Method [`create_mortality_summary()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/create_mortality_summary.md)
+### Method [`create_mortality_summary()`](https://aphrcwaro.github.io/cd2030.core/reference/create_mortality_summary.md)
 
 Creates mortality summary
 
@@ -515,7 +527,7 @@ Creates mortality summary
 
 ------------------------------------------------------------------------
 
-### Method [`create_mortality_ratios()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/create_mortality_ratios.md)
+### Method [`create_mortality_ratios()`](https://aphrcwaro.github.io/cd2030.core/reference/create_mortality_ratios.md)
 
 creates mortality ratios from the mortality summary
 
@@ -541,7 +553,7 @@ generates the mean institutional livebirths
 
 ------------------------------------------------------------------------
 
-### Method [`summarise_completeness_ratio()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/summarise_completeness_ratio.md)
+### Method [`summarise_completeness_ratio()`](https://aphrcwaro.github.io/cd2030.core/reference/summarise_completeness_ratio.md)
 
 creates mortality ratios completeness summary
 
@@ -561,7 +573,7 @@ creates mortality ratios completeness summary
 
 ------------------------------------------------------------------------
 
-### Method [`filter_mortality_summary()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/filter_mortality_summary.md)
+### Method [`filter_mortality_summary()`](https://aphrcwaro.github.io/cd2030.core/reference/filter_mortality_summary.md)
 
 Return the appropriate summary based on the indicator type to plot.
 
@@ -589,7 +601,7 @@ Character. Either the maternal or vaccination denominator.
 
 ------------------------------------------------------------------------
 
-### Method [`compute_service_utilization()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/compute_service_utilization.md)
+### Method [`compute_service_utilization()`](https://aphrcwaro.github.io/cd2030.core/reference/compute_service_utilization.md)
 
 Computed service utilization for various indicators.
 
@@ -605,7 +617,7 @@ Computed service utilization for various indicators.
 
 ------------------------------------------------------------------------
 
-### Method [`filter_service_utilization()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/filter_service_utilization.md)
+### Method [`filter_service_utilization()`](https://aphrcwaro.github.io/cd2030.core/reference/filter_service_utilization.md)
 
 Return the appropriate summary based on the indicator type to plot.
 

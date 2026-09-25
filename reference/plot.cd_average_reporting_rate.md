@@ -3,7 +3,7 @@
 Visualizes reporting rates for selected health service indicators at
 sub-national levels, using heat maps or bar plots. Intended for use with
 outputs from
-[`calculate_average_reporting_rate()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/calculate_average_reporting_rate.md)
+[`calculate_average_reporting_rate()`](https://aphrcwaro.github.io/cd2030.core/reference/calculate_average_reporting_rate.md)
 at `"adminlevel_1"` or `"district"` level.
 
 ## Usage
@@ -24,7 +24,7 @@ plot(
 - x:
 
   A `cd_average_reporting_rate` object, typically the output from
-  [`calculate_average_reporting_rate()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/calculate_average_reporting_rate.md).
+  [`calculate_average_reporting_rate()`](https://aphrcwaro.github.io/cd2030.core/reference/calculate_average_reporting_rate.md).
   Must contain subnational data.
 
 - plot_type:

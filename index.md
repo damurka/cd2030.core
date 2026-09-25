@@ -1,4 +1,4 @@
-# cd2030.rmncah
+# cd2030.core
 
 ## Introduction
 
@@ -19,7 +19,7 @@ You can install a stable version of cd2030 from
 
 ``` r
 
-devtools::install_github("aphrcwaro/cd2030.rmncah@v1.0.3")
+devtools::install_github("aphrcwaro/cd2030.core@v1.0.0")
 ```
 
 ## Development version
@@ -29,7 +29,7 @@ can install the development version of cd2030.
 
 ``` r
 
-devtools::install_github("aphrcwaro/cd2030.rmncah")
+devtools::install_github("aphrcwaro/cd2030.core")
 ```
 
 ## Running the App
@@ -38,7 +38,7 @@ Start the web dashboard:
 
 ``` r
 
-library(cd2030.rmncah)
+library(cd2030.core)
 dashboard()
 ```
 
@@ -48,26 +48,18 @@ Analyze vaccine data programmatically:
 
 ``` r
 
-data <- load_excel_data("/path/to/hfd/data.xlsx")
+data <- load_data("/path/to/hfd/data.xlsx")
 calculate_average_reporting_rate(data)
 ```
-
-## Dashboard Preview
-
-Here is a preview of the dashboard:
-
-![Dashboard Screenshot](reference/figures/dashboard.jpeg)
-
-Dashboard Screenshot
 
 ## Getting help
 
 If you encounter a clear bug, please file an issue with a minimal
 reproducible example on
-![Github](https://github.com/aphrcwaro/cd2030.rmncah/issues).
+![Github](https://github.com/aphrcwaro/cd2030.core/issues).
 
 ## Contributing
 
-Contributions to improve the **cd2030.rmncah** package are welcome!
+Contributions to improve the \*\*cd2030.core\* package are welcome!
 Please fork the repository, make your changes, and submit a pull
 request.

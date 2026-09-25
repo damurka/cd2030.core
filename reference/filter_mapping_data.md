@@ -20,7 +20,7 @@ filter_mapping_data(
 - .data:
 
   A `cd_mapping` object returned by
-  [`get_mapping_data()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/get_mapping_data.md).
+  [`get_mapping_data()`](https://aphrcwaro.github.io/cd2030.core/reference/get_mapping_data.md).
 
 - indicator:
 

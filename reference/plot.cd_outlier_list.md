@@ -15,7 +15,7 @@ plot(x, region_name = NULL, ...)
 - x:
 
   A `cd_outlier_list` object from
-  [`list_outlier_units()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/list_outlier_units.md).
+  [`list_outlier_units()`](https://aphrcwaro.github.io/cd2030.core/reference/list_outlier_units.md).
 
 - region_name:
 

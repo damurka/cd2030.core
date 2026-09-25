@@ -67,8 +67,8 @@ This function:
 
 ## See also
 
-[`load_csection_estimates()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/load_csection_estimates.md),
-[`prepare_private_sector_plot_data()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/prepare_private_sector_plot_data.md)
+[`load_csection_estimates()`](https://aphrcwaro.github.io/cd2030.core/reference/load_csection_estimates.md),
+[`prepare_private_sector_plot_data()`](https://aphrcwaro.github.io/cd2030.core/reference/prepare_private_sector_plot_data.md)
 
 ## Examples
 

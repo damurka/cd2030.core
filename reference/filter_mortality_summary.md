@@ -21,7 +21,7 @@ filter_mortality_summary(
 - .data:
 
   A `cd_mortality_summary` object created by
-  [`create_mortality_summary()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/create_mortality_summary.md).
+  [`create_mortality_summary()`](https://aphrcwaro.github.io/cd2030.core/reference/create_mortality_summary.md).
 
 - country_iso:
 

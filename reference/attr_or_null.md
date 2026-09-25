@@ -1,7 +1,7 @@
 # Retrieve Attribute or Return NULL if Missing
 
 A safe variant of
-[`attr_or_abort()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/attr_or_abort.md)
+[`attr_or_abort()`](https://aphrcwaro.github.io/cd2030.core/reference/attr_or_abort.md)
 that returns `NULL` instead of throwing an error when the specified
 attribute does not exist.
 

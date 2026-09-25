@@ -17,7 +17,7 @@ plot(x, ...)
 - x:
 
   A `cd_mapping_filtered` object. Created using
-  [`filter_mapping_data()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/filter_mapping_data.md),
+  [`filter_mapping_data()`](https://aphrcwaro.github.io/cd2030.core/reference/filter_mapping_data.md),
   and must include spatial geometry and metadata attributes
   (`indicator`, `palette`, `column`).
 
@@ -32,8 +32,8 @@ indicator by region and year.
 
 ## See also
 
-[`filter_mapping_data()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/filter_mapping_data.md),
-[`get_mapping_data()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/get_mapping_data.md)
+[`filter_mapping_data()`](https://aphrcwaro.github.io/cd2030.core/reference/filter_mapping_data.md),
+[`get_mapping_data()`](https://aphrcwaro.github.io/cd2030.core/reference/get_mapping_data.md)
 
 ## Examples
 

@@ -19,7 +19,7 @@ plot(x, ...)
 
   A `cd_district_reporting_rate` data frame containing reporting rate
   data, processed by
-  [`calculate_district_reporting_rate()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/calculate_district_reporting_rate.md).
+  [`calculate_district_reporting_rate()`](https://aphrcwaro.github.io/cd2030.core/reference/calculate_district_reporting_rate.md).
 
 - ...:
 

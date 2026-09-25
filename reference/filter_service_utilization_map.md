@@ -19,7 +19,7 @@ filter_service_utilization_map(
 - .data:
 
   A `cd_service_utilization` object created by
-  [`compute_service_utilization()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/compute_service_utilization.md).
+  [`compute_service_utilization()`](https://aphrcwaro.github.io/cd2030.core/reference/compute_service_utilization.md).
 
 - indicator:
 

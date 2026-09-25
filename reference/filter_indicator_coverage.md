@@ -7,7 +7,12 @@ national survey coverage value.
 ## Usage
 
 ``` r
-filter_indicator_coverage(.data, indicator, survey_coverage = 88)
+filter_indicator_coverage(
+  .data,
+  indicator,
+  survey_coverage = 88,
+  survey_year = 2024
+)
 ```
 
 ## Arguments
@@ -38,7 +43,7 @@ selects only data for the most recent available year.
 
 ## See also
 
-[`plot.cd_indicator_coverage_filtered()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/plot.cd_indicator_coverage_filtered.md)
+[`plot.cd_indicator_coverage_filtered()`](https://aphrcwaro.github.io/cd2030.core/reference/plot.cd_indicator_coverage_filtered.md)
 
 ## Examples
 

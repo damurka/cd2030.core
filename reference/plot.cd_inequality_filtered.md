@@ -17,7 +17,7 @@ plot(x, ...)
 - x:
 
   A `cd_inequality_filtered` object returned by
-  [`filter_inequality()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/filter_inequality.md).
+  [`filter_inequality()`](https://aphrcwaro.github.io/cd2030.core/reference/filter_inequality.md).
 
 - ...:
 

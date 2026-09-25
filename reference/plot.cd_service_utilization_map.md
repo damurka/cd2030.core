@@ -15,7 +15,7 @@ plot(x, ...)
 - x:
 
   A `cd_service_utilization_map` object created by
-  [`filter_service_utilization_map()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/filter_service_utilization_map.md).
+  [`filter_service_utilization_map()`](https://aphrcwaro.github.io/cd2030.core/reference/filter_service_utilization_map.md).
 
 - ...:
 

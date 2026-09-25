@@ -20,7 +20,7 @@ plot(
 - x:
 
   A data frame from
-  [`calculate_health_system_comparison()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/calculate_health_system_comparison.md).
+  [`calculate_health_system_comparison()`](https://aphrcwaro.github.io/cd2030.core/reference/calculate_health_system_comparison.md).
 
 - indicator:
 

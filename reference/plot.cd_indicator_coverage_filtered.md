@@ -16,7 +16,7 @@ plot(x, ...)
 
   A data frame of class `'cd_indicator_coverage_filtered'` as returned
   by
-  [`filter_indicator_coverage()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/filter_indicator_coverage.md).
+  [`filter_indicator_coverage()`](https://aphrcwaro.github.io/cd2030.core/reference/filter_indicator_coverage.md).
 
 - ...:
 
@@ -37,4 +37,4 @@ over-estimation.
 
 ## See also
 
-[`filter_indicator_coverage()`](https://aphrcwaro.github.io/cd2030.rmncah/reference/filter_indicator_coverage.md)
+[`filter_indicator_coverage()`](https://aphrcwaro.github.io/cd2030.core/reference/filter_indicator_coverage.md)

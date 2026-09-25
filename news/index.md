@@ -1,11 +1,5 @@
 # Changelog
 
-## cd2030.rmncah (development version)
-
-## cd2030.rmncah 1.0.3
-
-## cd2030.rmncah 1.0.2
-
-## cd2030.rmncah 1.0.1
+## cd2030.core (development version)
 
 - Initial Release
