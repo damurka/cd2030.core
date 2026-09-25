@@ -10,7 +10,7 @@
 #' @rawNamespace export(cd_coverage_plot_ui, cd_default_indicator_set, cd_default_indicators, cd_denominator_chip_keys, cd_denominator_choices, cd_denominator_options)
 #' @rawNamespace export(cd_denominator_row, cd_denominator_server, cd_denominator_ui, cd_has_maternal, cd_indicator_server, cd_indicator_ui)
 #' @rawNamespace export(cd_nav_denominators, cd_nav_national, cd_nav_quality, cd_nav_start, cd_nav_subnational, cd_only_denominators)
-#' @rawNamespace export(cd_page_header_server, cd_palette_chip, cd_population_server, cd_population_ui, cd_rate_status_cell, cd_saved_copy_name)
+#' @rawNamespace export(cd_denominator_header, cd_palette_chip, cd_population_server, cd_population_ui, cd_rate_status_cell, cd_saved_copy_name)
 #' @rawNamespace export(cd_scope, cd_scope_filters, cd_scope_server, cd_scoped_page_server, cd_scoped_page_ui)
 #' @rawNamespace export(cd_tabbed_charts_server, cd_tabbed_charts_ui, cd_table_server, cd_table_ui, cd_wizard_check_group)
 #' @rawNamespace export(cd_wizard_config, cd_wizard_field_group, cd_wizard_indicator_group, cd_wizard_national_rate_fields, cd_wizard_rate_field, cd_wizard_survey_field)

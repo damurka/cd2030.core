@@ -4,19 +4,27 @@
 #   cd_app(app_name, app_version, theme = "vaccine", nav_sections = cd_nav_sections, registry = cd_page_registry,
 #          i18n = i18n, language = language, selected_file = selected_file)
 #
-# It expects the app to have defined introduction_ui()/_server() and upload_data_ui()/_server() (the Load Data wizard).
+# `upload_ui` / `upload_server`: the app's Load Data screen (its part of the wizard), by default the app's
+# upload_data_ui() / upload_data_server() (an app package passes its own).
 # `theme`: NULL/"rmncah" (maroon), "vaccine" (blue) or "pooled" (green) -- see the App themes block of cd-ui.css.
-cd_app <- function(app_name, app_version, theme, nav_sections, registry, i18n, language, selected_file) {
+cd_app <- function(app_name, app_version, theme, nav_sections, registry, i18n, language, selected_file,
+                   upload_ui = get0("upload_data_ui", envir = parent.frame()),
+                   upload_server = get0("upload_data_server", envir = parent.frame())) {
+  if (!is.function(upload_ui) || !is.function(upload_server)) {
+    stop("cd_app() needs the app's Load Data screen: upload_ui and upload_server.", call. = FALSE)
+  }
   app_frame(
     app_name, app_version, theme, nav_sections, registry, i18n, language, selected_file,
     start_screens = list(
       cd_screen(tabName = "introduction", introduction_ui("introduction", i18n = i18n)),
-      cd_screen(tabName = "upload_data", upload_data_ui("upload_data", i18n = i18n, is_electron = !is.na(selected_file)))
+      cd_screen(tabName = "upload_data", upload_ui("upload_data", i18n = i18n, is_electron = !is.na(selected_file)))
     ),
     start_tab = "upload_data", open_tabs = c("introduction", "upload_data"),
+    # every page header shows the denominators in use
+    page_header_extra = cd_denominator_header,
     data = function(input, output, session) {
       introduction_server("introduction", selected_language = reactive(input$selected_language))
-      loaded <- upload_data_server("upload_data", i18n, selected_file, active = reactive(identical(input$tabs, "upload_data")))
+      loaded <- upload_server("upload_data", i18n, selected_file, active = reactive(identical(input$tabs, "upload_data")))
       cache <- loaded$cache
       # ready once Countdown data is loaded (a .dta/.rds upload has it at once; an Excel upload after the wizard's Finish)
       data_ready <- reactive(isTruthy(cache()) && isTruthy(cache()$countdown_data))

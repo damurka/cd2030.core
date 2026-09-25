@@ -1,0 +1,34 @@
+#' The Countdown pages, wizard, filters and app frame
+#'
+#' Exported for the apps built on this package; their arguments and use are described in the code and in the
+#' package's docs. They have no help page of their own yet.
+#'
+#' @name countdown-pages
+#' @keywords internal
+#' @aliases adjustment_changes_server adjustment_changes_ui calculate_ratios_server calculate_ratios_ui cd_admin_level_choices cd_admin_level_server
+#' @aliases cd_admin_level_ui cd_admin_parts cd_app cd_cfg cd_coverage_plot_server cd_coverage_plot_toolbar_ui
+#' @aliases cd_coverage_plot_ui cd_default_indicator_set cd_default_indicators cd_denominator_chip_keys cd_denominator_choices cd_denominator_header
+#' @aliases cd_denominator_options cd_denominator_row cd_denominator_server cd_denominator_ui cd_has_maternal cd_indicator_server
+#' @aliases cd_indicator_ui cd_nav_denominators cd_nav_national cd_nav_quality cd_nav_start cd_nav_subnational
+#' @aliases cd_only_denominators cd_palette_chip cd_population_server cd_population_ui cd_rate_status_cell cd_saved_copy_name
+#' @aliases cd_scope_filters cd_scope_server cd_scoped_page_server cd_scoped_page_ui cd_tabbed_charts_server cd_tabbed_charts_ui
+#' @aliases cd_table_server cd_table_ui cd_wizard_check_group cd_wizard_config cd_wizard_field_group cd_wizard_indicator_group
+#' @aliases cd_wizard_national_rate_fields cd_wizard_rate_field cd_wizard_survey_field cd_years_input cd_years_sync compute_step_states
+#' @aliases consistency_check_server consistency_check_ui consistency_pair_keys consistency_pair_label coverage_server coverage_trends_server
+#' @aliases coverage_trends_ui coverage_ui data_adjustment_server data_adjustment_ui data_completeness_server data_completeness_ui
+#' @aliases data_quality_server data_quality_ui den_indicators denominator_assessment_server denominator_assessment_ui denominator_selection_server
+#' @aliases denominator_selection_ui equity_server equity_ui get_national_rates inequality_server inequality_ui
+#' @aliases internal_consistency_server internal_consistency_ui introduction_server introduction_ui list_missing_units map_shapefile_server
+#' @aliases map_shapefile_ui map_survey_server map_survey_ui mapping_modal_server mapping_modal_ui mapping_provenance_banner
+#' @aliases national_coverage_server national_coverage_ui national_inequality_server national_inequality_ui national_rates_required_fields national_rates_server
+#' @aliases national_rates_ui national_target_server national_target_ui nr_field nr_group outlier_detection_server
+#' @aliases outlier_detection_ui overall_score_server overall_score_ui push_upload_on_remount reference_estimates_server reference_estimates_ui
+#' @aliases remove_years_server remove_years_ui reporting_rate_server reporting_rate_ui restore_default_control rr_indicators
+#' @aliases shapefile_step_server shapefile_step_ui step_map_mapping_complete step_national_rates_complete step_quality_complete step_shapefile_complete
+#' @aliases step_shapefile_touched step_survey_files_complete step_survey_mapping_complete step_upload_complete subnational_coverage_server subnational_coverage_ui
+#' @aliases subnational_denominator_server subnational_denominator_ui subnational_inequality_server subnational_inequality_ui subnational_mapping_server subnational_mapping_ui
+#' @aliases subnational_target_server subnational_target_ui survey_comparison_server survey_comparison_ui survey_estimates_required_fields survey_fields
+#' @aliases survey_upload_server survey_upload_ui target_server target_ui upload_box_server upload_box_ui
+#' @aliases wizard_fields wizard_landing_server wizard_landing_ui wizard_step_defs wizard_steps_server wizard_steps_ui
+NULL
+

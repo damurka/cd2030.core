@@ -18,11 +18,15 @@ introduction_server <- function(id, selected_language) {
       ns <- session$ns
 
       output$localized_markdown <- renderUI({
+        # the language picked, else the one on screen (the picker has not sent one yet when the app starts)
         lang <- selected_language()
-        file_path <- str_glue("help/0_intro_{lang}.md")
-        fallback <- "help/0_intro_en.md"
-
-        includeMarkdown(if (file.exists(file_path)) file_path else fallback)
+        if (!is.character(lang) || length(lang) != 1 || !nzchar(lang)) {
+          lang <- tryCatch(cd_i18n()$get_translation_language(), error = function(e) "en")
+        }
+        help_dir <- getOption("cd2030.help_dir", "help")
+        file_path <- file.path(help_dir, paste0("0_intro_", lang, ".md"))
+        if (!file.exists(file_path)) file_path <- file.path(help_dir, "0_intro_en.md")
+        includeMarkdown(file_path)
       })
     }
   )

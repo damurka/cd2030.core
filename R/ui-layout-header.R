@@ -19,39 +19,12 @@ cd_denominator_row <- function(vaccination, maternal = NULL, i18n) {
   )
 }
 
-# `key`: the page's standard report (cd2030.core::report_presets()) and its id in the notes store.
-cd_page_header_server <- function(id, cache, path, section = NULL, i18n, key = id) {
-  stopifnot(is.reactive(cache))
-
-  moduleServer(
-    id = id,
-    module = function(input, output, session) {
-
-      output$denominator <- renderUI({
-        req(cache(), cache()$denominator)
-        if (!cd_has_maternal()) return(cd_denominator_row(cache()$denominator, NULL, i18n))
-        req(cache()$maternal_denominator)
-        cd_denominator_row(cache()$denominator, cache()$maternal_denominator, i18n)
-      })
-
-      # the page's standard report opens in the report builder (modules/reports.R), which asks for its name
-      observeEvent(input$report, cd_request_report(session, key))
-
-      cd_help_button_server(
-        id = 'get_help',
-        path = path,
-        section = section,
-        cache = cache
-      )
-
-      cd_notes_button_server(
-        id = 'add_notes',
-        cache = cache,
-        document_objects = if (!is.null(objects)) objects[[key]] else NULL,
-        page_id = key,
-        page_name = md_title,
-        i18n = i18n
-      )
-    }
-  )
+# The page header's denominator row (datasuite.ui's cd_page_header_server() runs it on every page, see cd_app())
+cd_denominator_header <- function(input, output, session, cache, i18n) {
+  output$denominator <- renderUI({
+    req(cache(), cache()$denominator)
+    if (!cd_has_maternal()) return(cd_denominator_row(cache()$denominator, NULL, i18n))
+    req(cache()$maternal_denominator)
+    cd_denominator_row(cache()$denominator, cache()$maternal_denominator, i18n)
+  })
 }
