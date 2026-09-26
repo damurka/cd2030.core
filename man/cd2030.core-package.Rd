@@ -4,16 +4,44 @@
 \name{cd2030.core-package}
 \alias{cd2030.core}
 \alias{cd2030.core-package}
-\title{cd2030.core: Data Loading, Validation, and Reporting for Countdown 2030}
+\title{cd2030.core: Countdown to 2030 analysis of routine health facility data}
 \description{
-cd2030.core is an R package for managing and validating data formatted according to Countdown 2030 standards. It provides tools for data loading, cleaning, and validation, detecting issues like missing values, inconsistencies, outliers, and ratio anomalies. The package ensures compliance with Countdown 2030 guidelines and generates standardized data quality reports, enabling users to focus on analysis and interpretation.
+Loads a country's routine facility data (the Countdown Excel workbook, or a Stata \code{.dta} master file), checks its
+quality, adjusts it for incomplete reporting and outliers, chooses denominators, and computes coverage, inequality,
+mortality, service utilization, health system and family planning indicators, with a chart (\code{plot()}) for each
+result. The Countdown apps -- cd2030.rmncah, cd2030.vaxx and cd2030.pooled -- are Shiny front ends to it, built from
+the pages, wizard and app frame it exports, on datasuite.ui's interface kit and report builder.
 }
+\section{Where to start}{
+
+\itemize{
+\item \strong{A dataset:} \code{\link[=load_cache_data]{load_cache_data()}} opens a workbook or a saved \code{.rds} as a \link{CacheConnection}, the object that holds
+one dataset and every choice made about it (adjustments, denominators, surveys, mappings, chart options, saved
+reports) and saves them to the \code{.rds} next to the data file. \code{\link[=load_data]{load_data()}} gives just the checked data;
+\code{\link[=init_CacheConnection]{init_CacheConnection()}} makes the object from data or an \code{.rds}.
+\item \strong{Data quality:} \code{\link[=calculate_average_reporting_rate]{calculate_average_reporting_rate()}}, \code{\link[=calculate_completeness_summary]{calculate_completeness_summary()}},
+\code{\link[=calculate_outliers_summary]{calculate_outliers_summary()}}, \code{\link[=calculate_ratios_summary]{calculate_ratios_summary()}}, \code{\link[=calculate_overall_score]{calculate_overall_score()}}; the Load Data
+wizard's checks, \code{\link[=run_all_quality_checks]{run_all_quality_checks()}}.
+\item \strong{Adjustment:} \code{\link[=generate_adjustment_values]{generate_adjustment_values()}}, \code{\link[=adjust_service_data]{adjust_service_data()}}.
+\item \strong{Denominators and coverage:} \code{\link[=prepare_population_metrics]{prepare_population_metrics()}}, \code{\link[=calculate_indicator_coverage]{calculate_indicator_coverage()}},
+\code{\link[=calculate_coverage]{calculate_coverage()}}, \code{\link[=calculate_inequality]{calculate_inequality()}}.
+\item \strong{Further analyses:} \code{\link[=create_mortality_summary]{create_mortality_summary()}}, \code{\link[=compute_service_utilization]{compute_service_utilization()}},
+\code{\link[=calculate_health_system_metrics]{calculate_health_system_metrics()}}, \code{\link[=generate_fpet_summary]{generate_fpet_summary()}}, \code{\link[=generate_bayes_model]{generate_bayes_model()}}.
+\item \strong{Reports:} \code{\link[=report_presets]{report_presets()}} (the standard reports) and \code{\link[=export_report]{export_report()}} (Word, PDF, PowerPoint).
+\item \strong{Indicator groups:} \code{\link[=list_indicator_groups]{list_indicator_groups()}}, \code{\link[=set_selected_group]{set_selected_group()}}, \code{\link[=register_indicator_group]{register_indicator_group()}}.
+\item \strong{Apps:} \link{countdown-pages} (\code{cd_app()} and the pages every Countdown app shares).
+\item \strong{AI analysis:} \code{\link[=cd2030_mcp_server]{cd2030_mcp_server()}}.
+}
+
+The README (\url{https://github.com/damurka/cd2030.core}) explains how the packages fit together, how an app is built on
+this one, and how to develop and release it.
+}
+
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://aphrcwaro.github.io/cd2030.core/}
-  \item \url{https://github.com/aphrcwaro/cd2030.core}
-  \item Report bugs at \url{https://github.com/aphrcwaro/cd2030.core/issues}
+  \item \url{https://github.com/damurka/cd2030.core}
+  \item Report bugs at \url{https://github.com/damurka/cd2030.core/issues}
 }
 
 }

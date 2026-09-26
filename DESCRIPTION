@@ -18,7 +18,7 @@ Description: cd2030.core is an R package for managing and validating data format
     guidelines and generates standardized data quality reports, enabling users to 
     focus on analysis and interpretation.
 License: AGPL (>= 3)
-URL: https://aphrcwaro.github.io/cd2030.core/, https://github.com/aphrcwaro/cd2030.core
+URL: https://github.com/damurka/cd2030.core
 Imports: 
     cli (>= 3.6.2),
     datasuite.ui (>= 0.1.0),
@@ -77,7 +77,7 @@ Roxygen: list(markdown = TRUE)
 Depends: 
     R (>= 4.1)
 LazyData: true
-BugReports: https://github.com/aphrcwaro/cd2030.core/issues
+BugReports: https://github.com/damurka/cd2030.core/issues
 Config/testthat/edition: 3
 Config/roxygen2/version: 8.0.0
 RoxygenNote: 8.0.0

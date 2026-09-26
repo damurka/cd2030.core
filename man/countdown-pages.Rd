@@ -154,7 +154,47 @@
 \alias{wizard_steps_ui}
 \title{The Countdown pages, wizard, filters and app frame}
 \description{
-Exported for the apps built on this package; their arguments and use are described in the code and in the
-package's docs. They have no help page of their own yet.
+The Shiny pieces every Countdown app (cd2030.rmncah, cd2030.vaxx, and apps on a custom indicator group) is built
+from, on datasuite.ui's interface kit. They have no help page each; their arguments are described where they are
+defined (\verb{R/ui-*.R}), and the kit's own components in datasuite.ui's \code{docs/COMPONENTS.md}.
+}
+\details{
+\strong{The app.} \code{cd_app(app_name, app_version, theme, nav_sections, registry, i18n, language, selected_file, upload_ui, upload_server)} returns the Shiny app: datasuite.ui's \code{app_frame()} with the Introduction and Load Data
+screens, the dataset header (with its denominator row, \code{cd_denominator_header()}) and the app's pages. An app's
+\code{run_app()} sets its options, builds its translator, lists its pages and nav tree, and calls it -- see
+\code{cd2030.rmncah::run_app()} for a complete one. The standard sidebar sections are \code{cd_nav_start()},
+\code{cd_nav_quality()}, \code{cd_nav_denominators()}, \code{cd_nav_national()} and \code{cd_nav_subnational()}.
+
+\strong{Per-app settings.} An app sets \code{options(cd2030.config = list(...))} once; the pages read it with
+\code{cd_cfg(key, default)}. Keys: \code{nat_cov_indicators}, \code{target_indicators}, \code{equity_indicators},
+\code{cov_trend_indicators}, \code{sub_derived_indicators}, \code{survey_comp_indicators}, \code{adjustment_indicators}, \code{k_factors},
+\code{reporting_rate_indicators}, \code{reporting_rate_facet_ncol}, \code{consistency_pairs}, \code{has_maternal} (see
+\code{R/ui-core-config.R}). The indicator group is pinned with \code{set_selected_group()} and
+\code{options(cd2030.app_group = ...)}; the Introduction page's help comes from \code{options(cd2030.help_dir = ...)}.
+
+\strong{Pages.} Each is a \verb{<stem>_ui(id, i18n)} / \verb{<stem>_server(id, cache, i18n, ...)} pair taking the dataset
+(\link{CacheConnection}) as a reactive:
+\itemize{
+\item data quality: \code{data_quality}, \code{reporting_rate}, \code{data_completeness}, \code{outlier_detection}, \code{consistency_check},
+\code{internal_consistency}, \code{overall_score}, \code{calculate_ratios};
+\item adjustment: \code{remove_years}, \code{data_adjustment}, \code{adjustment_changes};
+\item denominators: \code{denominator_assessment}, \code{denominator_selection}, \code{subnational_denominator};
+\item national and sub-national analysis: \code{national_coverage}, \code{subnational_coverage}, \code{coverage}, \code{coverage_trends},
+\code{national_inequality}, \code{subnational_inequality}, \code{inequality}, \code{equity}, \code{national_target}, \code{subnational_target},
+\code{target}, \code{survey_comparison}, \code{subnational_mapping}.
+}
+
+The Introduction page (\code{introduction_ui(id, i18n)}, \code{introduction_server(id, selected_language)}) shows the app's
+help in the chosen language; \code{cd_app()} adds it.
+
+\strong{The Load Data wizard.} \verb{upload_box_*}, \verb{wizard_steps_*} and \verb{wizard_landing_*} make the screen; its steps are
+\code{wizard_step_defs} (upload, data quality, survey files, national rates, shapefile, survey and map mappings), each with
+a \verb{step_*_complete()} test, and \code{compute_step_states()} works out which are done, blocked or optional. The steps'
+pages are \verb{national_rates_*}, \verb{survey_upload_*}, \verb{reference_estimates_*}, \verb{shapefile_step_*}, \verb{map_survey_*} and
+\verb{map_shapefile_*}; \verb{cd_wizard_*} build their fields.
+
+\strong{Filters and building blocks.} \verb{cd_admin_level_*}, \verb{cd_indicator_*}, \verb{cd_denominator_*}, \verb{cd_population_*},
+\code{cd_years_input()} / \code{cd_years_sync()}, the scoped page (\code{cd_scope()}, \verb{cd_scoped_page_*}, \code{cd_scope_filters()}),
+tabbed charts (\verb{cd_tabbed_charts_*}), tables (\verb{cd_table_*}) and the coverage chart card (\verb{cd_coverage_plot_*}).
 }
 \keyword{internal}

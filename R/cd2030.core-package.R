@@ -1,3 +1,33 @@
+#' cd2030.core: Countdown to 2030 analysis of routine health facility data
+#'
+#' @description
+#' Loads a country's routine facility data (the Countdown Excel workbook, or a Stata `.dta` master file), checks its
+#' quality, adjusts it for incomplete reporting and outliers, chooses denominators, and computes coverage, inequality,
+#' mortality, service utilization, health system and family planning indicators, with a chart (`plot()`) for each
+#' result. The Countdown apps -- cd2030.rmncah, cd2030.vaxx and cd2030.pooled -- are Shiny front ends to it, built from
+#' the pages, wizard and app frame it exports, on datasuite.ui's interface kit and report builder.
+#'
+#' @section Where to start:
+#' * **A dataset:** [load_cache_data()] opens a workbook or a saved `.rds` as a [CacheConnection], the object that holds
+#'   one dataset and every choice made about it (adjustments, denominators, surveys, mappings, chart options, saved
+#'   reports) and saves them to the `.rds` next to the data file. [load_data()] gives just the checked data;
+#'   [init_CacheConnection()] makes the object from data or an `.rds`.
+#' * **Data quality:** [calculate_average_reporting_rate()], [calculate_completeness_summary()],
+#'   [calculate_outliers_summary()], [calculate_ratios_summary()], [calculate_overall_score()]; the Load Data
+#'   wizard's checks, [run_all_quality_checks()].
+#' * **Adjustment:** [generate_adjustment_values()], [adjust_service_data()].
+#' * **Denominators and coverage:** [prepare_population_metrics()], [calculate_indicator_coverage()],
+#'   [calculate_coverage()], [calculate_inequality()].
+#' * **Further analyses:** [create_mortality_summary()], [compute_service_utilization()],
+#'   [calculate_health_system_metrics()], [generate_fpet_summary()], [generate_bayes_model()].
+#' * **Reports:** [report_presets()] (the standard reports) and [export_report()] (Word, PDF, PowerPoint).
+#' * **Indicator groups:** [list_indicator_groups()], [set_selected_group()], [register_indicator_group()].
+#' * **Apps:** [countdown-pages] (`cd_app()` and the pages every Countdown app shares).
+#' * **AI analysis:** [cd2030_mcp_server()].
+#'
+#' The README (<https://github.com/damurka/cd2030.core>) explains how the packages fit together, how an app is built on
+#' this one, and how to develop and release it.
+#'
 #' @keywords internal
 #' @import dplyr
 #' @import flextable
