@@ -9,7 +9,8 @@ init_CacheConnection(
   countdown_data = NULL,
   data_path = NULL,
   wizard_parts = NULL,
-  indicator_group = c("auto", "rmncah", "vaccine", "custom")
+  indicator_group = c("auto", "rmncah", "vaccine", "custom"),
+  read_only = FALSE
 )
 }
 \arguments{
@@ -26,6 +27,9 @@ alongside \code{rds_path}/\code{countdown_data} for the Load Data wizard's own i
 \code{CacheConnection$initialize}'s own \code{wizard_parts} doc).}
 
 \item{indicator_group}{Character. Specifies the indicator group to use (auto, rmncah, vaccine, custom).}
+
+\item{read_only}{Logical. \code{TRUE} never writes the cache back to its \code{.rds}: for reading a dataset another process
+(the app) owns, e.g. the AI's copy.}
 }
 \value{
 An instance of the \code{CacheConnection} class.

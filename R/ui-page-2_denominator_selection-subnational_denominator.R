@@ -34,6 +34,7 @@ subnational_denominator_server <- function(id, cache, i18n, active = reactive(TR
 
           cd_coverage_plot_server(
             id = id, # or just ind if inside the same module id
+            about = .cd_about("derived_coverage", indicator = current_indicator, admin_level = "adminlevel_1"),
             filename = reactive(paste0(current_indicator, "_adminlevel_1_derived_coverage")),
             data_fn = derived_data,
             sheet_name = reactive(i18n$t(paste0("opt_", current_indicator))),

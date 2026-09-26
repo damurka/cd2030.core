@@ -1,3 +1,21 @@
+# cd2030.core 1.2.0
+
+For the Countdown AI in DataSuite (countdown-analytics/docs/AI-PLAN.md), everything around `CacheConnection`:
+
+* The MCP server (`cd2030_mcp_server()` and its tools) is removed; the AI works from `CacheConnection` itself.
+* `cache_manifest()`: every public member of `CacheConnection` with its arguments (defaults, allowed values), its
+  documentation and whether it writes or can be charted, plus the report kinds, read from the installed package.
+* `CacheConnection$decompose_change()`: which districts (or regions) drive a change in an indicator's coverage between
+  two years, split into service delivery and denominator, with a reporting-rate flag.
+* `CacheConnection$revision` goes up with every saved change; `init_CacheConnection(read_only = TRUE)` opens a dataset
+  without ever writing it (the AI's copy).
+* Custom charts: report kind `custom_chart` (data from a `CacheConnection` member, fixed transforms, a plot
+  description; never code), `cd_chartable_members()`, `cd_member_data()`, `cd_custom_chart_data()`, and saved graphs
+  in the dataset (`set_graph()`, `graphs`), which reports can use.
+* The AI bridge: the Countdown pages' charts and tables say which report kind they are and with which options; the
+  state has the dataset's path, country and revision; new actions `saveReport`, `addGraph` and `generateReport`.
+* Requires datasuite.ui 0.2.0.
+
 # cd2030.core 1.1.1
 
 Documentation only; no change to the code.

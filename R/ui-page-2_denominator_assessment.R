@@ -33,6 +33,7 @@ denominator_assessment_server <- function(id, cache, i18n, active = reactive(TRU
           
           cd_coverage_plot_server(
             id = id, # or just ind if inside the same module id
+            about = .cd_about("denominator_trend", variant = current_indicator),
             filename = reactive(paste0(current_indicator, "_plot")),
             data_fn = denominators,
             sheet_name = reactive(i18n$t(paste0("opt_", current_indicator))),

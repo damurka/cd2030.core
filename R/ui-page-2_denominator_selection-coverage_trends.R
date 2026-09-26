@@ -32,6 +32,7 @@ coverage_trends_server <- function(id, cache, admin_level, region, i18n, active 
 
           cd_coverage_plot_server(
             id = id, # or just ind if inside the same module id
+            about = .cd_about("derived_coverage_trend", indicator = current_indicator, admin_level = admin_level, region = region),
             filename = reactive(paste0("sheet_", current_indicator, "_derived_coverage")),
             data_fn = coverage,
             sheet_name = reactive(i18n$t(paste0(current_indicator, "_derived_coverage"))),

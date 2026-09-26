@@ -62,7 +62,9 @@ cd_table_server <- function(
     excel_write_fun = NULL, # function(wb, data) writes workbook
     # or, for the data on one sheet, the translation keys of its sheet name and (optional) title -- see cd_sheet_writer()
     excel_sheet = NULL,
-    excel_title = NULL
+    excel_title = NULL,
+    # what this table is, for the app's AI (see datasuite.ui::ai_register_component())
+    about = NULL
 ) {
     if (is.null(excel_write_fun) && !is.null(excel_sheet)) excel_write_fun <- cd_sheet_writer(i18n, excel_sheet, excel_title)
   stopifnot(is.reactive(cache))
@@ -75,8 +77,15 @@ cd_table_server <- function(
   moduleServer(
     id = id,
     module = function(input, output, session) {
-      
-      
+      # DataSuite's chat can list this table and read what it shows (the data its download writes)
+      datasuite.ui::ai_register_component(session, output_id = session$ns("table"), type = "table",
+        data = function() {
+          d <- data()
+          if (!is.null(data_transform) && is.function(data_transform)) d <- data_transform(d)
+          d
+        },
+        about = about)
+
       selected_value <- if (control_type == "year") {
         
         # The years come from the cache. They are pushed once the chip is on the page (a message to a chip that

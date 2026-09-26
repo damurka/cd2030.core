@@ -100,6 +100,7 @@ consistency_check_server <- function(id, cache, i18n, active = reactive(TRUE)) {
           y <- pairs[[i]][[2]]
           cd_plot_server(
             id = keys[[i]],
+            about = .cd_about("consistency", variant = keys[[i]]),
             i18n = i18n,
             plot_data = data,
             plot_filename = reactive(paste0(keys[[i]], "_plot")),
@@ -122,6 +123,7 @@ consistency_check_server <- function(id, cache, i18n, active = reactive(TRUE)) {
 
       cd_plot_server(
         id = "custom_graph",
+        about = .cd_about(NULL),
         i18n = i18n,
         plot_data = data,
         plot_filename = reactive(paste0(x_label(), "_", y_label(), "_plot")),

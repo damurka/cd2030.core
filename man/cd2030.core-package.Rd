@@ -30,7 +30,6 @@ wizard's checks, \code{\link[=run_all_quality_checks]{run_all_quality_checks()}}
 \item \strong{Reports:} \code{\link[=report_presets]{report_presets()}} (the standard reports) and \code{\link[=export_report]{export_report()}} (Word, PDF, PowerPoint).
 \item \strong{Indicator groups:} \code{\link[=list_indicator_groups]{list_indicator_groups()}}, \code{\link[=set_selected_group]{set_selected_group()}}, \code{\link[=register_indicator_group]{register_indicator_group()}}.
 \item \strong{Apps:} \link{countdown-pages} (\code{cd_app()} and the pages every Countdown app shares).
-\item \strong{AI analysis:} \code{\link[=cd2030_mcp_server]{cd2030_mcp_server()}}.
 }
 
 The README (\url{https://github.com/damurka/cd2030.core}) explains how the packages fit together, how an app is built on

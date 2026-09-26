@@ -53,6 +53,7 @@ adjustment_changes_server <- function(id, cache, i18n, active = reactive(TRUE)) 
 
           cd_coverage_plot_server(
             id = id, # or just ind if inside the same module id
+            about = .cd_about("adj_comparison", indicator = current_indicator),
             filename = reactive(paste0(current_indicator, "_adjustement_changes")),
             data_fn = custom_adjustments,
             sheet_name = reactive(i18n$t(paste0("opt_", current_indicator))),

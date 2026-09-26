@@ -167,6 +167,14 @@ post-Finish page, not something the wizard itself needs a pre-merge equivalent f
 \item{\code{report_assets}}{Active Binding: the pictures the reports use, a named list by id of \code{list(type, data)}
 (read-only; use \code{set_report_asset()}).}
 
+\item{\code{graphs}}{Active Binding: the saved custom charts, a named list by id of their descriptions (read-only;
+use \code{set_graph()}).}
+
+\item{\code{revision}}{Active Binding: a number that goes up each time a change to the dataset is saved, so another
+process reading the same \code{.rds} (the AI's copy) knows to reload (read-only).}
+
+\item{\code{read_only}}{Active Binding: whether this cache never writes its \code{.rds} (read-only).}
+
 \item{\code{report_themes}}{Active Binding: the themes made from Office files, a named list by id (read-only; use
 \code{set_report_theme()}).}
 
@@ -270,6 +278,7 @@ Invalidate Health Systems Cache}
 \item \href{#method-CacheConnection-filter_service_utilization}{\code{CacheConnection$filter_service_utilization()}}
 \item \href{#method-CacheConnection-prepare_mapping_service_utlization}{\code{CacheConnection$prepare_mapping_service_utlization()}}
 \item \href{#method-CacheConnection-get_denominator}{\code{CacheConnection$get_denominator()}}
+\item \href{#method-CacheConnection-decompose_change}{\code{CacheConnection$decompose_change()}}
 \item \href{#method-CacheConnection-reactive}{\code{CacheConnection$reactive()}}
 \item \href{#method-CacheConnection-set_language}{\code{CacheConnection$set_language()}}
 \item \href{#method-CacheConnection-set_cache_path}{\code{CacheConnection$set_cache_path()}}
@@ -297,6 +306,7 @@ Invalidate Health Systems Cache}
 \item \href{#method-CacheConnection-set_mapping_years}{\code{CacheConnection$set_mapping_years()}}
 \item \href{#method-CacheConnection-set_chart_options}{\code{CacheConnection$set_chart_options()}}
 \item \href{#method-CacheConnection-set_report_project}{\code{CacheConnection$set_report_project()}}
+\item \href{#method-CacheConnection-set_graph}{\code{CacheConnection$set_graph()}}
 \item \href{#method-CacheConnection-set_report_asset}{\code{CacheConnection$set_report_asset()}}
 \item \href{#method-CacheConnection-set_report_theme}{\code{CacheConnection$set_report_theme()}}
 \item \href{#method-CacheConnection-get_chart_options}{\code{CacheConnection$get_chart_options()}}
@@ -373,7 +383,8 @@ Initialize a CacheConnection instance.
   rds_path = NULL,
   countdown_data = NULL,
   data_path = NULL,
-  wizard_parts = NULL
+  wizard_parts = NULL,
+  read_only = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -399,6 +410,8 @@ have been read and cleaned but not yet merged/standardized into a real \code{cd_
 there's no \code{countdown_data} yet -- see \code{wizard_parts}/\code{country}/\code{country_iso}'s own active
 bindings below for how the rest of the class degrades gracefully until \code{set_countdown_data()}
 is finally called (at Finish, once \code{merge_and_standardize()} has run).}
+
+\item{\code{read_only}}{\code{TRUE} never writes the cache back to its \code{.rds} (see \code{init_CacheConnection()}).}
 }
 \if{html}{\out{</div>}}
 }
@@ -668,6 +681,50 @@ Resolves the appropriate denominator column string based on the indicator catego
 \item{\code{indicator}}{Character. The indicator name.}
 }
 \if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-decompose_change"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-decompose_change}{}}}
+\subsection{Method \code{decompose_change()}}{
+Which units drive a change in an indicator's coverage between two years: for each district (or
+region) its count and denominator in both years, its coverage change, and its contribution in percentage
+points to the change at the level above -- split into service delivery (its change in count) and its share of
+the denominator's change -- with its reporting rate, flagged when reporting was low or fell, since a drop may
+be missing reports rather than fewer services. Denominators are the ones the app's coverage uses (count /
+coverage), so the parts add up to the change the app shows.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$decompose_change(
+  indicator,
+  from_year,
+  to_year,
+  admin_level = c("district", "adminlevel_1"),
+  region = NULL,
+  denominator = NULL
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{indicator}}{Character. One indicator, e.g. \code{"anc4"}.}
+
+\item{\code{from_year, to_year}}{The two years to compare.}
+
+\item{\code{admin_level}}{\code{"district"} or \code{"adminlevel_1"}: the units to attribute the change to.}
+
+\item{\code{region}}{Optional first-level region(s): attribute a region's change to its districts.}
+
+\item{\code{denominator}}{Optional denominator source (\code{"dhis2"}, \code{"anc1"}, \code{"penta1"}, ...); by default the one
+selected for the indicator (\code{get_denominator()}).}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A data frame, one row per unit, sorted by contribution (the units pulling the change most first):
+\code{num_from}, \code{num_to}, \code{den_from}, \code{den_to}, \code{cov_from}, \code{cov_to}, \code{cov_change}, \code{contribution_service},
+\code{contribution_denominator}, \code{contribution}, \code{reporting_from}, \code{reporting_to}, \code{reporting_flag}; attribute
+\code{total} has the level above's coverage in both years and its change.
 }
 }
 \if{html}{\out{<hr>}}
@@ -1149,6 +1206,27 @@ Saves a report built in the report builder (see \code{\link[=export_report]{expo
 \item{\code{id}}{Character. The report's id.}
 
 \item{\code{project}}{A list: \code{name}, \code{design} and \code{blocks} (see \code{\link[=report_presets]{report_presets()}}), or \code{NULL} to remove the report.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-set_graph"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_graph}{}}}
+\subsection{Method \code{set_graph()}}{
+Saves a custom chart (report kind \code{custom_chart}: where its data comes from, transforms and a plot
+description -- see \code{datasuite.ui::report_validate_spec()}), or removes it. Saved graphs redraw from the
+data like every other chart and can be added to any report.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_graph(id, spec)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{id}}{Character. The graph's id.}
+
+\item{\code{spec}}{The chart's description, checked with \code{datasuite.ui::report_validate_spec()}, or \code{NULL} to remove it.}
 }
 \if{html}{\out{</div>}}
 }

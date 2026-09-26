@@ -54,12 +54,13 @@ report_block_kinds <- function(group = get_selected_group()) {
 
 # The groups of kinds, in the order of the analysis (the palette shows them in this order)
 .rb_group_order <- c("quality", "adjustment", "denominators", "national", "subnational", "region", "mortality", "utilization",
-                     "health_system", "private_sector")
+                     "health_system", "private_sector", "custom")
 
 .rb_core_kinds <- function() {
   k <- .rb_kind
   rmncah <- c("rmncah")
   list(
+    custom_chart = k("chart", "custom", "Custom chart"),
     coverage = k("chart", "national", "Coverage trend: DHIS2 and survey", "analysis", c("national", "adminlevel_1")),
     continuum = k("chart", "national", "Continuum of care", levels = "national", variants = c(maternal = "Maternal", child = "Child"), groups = rmncah),
     threshold = k("chart", "national", "Districts reaching the target", c("anc4", "instlivebirths", "vaccine", "dropout"), tall = TRUE),
@@ -99,6 +100,16 @@ report_block_kinds <- function(group = get_selected_group()) {
 .rb_ind_name <- function(i18n, indicator) .rb_t(i18n, paste0("opt_", indicator), indicator)
 
 
+# A custom chart (kind "custom_chart"): its description is the block's `spec`, or a saved graph's (`graph` = its id in
+# the dataset's graphs). Data, never code: a CacheConnection member, fixed transforms and a plot description.
+.rb_draw_custom <- function(cache, b) {
+  spec <- b$spec
+  if (is.null(spec) && !is.null(b$graph)) spec <- cache$graphs[[b$graph]]
+  if (is.null(spec)) cd_abort(c("x" = "This custom chart has no description: it is made by the AI, or saved in the dataset's graphs."))
+  data <- cd_custom_chart_data(cache, spec)
+  datasuite.ui::report_plot_spec(data, spec$plot, title = b$title %||% spec$title)
+}
+
 .rb_draw <- function(cache, b, i18n) {
   t <- function(key, fallback) .rb_t(i18n, key, fallback)
   kind <- b$kind %||% "coverage"
@@ -116,6 +127,7 @@ report_block_kinds <- function(group = get_selected_group()) {
 
   switch(
     kind,
+    custom_chart = .rb_draw_custom(cache, b),
     coverage = {
       if (identical(level, "national")) region <- NULL
       where <- if (is.null(region)) t("opt_national", "National") else region

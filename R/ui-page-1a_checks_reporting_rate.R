@@ -158,6 +158,7 @@ reporting_rate_server <- function(id, cache, i18n, active = reactive(TRUE)) {
       rr_subnational_chart <- function(current_indicator) {
         cd_coverage_plot_server(
           id = current_indicator,
+          about = .cd_about("dq_reporting_units", variant = current_indicator, indicator = indicator_val, admin_level = admin_level, region = region),
           filename = reactive(paste0("rr_", current_indicator, "_plot")),
           data_fn = subnational_rr,
           sheet_name = reactive(i18n$t("title_rr_average")),
@@ -190,6 +191,7 @@ reporting_rate_server <- function(id, cache, i18n, active = reactive(TRUE)) {
 
       cd_plot_server(
         id = "rr_national",
+        about = .cd_about("reporting_rate"),
         i18n = i18n,
         plot_data = district_rr,
         plot_filename = reactive("rr_national_plot"),
@@ -221,6 +223,7 @@ reporting_rate_server <- function(id, cache, i18n, active = reactive(TRUE)) {
         i18n,
         control_type = "year",
         data = district_low_rr,
+        about = .cd_about(NULL, indicator = indicator_val),
         columns = c(
           set_names(
             list(

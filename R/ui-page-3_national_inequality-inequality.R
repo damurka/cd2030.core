@@ -31,6 +31,7 @@ inequality_server <- function(id, cache, i18n, admin_level, region = reactive(NU
 
           cd_coverage_plot_server(
             id = id, # or just ind if inside the same module id
+            about = .cd_about("inequality", indicator = current_indicator, admin_level = admin_level, region = region, denominator = denom_rx),
             filename = reactive(paste0(current_indicator, "_", admin_level(), "_inequality_", denom_rx())),
             data_fn = data_rx,
             sheet_name = reactive(i18n$t(paste0("opt_", current_indicator))),

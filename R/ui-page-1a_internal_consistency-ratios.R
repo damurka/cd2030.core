@@ -25,6 +25,7 @@ calculate_ratios_server <- function(id, cache, i18n, active = reactive(TRUE)) {
 
       cd_plot_server(
         id = "ratios",
+        about = .cd_about("dq_ratios"),
         i18n = i18n,
         plot_data = ratio_summary,
         plot_filename = reactive("ratio_plot"),

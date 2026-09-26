@@ -58,7 +58,7 @@ install.packages(
 
 Many features use suggested packages: PDF export (chromote with Chrome,
 or Word/LibreOffice), editable PowerPoint charts (rvg), pictures
-(magick, rsvg, svglite, ragg), the MCP server (mcptools, ellmer), the
+(magick, rsvg, svglite, ragg), the
 Bayesian model. Install them with `dependencies = TRUE`. DataSuite
 installs them for the apps.
 
@@ -112,9 +112,6 @@ The functions are grouped by analysis step in the reference
   `cd_chart_options()`, re-exported here). `report_presets()` are
   Countdown’s standard reports; `export_report()` (datasuite.ui,
   re-exported) writes any report for a dataset.
-- **AI analysis.** `cd2030_mcp_server()` runs an MCP server with
-  read-only tools over a dataset’s `.rds`, for an AI assistant
-  (`Rscript -e "cd2030.core::cd2030_mcp_server()"`).
 
 ## Building an app on it
 

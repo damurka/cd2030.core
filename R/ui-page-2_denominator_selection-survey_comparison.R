@@ -90,6 +90,7 @@ survey_comparison_server <- function(id, cache, admin_level, region, i18n, activ
 
           cd_coverage_plot_server(
             id = current_indicator,
+            about = .cd_about(NULL, indicator = current_indicator),
             filename = reactive(paste0(current_indicator, "_plot")),
             data_fn = coverage,
             sheet_name = reactive(i18n$t(paste0("opt_", current_indicator))),

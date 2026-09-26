@@ -285,13 +285,15 @@ reference:
       - '`countdown-pages`'
       - cd_scope
 
-  - title: "AI Analysis (MCP)"
+  - title: "The Countdown AI"
     desc: >
-      An MCP server that lets an AI assistant open a dataset's .rds cache and run the package's analysis on it.
+      What DataSuite's Countdown AI reads from the package: CacheConnection's members, custom charts.
     contents:
-      - cd2030_mcp_server
-      - mcp_tools
-      - mcp_session
+      - cache_manifest
+      - cd_chartable_members
+      - cd_member_data
+      - cd_custom_chart_data
+
 
   - title: "Utility Functions"
     desc: >

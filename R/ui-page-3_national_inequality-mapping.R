@@ -28,6 +28,7 @@ subnational_mapping_server <- function(id, cache, i18n, palette, selected_tab, a
 
           cd_coverage_plot_server(
             id = id, # or just ind if inside the same module id
+            about = .cd_about("map", indicator = current_indicator, denominator = denom_rx),
             filename = reactive(paste0(current_indicator, "_adminlevel_1_map_", denom_rx())),
             data_fn = data_rx,
             sheet_name = reactive(i18n$t(paste0("opt_", current_indicator))),

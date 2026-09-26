@@ -115,6 +115,7 @@ data_completeness_server <- function(id, cache, i18n, active = reactive(TRUE)) {
         i18n,
         control_type = "year",
         data = incomplete_district,
+        about = .cd_about(NULL, indicator = indicator),
         columns = list(indicator = colDef(name = i18n$t("title_global_indicator"))),
         filename = reactive(paste0("checks_incomplete_districts_", indicator())),
         excel_write_fun = function(wb, d) {
@@ -124,6 +125,7 @@ data_completeness_server <- function(id, cache, i18n, active = reactive(TRUE)) {
 
       cd_plot_server(
         id = "completeness_heatmap",
+        about = .cd_about("dq_completeness_units", variant = "heat_map", indicator = indicator, admin_level = admin_level, region = region),
         i18n = i18n,
         plot_data = completeness_summary,
         plot_filename = reactive("completeness_heatmap"),
@@ -168,6 +170,7 @@ data_completeness_server <- function(id, cache, i18n, active = reactive(TRUE)) {
 
       cd_plot_server(
         id = "completeness_district",
+        about = .cd_about("dq_completeness_districts", indicator = indicator),
         i18n = i18n,
         plot_data = completeness_districts,
         plot_filename = reactive("completeness_district"),
@@ -186,6 +189,7 @@ data_completeness_server <- function(id, cache, i18n, active = reactive(TRUE)) {
 
       cd_plot_server(
         id = "completeness_linegraph",
+        about = .cd_about("dq_completeness_units", variant = "trend", indicator = indicator, admin_level = admin_level, region = region),
         i18n = i18n,
         plot_data = completeness_summary,
         plot_filename = reactive("completeness_linegraph"),

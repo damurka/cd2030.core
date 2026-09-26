@@ -121,6 +121,7 @@ outlier_detection_server <- function(id, cache, i18n, active = reactive(TRUE)) {
 
       cd_plot_server(
         id = "outlier_heatmap",
+        about = .cd_about("dq_outliers_units", variant = "heat_map", indicator = indicator, admin_level = admin_level, region = region),
         i18n = i18n,
         plot_data = outlier_summary,
         plot_filename = reactive("outlier_heatmap"),
@@ -151,6 +152,7 @@ outlier_detection_server <- function(id, cache, i18n, active = reactive(TRUE)) {
 
       cd_plot_server(
         id = "outlier_bargraph",
+        about = .cd_about("dq_outliers_units", variant = "by_indicator", indicator = indicator, admin_level = admin_level, region = region),
         i18n = i18n,
         plot_data = outlier_summary,
         plot_filename = reactive("outlier_bargraph"),
@@ -170,6 +172,7 @@ outlier_detection_server <- function(id, cache, i18n, active = reactive(TRUE)) {
 
       cd_plot_server(
         id = "outlier_region_bargraph",
+        about = .cd_about("dq_outliers_units", variant = "by_unit", indicator = indicator, admin_level = admin_level, region = region),
         i18n = i18n,
         plot_data = outlier_summary,
         plot_filename = reactive("outlier_region_bargraph"),
@@ -190,6 +193,7 @@ outlier_detection_server <- function(id, cache, i18n, active = reactive(TRUE)) {
       
       selected_year <- cd_table_server(
         "district_outlier_summary",
+        about = .cd_about(NULL, indicator = indicator),
         cache,
         i18n,
         control_type = "year",
@@ -206,6 +210,7 @@ outlier_detection_server <- function(id, cache, i18n, active = reactive(TRUE)) {
 
       cd_plot_server(
         id = "outlier_district_trend",
+        about = .cd_about("dq_outlier_trend", indicator = indicator, year = selected_year),
         i18n = i18n,
         plot_data = outlier_districts,
         plot_filename = reactive(paste0("outlier_district_trend", indicator(), "_",selected_year())),

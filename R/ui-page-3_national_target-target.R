@@ -43,6 +43,7 @@ target_server <- function(id, cache, i18n, admin_level, region = reactive(NULL),
         i18n,
         control_type = "indicator",
         data = reactive(district_coverage_rate()),
+        about = .cd_about(NULL, admin_level = admin_level),
         filename = reactive(paste0(admin_level(), "_high_coverage_rate")), 
         excel_write_fun = function(wb, d) { 
           
@@ -90,6 +91,7 @@ target_server <- function(id, cache, i18n, admin_level, region = reactive(NULL),
           
           cd_coverage_plot_server(
             id = id, 
+            about = .cd_about("threshold", indicator = current_indicator, admin_level = admin_level, region = region, denominator = denominator),
             filename = reactive(paste0(current_indicator, "_global_target_", denominator())),
             data_fn = data_rx,
             sheet_name = reactive(i18n$t(paste0("opt_", current_indicator))),

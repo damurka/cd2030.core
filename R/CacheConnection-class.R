@@ -12,17 +12,21 @@
 #'   alongside `rds_path`/`countdown_data` for the Load Data wizard's own in-progress state (see
 #'   `CacheConnection$initialize`'s own `wizard_parts` doc).
 #' @param indicator_group Character. Specifies the indicator group to use (auto, rmncah, vaccine, custom).
+#' @param read_only Logical. `TRUE` never writes the cache back to its `.rds`: for reading a dataset another process
+#'   (the app) owns, e.g. the AI's copy.
 #'
 #' @return An instance of the `CacheConnection` class.
 #'
 #' @export
-init_CacheConnection <- function(rds_path = NULL, countdown_data = NULL, data_path = NULL, wizard_parts = NULL, indicator_group = c("auto", "rmncah", "vaccine", "custom")) {
+init_CacheConnection <- function(rds_path = NULL, countdown_data = NULL, data_path = NULL, wizard_parts = NULL, indicator_group = c("auto", "rmncah", "vaccine", "custom"),
+                                 read_only = FALSE) {
   indicator_group <- arg_match(indicator_group)
   cache <- CacheConnection$new(
     rds_path = rds_path,
     countdown_data = countdown_data,
     data_path = data_path,
-    wizard_parts = wizard_parts
+    wizard_parts = wizard_parts,
+    read_only = read_only
   )
 
   if (!is.null(wizard_parts)) {
@@ -91,7 +95,9 @@ CacheConnection <- R6::R6Class(
     #'   there's no `countdown_data` yet -- see `wizard_parts`/`country`/`country_iso`'s own active
     #'   bindings below for how the rest of the class degrades gracefully until `set_countdown_data()`
     #'   is finally called (at Finish, once `merge_and_standardize()` has run).
-    initialize = function(rds_path = NULL, countdown_data = NULL, data_path = NULL, wizard_parts = NULL) {
+    #' @param read_only `TRUE` never writes the cache back to its `.rds` (see `init_CacheConnection()`).
+    initialize = function(rds_path = NULL, countdown_data = NULL, data_path = NULL, wizard_parts = NULL, read_only = FALSE) {
+      private$.read_only <- isTRUE(read_only)
       supplied <- c(rds = !is.null(rds_path), countdown = !is.null(countdown_data), wizard = !is.null(wizard_parts))
       if (sum(supplied) == 0) {
         cd_abort(c("x" = "One of {.arg rds_path}, {.arg countdown_data}, or {.arg wizard_parts} must be provided."))
@@ -188,6 +194,8 @@ CacheConnection <- R6::R6Class(
 
     #' @description Save current in-memory state to the assigned RDS file, provided state has changed.
     save_to_disk = function() {
+      # a read-only cache (the AI's copy of a dataset the app owns) never writes the file
+      if (isTRUE(private$.read_only)) return(invisible(FALSE))
       if (private$.has_changed && !is.null(private$.in_memory_data$rds_path)) {
         
         # 1. Take a shallow copy of the data we want to save (INCLUDING the models)
@@ -392,6 +400,28 @@ CacheConnection <- R6::R6Class(
       } else {
         self$denominator
       }
+    },
+
+    #' @description Which units drive a change in an indicator's coverage between two years: for each district (or
+    #'   region) its count and denominator in both years, its coverage change, and its contribution in percentage
+    #'   points to the change at the level above -- split into service delivery (its change in count) and its share of
+    #'   the denominator's change -- with its reporting rate, flagged when reporting was low or fell, since a drop may
+    #'   be missing reports rather than fewer services. Denominators are the ones the app's coverage uses (count /
+    #'   coverage), so the parts add up to the change the app shows.
+    #' @param indicator Character. One indicator, e.g. `"anc4"`.
+    #' @param from_year,to_year The two years to compare.
+    #' @param admin_level `"district"` or `"adminlevel_1"`: the units to attribute the change to.
+    #' @param region Optional first-level region(s): attribute a region's change to its districts.
+    #' @param denominator Optional denominator source (`"dhis2"`, `"anc1"`, `"penta1"`, ...); by default the one
+    #'   selected for the indicator (`get_denominator()`).
+    #' @return A data frame, one row per unit, sorted by contribution (the units pulling the change most first):
+    #'   `num_from`, `num_to`, `den_from`, `den_to`, `cov_from`, `cov_to`, `cov_change`, `contribution_service`,
+    #'   `contribution_denominator`, `contribution`, `reporting_from`, `reporting_to`, `reporting_flag`; attribute
+    #'   `total` has the level above's coverage in both years and its change.
+    decompose_change = function(indicator, from_year, to_year, admin_level = c("district", "adminlevel_1"),
+                                region = NULL, denominator = NULL) {
+      .cd_decompose_change(self, indicator, from_year, to_year, admin_level = admin_level, region = region,
+                           denominator = denominator)
     },
 
     #' @description Returns a reactive wrapper for use within Shiny applications.
@@ -675,6 +705,19 @@ CacheConnection <- R6::R6Class(
       stored <- private$.in_memory_data[["report_projects"]] %||% list()
       stored[[id]] <- project
       invisible(private$setter("report_projects", stored, is.list))
+    },
+
+    #' @description Saves a custom chart (report kind `custom_chart`: where its data comes from, transforms and a plot
+    #'   description -- see `datasuite.ui::report_validate_spec()`), or removes it. Saved graphs redraw from the
+    #'   data like every other chart and can be added to any report.
+    #' @param id Character. The graph's id.
+    #' @param spec The chart's description, checked with `datasuite.ui::report_validate_spec()`, or `NULL` to remove it.
+    set_graph = function(id, spec) {
+      if (!is_scalar_character(id) || !nzchar(id)) cd_abort(c("x" = "{.arg id} must be a single non-empty string."))
+      if (!is.null(spec)) spec <- datasuite.ui::report_validate_spec(spec, members = cd_chartable_members())
+      stored <- private$.in_memory_data[["report_graphs"]] %||% list()
+      stored[[id]] <- spec
+      invisible(private$setter("report_graphs", stored, is.list))
     },
 
     #' @description Saves a picture used by the reports (a block's `src` is then `"asset:<id>"`), or removes it. Pictures
@@ -1838,6 +1881,24 @@ CacheConnection <- R6::R6Class(
     #' @field report_assets Active Binding: the pictures the reports use, a named list by id of `list(type, data)`
     #'   (read-only; use `set_report_asset()`).
     report_assets = function(value) private$getter("report_assets", value),
+
+    #' @field graphs Active Binding: the saved custom charts, a named list by id of their descriptions (read-only;
+    #'   use `set_graph()`).
+    graphs = function(value) private$getter("report_graphs", value) %||% list(),
+
+    #' @field revision Active Binding: a number that goes up each time a change to the dataset is saved, so another
+    #'   process reading the same `.rds` (the AI's copy) knows to reload (read-only).
+    revision = function(value) {
+      if (!missing(value)) cd_abort(c("x" = "{.field revision} is read-only."))
+      private$depend("revision")
+      as.integer(private$.in_memory_data$revision %||% 0L)
+    },
+
+    #' @field read_only Active Binding: whether this cache never writes its `.rds` (read-only).
+    read_only = function(value) {
+      if (!missing(value)) cd_abort(c("x" = "{.field read_only} is read-only."))
+      isTRUE(private$.read_only)
+    },
     #' @field report_themes Active Binding: the themes made from Office files, a named list by id (read-only; use
     #'   `set_report_theme()`).
     report_themes = function(value) private$getter("report_themes", value),
@@ -2194,6 +2255,8 @@ CacheConnection <- R6::R6Class(
       report_projects = list(),
       report_assets = list(),
       report_themes = list(),
+      report_graphs = list(),
+      revision = 0L,
 
       un_estimates = NULL,
       un_mortality_estimates = NULL,
@@ -2251,6 +2314,7 @@ CacheConnection <- R6::R6Class(
     ),
     .in_memory_data = NULL,
     .has_changed = FALSE,
+    .read_only = FALSE,
     .reactiveDep = NULL,
 
     # -------------------------------------------------------------------------
@@ -2260,8 +2324,11 @@ CacheConnection <- R6::R6Class(
     update_field = function(field_name, value) {
       if (!identical(private$.in_memory_data[[field_name]], value)) {
         private$.in_memory_data[[field_name]] <<- value
+        # the revision counts saved changes: a read-only copy keeps the file's, to compare with the app's
+        if (!isTRUE(private$.read_only)) private$.in_memory_data$revision <<- as.integer(private$.in_memory_data$revision %||% 0L) + 1L
         private$.has_changed <<- TRUE
         private$trigger(field_name)
+        private$trigger("revision")
         self$save_to_disk()
         return(TRUE)
       }

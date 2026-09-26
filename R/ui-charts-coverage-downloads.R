@@ -12,7 +12,7 @@ cd_coverage_plot_toolbar_ui <- function(id) {
   cd_plot_toolbar_ui(ns("plot"))
 }
 
-cd_coverage_plot_server <- function(id, filename, data_fn, ..., sheet_name, i18n, plot_fun = NULL) {
+cd_coverage_plot_server <- function(id, filename, data_fn, ..., sheet_name, i18n, plot_fun = NULL, about = NULL) {
   stopifnot(is.reactive(data_fn))
   stopifnot(is.reactive(filename))
   stopifnot(is.reactive(sheet_name))
@@ -26,7 +26,8 @@ cd_coverage_plot_server <- function(id, filename, data_fn, ..., sheet_name, i18n
         plot_data = data_fn,
         plot_filename = filename,
         plot_fun = if (is.null(plot_fun)) function(d) plot(d, ...) else plot_fun,
-        excel_write_fun = function(wb, d) cd_add_sheet(wb, sheet_name(), d)
+        excel_write_fun = function(wb, d) cd_add_sheet(wb, sheet_name(), d),
+        about = about
       )
     }
   )

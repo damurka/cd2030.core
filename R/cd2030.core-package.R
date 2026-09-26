@@ -23,7 +23,6 @@
 #' * **Reports:** [report_presets()] (the standard reports) and [export_report()] (Word, PDF, PowerPoint).
 #' * **Indicator groups:** [list_indicator_groups()], [set_selected_group()], [register_indicator_group()].
 #' * **Apps:** [countdown-pages] (`cd_app()` and the pages every Countdown app shares).
-#' * **AI analysis:** [cd2030_mcp_server()].
 #'
 #' The README (<https://github.com/damurka/cd2030.core>) explains how the packages fit together, how an app is built on
 #' this one, and how to develop and release it.

@@ -44,6 +44,7 @@ equity_server <- function(id, cache, i18n, active = reactive(TRUE)) {
         serverInput = function(id, current_indicator) {
           cd_coverage_plot_server(
             id = id, # or just ind if inside the same module id
+            about = .cd_about("equity", indicator = current_indicator, variant = reactive(input$type)),
             filename = reactive(paste0(current_indicator, "_", input$type, "_equity")),
             data_fn = data,
             sheet_name = reactive(i18n$t(paste0(current_indicator, "_derived_coverage"))),
