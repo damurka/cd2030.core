@@ -1,3 +1,24 @@
+# cd2030.core 1.3.0
+
+The constants of the Countdown methodology are defined once, in `R/methodology-defaults.R`:
+
+* `cd_methodology_defaults()` lists them (the adjustment's k and reporting-rate cutoff, the 5 x MAD outlier rule, the
+  district reporting threshold, the ratio ranges and score components, the default rates of the denominators, the
+  coverage targets, the mortality flags), each with its step, indicator group, unit, label, note and source file.
+  The functions that use them read them from there, so the documented values are the ones the code runs with.
+* `inst/scripts/export-methodology-defaults.R` writes them as the JSON the DataSuite docs read; the AI guide sync
+  workflow also regenerates it on each release and opens a pull request on the docs.
+
+The AI bridge actions:
+
+* `setFilters` only changes the view; `saveReport` and `addGraph` add, or replace when the id given is already saved;
+  `generateReport` adds a file, or replaces one of the same name. Each describes itself for the user's confirmation,
+  which DataSuite asks only before a replacement.
+* A report's image block that names a figure the AI saved in the dataset's analysis folder is stored in the dataset as
+  a picture, so the report keeps it (PNG or JPEG from that folder only, up to 5 MB).
+* Generated reports go in the analysis folder's `reports/`.
+* Requires datasuite.ui 0.3.0.
+
 # cd2030.core 1.2.0
 
 For the Countdown AI in DataSuite (countdown-analytics/docs/AI-PLAN.md), everything around `CacheConnection`:
@@ -15,15 +36,6 @@ For the Countdown AI in DataSuite (countdown-analytics/docs/AI-PLAN.md), everyth
 * The AI bridge: the Countdown pages' charts and tables say which report kind they are and with which options; the
   state has the dataset's path, country and revision; new actions `saveReport`, `addGraph` and `generateReport`.
 * Requires datasuite.ui 0.2.0.
-
-The constants of the Countdown methodology are defined once, in `R/methodology-defaults.R`:
-
-* `cd_methodology_defaults()` lists them (the adjustment's k and reporting-rate cutoff, the 5 x MAD outlier rule, the
-  district reporting threshold, the ratio ranges and score components, the default rates of the denominators, the
-  coverage targets, the mortality flags), each with its step, indicator group, unit, label, note and source file.
-  The functions that use them read them from there, so the documented values are the ones the code runs with.
-* `inst/scripts/export-methodology-defaults.R` writes them as the JSON the DataSuite docs read; the AI guide sync
-  workflow also regenerates it on each release and opens a pull request on the docs.
 
 # cd2030.core 1.1.1
 
