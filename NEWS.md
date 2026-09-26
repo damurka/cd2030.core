@@ -1,3 +1,14 @@
+# cd2030.core 1.1.1
+
+Documentation only; no change to the code.
+
+* A new README: what the package does, where it fits (DataSuite, the Countdown apps, datasuite.ui), installing from
+  r-universe, a walkthrough on the bundled Kenya data, `CacheConnection`, indicator groups, reports, building an app
+  with `cd_app()`, developing and releasing.
+* `?cd2030.core` and `?countdown-pages` give overviews of the entry points and the Countdown pages.
+* The pkgdown reference index lists every help topic; `URL` and `BugReports` point to github.com/damurka/cd2030.core.
+* The Bayesian coverage packages come from https://alkemalab.r-universe.dev (`Additional_repositories`).
+
 # cd2030.core 1.1.0
 
 * Report builder: standard reports rebuilt as blocks (`report_presets()`), exported to Word, PowerPoint and PDF
