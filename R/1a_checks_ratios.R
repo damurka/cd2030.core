@@ -44,8 +44,8 @@
 #'
 #' @export
 calculate_ratios_summary <- function(.data,
-                                     survey_coverage = c(anc1 = 0.98, penta1 = 0.97, penta3 = 0.89, opv1 = 0.97, opv3 = 0.78, pcv1 = 0.97, rota1 = 0.96),
-                                     anc1_penta1_mortality = 1.07) {
+                                     survey_coverage = .cd_method$data_quality$ratio_expected_coverage,
+                                     anc1_penta1_mortality = .cd_method$data_quality$ratio_anc1_penta1_mortality) {
   year = NULL
 
   check_cd_class(.data, 'cd_ratios_and_adequacy')
@@ -198,7 +198,7 @@ calculate_district_ratios_summary <- function(.data) {
 #' @noRd
 calculate_ratios_and_adequacy <- function(.data,
                                           ratio_pairs = NULL,
-                                          adequate_range = c(1, 1.5),
+                                          adequate_range = .cd_method$data_quality$ratio_adequate_range,
                                           region = NULL) {
   district <- year <- NULL
 

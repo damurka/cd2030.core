@@ -6,9 +6,8 @@
 \usage{
 calculate_ratios_summary(
   .data,
-  survey_coverage = c(anc1 = 0.98, penta1 = 0.97, penta3 = 0.89, opv1 = 0.97, opv3 =
-    0.78, pcv1 = 0.97, rota1 = 0.96),
-  anc1_penta1_mortality = 1.07
+  survey_coverage = .cd_method$data_quality$ratio_expected_coverage,
+  anc1_penta1_mortality = .cd_method$data_quality$ratio_anc1_penta1_mortality
 )
 }
 \arguments{

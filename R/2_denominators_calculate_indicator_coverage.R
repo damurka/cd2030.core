@@ -67,17 +67,17 @@ calculate_indicator_coverage <- function(.data,
                                          survey_estimates = NULL,
                                          subnational_map = NULL,
 
-                                         anc1survey = 0.98,
-                                         dpt1survey = 0.97,
-                                         survey_year = 2019,
+                                         anc1survey = .cd_method$denominators$anc1survey,
+                                         dpt1survey = .cd_method$denominators$dpt1survey,
+                                         survey_year = .cd_method$denominators$survey_year,
 
                                          region = NULL,
                                          show_district = TRUE,
-                                         sbr = 0.02,
-                                         nmr = 0.025,
-                                         pnmr = 0.024,
-                                         twin = 0.015,
-                                         preg_loss = 0.03) {
+                                         sbr = .cd_method$denominators$sbr,
+                                         nmr = .cd_method$denominators$nmr,
+                                         pnmr = .cd_method$denominators$pnmr,
+                                         twin = .cd_method$denominators$twin,
+                                         preg_loss = .cd_method$denominators$preg_loss) {
 
   check_cd_data(.data)
   check_scalar_integerish(survey_year)
@@ -109,13 +109,13 @@ calculate_indicator_coverage <- function(.data,
 #' @export
 get_national_rates <- function(.data,
                                admin_level = c("national", "adminlevel_1", "district"),
-                               anc1survey = 0.98,
-                               dpt1survey = 0.97,
-                               sbr = 0.02,
-                               nmr = 0.025,
-                               pnmr = 0.024,
-                               twin = 0.015,
-                               preg_loss = 0.03,
+                               anc1survey = .cd_method$denominators$anc1survey,
+                               dpt1survey = .cd_method$denominators$dpt1survey,
+                               sbr = .cd_method$denominators$sbr,
+                               nmr = .cd_method$denominators$nmr,
+                               pnmr = .cd_method$denominators$pnmr,
+                               twin = .cd_method$denominators$twin,
+                               preg_loss = .cd_method$denominators$preg_loss,
                               subnational_map = NULL) {
   check_survey_data(.data, admin_level)
   admin_level <- arg_match(admin_level)
@@ -161,17 +161,17 @@ calculate_populations <- function(.data,
                                   survey_estimates = NULL,
                                   subnational_map = NULL,
 
-                                  anc1survey = 0.98,
-                                  dpt1survey = 0.97,
+                                  anc1survey = .cd_method$denominators$anc1survey,
+                                  dpt1survey = .cd_method$denominators$dpt1survey,
                                   survey_year,
 
                                   region = NULL,
                                   show_district = TRUE,
-                                  sbr = 0.02,
-                                  nmr = 0.025,
-                                  pnmr = 0.024,
-                                  twin = 0.015,
-                                  preg_loss = 0.03) {
+                                  sbr = .cd_method$denominators$sbr,
+                                  nmr = .cd_method$denominators$nmr,
+                                  pnmr = .cd_method$denominators$pnmr,
+                                  twin = .cd_method$denominators$twin,
+                                  preg_loss = .cd_method$denominators$preg_loss) {
 
   check_cd_data(.data)
 

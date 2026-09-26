@@ -16,6 +16,15 @@ For the Countdown AI in DataSuite (countdown-analytics/docs/AI-PLAN.md), everyth
   state has the dataset's path, country and revision; new actions `saveReport`, `addGraph` and `generateReport`.
 * Requires datasuite.ui 0.2.0.
 
+The constants of the Countdown methodology are defined once, in `R/methodology-defaults.R`:
+
+* `cd_methodology_defaults()` lists them (the adjustment's k and reporting-rate cutoff, the 5 x MAD outlier rule, the
+  district reporting threshold, the ratio ranges and score components, the default rates of the denominators, the
+  coverage targets, the mortality flags), each with its step, indicator group, unit, label, note and source file.
+  The functions that use them read them from there, so the documented values are the ones the code runs with.
+* `inst/scripts/export-methodology-defaults.R` writes them as the JSON the DataSuite docs read; the AI guide sync
+  workflow also regenerates it on each release and opens a pull request on the docs.
+
 # cd2030.core 1.1.1
 
 Documentation only; no change to the code.

@@ -1646,9 +1646,9 @@
     },
     {
       "key": "title_target_district_rate",
-      "en": "Sub-National with coverage >90%",
-      "fr": "Zones infranationales avec une couverture > 90",
-      "pt": "Cobertura Subnacional >90%"
+      "en": "Districts Meeting the Coverage Target",
+      "fr": "Districts atteignant l'objectif de couverture",
+      "pt": "Distritos que atingem a meta de cobertura"
     },
     {
       "key": "title_target_admin2_rate",

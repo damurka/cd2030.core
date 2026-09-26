@@ -71,7 +71,7 @@ calculate_average_reporting_rate <- function(.data,
 #' }
 #'
 #' @export
-calculate_district_reporting_rate <- function(.data, threshold = 90, region = NULL) {
+calculate_district_reporting_rate <- function(.data, threshold = .cd_method$data_quality$reporting_threshold, region = NULL) {
   year <- district <- . <- NULL
 
   check_cd_data(.data)

@@ -65,8 +65,8 @@ add_outlier5std_column <- function(.data, indicators, group_by = "district") {
           med <- get(paste0(cur_column(), "_med"))
           mad <- get(paste0(cur_column(), "_mad"))
 
-          lower_bound <- round(med - 5 * mad, 1)
-          upper_bound <- round(med + 5 * mad, 1)
+          lower_bound <- round(med - .cd_method$data_quality$outlier_mad_multiplier * mad, 1)
+          upper_bound <- round(med + .cd_method$data_quality$outlier_mad_multiplier * mad, 1)
 
           if_else(!is.na(.) & (. < lower_bound | . > upper_bound), 1, 0)
         },
@@ -236,13 +236,10 @@ robust_max <- function(x, fallback = NA) {
 }
 
 default_ratio_pair <- function() {
-  ratio_pairs = list(
-    "ratioAP" = c("anc1", "penta1"),
-    "ratioPP" = c("penta1", "penta3")
-  )
+  ratio_pairs <- .cd_method$data_quality$ratio_pairs
 
   if (get_selected_group() == 'vaccine') {
-    ratio_pairs$ratioOO <- c("opv1", "opv3")
+    ratio_pairs <- c(ratio_pairs, .cd_method$data_quality$ratio_pairs_vaccine)
   }
   ratio_pairs
 }

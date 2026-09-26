@@ -24,7 +24,7 @@
 #' @export
 calculate_completeness_summary <- function(.data,
                                            admin_level = c("national", "adminlevel_1", "district"),
-                                           threshold = 90,
+                                           threshold = .cd_method$data_quality$reporting_threshold,
                                            region = NULL) {
   year <- . <- NULL
 

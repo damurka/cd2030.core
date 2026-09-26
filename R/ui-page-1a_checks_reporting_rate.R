@@ -9,7 +9,8 @@ reporting_rate_ui <- function(id, i18n) {
         tooltip = "tt_rr_indicator",
         indicators = cd_cfg("reporting_rate_indicators")
       ),
-      cd_chip_number(ns("threshold"), "title_rr_threshold", i18n, value = 90, min = 0, max = 100, unit = "%", picks = c(70, 80, 90, 95), default = 90),
+      cd_chip_number(ns("threshold"), "title_rr_threshold", i18n, value = .cd_method$data_quality$reporting_threshold, min = 0, max = 100, unit = "%",
+                     picks = .cd_method$data_quality$reporting_threshold_picks, default = .cd_method$data_quality$reporting_threshold),
       cd_admin_level_ui(ns("admin_level"), i18n),
     ),
     cd_chart_card(

@@ -107,7 +107,7 @@
   } else {
     t("plt_title_rr_heatmap_region", "{admin_level} reporting rate for {indicator} by year in {region_name}")
   }
-  plot(d, plot_type = type, indicator = column, threshold = cache$performance_threshold %||% 90,
+  plot(d, plot_type = type, indicator = column, threshold = cache$performance_threshold %||% .cd_method$data_quality$reporting_threshold,
        title = .rbx_fill(title, admin_level = admin_level, indicator = indicator, region_name = region %||% ""),
        x_axis = if (type == "bar") t("title_global_year", "Year") else admin_level,
        y_axis = if (type == "bar") t("title_rr_main", "Reporting rate") else t("title_global_year", "Year"),
@@ -173,7 +173,7 @@
   fill <- function(text) .rbx_fill(text, admin_level = admin_level, indicator = indicator)
   where <- if (!is.null(region)) paste0(": ", region) else ""
   legend <- t("lbl_leg_outlier", "Percent non-outliers (%)")
-  threshold <- cache$performance_threshold %||% 90
+  threshold <- cache$performance_threshold %||% .cd_method$data_quality$reporting_threshold
   switch(
     variant,
     heat_map = plot(d, selection_type = "heat_map", indicator = ind, threshold = threshold,

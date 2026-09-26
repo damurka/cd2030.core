@@ -290,7 +290,7 @@ generate_service_dqa_summary <- function(average_reporting_rate,
                                          outliers_summary,
                                          district_outliers_summary,
                                          service_utilization,
-                                         threshold = 90,
+                                         threshold = .cd_method$data_quality$reporting_threshold,
                                          labels = NULL) {
   
   # 1. Prepare Component Summaries

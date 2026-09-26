@@ -7,6 +7,13 @@ name: AI guide sync
 #
 # Needs the repository secret COUNTDOWN_ANALYTICS_TOKEN: a fine-grained token with Contents and Pull requests
 # read/write on damurka/countdown-analytics.
+#
+# The second job (methodology-docs) regenerates the methodology constants the DataSuite docs quote
+# (cd_methodology_defaults(), written by inst/scripts/export-methodology-defaults.R) into
+# src/data/methodology-defaults.json of aphrcwaro/datasuite-docs and opens a pull request there (the file's
+# version and generatedAt change with every release, so there is always one to review).
+# It needs the repository secret DATASUITE_DOCS_TOKEN: a fine-grained token with Contents and Pull requests
+# read/write on aphrcwaro/datasuite-docs. The two jobs are independent: one failing does not stop the other.
 
 on:
   push:
@@ -50,3 +57,37 @@ jobs:
             Regenerated `ai/cache-guide.json` and `ai/report-kinds.json` against cd2030.core ${{ github.ref_name }}
             (`scripts/generate-ai-guide.R`). Removed members are dropped and changed arguments updated; new members
             come in with `status: "draft"` -- review their group and question, then set `status: "reviewed"`.
+
+  methodology-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: cd2030.core
+      - uses: actions/checkout@v7
+        with:
+          repository: aphrcwaro/datasuite-docs
+          token: ${{ secrets.DATASUITE_DOCS_TOKEN }}
+          path: datasuite-docs
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          use-public-rspm: true
+      - name: Install this cd2030.core (and datasuite.ui from r-universe)
+        run: |
+          Rscript -e 'install.packages(c("datasuite.ui", "remotes", "jsonlite"), repos = c("https://damurka.r-universe.dev", "https://alkemalab.r-universe.dev", getOption("repos")))'
+          Rscript -e 'remotes::install_local("cd2030.core", dependencies = TRUE, upgrade = "never", repos = c("https://damurka.r-universe.dev", "https://alkemalab.r-universe.dev", getOption("repos")))'
+      - name: Regenerate the methodology constants
+        run: Rscript cd2030.core/inst/scripts/export-methodology-defaults.R datasuite-docs/src/data/methodology-defaults.json
+      - name: Open a pull request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          path: datasuite-docs
+          token: ${{ secrets.DATASUITE_DOCS_TOKEN }}
+          branch: methodology-defaults/cd2030.core-${{ github.ref_name }}
+          add-paths: src/data/methodology-defaults.json
+          commit-message: "Update the methodology constants for cd2030.core ${{ github.ref_name }}"
+          title: "Methodology constants for cd2030.core ${{ github.ref_name }}"
+          body: |
+            Regenerated `src/data/methodology-defaults.json` from `cd_methodology_defaults()` in cd2030.core
+            ${{ github.ref_name }} (`inst/scripts/export-methodology-defaults.R`). These are the values the package
+            runs with; check the pages that quote a changed value.

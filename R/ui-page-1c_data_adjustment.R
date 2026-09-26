@@ -1,7 +1,7 @@
 data_adjustment_ui <- function(id, i18n) {
   ns <- NS(id)
 
-  k_factor_options <- c(0, 0.25, 0.5, 0.75, 1)
+  k_factor_options <- .cd_method$adjustment$k_options
 
   cd_page_ui(id, i18n,
     div(

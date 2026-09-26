@@ -152,8 +152,8 @@ summarised_data <- function(.data, admin_level = c('national', 'adminlevel_1', '
       ratio_md_sb = total_stillbirth/maternal_deaths,
       ratio_md_nd = neonatal_deaths / maternal_deaths,
       fresh_total_sb = 100 * stillbirth_f / total_stillbirth,
-      mmr_low = if_else(mmr_inst < 25, 1, 0),
-      sbr_low = if_else(sbr_inst < 6, 1, 0)
+      mmr_low = if_else(mmr_inst < .cd_method$mortality$mmr_low, 1, 0),
+      sbr_low = if_else(sbr_inst < .cd_method$mortality$sbr_low, 1, 0)
     ) %>%
     relocate(all_of(c(admin_level_col, 'year')))
 }
@@ -198,7 +198,7 @@ summarise_completeness_ratio <- function(.data, plot_type = c('mmr', 'sbr', 'nn'
     pivot_wider(names_from = indicator, values_from = values) %>%
     select(year, contains(plot_type)) %>%
     crossing(
-      ciratio = c(0.5, 1, 1.5, 2)
+      ciratio = .cd_method$mortality$completeness_ratios
     ) %>%
     pivot_longer(cols = starts_with(plot_type)) %>%
     mutate(

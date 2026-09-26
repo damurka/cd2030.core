@@ -29,12 +29,13 @@ calculate_threshold <- function(.data,
     indicator
   )
 
+  targets <- .cd_method$coverage
   coverage <- switch(
     indicator,
-    vaccine = if (admin_level == "national") 90 else 80,
-    anc4 = 70,
-    instlivebirths = 80,
-    dropout = 10
+    vaccine = if (admin_level == "national") targets$target_vaccine_national else targets$target_vaccine_subnational,
+    anc4 = targets$target_anc4,
+    instlivebirths = targets$target_instlivebirths,
+    dropout = targets$target_dropout
   )
 
   threshold <- .data %>%
@@ -42,7 +43,7 @@ calculate_threshold <- function(.data,
     summarise(
       across(starts_with('cov_'), ~ {
         threshold_func <- if (grepl('dropout', cur_column())) {
-          function(x) x < 10
+          function(x) x < targets$target_dropout
         } else {
           function(x) x >= coverage # Using the dynamic coverage variable instead of hardcoded 90
         }

@@ -12,7 +12,7 @@ generate_service_dqa_summary(
   outliers_summary,
   district_outliers_summary,
   service_utilization,
-  threshold = 90,
+  threshold = .cd_method$data_quality$reporting_threshold,
   labels = NULL
 )
 }

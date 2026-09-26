@@ -8,7 +8,7 @@
   x,
   selection_type = c("region", "indicator", "heat_map"),
   indicator = NULL,
-  threshold = 90,
+  threshold = .cd_method$data_quality$reporting_threshold,
   title = NULL,
   x_axis = NULL,
   y_axis = NULL,

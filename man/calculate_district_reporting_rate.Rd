@@ -4,7 +4,11 @@
 \alias{calculate_district_reporting_rate}
 \title{District-Level Reporting Rates by Year}
 \usage{
-calculate_district_reporting_rate(.data, threshold = 90, region = NULL)
+calculate_district_reporting_rate(
+  .data,
+  threshold = .cd_method$data_quality$reporting_threshold,
+  region = NULL
+)
 }
 \arguments{
 \item{.data}{A tibble of class \code{cd_data}.}

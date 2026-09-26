@@ -38,7 +38,7 @@
 plot.cd_outlier <- function(x,
                             selection_type = c("region", "indicator", "heat_map"),
                             indicator = NULL,
-                            threshold = 90,
+                            threshold = .cd_method$data_quality$reporting_threshold,
                             title = NULL,
                             x_axis = NULL,
                             y_axis = NULL,
@@ -50,7 +50,7 @@ plot.cd_outlier <- function(x,
 .plot_cd_outlier_impl <- function(x,
                             selection_type = c("region", "indicator", "heat_map"),
                             indicator = NULL,
-                            threshold = 90,
+                            threshold = .cd_method$data_quality$reporting_threshold,
                             title = NULL,
                             x_axis = NULL,
                             y_axis = NULL,
@@ -300,8 +300,8 @@ plot.cd_outlier_list <- function(x,
     filter(district == region, if (is.null(year_val)) TRUE else year == year_val) %>%
     mutate(
       date = ym(paste(year, month, sep = "-")),
-      upper_bound = !!sym(med) + !!sym(mad) * 5,
-      lower_bound = !!sym(med) - !!sym(mad) * 5,
+      upper_bound = !!sym(med) + !!sym(mad) * .cd_method$data_quality$outlier_mad_multiplier,
+      lower_bound = !!sym(med) - !!sym(mad) * .cd_method$data_quality$outlier_mad_multiplier,
       outlier_flag = !!sym(indicator) > upper_bound | !!sym(indicator) < lower_bound
     ) %>%
     ggplot(aes(date)) +

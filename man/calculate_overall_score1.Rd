@@ -12,7 +12,7 @@ calculate_overall_score1(
   district_outliers_summary,
   ratios_summary,
   labels = NULL,
-  threshold = 90
+  threshold = .cd_method$data_quality$reporting_threshold
 )
 }
 \arguments{

@@ -87,6 +87,7 @@ export(cd_denominator_header, cd_palette_chip, cd_population_server, cd_populati
 export(cd_denominator_row, cd_denominator_server, cd_denominator_ui, cd_has_maternal, cd_indicator_server, cd_indicator_ui)
 export(cd_finish_plot)
 export(cd_member_data)
+export(cd_methodology_defaults)
 export(cd_nav_denominators, cd_nav_national, cd_nav_quality, cd_nav_start, cd_nav_subnational, cd_only_denominators)
 export(cd_report_context)
 export(cd_scope, cd_scope_filters, cd_scope_server, cd_scoped_page_server, cd_scoped_page_ui)

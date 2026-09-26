@@ -103,8 +103,8 @@ plot.cd_ratios_summary <- function(x, title = NULL,
       vjust = -0.5,
       size = 3
     ) +
-    geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
-    geom_hline(yintercept = 1.5, linetype = "dashed", color = "blue") +
+    geom_hline(yintercept = .cd_method$data_quality$ratio_adequate_range[1], linetype = "dashed", color = "red") +
+    geom_hline(yintercept = .cd_method$data_quality$ratio_adequate_range[2], linetype = "dashed", color = "blue") +
     scale_y_continuous(breaks = scales::pretty_breaks(n = 6)) +
     scale_fill_manual(values = color_mapping) +
     scale_x_discrete(labels = x_labels_used) +

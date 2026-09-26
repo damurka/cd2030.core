@@ -98,6 +98,7 @@ CacheConnection <- R6::R6Class(
     #' @param read_only `TRUE` never writes the cache back to its `.rds` (see `init_CacheConnection()`).
     initialize = function(rds_path = NULL, countdown_data = NULL, data_path = NULL, wizard_parts = NULL, read_only = FALSE) {
       private$.read_only <- isTRUE(read_only)
+      private$.data_template <- private$.new_data_template()
       supplied <- c(rds = !is.null(rds_path), countdown = !is.null(countdown_data), wizard = !is.null(wizard_parts))
       if (sum(supplied) == 0) {
         cd_abort(c("x" = "One of {.arg rds_path}, {.arg countdown_data}, or {.arg wizard_parts} must be provided."))
@@ -623,7 +624,7 @@ CacheConnection <- R6::R6Class(
       
       current_est <- private$.in_memory_data$national_estimates
       if (is.null(current_est)) {
-        current_est <- list(nmr = NA_real_, pnmr = NA_real_, twin_rate = 0.015, preg_loss = 0.03, sbr = NA_real_)
+        current_est <- list(nmr = NA_real_, pnmr = NA_real_, twin_rate = .cd_method$denominators$twin, preg_loss = .cd_method$denominators$preg_loss, sbr = NA_real_)
       }
 
       valid_keys <- intersect(names(value), names(current_est))
@@ -1265,13 +1266,14 @@ CacheConnection <- R6::R6Class(
       denom <- self$get_denominator(indicator)
       if (is.null(denom)) cd_abort(c("x" = "The denominator for indicator '{indicator}' is NULL in the cache state."))
 
+      targets <- .cd_method$coverage
       threshold <- case_when(
-        indicator %in% list_vaccine_indicators() & admin_level == "national" ~ 90,
-        indicator %in% list_vaccine_indicators() & admin_level != "national" ~ 80,
-        indicator == "anc4" ~ 70,
-        indicator == "instlivebirths" ~ 80,
-        str_detect(indicator, "dropout") ~ 10,
-        .default = 80
+        indicator %in% list_vaccine_indicators() & admin_level == "national" ~ targets$target_vaccine_national,
+        indicator %in% list_vaccine_indicators() & admin_level != "national" ~ targets$target_vaccine_subnational,
+        indicator == "anc4" ~ targets$target_anc4,
+        indicator == "instlivebirths" ~ targets$target_instlivebirths,
+        str_detect(indicator, "dropout") ~ targets$target_dropout,
+        .default = targets$target_other
       )
 
       cov_data %>% filter_high_performers(indicator = indicator, denominator = denom, threshold = threshold)
@@ -2201,7 +2203,11 @@ CacheConnection <- R6::R6Class(
   # PRIVATE ARCHITECTURE (Internal Logic & Cascades)
   # =========================================================================
   private = list(
-    .data_template = list(
+    # The fields of a new cache and their starting values. Built when an object is created (in initialize())
+    # rather than when the class is, so the starting values can come from .cd_method (R/methodology-defaults.R),
+    # which is collated after this file.
+    .data_template = NULL,
+    .new_data_template = function() list(
       version = NULL,
       language = "en",
       rds_path = NULL,
@@ -2230,16 +2236,16 @@ CacheConnection <- R6::R6Class(
       wizard_quality_results = NULL,
       data_years = NULL,
       subnational_regions = NULL,
-      performance_threshold = 90,
+      performance_threshold = .cd_method$data_quality$reporting_threshold,
       excluded_years = numeric(),
-      k_factors = c(anc = 0, idelv = 0, vacc = 0, opd = 0, ipd = 0),
+      k_factors = .cd_method_by_group(.cd_method$adjustment$k_start, .cd_method$adjustment$k_start_groups),
       denominator = "penta1",
       maternal_denominator = "anc1",
       derivation_population = "totlivebirths_dhis2",
       adjusted_flag = FALSE,
       adjusted_data = NULL,
       survey_estimates = c(anc1 = NA, penta1 = NA, penta3 = NA, opv1 = NA, opv3 = NA, measles1 = NA, bcg = NA, anc4 = NA, instlivebirths = NA, low_bweight = NA, csection = NA),
-      national_estimates = list(nmr = NA, pnmr = NA, twin_rate = 0.015, preg_loss = 0.03, sbr = NA),
+      national_estimates = list(nmr = NA, pnmr = NA, twin_rate = .cd_method$denominators$twin, preg_loss = .cd_method$denominators$preg_loss, sbr = NA),
       
       survey_year = NULL,
       start_survey_year = NULL,

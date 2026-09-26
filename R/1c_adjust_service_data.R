@@ -74,7 +74,8 @@ adjust_service_data <- function(.data,
 
   adjustment <- arg_match(adjustment)
 
-  k_defaults <- c(anc = 0.25, idelv = 0.25, pnc = 0.25, vacc = 0.25, opd = 0.25, ipd = 0.25)
+  # k = 0.25 for every group (.cd_method, R/methodology-defaults.R)
+  k_defaults <- .cd_method_by_group(.cd_method$adjustment$k, .cd_method$adjustment$k_groups)
 
   if (adjustment == "none") {
     cd_info(c("i" = "No adjustment applied. Data returned as-is."))
@@ -93,6 +94,8 @@ adjust_service_data <- function(.data,
   indicator_groups <- get_indicator_groups()
   all_indicators <- get_adjustment_indicators()
   last_year <- robust_max(.data$year)
+  rr_cutoff <- .cd_method$adjustment$reporting_rate_cutoff
+  rr_window <- .cd_method$adjustment$reporting_rate_window
 
   merged_data <- .data %>%
     mutate(
@@ -105,7 +108,7 @@ adjust_service_data <- function(.data,
     mutate(
       across(
         all_of(paste0(all_indicators, "_rr")),
-        ~ if_else(. < 75 | is.na(.), median(.[. >= 75 & . <= 100], na.rm = TRUE), .)
+        ~ if_else(. < rr_cutoff | is.na(.), median(.[. >= rr_window[1] & . <= rr_window[2]], na.rm = TRUE), .)
       ),
       .by = district
     ) %>%

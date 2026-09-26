@@ -12,16 +12,16 @@ calculate_indicator_coverage(
   un_estimates = NULL,
   survey_estimates = NULL,
   subnational_map = NULL,
-  anc1survey = 0.98,
-  dpt1survey = 0.97,
-  survey_year = 2019,
+  anc1survey = .cd_method$denominators$anc1survey,
+  dpt1survey = .cd_method$denominators$dpt1survey,
+  survey_year = .cd_method$denominators$survey_year,
   region = NULL,
   show_district = TRUE,
-  sbr = 0.02,
-  nmr = 0.025,
-  pnmr = 0.024,
-  twin = 0.015,
-  preg_loss = 0.03
+  sbr = .cd_method$denominators$sbr,
+  nmr = .cd_method$denominators$nmr,
+  pnmr = .cd_method$denominators$pnmr,
+  twin = .cd_method$denominators$twin,
+  preg_loss = .cd_method$denominators$preg_loss
 )
 }
 \arguments{

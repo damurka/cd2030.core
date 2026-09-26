@@ -104,7 +104,7 @@ calculate_overall_score1 <- function(average_reporting_rate,
                                      district_outliers_summary,
                                      ratios_summary,
                                      labels = NULL,
-                                     threshold = 90) {
+                                     threshold = .cd_method$data_quality$reporting_threshold) {
   check_cd_class(average_reporting_rate, "cd_average_reporting_rate")
   check_cd_class(district_reporting_rate, "cd_district_reporting_rate")
   check_cd_class(district_completeness, "cd_missing_district")
@@ -141,16 +141,13 @@ calculate_overall_score1 <- function(average_reporting_rate,
   col_completeness <- if (selected_group == "vaccine") "mean_mis_vacc_tracer" else "mean_mis_all"
   col_outliers_dst <- if (selected_group == "vaccine") "mean_out_vacc_only" else "mean_out_all"
 
-  # Base IDs are always percentages
-  ids_to_average <- c("1a", "1b", "1c", "2a", "2b")
-
-  # Add group-specific percentage IDs from the Ratio section
-  if (selected_group == "vaccine") {
-    # Vaccine: 3a,3b,3c are Ratios. 3f,3g,3h are Percentages.
-    ids_to_average <- c(ids_to_average, "3f", "3g", "3h")
+  # The rows averaged into the score are the percentages (.cd_method, R/methodology-defaults.R):
+  # 1a-2b, plus the ratio section's percentages -- vaccine: 3f,3g,3h (3a,3b,3c are ratios);
+  # RMNCAH: 3c,3d (3a,3b are ratios).
+  ids_to_average <- if (selected_group == "vaccine") {
+    .cd_method$data_quality$score_components$vaccine
   } else {
-    # RMNCAH: 3a,3b are Ratios. 3c,3d are Percentages.
-    ids_to_average <- c(ids_to_average, "3c", "3d")
+    .cd_method$data_quality$score_components$rmncah
   }
 
   lbl_completeness <- if (selected_group == "vaccine") {
