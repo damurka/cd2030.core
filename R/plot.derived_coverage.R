@@ -71,18 +71,13 @@ plot.cd_derived_coverage <- function(x, type = c('bar', 'trend'), title = NULL, 
   }
 
   # 2. Setup Legend Mapping
-  default_legend <- list(
-    "un"              = "UN",
-    "dhis2"           = "DHIS2",
-    "anc1"            = "ANC1",
-    "penta1"          = "Penta1",
-    "penta1derived"   = "Penta1 Population Growth",
-    "anc1derived"     = "ANC1 Population Growth",
+  # the denominators' labels from the data dictionary (anc1/penta1 are the -derived ones, *derived the growth ones)
+  default_legend <- c(as.list(cd_denominator_labels()), list(
     "survey"          = "Survey Estimate",
     "survey_year"     = "Survey Year",
     "facility"        = "Facility-based coverage (%)",
     "survey_national" = "Coverage survey, national"
-  )
+  ))
   final_legend <- modifyList(default_legend, as.list(unlist(legend_labels)))
   ordered_keys <- names(final_legend)
   ordered_labels <- unname(unlist(final_legend)) 

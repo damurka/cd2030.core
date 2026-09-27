@@ -48,14 +48,7 @@ coverage_trends_server <- function(id, cache, admin_level, region, i18n, active 
                    title = str_glue(i18n$t(title)),
                    x_label = i18n$t("title_global_year"),
                    y_label = str_glue(i18n$t("lbl_axis_y_coverage")),
-                   legend_labels = cd_only_denominators(c(
-                     "un"            = i18n$t("opt_un"),
-                     "dhis2"         = i18n$t("opt_dhis2"),
-                     "anc1"          = i18n$t("opt_anc1"),
-                     "penta1"        = i18n$t("opt_penta1"),
-                     "penta1derived" = i18n$t("opt_penta1derived"),
-                     "anc1derived" = i18n$t("opt_anc1derived")
-                   )))
+                   legend_labels = cd_only_denominators(cd_denominator_labels(i18n)))
             },
             i18n = i18n
           )

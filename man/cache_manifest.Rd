@@ -12,9 +12,10 @@ A list (JSON-able with \code{jsonlite::toJSON(auto_unbox = TRUE)}): \code{packag
 }
 \description{
 Every public member of \code{CacheConnection} -- method or active binding -- with its arguments (defaults, and the
-values an argument may take when the code says), its documentation, whether it writes to the dataset, and whether
-a custom chart may draw from it; plus the report kinds. Read from the installed package, so it always matches the
-code; countdown-analytics builds its guide for the AI from it.
+values an argument may take when the code says), its documentation, whether it writes to the dataset, whether a
+custom chart may draw from it, and its \code{definition} (what the data point is, see \code{\link[=cache_definition]{cache_definition()}}); plus the
+report kinds. Read from the installed package, so it always matches the code; countdown-analytics builds its guide
+for the AI from it.
 }
 \examples{
 m <- cache_manifest()

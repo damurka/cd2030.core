@@ -240,9 +240,10 @@ cd_custom_chart_data <- function(cache, spec) {
 #' What the Countdown AI knows of CacheConnection
 #'
 #' Every public member of `CacheConnection` -- method or active binding -- with its arguments (defaults, and the
-#' values an argument may take when the code says), its documentation, whether it writes to the dataset, and whether
-#' a custom chart may draw from it; plus the report kinds. Read from the installed package, so it always matches the
-#' code; countdown-analytics builds its guide for the AI from it.
+#' values an argument may take when the code says), its documentation, whether it writes to the dataset, whether a
+#' custom chart may draw from it, and its `definition` (what the data point is, see [cache_definition()]); plus the
+#' report kinds. Read from the installed package, so it always matches the code; countdown-analytics builds its guide
+#' for the AI from it.
 #'
 #' @return A list (JSON-able with `jsonlite::toJSON(auto_unbox = TRUE)`): `package`, `version`, `generatedAt`,
 #'   `members` and `reportKinds`.
@@ -254,6 +255,7 @@ cache_manifest <- function() {
   cls <- get("CacheConnection", envir = asNamespace("cd2030.core"))
   docs <- .cd_cache_docs()
   chartable <- cd_chartable_members()
+  definitions <- cache_definition()
 
   method_entry <- function(name) {
     fn <- cls$public_methods[[name]]
@@ -272,12 +274,13 @@ cache_manifest <- function() {
     })
     list(name = name, kind = "method",
          writes = startsWith(name, "set_") || name %in% c("save_to_disk", "load_from_disk", "adjust_data"),
-         chartable = name %in% chartable, args = args, description = doc$description %||% "", returns = doc$returns %||% "")
+         chartable = name %in% chartable, args = args, description = doc$description %||% "", returns = doc$returns %||% "",
+         definition = definitions[[name]])
   }
   binding_entry <- function(name) {
     d <- unname(docs$bindings[name])
     list(name = name, kind = "binding", writes = FALSE, chartable = name %in% chartable, args = list(),
-         description = if (length(d) && !is.na(d)) d else "", returns = "")
+         description = if (length(d) && !is.na(d)) d else "", returns = "", definition = definitions[[name]])
   }
 
   methods <- setdiff(names(cls$public_methods), c("clone", "initialize"))

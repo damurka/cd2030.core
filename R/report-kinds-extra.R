@@ -309,11 +309,7 @@
        title = paste0(.rbx_fill(title, region_name = region %||% ""), " - ", indicator),
        x_label = t("title_global_year", "Year"),
        y_label = .rbx_fill(t("lbl_axis_y_coverage", "{indicator} Coverage (%)"), indicator = indicator),
-       legend_labels = list(
-         un = t("opt_un", "UN"), dhis2 = t("opt_dhis2", "DHIS2"), anc1 = t("opt_anc1", "ANC1"), penta1 = t("opt_penta1", "Penta1"),
-         penta1derived = t("opt_penta1derived", "Penta1 Population Growth"), anc1derived = t("opt_anc1derived", "ANC1 Population Growth"),
-         survey = t("lbl_coverage_survey_est", "Survey estimate")
-       )) +
+       legend_labels = c(.rb_denominator_labels(t), list(survey = t("lbl_coverage_survey_est", "Survey estimate")))) +
     # the denominators' legend and the survey year's, one above the other: side by side they are wider than the page
     ggplot2::theme(legend.box = "vertical")
 }

@@ -1,3 +1,27 @@
+# cd2030.core (development version)
+
+* A data dictionary: `cd_dictionary()` says what the ids and column names in the package's data mean -- the six
+  denominator options (id, label, what it is, levels), indicators, target populations, reporting rates, fixed columns
+  and how names are built (`cov_<indicator>_<denominator>`, `<population>_<denominator>`, `r_<indicator>`, ...).
+  `cd_describe_columns()` reads column names with it ("Coverage of Pentavalent 3 (%), denominator: Penta1 population
+  growth (penta1derived)") and never guesses a name it can't read. `cd_denominator_labels()` gives the labels,
+  translated when given a translator.
+* The denominators have one set of labels everywhere -- UN projections, DHIS2 projections, ANC1-derived,
+  Penta1-derived, ANC1 population growth, Penta1 population growth -- in the denominator chip, the Denominator
+  Selection charts, the reports and the plot legends (new translation keys `lbl_denom_anc1_growth` and
+  `lbl_denom_penta1_growth`). `anc1`/`penta1` are the -derived options and `anc1derived`/`penta1derived` the
+  population-growth ones; the ids are unchanged.
+* `inst/scripts/export-data-dictionary.R` writes the docs' "Data dictionary" reference page from it.
+* Every public member of `CacheConnection` is defined (`R/cache-definitions.R`): `cache_definition()` says what each
+  data point is in the methodology's terms -- its kind (data, setting, reference, mapping, check, value, store,
+  state, method, action), its grain (what one row is) and key columns, its unit, where the user sets it in the app
+  and which pages show it, the methodology docs section it comes from, the defaults it follows (ids of
+  `cd_methodology_defaults()`) and the members it is computed from. Columns are left to the data dictionary.
+  `cache_manifest()` includes each member's `definition`. A test fails when a member is added without one, or when a
+  docs link or default reference doesn't resolve. Eight members are marked draft with a note (among them
+  `get_regional_estimates()`, which fails for a region because it reads an undefined object).
+* `inst/scripts/export-cache-reference.R` writes the docs' "CacheConnection reference" page from the definitions.
+
 # cd2030.core 1.3.0
 
 The constants of the Countdown methodology are defined once, in `R/methodology-defaults.R`:

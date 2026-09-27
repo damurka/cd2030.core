@@ -99,6 +99,12 @@ report_block_kinds <- function(group = get_selected_group()) {
 
 .rb_ind_name <- function(i18n, indicator) .rb_t(i18n, paste0("opt_", indicator), indicator)
 
+# The denominator options' labels as a report shows them (`t(key, fallback)`): the data dictionary's keys and labels.
+.rb_denominator_labels <- function(t) {
+  d <- .cd_dict_denominators
+  stats::setNames(lapply(seq_len(nrow(d)), function(i) t(d$key[i], d$label[i])), d$id)
+}
+
 
 # A custom chart (kind "custom_chart"): its description is the block's `spec`, or a saved graph's (`graph` = its id in
 # the dataset's graphs). Data, never code: a CacheConnection member, fixed transforms and a plot description.

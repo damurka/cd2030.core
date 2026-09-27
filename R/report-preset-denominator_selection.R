@@ -166,21 +166,15 @@
          title = fill(t("plt_title_denom_survey_comp",
                         "{indicator} Coverage, DHIS2-based with different denominators, and survey coverage for {year}"), name, year),
          y_label = fill(t("lbl_axis_y_coverage", "{indicator} Coverage (%)"), name, year),
-         legend_labels = list(
-           un = t("lbl_denom_un_proj", "UN projection"), dhis2 = t("lbl_denom_dhis2_proj", "DHIS2 projection"),
-           anc1 = t("lbl_denom_anc1_derived", "ANC1-derived"), penta1 = t("lbl_denom_penta1_derived", "Penta1-derived"),
-           penta1derived = t("opt_penta1derived", "Penta1 Population Growth"), anc1derived = t("opt_anc1derived", "ANC1 Population Growth"),
+         legend_labels = c(.rb_denominator_labels(t), list(
            facility = t("lbl_denom_facility_based", "Facility-based coverage (%)"),
            survey_national = t("lbl_denom_survey_national", "Coverage survey, national")
-         ))
+         )))
   } else {
     plot(data,
          title = fill(t("plt_title_cross_section_subnat",
                         "Comparison of {indicator} Coverage Estimates by Region and Denominator in {year}"), name, year),
          x_label = t("opt_coverage", "Coverage"), y_label = t("lbl_axis_y_region", "Region"),
-         legend_labels = list(
-           un = t("opt_un", "UN"), dhis2 = t("opt_dhis2", "DHIS2"), anc1 = t("opt_anc1", "ANC1"), penta1 = t("opt_penta1", "Penta1"),
-           penta1derived = t("opt_penta1derived", "Penta1 Population Growth"), anc1derived = t("opt_anc1derived", "ANC1 Population Growth")
-         ))
+         legend_labels = .rb_denominator_labels(t))
   }
 }

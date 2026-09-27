@@ -100,14 +100,7 @@ survey_comparison_server <- function(id, cache, admin_level, region, i18n, activ
               plot(d,
                    title = str_glue(i18n$t("plt_title_denom_survey_comp")),
                    y_label = str_glue(i18n$t("lbl_axis_y_coverage")),
-                   category_labels = cd_only_denominators(list(
-                     un            = i18n$t("lbl_denom_un_proj"),
-                     dhis2         = i18n$t("lbl_denom_dhis2_proj"),
-                     anc1          = i18n$t("lbl_denom_anc1_derived"),
-                     penta1        = i18n$t("lbl_denom_penta1_derived"),
-                     penta1derived = i18n$t("opt_penta1derived"),
-                     anc1derived = i18n$t("opt_anc1derived")
-                   )),
+                   category_labels = cd_only_denominators(as.list(cd_denominator_labels(i18n))),
                    legend_labels = list(
                      facility = i18n$t("lbl_denom_facility_based"),
                      survey = i18n$t("lbl_denom_survey_national")

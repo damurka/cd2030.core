@@ -1,9 +1,11 @@
+# The chip's choices: translation key of the label (the data dictionary's, cd_dictionary()$denominators) -> id.
+# anc1/penta1 are the ANC1-/Penta1-derived denominators; anc1derived/penta1derived the population-growth ones.
 cd_denominator_choices <- c(
-  "opt_dhis2" = "dhis2",
-  "opt_anc1" = "anc1",
-  "opt_penta1" = "penta1",
-  "opt_penta1derived" = "penta1derived",
-  "opt_anc1derived" = "anc1derived"
+  "lbl_denom_dhis2_proj" = "dhis2",
+  "lbl_denom_anc1_derived" = "anc1",
+  "lbl_denom_penta1_derived" = "penta1",
+  "lbl_denom_penta1_growth" = "penta1derived",
+  "lbl_denom_anc1_growth" = "anc1derived"
 )
 
 # The choices the chip offers. The rmncah set by default; an app whose indicator group has fewer denominators
