@@ -1,4 +1,4 @@
-# cd2030.core (development version)
+# cd2030.core 1.3.1
 
 * A data dictionary: `cd_dictionary()` says what the ids and column names in the package's data mean -- the six
   denominator options (id, label, what it is, levels), indicators, target populations, reporting rates, fixed columns
