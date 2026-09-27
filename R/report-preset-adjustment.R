@@ -8,7 +8,7 @@
     name = .rb_tx("Data adjustment", "Ajustement des donn\u00e9es", "Ajuste dos dados"),
     description = .rb_tx("Reported numbers before and after the adjustments for completeness and outliers",
                          "Nombres d\u00e9clar\u00e9s avant et apr\u00e8s les ajustements pour la compl\u00e9tude et les valeurs aberrantes",
-                         "N\u00fameros reportados antes e depois dos ajustes de completude e outliers"),
+                         "N\u00fameros reportados antes e depois dos ajustes de completude e valores at\u00edpicos"),
     blocks = .rb_adjustment_blocks(group),
     cover_patch = list(
       title = .rb_tx("Data adjustment for {country}: Countdown analysis",
@@ -23,7 +23,7 @@
   # the heading above a vaccine's chart: {chart_indicator} is the name of the chart under it
   doses_heading <- .rb_tx("Health facility data adjustment: Numerators - reported {chart_indicator} doses",
                           "Ajustement des donn\u00e9es des \u00e9tablissements de sant\u00e9 : Num\u00e9rateurs - doses de {chart_indicator} d\u00e9clar\u00e9es",
-                          "Ajuste de dados de instala\u00e7\u00f5es de sa\u00fade: Numeradores - doses de {chart_indicator} reportadas")
+                          "Ajuste de dados das unidades de sa\u00fade: Numeradores - doses de {chart_indicator} reportadas")
   first <- if (vaccine) {
     list(
       heading = doses_heading,
@@ -44,7 +44,7 @@
     list(
       heading = .rb_tx("Health facility data adjustment: Numerators - reported {chart_indicator}",
                        "Ajustement des donn\u00e9es des \u00e9tablissements de sant\u00e9 : Num\u00e9rateurs d\u00e9clar\u00e9s - {chart_indicator}",
-                       "Ajuste de dados de instala\u00e7\u00f5es de sa\u00fade: Numeradores reportados - {chart_indicator}"),
+                       "Ajuste de dados das unidades de sa\u00fade: Numeradores reportados - {chart_indicator}"),
       chart = .rb_chart("adj_comparison", "instlivebirths", admin_level = NULL),
       note = .rb_tx(
         paste("Consider the effect of the adjustment on live births in health facilities, and mention the difference in the",
@@ -54,7 +54,7 @@
               "diff\u00e9rence en nombre ainsi que le pourcentage d'augmentation en {latest_year} ; mettez en \u00e9vidence l'ann\u00e9e ayant le",
               "plus grand impact le cas \u00e9ch\u00e9ant ; interpr\u00e9tez si l'impact de l'ajustement sur les taux de couverture est important",
               "ou faible."),
-        paste("Considere o efeito do ajuste nos nascimentos vivos nas instala\u00e7\u00f5es de sa\u00fade, e mencione a diferen\u00e7a no n\u00famero,",
+        paste("Considere o efeito do ajuste nos nados vivos nas unidades de sa\u00fade, e mencione a diferen\u00e7a no n\u00famero,",
               "bem como o aumento percentual em {latest_year}; destaque o ano com o maior impacto, se houver; interprete se o",
               "impacto do ajuste nas taxas de cobertura \u00e9 grande ou pequeno.")
       )
@@ -63,7 +63,7 @@
 
   list(
     .rb_heading(.rb_tx("Health facility data adjustments", "Ajustements des donn\u00e9es des \u00e9tablissements de sant\u00e9",
-                       "Ajustes de dados de instala\u00e7\u00f5es de sa\u00fade"), 1),
+                       "Ajustes de dados das unidades de sa\u00fade"), 1),
     .rb_heading(.rb_tx("Background", "Contexte", "Contexto"), 2),
     .rb_text(.rb_tx(
       paste("Completeness of reporting affects analysis, especially if it is low or varies between years. Extreme outliers can",
@@ -74,10 +74,10 @@
             "aberrantes extr\u00eames peuvent avoir un impact important, notamment sur les chiffres sous nationaux. Plusieurs \u00e9tapes sont",
             "n\u00e9cessaires pour obtenir un jeu de donn\u00e9es propre pour l'analyse \u00ab endline \u00bb, notamment en ajustant les rapports",
             "incomplets et en corrigeant les valeurs aberrantes extr\u00eames. Ces graphiques montrent l'impact sur les chiffres."),
-      paste("A completude dos relat\u00f3rios afeta a an\u00e1lise, especialmente se for baixa ou variar entre os anos. Outliers extremos",
+      paste("A completude dos relat\u00f3rios afeta a an\u00e1lise, especialmente se for baixa ou variar entre os anos. Valores at\u00edpicos extremos",
             "podem ter um grande impacto, especialmente nos n\u00fameros subnacionais. V\u00e1rios passos s\u00e3o necess\u00e1rios para obter um",
             "conjunto de dados limpo para a an\u00e1lise de \u201cendline\u201d, incluindo o ajuste para relat\u00f3rios incompletos e a corre\u00e7\u00e3o de",
-            "outliers extremos. Esses gr\u00e1ficos mostram o impacto nos n\u00fameros.")
+            "valores at\u00edpicos extremos. Estes gr\u00e1ficos mostram o impacto nos n\u00fameros.")
     )),
     .rb_heading(first$heading, 2),
     first$chart,
@@ -87,7 +87,7 @@
       first$note,
       .rb_tx("Make the same description and interpretations for penta1 vaccinations",
              "Faites la m\u00eame description et les m\u00eames interpr\u00e9tations pour les vaccinations Penta 1.",
-             "Fa\u00e7a a mesma descri\u00e7\u00e3o e interpreta\u00e7\u00f5es para as vacina\u00e7\u00f5es de penta1."),
+             "Fa\u00e7a a mesma descri\u00e7\u00e3o e interpreta\u00e7\u00e3o para as vacina\u00e7\u00f5es de Penta1."),
       title = .rb_tx("Notes", "Notes", "Notas")
     )
   )

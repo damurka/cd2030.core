@@ -22,7 +22,7 @@
       "key": "title_global_intro_main",
       "en": "Introduction: Countdown to 2030",
       "fr": "Introduction : Compte à rebours vers 2030",
-      "pt": "Introdução: Contagem regressiva para 2030"
+      "pt": "Introdução: Contagem decrescente para 2030"
     },
     {
       "key": "title_nav_load_data",
@@ -70,7 +70,7 @@
       "key": "title_nav_countdown",
       "en": "Countdown Analysis",
       "fr": "Analyse Countdown",
-      "pt": "Análise da contagem regressiva"
+      "pt": "Análise da contagem decrescente"
     },
     {
       "key": "title_global_options",
@@ -160,31 +160,31 @@
       "key": "lbl_upload_browse",
       "en": "Browse or Drop...",
       "fr": "Parcourir ou déposer...",
-      "pt": "Procurar ou Soltar..."
+      "pt": "Procurar ou Largar..."
     },
     {
       "key": "err_upload_unsupported",
       "en": "Upload failed: Unsupported file format.",
       "fr": "Échec du téléversement : format de fichier non pris en charge.",
-      "pt": "Falha no carregamento: Formato de arquivo não suportado."
+      "pt": "Falha no carregamento: Formato de ficheiro não suportado."
     },
     {
       "key": "msg_upload_cache_loading",
       "en": "Loading from cache",
       "fr": "Chargement depuis le cache",
-      "pt": "Carregando do cache"
+      "pt": "A carregar da cache"
     },
     {
       "key": "msg_upload_cache_loaded",
       "en": "Upload successful: File loaded from cache",
       "fr": "Téléversement réussi : Fichier chargé depuis le cache",
-      "pt": "Carregamento bem-sucedido: Arquivo carregado do cache"
+      "pt": "Carregamento bem-sucedido: ficheiro carregado da cache"
     },
     {
       "key": "msg_upload_success_file",
       "en": "Upload successful: File {file_name} is ready.",
       "fr": "Téléversement réussi : le fichier {file_name} est prêt.",
-      "pt": "Carregamento bem-sucedido: O arquivo {file_name} está pronto."
+      "pt": "Carregamento bem-sucedido: o ficheiro {file_name} está pronto."
     },
     {
       "key": "title_upload_success_heading",
@@ -208,7 +208,7 @@
       "key": "btn_upload_download_master",
       "en": "Download Master Dataset",
       "fr": "Télécharger le jeu de données principal",
-      "pt": "Baixar Conjunto de Dados Principal"
+      "pt": "Transferir Conjunto de Dados Principal"
     },
     {
       "key": "title_msg_upload_failed",
@@ -226,7 +226,7 @@
       "key": "title_msg_action_needed",
       "en": "Set on another page",
       "fr": "Défini sur une autre page",
-      "pt": "Definido em outra página"
+      "pt": "Definido noutra página"
     },
     {
       "key": "title_msg_mapped",
@@ -274,7 +274,7 @@
       "key": "title_msg_in_progress",
       "en": "In progress",
       "fr": "En cours",
-      "pt": "Em andamento"
+      "pt": "Em curso"
     },
     {
       "key": "title_msg_adjusted",
@@ -292,31 +292,31 @@
       "key": "msg_upload_files_uploaded",
       "en": "Files uploaded.",
       "fr": "Fichiers téléversés.",
-      "pt": "Arquivos carregados."
+      "pt": "Ficheiros carregados."
     },
     {
       "key": "msg_upload_survey_mapped",
       "en": "Survey mapping data is uploaded",
       "fr": "Les données de cartographie de l’enquête sont téléversées",
-      "pt": "Os dados de mapeamento da pesquisa foram carregados"
+      "pt": "Os dados de mapeamento do inquérito foram carregados"
     },
     {
       "key": "err_upload_survey_not_set",
       "en": "Survey folder not set",
       "fr": "Dossier des enquêtes non défini",
-      "pt": "Pasta da pesquisa não definida"
+      "pt": "Pasta do inquérito não definida"
     },
     {
       "key": "title_upload_national_rates",
       "en": "National Rates for Denominator Calculation (Based on the most recent survey)",
       "fr": "Taux nationaux pour le calcul du dénominateur (d’après la dernière enquête)",
-      "pt": "Taxas nacionais para cálculo do denominador (com base na pesquisa mais recente)"
+      "pt": "Taxas nacionais para cálculo do denominador (com base no inquérito mais recente)"
     },
     {
       "key": "sub_load_data_main",
       "en": "Load your dataset, then confirm the national rates used to calculate denominators.",
       "fr": "Chargez votre jeu de données, puis confirmez les taux nationaux utilisés pour calculer les dénominateurs.",
-      "pt": "Carregue seu conjunto de dados e depois confirme as taxas nacionais usadas para calcular os denominadores."
+      "pt": "Carregue o seu conjunto de dados e depois confirme as taxas nacionais usadas para calcular os denominadores."
     },
     {
       "key": "title_upload_dataset_card",
@@ -328,7 +328,7 @@
       "key": "sub_upload_dataset_card",
       "en": "The file the whole analysis runs on.",
       "fr": "Le fichier sur lequel repose toute l’analyse.",
-      "pt": "O arquivo em que toda a análise se baseia."
+      "pt": "O ficheiro em que toda a análise se baseia."
     },
     {
       "key": "title_upload_national_rates_card",
@@ -340,7 +340,7 @@
       "key": "sub_upload_national_rates_card",
       "en": "Based on the most recent survey.",
       "fr": "D’après la dernière enquête.",
-      "pt": "Com base na pesquisa mais recente."
+      "pt": "Com base no inquérito mais recente."
     },
     {
       "key": "title_upload_group_maternal",
@@ -352,7 +352,7 @@
       "key": "sub_upload_group_maternal",
       "en": "Survey coverage and rates",
       "fr": "Couverture et taux de l’enquête",
-      "pt": "Cobertura e taxas da pesquisa"
+      "pt": "Cobertura e taxas do inquérito"
     },
     {
       "key": "title_upload_group_immunization",
@@ -364,25 +364,25 @@
       "key": "sub_upload_group_immunization",
       "en": "Survey coverage",
       "fr": "Couverture de l’enquête",
-      "pt": "Cobertura da pesquisa"
+      "pt": "Cobertura do inquérito"
     },
     {
       "key": "title_upload_group_survey_ref",
       "en": "Survey reference",
       "fr": "Référence de l’enquête",
-      "pt": "Referência da pesquisa"
+      "pt": "Referência do inquérito"
     },
     {
       "key": "sub_upload_group_survey_ref",
       "en": "Which survey the rates come from",
       "fr": "L’enquête d’où proviennent les taux",
-      "pt": "De qual pesquisa vêm as taxas"
+      "pt": "De que inquérito vêm as taxas"
     },
     {
       "key": "hint_upload_percent",
       "en": "Percent, 0–100",
       "fr": "Pourcentage, 0–100",
-      "pt": "Percentual, 0–100"
+      "pt": "Percentagem, 0–100"
     },
     {
       "key": "hint_upload_proportion",
@@ -400,13 +400,13 @@
       "key": "title_upload_opv1_survey",
       "en": "OPV1 Coverage (%)",
       "fr": "Couverture OPV1 (%)",
-      "pt": "Cobertura OPV1 (%)"
+      "pt": "Cobertura VOP1 (%)"
     },
     {
       "key": "title_upload_opv3_survey",
       "en": "OPV3 Coverage (%)",
       "fr": "Couverture OPV3 (%)",
-      "pt": "Cobertura OPV3 (%)"
+      "pt": "Cobertura VOP3 (%)"
     },
     {
       "key": "title_upload_un_estimates",
@@ -430,7 +430,7 @@
       "key": "title_upload_survey_folder",
       "en": "Upload Survey Folder",
       "fr": "Téléverser le dossier d'enquête",
-      "pt": "Carregar Pasta de Pesquisa"
+      "pt": "Carregar Pasta do Inquérito"
     },
     {
       "key": "title_upload_group_estimates",
@@ -448,13 +448,13 @@
       "key": "title_upload_group_survey_dir",
       "en": "Survey data folder",
       "fr": "Dossier de données d’enquête",
-      "pt": "Pasta de dados da pesquisa"
+      "pt": "Pasta de dados do inquérito"
     },
     {
       "key": "sub_upload_group_survey_dir",
       "en": "National, regional, and equity survey files",
       "fr": "Fichiers d’enquête nationaux, régionaux et d’équité",
-      "pt": "Arquivos de pesquisa nacionais, regionais e de equidade"
+      "pt": "Ficheiros de inquérito nacionais, regionais e de equidade"
     },
     {
       "key": "title_upload_group_mapping",
@@ -466,7 +466,7 @@
       "key": "sub_upload_group_mapping",
       "en": "Match your survey file's region names to the region names already in your uploaded dataset.",
       "fr": "Faites correspondre les noms de région de votre fichier d'enquête aux noms de région déjà présents dans votre jeu de données téléversé.",
-      "pt": "Associe os nomes de região do seu ficheiro de pesquisa aos nomes de região já presentes no seu conjunto de dados carregado."
+      "pt": "Associe os nomes de região do seu ficheiro de inquérito aos nomes de região já presentes no seu conjunto de dados carregado."
     },
     {
       "key": "title_upload_subnat_mapping",
@@ -532,7 +532,7 @@
       "key": "err_upload_survey_mapping_missing",
       "en": "Survey mapping has not been done",
       "fr": "La cartographie de l'enquête n'a pas été effectuée",
-      "pt": "O mapeamento da pesquisa não foi realizado"
+      "pt": "O mapeamento do inquérito não foi realizado"
     },
     {
       "key": "err_upload_map_mapping_missing",
@@ -562,91 +562,91 @@
       "key": "title_upload_survey_start_year",
       "en": "Survey Data Start Year",
       "fr": "Année de début des données de l'enquête",
-      "pt": "Ano de Início dos Dados da Pesquisa"
+      "pt": "Ano de Início dos Dados do Inquérito"
     },
     {
       "key": "title_upload_recent_survey_year",
       "en": "Recent Survey Year",
       "fr": "Année d'enquête récente",
-      "pt": "Ano recente da pesquisa"
+      "pt": "Ano do inquérito mais recente"
     },
     {
       "key": "msg_upload_cache_national",
       "en": "Loaded national survey data from cache.",
       "fr": "Données d’enquête nationale chargées depuis le cache.",
-      "pt": "Dados da pesquisa nacional carregados do cache."
+      "pt": "Dados do inquérito nacional carregados da cache."
     },
     {
       "key": "msg_upload_cache_regional",
       "en": "Loaded regional survey data from cache.",
       "fr": "Données d’enquête régionale chargées depuis le cache.",
-      "pt": "Dados da pesquisa regional carregados do cache."
+      "pt": "Dados do inquérito regional carregados da cache."
     },
     {
       "key": "msg_upload_cache_wealth",
       "en": "Loaded wealth index quintile survey data from cache.",
       "fr": "Données de quintiles de l’indice de richesse chargées depuis le cache.",
-      "pt": "Dados da pesquisa de quintis do índice de riqueza carregados do cache."
+      "pt": "Dados do inquérito por quintis do índice de riqueza carregados da cache."
     },
     {
       "key": "msg_upload_cache_area",
       "en": "Loaded area survey data from cache.",
       "fr": "Données d’enquête par zone chargées depuis le cache.",
-      "pt": "Dados da pesquisa por área carregados do cache."
+      "pt": "Dados do inquérito por área carregados da cache."
     },
     {
       "key": "msg_upload_cache_education",
       "en": "Loaded maternal education survey data from cache.",
       "fr": "Données d’éducation maternelle chargées depuis le cache.",
-      "pt": "Dados da pesquisa sobre educação materna carregados do cache."
+      "pt": "Dados do inquérito sobre educação materna carregados da cache."
     },
     {
       "key": "err_upload_missing_files",
       "en": "Missing required files: {files}",
       "fr": "Fichiers requis manquants : {files}",
-      "pt": "Arquivos obrigatórios ausentes: {files}"
+      "pt": "Ficheiros obrigatórios em falta: {files}"
     },
     {
       "key": "msg_upload_log_national",
       "en": "Loaded national survey data: {filename}.",
       "fr": "Données d’enquête nationale chargées : {filename}.",
-      "pt": "Dados da pesquisa nacional carregados: {filename}."
+      "pt": "Dados do inquérito nacional carregados: {filename}."
     },
     {
       "key": "msg_upload_log_regional",
       "en": "Loaded regional survey data: {filename}.",
       "fr": "Données d’enquête régionale chargées : {filename}.",
-      "pt": "Dados da pesquisa regional carregados: {filename}."
+      "pt": "Dados do inquérito regional carregados: {filename}."
     },
     {
       "key": "msg_upload_log_area",
       "en": "Loaded area survey data: {filename}.",
       "fr": "Données d’enquête par zone chargées : {filename}.",
-      "pt": "Dados da pesquisa por área carregados: {filename}."
+      "pt": "Dados do inquérito por área carregados: {filename}."
     },
     {
       "key": "msg_upload_log_education",
       "en": "Loaded maternal education survey data: {filename}.",
       "fr": "Données d’éducation maternelle chargées : {filename}.",
-      "pt": "Dados da pesquisa sobre educação materna carregados: {filename}."
+      "pt": "Dados do inquérito sobre educação materna carregados: {filename}."
     },
     {
       "key": "msg_upload_log_wealth",
       "en": "Loaded wealth index quintile survey data: {filename}.",
       "fr": "Données de quintiles de l’indice de richesse chargées : {filename}.",
-      "pt": "Dados da pesquisa de quintis do índice de riqueza carregados: {filename}."
+      "pt": "Dados do inquérito por quintis do índice de riqueza carregados: {filename}."
     },
     {
       "key": "err_upload_unknown_pattern",
       "en": "File '{filename}' does not match any known pattern.",
       "fr": "Le fichier « {filename} » ne correspond à aucun modèle connu.",
-      "pt": "O arquivo '{filename}' não corresponde a nenhum padrão conhecido."
+      "pt": "O ficheiro '{filename}' não corresponde a nenhum padrão conhecido."
     },
     {
       "key": "err_upload_processing",
       "en": "Error processing file {filename}: {error}",
       "fr": "Erreur lors du traitement du fichier {filename} : {error}",
-      "pt": "Erro ao processar o arquivo {filename}: {error}"
+      "pt": "Erro ao processar o ficheiro {filename}: {error}"
     },
     {
       "key": "title_rr_main",
@@ -736,7 +736,7 @@
       "key": "plt_title_rr_national",
       "en": "Percent of districts with low reporting rate (< {reporting_rate}%) by service",
       "fr": "Pourcentage des districts avec un faible taux de notification (< {reporting_rate} %) par service",
-      "pt": "Percentual de distritos com baixa taxa de notificação (< {reporting_rate}%) por serviço"
+      "pt": "Percentagem de distritos com baixa taxa de notificação (< {reporting_rate}%) por serviço"
     },
     {
       "key": "plt_caption_rr_national",
@@ -754,7 +754,7 @@
       "key": "tab_rr_district",
       "en": "Table 2 - Percentage of districts with reporting rates >= {input$threshold}, by year",
       "fr": "Tableau 2 - Pourcentage de districts avec TR >= {input$threshold}, par année",
-      "pt": "Tabela 2 - Percentual de distritos com taxas de notificação >= {input$threshold}, por ano"
+      "pt": "Tabela 2 - Percentagem de distritos com taxas de notificação >= {input$threshold}, por ano"
     },
     {
       "key": "tab_rr_district_year",
@@ -772,7 +772,7 @@
       "key": "title_outlier_main",
       "en": "Outlier Detection",
       "fr": "Détection des valeurs aberrantes",
-      "pt": "Detecção de valores discrepantes"
+      "pt": "Deteção de valores discrepantes"
     },
     {
       "key": "title_outlier_indicators",
@@ -832,31 +832,31 @@
       "key": "plt_title_outlier_region",
       "en": "Percent non-outliers by year and {admin_level}",
       "fr": "Pourcentage de valeurs non aberrantes par année et par {admin_level}",
-      "pt": "Percentual de valores não atípicos por ano e por {admin_level}"
+      "pt": "Percentagem de valores não atípicos por ano e por {admin_level}"
     },
     {
       "key": "plt_title_outlier_indicator",
       "en": "Percent non-outliers by year and indicator",
       "fr": "Pourcentage de valeurs non aberrantes par année et par indicateur",
-      "pt": "Percentual de valores não atípicos por ano e por indicador"
+      "pt": "Percentagem de valores não atípicos por ano e por indicador"
     },
     {
       "key": "plt_title_outlier_heatmap_all",
       "en": "Average percent non-outliers by {admin_level}",
       "fr": "Pourcentage moyen de valeurs non aberrantes par {admin_level}",
-      "pt": "Percentual médio de valores não atípicos por {admin_level}"
+      "pt": "Percentagem média de valores não atípicos por {admin_level}"
     },
     {
       "key": "plt_title_outlier_heatmap_one",
       "en": "Percent non-outliers for {indicator} by year and {admin_level}",
       "fr": "Pourcentage de valeurs non aberrantes pour {indicator} par année et par {admin_level}",
-      "pt": "Percentual de valores não atípicos para {indicator} por ano e por {admin_level}"
+      "pt": "Percentagem de valores não atípicos para {indicator} por ano e por {admin_level}"
     },
     {
       "key": "lbl_leg_outlier",
       "en": "Percent non-outliers (%)",
       "fr": "Pourcentage de valeurs non aberrantes (%)",
-      "pt": "Percentual de valores não atípicos (%)"
+      "pt": "Percentagem de valores não atípicos (%)"
     },
     {
       "key": "plt_title_outlier_trend_year",
@@ -892,25 +892,25 @@
       "key": "lbl_outlier_series_bounds",
       "en": "Outlier bounds (±5 MAD)",
       "fr": "Bornes d’anomalie (±5 MAD)",
-      "pt": "Limites de outlier (±5 MAD)"
+      "pt": "Limites de valores atípicos (±5 MAD)"
     },
     {
       "key": "lbl_outlier_series_outliers",
       "en": "Outliers",
       "fr": "Valeurs aberrantes",
-      "pt": "Outliers"
+      "pt": "Valores atípicos"
     },
     {
       "key": "tab_outlier_extreme",
       "en": "Table 2a: Percentage of monthly values that are not extreme outliers, by year",
       "fr": "Tableau 2a : Pourcentage de valeurs mensuelles qui ne sont pas des valeurs aberrantes extrêmes, par année",
-      "pt": "Tabela 2a: Percentual de valores mensais que não são discrepantes extremos, por ano"
+      "pt": "Tabela 2a: Percentagem de valores mensais que não são discrepantes extremos, por ano"
     },
     {
       "key": "tab_outlier_district",
       "en": "Table 2b: Percentage of districts with no extreme outliers, by year",
       "fr": "Tableau 2b : Pourcentage de districts sans valeurs aberrantes extrêmes, par année",
-      "pt": "Tabela 2b: Percentual de distritos sem discrepantes extremos, por ano"
+      "pt": "Tabela 2b: Percentagem de distritos sem discrepantes extremos, por ano"
     },
     {
       "key": "lbl_sheet_outlier_district",
@@ -922,7 +922,7 @@
       "key": "title_complete_main",
       "en": "Data Missingness",
       "fr": "Données Manquantes",
-      "pt": "Dados Ausentes"
+      "pt": "Dados em Falta"
     },
     {
       "key": "title_complete_indicators",
@@ -934,13 +934,13 @@
       "key": "title_complete_missing_indicators",
       "en": "Indicators with Missing Data",
       "fr": "Indicateurs avec des données manquantes",
-      "pt": "Indicadores com Dados Faltantes"
+      "pt": "Indicadores com Dados em Falta"
     },
     {
       "key": "title_complete_missing_region",
       "en": "Missing Indicators by Region",
       "fr": "Indicateurs manquants par région",
-      "pt": "Indicadores Faltantes por Região"
+      "pt": "Indicadores em Falta por Região"
     },
     {
       "key": "title_complete_district_missing_1",
@@ -958,13 +958,13 @@
       "key": "title_complete_district_missing",
       "en": "Sub-National Units with Missing Data",
       "fr": "Unités infranationales avec des données manquantes",
-      "pt": "Unidades Subnacionais com Dados Faltantes"
+      "pt": "Unidades Subnacionais com Dados em Falta"
     },
     {
       "key": "title_complete_missing",
       "en": "Missings",
       "fr": "Données manquantes",
-      "pt": "Dados Faltantes"
+      "pt": "Dados em Falta"
     },
     {
       "key": "tt_complete_indicator_missing",
@@ -976,25 +976,25 @@
       "key": "plt_title_complete_heatmap_all",
       "en": "Average reporting missingness (%) by {admin_level}",
       "fr": "Taux moyen de données manquantes (%) par {admin_level}",
-      "pt": "Percentual médio de dados ausentes (%) por {admin_level}"
+      "pt": "Percentagem média de dados em falta (%) por {admin_level}"
     },
     {
       "key": "plt_title_complete_heatmap_all_reg",
       "en": "Average reporting missingness (%) by {admin_level} in {region}",
       "fr": "Taux moyen de données manquantes (%) par {admin_level} dans {region}",
-      "pt": "Percentual médio de dados ausentes (%) por {admin_level} em {region}"
+      "pt": "Percentagem média de dados em falta (%) por {admin_level} em {region}"
     },
     {
       "key": "plt_title_complete_heatmap_one",
       "en": "Proportion of missing reports (%) for {indicator} by year and {admin_level}",
       "fr": "Proportion des rapports manquants (%) pour {indicator} par année et {admin_level}",
-      "pt": "Proporção de relatórios ausentes (%) para {indicator} por ano e {admin_level}"
+      "pt": "Proporção de relatórios em falta (%) para {indicator} por ano e {admin_level}"
     },
     {
       "key": "plt_title_complete_heatmap_one_reg",
       "en": "Proportion of missing reports (%) for {indicator} by year and {admin_level} in {region}",
       "fr": "Proportion des rapports manquants (%) pour {indicator} par année et {admin_level} dans {region}",
-      "pt": "Proporção de relatórios ausentes (%) para {indicator} por ano e {admin_level} em {region}"
+      "pt": "Proporção de relatórios em falta (%) para {indicator} por ano e {admin_level} em {region}"
     },
     {
       "key": "plt_title_complete_trend",
@@ -1012,31 +1012,31 @@
       "key": "lbl_leg_complete_heatmap",
       "en": "Missingness (%)",
       "fr": "Données manquantes (%)",
-      "pt": "Dados ausentes (%)"
+      "pt": "Dados em falta (%)"
     },
     {
       "key": "plt_title_complete_district_plot",
       "en": "Percent of districts with complete data for {indicator}",
       "fr": "Pourcentage de districts avec des données complètes pour {indicator}",
-      "pt": "Percentual de distritos com dados completos para {indicator}"
+      "pt": "Percentagem de distritos com dados completos para {indicator}"
     },
     {
       "key": "tab_complete_monthly",
       "en": "Table 4a: Percentage of monthly values with complete data, by year",
       "fr": "Tableau 4a : Pourcentage des valeurs mensuelles avec des données complètes, par année",
-      "pt": "Tabela 4a: Percentual de valores mensais com dados completos, por ano"
+      "pt": "Tabela 4a: Percentagem de valores mensais com dados completos, por ano"
     },
     {
       "key": "tab_complete_district",
       "en": "Table 4a: Percentage of Districts with complete data, by year",
       "fr": "Tableau 4a : Pourcentage de districts avec des données complètes, par année",
-      "pt": "Tabela 4a: Percentual de distritos com dados completos, por ano"
+      "pt": "Tabela 4a: Percentagem de distritos com dados completos, por ano"
     },
     {
       "key": "lbl_sheet_complete_district",
       "en": "Missings (districts)",
       "fr": "Données manquantes (districts)",
-      "pt": "Dados faltantes (distritos)"
+      "pt": "Dados em falta (distritos)"
     },
     {
       "key": "title_consist_main",
@@ -1084,7 +1084,7 @@
       "key": "opt_consist_opv1_opv3",
       "en": "OPV1 and OPV3",
       "fr": "OPV1 et OPV3",
-      "pt": "OPV1 e OPV3"
+      "pt": "VOP1 e VOP3"
     },
     {
       "key": "opt_consist_custom",
@@ -1282,7 +1282,7 @@
       "key": "title_adjust_anc_factor",
       "en": "ANC K-Factor",
       "fr": "Facteur K ANC",
-      "pt": "Fator K ANC"
+      "pt": "Fator K CPN"
     },
     {
       "key": "title_adjust_delivery_factor",
@@ -1312,7 +1312,7 @@
       "key": "btn_adjust_download",
       "en": "Download Adjusted Dataset",
       "fr": "Télécharger l'ensemble de données ajusté",
-      "pt": "Baixar Conjunto de Dados Ajustado"
+      "pt": "Transferir Conjunto de Dados Ajustado"
     },
     {
       "key": "msg_adjust_success",
@@ -1324,7 +1324,7 @@
       "key": "msg_adjust_in_progress",
       "en": "Adjusting ...",
       "fr": "Ajustement en cours...",
-      "pt": "Ajustando..."
+      "pt": "A ajustar..."
     },
     {
       "key": "title_adjust_changes",
@@ -1336,7 +1336,7 @@
       "key": "title_adjust_visualize",
       "en": "Visualize effects of changes",
       "fr": "Visualiser les effets des changements",
-      "pt": "Visualizar efeitos das mudanças"
+      "pt": "Ver os efeitos das alterações"
     },
     {
       "key": "plt_title_adjust_comparison",
@@ -1378,7 +1378,7 @@
       "key": "tt_denom_pop_select",
       "en": "Select the population source that provides the most reliable denominator for analyses and charts.",
       "fr": "Sélectionnez la source de population qui fournit le dénominateur le plus fiable pour les analyses et les graphiques.",
-      "pt": "Selecione a fonte populacional que fornece o denominador mais confiável para análises e gráficos."
+      "pt": "Selecione a fonte populacional que fornece o denominador mais fiável para análises e gráficos."
     },
     {
       "key": "title_denom_selection",
@@ -1414,19 +1414,19 @@
       "key": "tt_denom_select_best_vacc",
       "en": "Select the population denominator to use when calculating vaccination coverage rates.",
       "fr": "Sélectionnez le dénominateur de population à utiliser pour calculer les taux de couverture vaccinale.",
-      "pt": "Selecione o denominador populacional a ser usado para calcular as taxas de cobertura vacinal."
+      "pt": "Selecione o denominador populacional a usar para calcular as taxas de cobertura vacinal."
     },
     {
       "key": "tt_denom_select_best_mat",
       "en": "Select the population denominator to use when calculating maternal coverage rates.",
       "fr": "Sélectionnez le dénominateur de population à utiliser pour calculer les taux de couverture maternelle.",
-      "pt": "Selecione o denominador populacional a ser usado para calcular as taxas de cobertura materna."
+      "pt": "Selecione o denominador populacional a usar para calcular as taxas de cobertura materna."
     },
     {
       "key": "opt_denom_live_births_dhis2",
       "en": "Live births (DHIS2)",
       "fr": "Naissances vivantes (DHIS2)",
-      "pt": "Nascidos vivos (DHIS2)"
+      "pt": "Nados vivos (DHIS2)"
     },
     {
       "key": "opt_denom_total_births_dhis2",
@@ -1630,7 +1630,7 @@
       "key": "lbl_denom_facility_based",
       "en": "Facility-based coverage (%)",
       "fr": "Couverture en établissement (%)",
-      "pt": "Cobertura baseada em instalações (%)"
+      "pt": "Cobertura baseada nas unidades de saúde (%)"
     },
     {
       "key": "lbl_denom_survey_national",
@@ -1936,31 +1936,31 @@
       "key": "msg_report_generating",
       "en": "Your report is being generated. This might take a few moments.",
       "fr": "Votre rapport est en cours de génération. Cela peut prendre quelques instants.",
-      "pt": "Seu relatório está sendo gerado. Isso pode levar alguns instantes."
+      "pt": "O seu relatório está a ser gerado. Isto pode demorar alguns instantes."
     },
     {
       "key": "msg_report_loading",
       "en": "Loading...",
       "fr": "Chargement...",
-      "pt": "Carregando..."
+      "pt": "A carregar..."
     },
     {
       "key": "msg_report_download_ready",
       "en": "Download Ready",
       "fr": "Téléchargement prêt",
-      "pt": "Download pronto"
+      "pt": "Transferência pronta"
     },
     {
       "key": "msg_report_generated",
       "en": "The report has been successfully generated. Click below to download it.",
       "fr": "Le rapport a été généré avec succès. Cliquez ci-dessous pour le télécharger.",
-      "pt": "O relatório foi gerado com sucesso. Clique abaixo para baixá-lo."
+      "pt": "O relatório foi gerado com sucesso. Clique abaixo para o transferir."
     },
     {
       "key": "msg_report_dialog",
       "en": "This dialog will remain open until you download the report or click 'Dismiss.'",
       "fr": "Cette boîte de dialogue restera ouverte jusqu'à ce que vous téléchargiez le rapport ou cliquiez sur 'Fermer'.",
-      "pt": "Esta janela permanecerá aberta até que você baixe o relatório ou clique em 'Fechar'."
+      "pt": "Esta janela permanece aberta até transferir o relatório ou clicar em 'Fechar'."
     },
     {
       "key": "btn_report_dismiss",
@@ -1972,13 +1972,13 @@
       "key": "err_report_generation",
       "en": "An error occurred while generating the report. Please try again.",
       "fr": "Une erreur s'est produite lors de la génération du rapport. Veuillez réessayer.",
-      "pt": "Ocorreu um erro ao gerar o relatório. Por favor, tente novamente."
+      "pt": "Ocorreu um erro ao gerar o relatório. Tente novamente."
     },
     {
       "key": "msg_report_generating_title",
       "en": "Generating Report",
       "fr": "Génération du rapport",
-      "pt": "Gerando Relatório"
+      "pt": "A gerar o relatório"
     },
     {
       "key": "err_report_no_data",
@@ -1990,31 +1990,31 @@
       "key": "btn_cache_set",
       "en": "Set Cache Directory",
       "fr": "Définir le répertoire de cache",
-      "pt": "Definir diretório de cache"
+      "pt": "Definir pasta de cache"
     },
     {
       "key": "btn_cache_save",
       "en": "Save Cache",
       "fr": "Enregistrer le cache",
-      "pt": "Salvar cache"
+      "pt": "Guardar cache"
     },
     {
       "key": "msg_cache_dir_set",
       "en": "Directory set successfully!",
       "fr": "Répertoire défini avec succès !",
-      "pt": "Diretório definido com sucesso!"
+      "pt": "Pasta definida com sucesso!"
     },
     {
       "key": "err_cache_permission",
       "en": "Error: {error_message}. Please check you have permission to selected folder",
       "fr": "Erreur : {error_message}. Veuillez vérifier que vous avez l'autorisation d'accéder au dossier sélectionné",
-      "pt": "Erro: {error_message}. Verifique se você tem permissão para acessar a pasta selecionada"
+      "pt": "Erro: {error_message}. Verifique se tem permissão para aceder à pasta selecionada"
     },
     {
       "key": "msg_cache_saved",
       "en": "Cache saved successfully!",
       "fr": "Cache enregistré avec succès !",
-      "pt": "Cache salvo com sucesso!"
+      "pt": "Cache guardada com sucesso!"
     },
     {
       "key": "opt_palette_greens",
@@ -2044,7 +2044,7 @@
       "key": "opt_dropout",
       "en": "Dropout",
       "fr": "Abandon",
-      "pt": "Evasão"
+      "pt": "Abandono"
     },
     {
       "key": "opt_anc",
@@ -2074,7 +2074,7 @@
       "key": "opt_instlivebirths",
       "en": "Institutional Live Births",
       "fr": "Naissances vivantes en établissement de santé",
-      "pt": "Nascidos vivos em estabelecimento de saúde"
+      "pt": "Nados vivos em unidades de saúde"
     },
     {
       "key": "opt_bcg",
@@ -2176,25 +2176,25 @@
       "key": "opt_dropout_penta13",
       "en": "Penta 1 to Penta 3 Dropout",
       "fr": "Abandon entre Penta 1 et Penta 3",
-      "pt": "Evasão de Penta 1 para Penta 3"
+      "pt": "Abandono de Penta 1 para Penta 3"
     },
     {
       "key": "opt_dropout_penta1mcv1",
       "en": "Penta 1 to Measles 1 Dropout",
       "fr": "Abandon entre Penta 1 et Rougeole 1",
-      "pt": "Evasão de Penta 1 para Sarampo 1"
+      "pt": "Abandono de Penta 1 para Sarampo 1"
     },
     {
       "key": "opt_dropout_penta3mcv1",
       "en": "Penta 3 to Measles 1 Dropout",
       "fr": "Abandon entre Penta 3 et Rougeole 1",
-      "pt": "Evasão de Penta 3 para Sarampo 1"
+      "pt": "Abandono de Penta 3 para Sarampo 1"
     },
     {
       "key": "opt_dropout_measles12",
       "en": "Measles 1 to Measles 2 Dropout",
       "fr": "Abandon entre Rougeole 1 et Rougeole 2",
-      "pt": "Evasão de Sarampo 1 para Sarampo 2"
+      "pt": "Abandono de Sarampo 1 para Sarampo 2"
     },
     {
       "key": "opt_zerodose",
@@ -2263,7 +2263,7 @@
       "key": "title_download_options",
       "en": "Downloading Report",
       "fr": "Téléchargement du rapport",
-      "pt": "Baixando o relatório"
+      "pt": "A transferir o relatório"
     },
     {
       "key": "title_global_maternal",
@@ -2311,13 +2311,13 @@
       "key": "lbl_table_only",
       "en": "This table only",
       "fr": "Ce tableau uniquement",
-      "pt": "Somente esta tabela"
+      "pt": "Apenas esta tabela"
     },
     {
       "key": "sub_outlier_main",
       "en": "Find extreme values that may be data entry errors, by indicator and area.",
       "fr": "Repérez les valeurs extrêmes pouvant être des erreurs de saisie, par indicateur et par zone.",
-      "pt": "Encontre valores extremos que podem ser erros de digitação, por indicador e por área."
+      "pt": "Encontre valores extremos que podem ser erros de introdução de dados, por indicador e por área."
     },
     {
       "key": "sub_complete_main",
@@ -2773,7 +2773,7 @@
       "key": "chk_dq_population_vs_births",
       "en": "Estimated population live births isn't lower than reported institutional counts",
       "fr": "Les naissances vivantes estimées de la population ne sont pas inférieures aux effectifs institutionnels rapportés",
-      "pt": "Os nascidos vivos estimados da população não são inferiores às contagens institucionais reportadas"
+      "pt": "Os nados vivos estimados da população não são inferiores às contagens institucionais reportadas"
     },
     {
       "key": "lbl_dq_informational",
@@ -2893,19 +2893,19 @@
       "key": "pop_dq_month_validity",
       "en": "Checks that every month value in the service data can be recognized as a real calendar month, in English or French — catches typos or unrecognized text, not language differences between sheets (see the informational note below for that).",
       "fr": "Vérifie que chaque valeur de mois des données de service est reconnaissable comme un vrai mois du calendrier, en anglais ou en français — détecte les fautes de frappe ou le texte non reconnu, pas les différences de langue entre feuilles (voir la remarque informative ci-dessous pour cela).",
-      "pt": "Verifica se cada valor de mês nos dados de serviço pode ser reconhecido como um mês real do calendário, em inglês ou francês — deteta erros de digitação ou texto não reconhecido, não diferenças de idioma entre folhas (ver a nota informativa abaixo para isso)."
+      "pt": "Verifica se cada valor de mês nos dados de serviço pode ser reconhecido como um mês real do calendário, em inglês ou francês — deteta erros de introdução ou texto não reconhecido, não diferenças de idioma entre folhas (ver a nota informativa abaixo para isso)."
     },
     {
       "key": "pop_dq_population_vs_births",
       "en": "Checks that the Population sheet's estimated annual live births is at least as large (within a 10% margin) as what health facilities reported over the year, summed month by month from the service data — a population estimate lower than the reported facility total isn't plausible.",
       "fr": "Vérifie que le nombre estimé de naissances vivantes annuelles de la feuille Population est au moins aussi élevé (avec une marge de 10 %) que ce que les établissements de santé ont rapporté sur l'année, additionné mois par mois à partir des données de service — une estimation de population inférieure au total rapporté par les établissements n'est pas plausible.",
-      "pt": "Verifica se o número estimado de nascidos vivos anuais da folha População é pelo menos tão elevado (com uma margem de 10%) quanto o que as unidades de saúde reportaram ao longo do ano, somado mês a mês a partir dos dados de serviço — uma estimativa de população inferior ao total reportado pelas unidades não é plausível."
+      "pt": "Verifica se o número estimado de nados vivos anuais da folha População é pelo menos tão elevado (com uma margem de 10%) quanto o que as unidades de saúde reportaram ao longo do ano, somado mês a mês a partir dos dados de serviço — uma estimativa de população inferior ao total reportado pelas unidades não é plausível."
     },
     {
       "key": "pop_dq_collision",
       "en": "Checks whether a service indicator (institutional live births) has been set to the exact same value as the population sheet's annual live births figure for nearly every month of a district-year — a sign the two might have been mixed up during data entry.",
       "fr": "Vérifie si un indicateur de service (naissances vivantes institutionnelles) a été fixé exactement à la même valeur que le chiffre annuel de naissances vivantes de la feuille population, pour presque tous les mois d'un district-année — un signe que les deux ont pu être confondus lors de la saisie.",
-      "pt": "Verifica se um indicador de serviço (nascidos vivos institucionais) foi definido exatamente com o mesmo valor do número anual de nascidos vivos da folha população, para quase todos os meses de um distrito-ano — um sinal de que os dois podem ter sido trocados durante a introdução de dados."
+      "pt": "Verifica se um indicador de serviço (nados vivos institucionais) foi definido exatamente com o mesmo valor do número anual de nados vivos da folha população, para quase todos os meses de um distrito-ano — um sinal de que os dois podem ter sido trocados durante a introdução de dados."
     },
     {
       "key": "pop_dq_emptiness",
@@ -2941,7 +2941,7 @@
       "key": "sub_reports",
       "en": "Build Word and PDF reports from this dataset. Charts and tables are drawn from the data every time you download.",
       "fr": "Créez des rapports Word et PDF à partir de ce jeu de données. Les graphiques et tableaux sont recalculés à chaque téléchargement.",
-      "pt": "Crie relatórios Word e PDF a partir destes dados. Os gráficos e tabelas são recalculados a cada descarga."
+      "pt": "Crie relatórios Word e PDF a partir destes dados. Os gráficos e tabelas são recalculados a cada transferência."
     },
     {
       "key": "lbl_nav_section_output",
@@ -2959,13 +2959,13 @@
       "key": "opt_live_births",
       "en": "Live births",
       "fr": "Naissances vivantes",
-      "pt": "Nascimentos vivos"
+      "pt": "Nados vivos"
     },
     {
       "key": "plt_mort_title_mmr_inst",
       "en": "Maternal mortality per 100,000 live births in health facilities",
       "fr": "Mortalité maternelle pour 100 000 naissances vivantes dans les établissements de santé",
-      "pt": "Mortalidade materna por 100.000 nascidos vivos nas unidades de saúde"
+      "pt": "Mortalidade materna por 100.000 nados vivos nas unidades de saúde"
     },
     {
       "key": "plt_mort_title_ratio_md_sb",
@@ -2983,7 +2983,7 @@
       "key": "plt_mort_title_nn_inst",
       "en": "Neonatal deaths before discharge per 1,000 live births in health facilities",
       "fr": "Décès néonatals avant la sortie pour 1 000 naissances vivantes dans les établissements de santé",
-      "pt": "Óbitos neonatais antes da alta por 1.000 nascidos vivos nas unidades de saúde"
+      "pt": "Óbitos neonatais antes da alta por 1.000 nados vivos nas unidades de saúde"
     },
     {
       "key": "plt_mort_national_mmr_inst",
@@ -3031,7 +3031,7 @@
       "key": "plt_mort_map_legend_mmr_inst",
       "en": "Institutional MMR per 100,000 livebirths",
       "fr": "RMM institutionnel pour 100 000 naissances vivantes",
-      "pt": "RMM institucional por 100.000 nascidos vivos"
+      "pt": "RMM institucional por 100.000 nados vivos"
     },
     {
       "key": "plt_mort_map_legend_sbr_inst",

@@ -1,3 +1,7 @@
+# cd2030.core 1.3.2
+
+* Portuguese: the translations and the report presets' questions read as Portuguese is written in Mozambique and Angola (European norm) instead of Brazilian Portuguese ("Contagem decrescente para 2030", "nados vivos", "Dados em falta", "Transferir"...).
+
 # cd2030.core 1.3.1
 
 * A data dictionary: `cd_dictionary()` says what the ids and column names in the package's data mean -- the six

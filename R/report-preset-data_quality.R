@@ -8,7 +8,7 @@
     name = .rb_tx("Data quality", "Qualit\u00e9 des donn\u00e9es", "Qualidade dos dados"),
     description = .rb_tx("Health facility data quality: quality score, reporting rates and internal consistency",
                          "Qualit\u00e9 des donn\u00e9es des \u00e9tablissements de sant\u00e9 : score de qualit\u00e9, taux de rapportage et coh\u00e9rence interne",
-                         "Qualidade dos dados das instala\u00e7\u00f5es de sa\u00fade: pontua\u00e7\u00e3o de qualidade, taxas de reporte e consist\u00eancia interna"),
+                         "Qualidade dos dados das unidades de sa\u00fade: pontua\u00e7\u00e3o de qualidade, taxas de reporte e consist\u00eancia interna"),
     blocks = .rb_data_quality_blocks(group),
     cover_patch = list(
       title = .rb_tx("Data quality for {country}: Countdown analysis",
@@ -25,27 +25,27 @@
   consistency_q <- if (vaccine) {
     .rb_tx("Interpret the consistency of the reported data for ANC1 and penta1 at the national level; same for penta1 and penta3, and for OPV1 and OPV3.",
            "Interpr\u00e9ter la coh\u00e9rence des donn\u00e9es rapport\u00e9es pour ANC1 et penta1 au niveau national ; idem pour penta1 et penta3, et pour OPV1 et OPV3.",
-           "Interprete a consist\u00eancia dos dados reportados para ANC1 e penta1 a n\u00edvel nacional; o mesmo para penta1 e penta3, e para OPV1 e OPV3.")
+           "Interprete a consist\u00eancia dos dados reportados para CPN1 e Penta1 a n\u00edvel nacional; o mesmo para Penta1 e Penta3, e para VOP1 e VOP3.")
   } else {
     .rb_tx("Interpret the consistency of the reported data for ANC1 and penta1 at the national level; same for penta1 and penta3.",
            "Interpr\u00e9ter la coh\u00e9rence des donn\u00e9es rapport\u00e9es pour ANC1 et penta1 au niveau national ; idem pour penta1 et penta3.",
-           "Interprete a consist\u00eancia dos dados reportados para ANC1 e penta1 a n\u00edvel nacional; o mesmo para penta1 e penta3.")
+           "Interprete a consist\u00eancia dos dados reportados para CPN1 e Penta1 a n\u00edvel nacional; o mesmo para Penta1 e Penta3.")
   }
   range_q <- if (vaccine) {
     .rb_tx("Interpret the data on the percent of districts that have ANC1 to penta1 ratios within the expected range; same for penta1 to penta3, and for OPV1 to OPV3.",
            "Interpr\u00e9ter les donn\u00e9es sur le pourcentage de districts dont les ratios ANC1/penta1 sont dans la fourchette attendue ; idem pour penta1/penta3, et pour OPV1/OPV3.",
-           "Interprete os dados sobre a percentagem de distritos que t\u00eam raz\u00f5es ANC1 para penta1 dentro da faixa esperada; o mesmo para penta1 para penta3, e para OPV1 para OPV3.")
+           "Interprete os dados sobre a percentagem de distritos que t\u00eam raz\u00f5es CPN1/Penta1 dentro do intervalo esperado; o mesmo para Penta1/Penta3, e para VOP1/VOP3.")
   } else {
     .rb_tx("Interpret the data on the percent of districts that have ANC1 to penta1 ratios within the expected range; same for penta1 to penta3.",
            "Interpr\u00e9ter les donn\u00e9es sur le pourcentage de districts dont les ratios ANC1/penta1 sont dans la fourchette attendue ; idem pour penta1/penta3.",
-           "Interprete os dados sobre a percentagem de distritos que t\u00eam raz\u00f5es ANC1 para penta1 dentro da faixa esperada; o mesmo para penta1 para penta3.")
+           "Interprete os dados sobre a percentagem de distritos que t\u00eam raz\u00f5es CPN1/Penta1 dentro do intervalo esperado; o mesmo para Penta1/Penta3.")
   }
 
   c(
     list(
       .rb_heading(.rb_tx("1. Health facility data quality assessment",
                          "1. \u00c9valuation de la qualit\u00e9 des donn\u00e9es des \u00e9tablissements de sant\u00e9",
-                         "1. Avalia\u00e7\u00e3o da qualidade dos dados das instala\u00e7\u00f5es de sa\u00fade"), 1),
+                         "1. Avalia\u00e7\u00e3o da qualidade dos dados das unidades de sa\u00fade"), 1),
       .rb_heading(.rb_tx("Background", "Contexte", "Contexto"), 2),
       .rb_text(.rb_tx(
         paste("Routinely reported health facility data are an important data source for health indicators. The data are reported",
@@ -57,10 +57,10 @@
               "vaccinations administr\u00e9es, ou les naissances vivantes assist\u00e9es. Comme pour toutes les donn\u00e9es, la qualit\u00e9 est un enjeu.",
               "Les donn\u00e9es sont v\u00e9rifi\u00e9es afin de consid\u00e9rer la compl\u00e9tude du reporting par les \u00e9tablissements de sant\u00e9, d'identifier",
               "les valeurs extr\u00eames aberrantes, et la coh\u00e9rence interne."),
-        paste("Os dados das instala\u00e7\u00f5es de sa\u00fade reportados rotineiramente s\u00e3o uma fonte importante de dados para indicadores de",
-              "sa\u00fade. Os dados s\u00e3o reportados pelas instala\u00e7\u00f5es de sa\u00fade sobre eventos como imuniza\u00e7\u00f5es administradas, ou nascimentos",
+        paste("Os dados das unidades de sa\u00fade reportados rotineiramente s\u00e3o uma fonte importante de dados para indicadores de",
+              "sa\u00fade. Os dados s\u00e3o reportados pelas unidades de sa\u00fade sobre eventos como imuniza\u00e7\u00f5es administradas, ou nados",
               "vivos assistidos. Como em qualquer dado, a qualidade \u00e9 uma quest\u00e3o. Os dados s\u00e3o verificados para considerar a",
-              "completude do reporte pelas instala\u00e7\u00f5es de sa\u00fade, identificar outliers extremos, e a consist\u00eancia interna.")
+              "completude do reporte pelas unidades de sa\u00fade, identificar valores at\u00edpicos extremos, e a consist\u00eancia interna.")
       )),
       .rb_heading(.rb_tx("Data quality summary table", "Tableau r\u00e9capitulatif de la qualit\u00e9 des donn\u00e9es",
                          "Tabela resumo da qualidade dos dados"), 2),
@@ -70,20 +70,20 @@
       .rb_questions(
         .rb_tx("Make a statement about the data quality overall score and trend: is it good, is it going in the right direction?",
                "Faire une d\u00e9claration concernant le score global de la qualit\u00e9 des donn\u00e9es et la tendance : est-il bon, va-t-il dans la bonne direction ?",
-               "Fa\u00e7a uma declara\u00e7\u00e3o sobre a pontua\u00e7\u00e3o geral da qualidade dos dados e a tend\u00eancia: est\u00e1 boa, est\u00e1 indo na dire\u00e7\u00e3o certa?"),
+               "Fa\u00e7a uma declara\u00e7\u00e3o sobre a pontua\u00e7\u00e3o geral da qualidade dos dados e a tend\u00eancia: \u00e9 boa, est\u00e1 a evoluir na dire\u00e7\u00e3o certa?"),
         .rb_tx("Interpret the completeness of reporting data: is it good, going in the right direction?",
                "Interpr\u00e9ter la compl\u00e9tude des donn\u00e9es de reporting : est-elle bonne, va-t-elle dans la bonne direction ?",
-               "Interprete a completude dos dados de reporte: est\u00e1 boa, est\u00e1 indo na dire\u00e7\u00e3o certa?"),
+               "Interprete a completude dos dados de reporte: \u00e9 boa, est\u00e1 a evoluir na dire\u00e7\u00e3o certa?"),
         .rb_tx("Interpret the data on extreme outliers: is it good, are districts doing well?",
                "Interpr\u00e9ter les donn\u00e9es sur les valeurs extr\u00eames aberrantes : sont-elles bonnes, les districts se portent-ils bien ?",
-               "Interprete os dados sobre outliers extremos: est\u00e1 bom, os distritos est\u00e3o indo bem?"),
+               "Interprete os dados sobre valores at\u00edpicos extremos: a situa\u00e7\u00e3o \u00e9 boa, os distritos est\u00e3o a ter bons resultados?"),
         consistency_q,
         range_q,
         title = notes
       ),
       .rb_heading(if (vaccine) .rb_tx("ANC1/Penta1, Penta1/Penta3 and OPV1/OPV3 ratios", "Ratios ANC1/Penta1, Penta1/Penta3 et OPV1/OPV3",
-                                      "Raz\u00f5es ANC1/Penta1, Penta1/Penta3 e OPV1/OPV3")
-                  else .rb_tx("ANC1/Penta1 and Penta1/Penta3 ratios", "Ratios ANC1/Penta1 et Penta1/Penta3", "Raz\u00f5es ANC1/Penta1 e Penta1/Penta3"), 2),
+                                      "Raz\u00f5es CPN1/Penta1, Penta1/Penta3 e VOP1/VOP3")
+                  else .rb_tx("ANC1/Penta1 and Penta1/Penta3 ratios", "Ratios ANC1/Penta1 et Penta1/Penta3", "Raz\u00f5es CPN1/Penta1 e Penta1/Penta3"), 2),
       .rb_chart("dq_ratios", admin_level = NULL),
       .rb_chart("consistency", admin_level = NULL, variant = "anc1_penta1"),
       .rb_chart("consistency", admin_level = NULL, variant = "penta1_penta3")

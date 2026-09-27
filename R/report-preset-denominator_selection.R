@@ -34,7 +34,7 @@
     .rb_heading(.rb_tx(
       "Health facility data denominator assessment: DHIS2, UN population and live births projections",
       "\u00c9valuation du d\u00e9nominateur des donn\u00e9es des \u00e9tablissements de sant\u00e9 : projections DHIS2, population de l'ONU et naissances vivantes",
-      "Avalia\u00e7\u00e3o do denominador de dados de instala\u00e7\u00f5es de sa\u00fade: proje\u00e7\u00f5es DHIS2, Popula\u00e7\u00e3o da ONU e nascimentos vivos"
+      "Avalia\u00e7\u00e3o do denominador de dados das unidades de sa\u00fade: proje\u00e7\u00f5es DHIS2, popula\u00e7\u00e3o da ONU e nados vivos"
     )),
     background,
     .rb_text(.rb_tx(
@@ -45,7 +45,7 @@
             "besoin des services : le d\u00e9nominateur. La qualit\u00e9 des projections de population dans DHIS2 est \u00e9valu\u00e9e par la",
             "coh\u00e9rence dans le temps et la comparaison avec les projections de l'ONU."),
       paste("Cobertura de servi\u00e7o \u00e9 definida como a popula\u00e7\u00e3o que recebeu o servi\u00e7o dividida pela popula\u00e7\u00e3o que necessita dos",
-            "servi\u00e7os: o denominador. A qualidade das proje\u00e7\u00f5es populacionais no DHIS2 \u00e9 avaliada por meio da consist\u00eancia ao",
+            "servi\u00e7os: o denominador. A qualidade das proje\u00e7\u00f5es populacionais no DHIS2 \u00e9 avaliada atrav\u00e9s da consist\u00eancia ao",
             "longo do tempo e da compara\u00e7\u00e3o com as proje\u00e7\u00f5es da ONU.")
     )),
     .rb_heading(.rb_tx("Total population projections: DHIS2 and UN populations",
@@ -54,7 +54,7 @@
     .rb_chart("denominator_trend", admin_level = NULL, variant = "population"),
     .rb_heading(.rb_tx("Live births projections: DHIS2 and UN live births",
                        "Projections des naissances vivantes : DHIS2 et naissances vivantes de l'ONU",
-                       "Proje\u00e7\u00f5es de Nascimentos Vivos: DHIS2 e Nascimentos Vivos da ONU"), 2),
+                       "Proje\u00e7\u00f5es de Nados Vivos: DHIS2 e Nados Vivos da ONU"), 2),
     .rb_chart("denominator_trend", admin_level = NULL, variant = "births"),
     .rb_heading(.rb_tx("Under 1 projections: DHIS2 and UN under 1",
                        "Projections des moins de 1 an : DHIS2 et moins de 1 an de l'ONU",
@@ -73,16 +73,16 @@
               "dans le temps (tendance r\u00e9guli\u00e8re) ; 3) les chiffres projet\u00e9s de la population totale et des naissances vivantes",
               "sont proches de la projection de population de l'ONU ; 4) les projections de population DHIS2 sont coh\u00e9rentes avec",
               "les estimations de l'ONU du taux de natalit\u00e9 brut et du taux de mortalit\u00e9 brut."),
-        paste("A interpreta\u00e7\u00e3o deve focar na medida em que as proje\u00e7\u00f5es DHIS2 s\u00e3o consideradas robustas, o que ocorre quando:",
+        paste("A interpreta\u00e7\u00e3o deve centrar-se na medida em que as proje\u00e7\u00f5es DHIS2 s\u00e3o consideradas robustas, o que acontece quando:",
               "1) a proje\u00e7\u00e3o total da popula\u00e7\u00e3o DHIS2 \u00e9 consistente ao longo do tempo com crescimento populacional regular;",
-              "2) a proje\u00e7\u00e3o total de nascimentos vivos DHIS2 \u00e9 consistente ao longo do tempo (tend\u00eancia regular); 3) os n\u00fameros",
-              "projetados de popula\u00e7\u00e3o total e nascimentos vivos est\u00e3o pr\u00f3ximos da proje\u00e7\u00e3o populacional da ONU; 4) as proje\u00e7\u00f5es",
+              "2) a proje\u00e7\u00e3o total de nados vivos DHIS2 \u00e9 consistente ao longo do tempo (tend\u00eancia regular); 3) os n\u00fameros",
+              "projetados de popula\u00e7\u00e3o total e nados vivos est\u00e3o pr\u00f3ximos da proje\u00e7\u00e3o populacional da ONU; 4) as proje\u00e7\u00f5es",
               "populacionais DHIS2 s\u00e3o consistentes com as estimativas da ONU para taxa bruta de natalidade e taxa bruta de",
               "mortalidade.")
       ),
       .rb_tx("Make your overall conclusion about the quality of the DHIS2 projection, especially live births.",
              "Formulez votre conclusion globale sur la qualit\u00e9 de la projection DHIS2, en particulier les naissances vivantes.",
-             "Fa\u00e7a sua conclus\u00e3o geral sobre a qualidade da proje\u00e7\u00e3o DHIS2, especialmente em rela\u00e7\u00e3o aos nascimentos vivos."),
+             "Fa\u00e7a a sua conclus\u00e3o geral sobre a qualidade da proje\u00e7\u00e3o DHIS2, especialmente em rela\u00e7\u00e3o aos nados vivos."),
       title = notes
     ),
     .rb_break(),
@@ -96,9 +96,9 @@
       paste("Le meilleur d\u00e9nominateur pour l'analyse de la couverture avec les donn\u00e9es des \u00e9tablissements est s\u00e9lectionn\u00e9 en",
             "comparant la proximit\u00e9 des diff\u00e9rentes m\u00e9thodes de d\u00e9nominateur avec la couverture d'enqu\u00eate pour une ann\u00e9e proche.",
             "Cela se fait aux niveaux national et sous-national (en utilisant la diff\u00e9rence m\u00e9diane avec l'enqu\u00eate)."),
-      paste("O denominador com melhor desempenho para an\u00e1lise de cobertura com dados de instala\u00e7\u00f5es \u00e9 selecionado comparando o",
-            "qu\u00e3o pr\u00f3ximo os diferentes m\u00e9todos de denominador est\u00e3o da cobertura da pesquisa para um ano pr\u00f3ximo. Isso \u00e9 feito",
-            "nos n\u00edveis nacional e subnacional (usando a diferen\u00e7a mediana em rela\u00e7\u00e3o \u00e0 pesquisa).")
+      paste("O denominador com melhor desempenho para a an\u00e1lise de cobertura com dados das unidades de sa\u00fade \u00e9 selecionado comparando",
+            "a proximidade entre os diferentes m\u00e9todos de denominador e a cobertura do inqu\u00e9rito para um ano pr\u00f3ximo. Isto \u00e9 feito",
+            "aos n\u00edveis nacional e subnacional (usando a diferen\u00e7a mediana em rela\u00e7\u00e3o ao inqu\u00e9rito).")
     )),
     ind_heading,
     national,
@@ -113,13 +113,13 @@
     .rb_questions(
       .rb_tx("Which denominator methods performed best at the national level for the two indicators?",
              "Quelles m\u00e9thodes de d\u00e9nominateur ont donn\u00e9 les meilleurs r\u00e9sultats au niveau national pour les deux indicateurs ?",
-             "Quais m\u00e9todos de denominador tiveram melhor desempenho no n\u00edvel nacional para os dois indicadores?"),
+             "Que m\u00e9todos de denominador tiveram melhor desempenho a n\u00edvel nacional para os dois indicadores?"),
       .rb_tx("Which denominator methods performed best at the subnational level for the two indicators?",
              "Quelles m\u00e9thodes de d\u00e9nominateur ont donn\u00e9 les meilleurs r\u00e9sultats au niveau sous-national pour les deux indicateurs ?",
-             "Quais m\u00e9todos de denominador tiveram melhor desempenho no n\u00edvel subnacional para os dois indicadores?"),
+             "Que m\u00e9todos de denominador tiveram melhor desempenho a n\u00edvel subnacional para os dois indicadores?"),
       .rb_tx("What selection is made for the indicators in the coverage analyses?",
              "Quelle s\u00e9lection est faite pour les indicateurs dans les analyses de couverture ?",
-             "Qual sele\u00e7\u00e3o foi feita para os indicadores nas an\u00e1lises de cobertura?"),
+             "Que sele\u00e7\u00e3o foi feita para os indicadores nas an\u00e1lises de cobertura?"),
       title = notes
     )
   )

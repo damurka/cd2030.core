@@ -36,9 +36,9 @@
       paste("Surveiller la couverture des interventions est un r\u00e9sultat critique et direct des syst\u00e8mes de sant\u00e9. C'est le plus",
             "utile lorsque le plan national comporte des objectifs significatifs. Les donn\u00e9es des \u00e9tablissements de sant\u00e9 et les",
             "enqu\u00eates doivent \u00eatre utilis\u00e9es."),
-      paste("Monitorar a cobertura das interven\u00e7\u00f5es \u00e9 um resultado cr\u00edtico e direto dos sistemas de sa\u00fade. \u00c9 mais \u00fatil se o",
-            "plano nacional tiver metas significativas. Tanto os dados das unidades de sa\u00fade quanto os dados de pesquisas",
-            "precisam ser usados.")
+      paste("Monitorizar a cobertura das interven\u00e7\u00f5es \u00e9 um resultado cr\u00edtico e direto dos sistemas de sa\u00fade. \u00c9 mais \u00fatil se o",
+            "plano nacional tiver metas significativas. Devem ser usados tanto os dados das unidades de sa\u00fade como os dados",
+            "dos inqu\u00e9ritos.")
     ))
   )
   q_quality <- .rb_tx(
@@ -47,7 +47,7 @@
     paste("Commencez par aborder la qualit\u00e9 des donn\u00e9es : les niveaux et les tendances sont-ils plausibles ? Y a-t-il une",
           "bonne coh\u00e9rence entre les donn\u00e9es des \u00e9tablissements et les donn\u00e9es d'enqu\u00eate ?"),
     paste("Primeiro, aborde a qualidade dos dados: os n\u00edveis e tend\u00eancias s\u00e3o plaus\u00edveis? H\u00e1 boa consist\u00eancia entre os dados",
-          "das unidades de sa\u00fade e os dados das pesquisas?")
+          "das unidades de sa\u00fade e os dados dos inqu\u00e9ritos?")
   )
   q_interpret <- .rb_tx(
     paste("Then, interpret the data if there is sufficient confidence in the observed levels and trends. The interpretation",
@@ -57,7 +57,7 @@
           "L'interpr\u00e9tation doit se concentrer sur la r\u00e9duction des in\u00e9galit\u00e9s au fil du temps et sur la mesure dans laquelle",
           "les objectifs mondiaux de couverture sous-nationale ont \u00e9t\u00e9 atteints."),
     paste("Em seguida, interprete os dados se houver confian\u00e7a suficiente nos n\u00edveis e tend\u00eancias observados. A interpreta\u00e7\u00e3o",
-          "deve focar se as desigualdades foram reduzidas ao longo do tempo e em que medida as metas globais para cobertura",
+          "deve centrar-se em saber se as desigualdades foram reduzidas ao longo do tempo e em que medida as metas globais de cobertura",
           "subnacional foram atingidas.")
   )
   q_cci <- .rb_tx(
@@ -68,21 +68,21 @@
           "combine 9 indicateurs dans les domaines du planning familial, des soins maternels et n\u00e9onatals, de la vaccination et",
           "du traitement des enfants malades."),
     paste("O Countdown Composite Coverage Index (CCI) \u00e9 usado para fornecer uma vis\u00e3o geral das desigualdades. O CCI combina",
-          "9 indicadores nas \u00e1reas de planejamento familiar, cuidados maternos e neonatais, imuniza\u00e7\u00e3o e tratamento de crian\u00e7as",
+          "9 indicadores nas \u00e1reas de planeamento familiar, cuidados maternos e neonatais, imuniza\u00e7\u00e3o e tratamento de crian\u00e7as",
           "doentes.")
   )
   q_wealth <- .rb_tx(
     "Wealth: are the gaps between the rich and poor large, have they changed over time? What pattern of inequality (bottom, linear, top)?",
     "Richesse : les \u00e9carts entre les riches et les pauvres sont-ils importants, ont-ils \u00e9volu\u00e9 dans le temps ? Quel type d'in\u00e9galit\u00e9 (bas, lin\u00e9aire, haut) ?",
-    "Renda: as lacunas entre ricos e pobres s\u00e3o grandes, elas mudaram ao longo do tempo? Qual padr\u00e3o de desigualdade (base, linear, topo)?"
+    "Rendimento: as diferen\u00e7as entre ricos e pobres s\u00e3o grandes, e mudaram ao longo do tempo? Que padr\u00e3o de desigualdade (base, linear, topo)?"
   )
   q_education <- .rb_tx(
     paste("Education: are the gaps in coverage by mother's education large, have they changed over time? How should this be",
           "interpreted in relation to increasing levels of female education?"),
     paste("\u00c9ducation : les \u00e9carts de couverture selon le niveau d'\u00e9ducation de la m\u00e8re sont-ils importants, ont-ils chang\u00e9 au",
           "fil du temps ? Comment interpr\u00e9ter cela par rapport \u00e0 l'augmentation du niveau d'\u00e9ducation des femmes ?"),
-    paste("Educa\u00e7\u00e3o: as lacunas na cobertura por n\u00edvel de escolaridade da m\u00e3e s\u00e3o grandes, elas mudaram ao longo do tempo?",
-          "Como isso deve ser interpretado em rela\u00e7\u00e3o ao aumento dos n\u00edveis de escolaridade feminina?")
+    paste("Educa\u00e7\u00e3o: as diferen\u00e7as na cobertura por n\u00edvel de escolaridade da m\u00e3e s\u00e3o grandes, e mudaram ao longo do tempo?",
+          "Como deve isto ser interpretado face ao aumento dos n\u00edveis de escolaridade feminina?")
   )
 
   # one indicator by region: the trend by region, the map, the equity charts and the notes
@@ -100,7 +100,7 @@
 
   c(
     list(.rb_heading(.rb_tx("Admin level 1 inequality trends", "Tendances des in\u00e9galit\u00e9s au niveau admin 1",
-                            "Tend\u00eancias de desigualdade no n\u00edvel administrativo 1"))),
+                            "Tend\u00eancias de desigualdade ao n\u00edvel administrativo 1"))),
     background,
     region_section(1),
     list(.rb_break()),
