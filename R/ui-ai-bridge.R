@@ -1,6 +1,6 @@
 # What the Countdown apps add to datasuite.ui's AI bridge (datasuite.ui's docs/AI-BRIDGE.md, protocol 2): the filters in
 # effect on the page the user is on and the dataset (path, country, revision), and the actions setFilters, saveReport,
-# addGraph and generateReport. cd_app() passes these to app_frame(). Data questions don't come through here: the AI
+# addGraph, generateReport, listReports, readReport and updateBlocks. cd_app() passes these to app_frame(). Data questions don't come through here: the AI
 # reads the dataset in its own R session (countdown-analytics/docs/AI-PLAN.md); what it adds to the dataset does, so
 # the app's own CacheConnection is the one that saves.
 #
@@ -101,9 +101,11 @@
 
 # The Countdown actions: setFilters (level "view": the view only), and saveReport, addGraph, generateReport (level
 # "add": what the AI adds -- "replace" when a call would overwrite a saved report, graph or file, which DataSuite asks
-# the user about; see datasuite.ui's docs/AI-BRIDGE.md).
+# the user about; see datasuite.ui's docs/AI-BRIDGE.md); listReports and readReport ("read"), and updateBlocks
+# ("replace": it changes a saved report, so the user's setting may ask them first).
 .cd_ai_actions <- function() {
-  list(.cd_ai_set_filters(), .cd_ai_save_report(), .cd_ai_add_graph(), .cd_ai_generate_report())
+  list(.cd_ai_set_filters(), .cd_ai_save_report(), .cd_ai_add_graph(), .cd_ai_generate_report(), .cd_ai_list_reports(),
+       .cd_ai_read_report(), .cd_ai_update_blocks())
 }
 
 .cd_ai_save_report <- function() {
@@ -118,6 +120,8 @@
       project <- datasuite.ui::report_validate_project(project, kinds = .cd_ai_kinds(), members = cd_chartable_members())
       id <- if (is.character(args$reportId) && length(args$reportId) == 1 && nzchar(args$reportId)) args$reportId
             else .cd_ai_new_id("ai-report-", names(ds$report_projects))
+      # the report carries its own id, as the builder's reports do (the Reports page saves edits by it)
+      project$id <- id
       ds$set_report_project(id, project)
       list(reportId = id, name = project$name, blocks = length(project$blocks))
     },
@@ -257,6 +261,102 @@
   dir <- Sys.getenv("CDSUITE_SHINY_WORKSPACE_DIR", unset = "")
   dir <- if (nzchar(dir) && dir.exists(dir)) file.path(dir, "reports") else tempdir()
   list(project = project, deck = deck, format = format, file = file.path(dir, paste0(.cd_ai_file_stem(project$name), ".", format)))
+}
+
+# ---- reading and changing a saved report (datasuite.ui's report_list(), report_read(), report_update_blocks()) -----
+
+# The saved report `id`, with its id, or an error for the AI naming the reports there are
+.cd_ai_saved_report <- function(ds, id) {
+  if (!is.character(id) || length(id) != 1 || !nzchar(id)) stop("Say which report: reportId, from listReports.", call. = FALSE)
+  project <- ds$report_projects[[id]]
+  if (!is.list(project)) {
+    ids <- names(ds$report_projects)
+    stop(sprintf("There is no saved report %s. %s", dQuote(id, FALSE),
+                 if (length(ids)) sprintf("The saved reports: %s.", paste(ids, collapse = ", ")) else "The dataset has no saved reports."), call. = FALSE)
+  }
+  project$id <- id
+  project
+}
+
+.cd_ai_list_reports <- function() {
+  datasuite.ui::ai_action(
+    "listReports",
+    function(args, session) datasuite.ui::report_list(.cd_ai_cache(session)$report_projects),
+    kind = "read",
+    description = "The reports saved in the dataset (the Reports page): id, name, kind (report or deck), language, number of blocks, last edited."
+  )
+}
+
+.cd_ai_read_report <- function() {
+  datasuite.ui::ai_action(
+    "readReport",
+    function(args, session) {
+      ds <- .cd_ai_cache(session)
+      project <- .cd_ai_saved_report(ds, args$reportId)
+      max_rows <- suppressWarnings(as.integer(args$maxRows %||% 25))
+      if (is.na(max_rows) || max_rows < 1) max_rows <- 25L
+      datasuite.ui::report_read(ds, project, id = args$reportId, lang = ds$language %||% "en", data = !isFALSE(args$data),
+                                max_rows = min(max_rows, 100L))
+    },
+    kind = "read",
+    description = "A saved report's blocks in order (id, type; the text of headings, paragraphs and notes; each chart's and table's kind, settings, options and a short table of the data it shows) and its language.",
+    args = list(reportId = "a saved report's id, from listReports", maxRows = "rows of each chart's data (default 25, at most 100)",
+                data = "false to leave out the charts' data")
+  )
+}
+
+.cd_ai_update_blocks <- function() {
+  # the changes as they would be made (nothing saved), for the action and for what the user confirms
+  plan <- function(args, session) {
+    ds <- .cd_ai_cache(session)
+    project <- .cd_ai_saved_report(ds, args$reportId)
+    changed <- datasuite.ui::report_update_blocks(project, args$changes, members = cd_chartable_members())
+    list(ds = ds, project = project, changed = changed)
+  }
+  datasuite.ui::ai_action(
+    "updateBlocks",
+    function(args, session) {
+      p <- plan(args, session)
+      project <- p$changed$project
+      # the report keeps its id (the Reports page saves edits by it) and says when it was last edited
+      project$id <- args$reportId
+      project$updated <- format(Sys.time(), "%Y-%m-%d %H:%M")
+      p$ds$set_report_project(args$reportId, project)
+      list(reportId = args$reportId, name = project$name, changes = p$changed$changes)
+    },
+    kind = "replace",
+    summary = function(args, session) {
+      p <- plan(args, session)
+      .cd_ai_update_summary(p$project, p$changed$changes, .cd_ai_dataset_name(p$ds), args$changes)
+    },
+    description = "Changes blocks of a saved report, leaving the rest as it is: text (write or rewrite a paragraph, heading or note), a chart's or table's kind, settings, chart options and layout; inserts blocks after one, removes or moves blocks. The Reports page shows the change at once.",
+    args = list(reportId = "a saved report's id, from listReports",
+                changes = "a list, applied in order: { blockId, text | type | level | kind | indicator | admin_level | region | year | variant | options | size | title | caption | pageBreakBefore }, { afterBlockId, insert: { type, text | kind, ... } }, { blockId, delete: true }, { blockId, moveAfter }")
+  )
+}
+
+# What the user confirms for updateBlocks: "Write 5 paragraphs in the report "X"" when the AI only writes text, else
+# each change (at most six, then how many more)
+.cd_ai_update_summary <- function(project, said, dataset, changes) {
+  name <- project$name %||% project$id %||% "the report"
+  types <- vapply(datasuite.ui::report_project_blocks(project), function(b) b$type %||% "", character(1))
+  names(types) <- vapply(datasuite.ui::report_project_blocks(project), function(b) as.character(b$id %||% ""), character(1))
+  written <- if (length(changes)) vapply(changes, function(ch) {
+    if (!is.list(ch)) return(NA_character_)
+    if (!is.null(ch$insert)) return(if (isTRUE(ch$insert$type %in% c("paragraph", "heading", "note"))) ch$insert$type else NA_character_)
+    id <- as.character(unlist(ch$blockId %||% ch$id))[1]
+    if (identical(setdiff(names(ch), c("blockId", "id")), "text") && isTRUE(types[id] %in% c("paragraph", "heading", "note"))) unname(types[id]) else NA_character_
+  }, character(1)) else NA_character_
+  if (length(written) && !anyNA(written)) {
+    counts <- table(factor(written, levels = c("paragraph", "heading", "note")))
+    counts <- counts[counts > 0]
+    what <- vapply(names(counts), function(k) sprintf("%d %s%s", counts[[k]], k, if (counts[[k]] == 1) "" else "s"), "")
+    return(sprintf("Write %s in the report \"%s\" (%s)", paste(what, collapse = " and "), name, dataset))
+  }
+  shown <- utils::head(said, 6)
+  more <- length(said) - length(shown)
+  sprintf("Change the report \"%s\" (%s): %s%s", name, dataset, paste(shown, collapse = "; "),
+          if (more > 0) sprintf("; and %d more", more) else "")
 }
 
 # Whether `id` (a reportId or graphId the AI gave) names something already saved in `saved` (a named list).

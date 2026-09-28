@@ -1,3 +1,21 @@
+# cd2030.core 1.3.4
+
+* The AI can read and change a saved report instead of replacing it: new AI bridge actions (datasuite.ui 0.3.4's
+  `report_list()`, `report_read()` and `report_update_blocks()`):
+  - `listReports` (read): the reports saved in the dataset.
+  - `readReport` (read): a report's blocks in order -- the text of its headings, paragraphs and notes, and for each
+    chart and table its kind, settings, options and a short table of the data it shows -- and its language.
+  - `updateBlocks` (replace): targeted changes by block id -- write or rewrite text, change a chart's kind, settings,
+    chart options or layout, insert blocks after one, remove or move blocks -- checked as a whole and saved once,
+    with the report's id kept; everything else in the report stays as it is. The user's permission setting may ask
+    them first, with a summary such as `Write 5 paragraphs in the report "Benin National Coverage" (benin.rds)` or
+    each change (`Chart "Coverage trend" (anc4): Coverage trend -> Coverage map; year none -> 2023`). The Reports
+    page shows the change at once, the open report too.
+* A report the AI saves (`saveReport`) carries its own id, as the builder's reports do: the Reports page saves edits
+  by it, so edits to a report the AI had saved were not saved (datasuite.ui 0.3.4 also repairs the reports saved
+  before).
+* Needs datasuite.ui 0.3.4; every package in Imports has a minimum version.
+
 # cd2030.core 1.3.3
 
 * `CacheConnection$denominator_comparison(indicator, admin_level, region)`: the Denominator Selection comparison as
