@@ -425,6 +425,25 @@ CacheConnection <- R6::R6Class(
                            denominator = denominator)
     },
 
+    #' @description The Denominator Selection comparison as one tidy table: for each indicator and year, its coverage
+    #'   under each of the six denominator options next to the survey estimate of that year, and how far apart they
+    #'   are. The same numbers as the Denominator Selection charts (`calculate_derived_coverage()`), one row per
+    #'   denominator, so the options can be compared without reshaping.
+    #' @param indicator Character. One or more indicators, e.g. `c("penta3", "instlivebirths")`. By default the ones
+    #'   the Denominator Selection page compares (Penta 3 and institutional live births; BCG and Measles 1 as well in
+    #'   the vaccine app).
+    #' @param admin_level `"national"`, `"adminlevel_1"` or `"district"`.
+    #' @param region Optional first-level region(s): only that region (or its districts).
+    #' @return A data frame, one row per indicator x denominator x year (x region or district): `indicator`,
+    #'   `denominator` (id), `denominator_label`, `selected` (whether it is the denominator chosen for the indicator),
+    #'   `coverage`, `survey`, `survey_lower`, `survey_upper` (the survey estimate of that year and its bounds, when
+    #'   there is one), `difference` (coverage minus survey, percentage points) and `survey_year` (the base year the
+    #'   derived denominators start from).
+    denominator_comparison = function(indicator = NULL, admin_level = c("national", "adminlevel_1", "district"),
+                                      region = NULL) {
+      .cd_denominator_comparison(self, indicator, admin_level = admin_level, region = region)
+    },
+
     #' @description Returns a reactive wrapper for use within Shiny applications.
     reactive = function() {
       if (is.null(private$.reactiveDep)) {

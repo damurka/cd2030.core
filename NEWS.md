@@ -1,3 +1,14 @@
+# cd2030.core 1.3.3
+
+* `CacheConnection$denominator_comparison(indicator, admin_level, region)`: the Denominator Selection comparison as
+  one tidy table -- for each indicator and year, its coverage under each denominator option (id and label) next to
+  the survey estimate of that year with its bounds, the difference in percentage points, and which denominator is
+  the one chosen for the indicator. The same numbers as the Denominator Selection charts
+  (`calculate_derived_coverage()`), one row per denominator, so the Countdown AI can compare the options in one call.
+  By default it compares the indicators the page does. It is chartable, defined in `cache_definition()`, and its
+  new columns (`denominator_label`, `selected`, `coverage`, `survey`, `survey_lower`, `survey_upper`, `difference`,
+  `survey_year`) are in the data dictionary.
+
 # cd2030.core 1.3.2
 
 * Portuguese: the translations and the report presets' questions read as Portuguese is written in Mozambique and Angola (European norm) instead of Brazilian Portuguese ("Contagem decrescente para 2030", "nados vivos", "Dados em falta", "Transferir"...).

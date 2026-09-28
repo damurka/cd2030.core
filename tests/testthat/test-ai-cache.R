@@ -96,3 +96,58 @@ test_that("a read-only copy keeps the file's revision", {
   ro$set_report_project("r1", list(name = "R", blocks = list()))
   expect_identical(ro$revision, 0L)
 })
+
+test_that("denominator_comparison has one row per denominator, next to the survey of that year", {
+  withr::local_options(cd2030.selected_group = "rmncah", cd2030.config = NULL)
+  derived <- function(ind) {
+    d <- data.frame(year = c(2021, 2022, 2016))
+    d[[paste0("cov_", ind, "_penta1")]] <- c(90, 91, NA)
+    d[[paste0("cov_", ind, "_dhis2")]] <- c(120, 118, NA)
+    d[[paste0("cov_", ind, "_anc1derived")]] <- c(93, 89, NA)
+    d[[paste0("r_", ind)]] <- c(NA, 79.4, 78.6)
+    d[[paste0("ul_", ind)]] <- c(NA, 82, 80.5)
+    d[[paste0("ll_", ind)]] <- c(NA, 77, 76.6)
+    d
+  }
+  cache <- list(
+    survey_year = 2022,
+    calculate_derived_coverage = function(indicator, admin_level, region = NULL) {
+      d <- derived(indicator)
+      if (admin_level == "national") d else rbind(cbind(adminlevel_1 = "North", d), cbind(adminlevel_1 = "South", d))
+    },
+    get_denominator = function(indicator) if (indicator == "instlivebirths") "anc1derived" else "penta1"
+  )
+  out <- .cd_denominator_comparison(cache, "penta3")
+  expect_identical(nrow(out), 6L)
+  expect_identical(unique(out$denominator), c("dhis2", "penta1", "anc1derived"))
+  expect_identical(out$denominator_label[out$denominator == "anc1derived"][1], "ANC1 population growth")
+  expect_true(all(out$selected == (out$denominator == "penta1")))
+  y22 <- out[out$year == 2022 & out$denominator == "dhis2", ]
+  expect_equal(y22$survey, 79.4)
+  expect_equal(y22$difference, 118 - 79.4)
+  expect_equal(y22$survey_lower, 77)
+  expect_true(all(is.na(out$difference[out$year == 2021])))
+  expect_true(all(out$survey_year == 2022))
+  # the survey-only year has no coverage to compare
+  expect_false(2016 %in% out$year)
+
+  # by default, the indicators the Denominator Selection page compares
+  both <- .cd_denominator_comparison(cache)
+  expect_identical(unique(both$indicator), c("instlivebirths", "penta3"))
+  expect_true(all(both$selected == (both$denominator == ifelse(both$indicator == "instlivebirths", "anc1derived", "penta1"))))
+  expect_error(.cd_denominator_comparison(cache, "penta3", region = "North"), "region")
+  north <- .cd_denominator_comparison(cache, "penta3", "adminlevel_1", region = "North")
+  expect_identical(unique(north$adminlevel_1), "North")
+  expect_identical(nrow(north), 6L)
+  # every column is in the data dictionary
+  expect_false(any(cd_describe_columns(names(out))$type == "unknown"))
+})
+
+test_that("the manifest has denominator_comparison, chartable, with its levels", {
+  m <- cache_manifest()
+  names <- vapply(m$members, `[[`, "", "name")
+  dc <- m$members[[which(names == "denominator_comparison")]]
+  expect_true(dc$chartable)
+  expect_identical(Filter(function(a) a$name == "admin_level", dc$args)[[1]]$choices, c("national", "adminlevel_1", "district"))
+  expect_identical(dc$definition$kind, "method")
+})

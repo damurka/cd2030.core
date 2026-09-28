@@ -279,6 +279,7 @@ Invalidate Health Systems Cache}
 \item \href{#method-CacheConnection-prepare_mapping_service_utlization}{\code{CacheConnection$prepare_mapping_service_utlization()}}
 \item \href{#method-CacheConnection-get_denominator}{\code{CacheConnection$get_denominator()}}
 \item \href{#method-CacheConnection-decompose_change}{\code{CacheConnection$decompose_change()}}
+\item \href{#method-CacheConnection-denominator_comparison}{\code{CacheConnection$denominator_comparison()}}
 \item \href{#method-CacheConnection-reactive}{\code{CacheConnection$reactive()}}
 \item \href{#method-CacheConnection-set_language}{\code{CacheConnection$set_language()}}
 \item \href{#method-CacheConnection-set_cache_path}{\code{CacheConnection$set_cache_path()}}
@@ -725,6 +726,43 @@ A data frame, one row per unit, sorted by contribution (the units pulling the ch
 \code{num_from}, \code{num_to}, \code{den_from}, \code{den_to}, \code{cov_from}, \code{cov_to}, \code{cov_change}, \code{contribution_service},
 \code{contribution_denominator}, \code{contribution}, \code{reporting_from}, \code{reporting_to}, \code{reporting_flag}; attribute
 \code{total} has the level above's coverage in both years and its change.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-denominator_comparison"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-denominator_comparison}{}}}
+\subsection{Method \code{denominator_comparison()}}{
+The Denominator Selection comparison as one tidy table: for each indicator and year, its coverage
+under each of the six denominator options next to the survey estimate of that year, and how far apart they
+are. The same numbers as the Denominator Selection charts (\code{calculate_derived_coverage()}), one row per
+denominator, so the options can be compared without reshaping.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$denominator_comparison(
+  indicator = NULL,
+  admin_level = c("national", "adminlevel_1", "district"),
+  region = NULL
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{indicator}}{Character. One or more indicators, e.g. \code{c("penta3", "instlivebirths")}. By default the ones
+the Denominator Selection page compares (Penta 3 and institutional live births; BCG and Measles 1 as well in
+the vaccine app).}
+
+\item{\code{admin_level}}{\code{"national"}, \code{"adminlevel_1"} or \code{"district"}.}
+
+\item{\code{region}}{Optional first-level region(s): only that region (or its districts).}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A data frame, one row per indicator x denominator x year (x region or district): \code{indicator},
+\code{denominator} (id), \code{denominator_label}, \code{selected} (whether it is the denominator chosen for the indicator),
+\code{coverage}, \code{survey}, \code{survey_lower}, \code{survey_upper} (the survey estimate of that year and its bounds, when
+there is one), \code{difference} (coverage minus survey, percentage points) and \code{survey_year} (the base year the
+derived denominators start from).
 }
 }
 \if{html}{\out{<hr>}}

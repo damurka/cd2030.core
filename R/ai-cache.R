@@ -23,6 +23,7 @@ cd_chartable_members <- function() {
     "calculate_reporting_rate", "calculate_district_reporting_rate", "calculate_completeness_summary",
     "calculate_district_completeness_summary", "calculate_outliers_summary", "calculate_district_outlier_summary",
     "calculate_ratios_and_adequacy", "get_filtered_coverage", "get_filtered_inequality", "decompose_change",
+    "denominator_comparison",
     # precomputed
     "reporting_rate_national", "reporting_rate_admin1", "reporting_rate_district", "district_reporting_rate",
     "completeness_national", "completeness_admin1", "completeness_district", "district_completeness",
@@ -154,6 +155,55 @@ cd_custom_chart_data <- function(cache, spec) {
                              region = region, from_year = from_year, to_year = to_year,
                              coverage_from = C0, coverage_to = C1, change = total_change,
                              reporting_column = rr_col)
+  out
+}
+
+# Behind CacheConnection$denominator_comparison() (documented there): calculate_derived_coverage(), the table of the
+# Denominator Selection charts, one row per denominator instead of one column.
+.cd_denominator_comparison <- function(cache, indicator = NULL, admin_level = c("national", "adminlevel_1", "district"),
+                                       region = NULL) {
+  admin_level <- arg_match(admin_level)
+  if (identical(admin_level, "national") && !is.null(region)) {
+    cd_abort(c("x" = "{.arg region} needs {.arg admin_level} {.val adminlevel_1} or {.val district}."))
+  }
+  indicator <- unique(as.character(unlist(indicator %||% cd_cfg("survey_comp_indicators") %||%
+    if (identical(get_selected_group(), "vaccine")) c("instlivebirths", "bcg", "penta3", "measles1") else c("instlivebirths", "penta3"))))
+  dens <- .cd_dict_denominators
+  survey_year <- tryCatch(cache$survey_year, error = function(e) NULL)
+  survey_year <- if (length(survey_year)) as.numeric(survey_year[[1]]) else NA_real_
+
+  tables <- lapply(indicator, function(ind) {
+    d <- as.data.frame(cache$calculate_derived_coverage(ind, admin_level))
+    if (!is.null(region) && "adminlevel_1" %in% names(d)) d <- d[d$adminlevel_1 %in% region, , drop = FALSE]
+    keys <- intersect(c("adminlevel_1", "district", "year"), names(d))
+    column <- function(name) if (name %in% names(d)) as.numeric(d[[name]]) else rep(NA_real_, nrow(d))
+    selected <- tryCatch(cache$get_denominator(ind), error = function(e) NULL)
+    parts <- lapply(seq_len(nrow(dens)), function(i) {
+      cov_col <- paste0("cov_", ind, "_", dens$id[i])
+      if (!cov_col %in% names(d)) return(NULL)
+      part <- d[keys]
+      part$indicator <- ind
+      part$denominator <- dens$id[i]
+      part$denominator_label <- dens$label[i]
+      part$selected <- identical(dens$id[i], selected)
+      part$coverage <- column(cov_col)
+      part$survey <- column(paste0("r_", ind))
+      part$survey_lower <- column(paste0("ll_", ind))
+      part$survey_upper <- column(paste0("ul_", ind))
+      part[!is.na(part$coverage), , drop = FALSE]
+    })
+    do.call(rbind, Filter(Negate(is.null), parts))
+  })
+  out <- do.call(rbind, Filter(Negate(is.null), tables))
+  if (is.null(out) || !nrow(out)) {
+    cd_abort(c("x" = "There is no coverage to compare for {.val {indicator}} at this level."))
+  }
+  out$difference <- out$coverage - out$survey
+  out$survey_year <- survey_year
+  order_by <- c(list(match(out$indicator, indicator)), lapply(intersect(c("adminlevel_1", "district"), names(out)), function(k) out[[k]]),
+                list(out$year, match(out$denominator, dens$id)))
+  out <- out[do.call(order, order_by), , drop = FALSE]
+  rownames(out) <- NULL
   out
 }
 

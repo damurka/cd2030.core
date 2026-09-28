@@ -94,7 +94,16 @@
   un_under1 = "Children under 1 in the UN projections (thousands).",
   un_popgrowth = "Annual population growth rate in the UN projections.",
   population_growth_change = "Population change from the survey year to this year (percent, annualised log2), used to carry the population-growth denominators.",
-  population_proportion = "This unit's share of the national population in the survey year."
+  population_proportion = "This unit's share of the national population in the survey year.",
+  # denominator_comparison()
+  denominator_label = "The denominator option's label (see denominator).",
+  selected = "Whether this is the denominator chosen for the indicator (denominator or maternal_denominator).",
+  coverage = "Coverage of the indicator (%) with this row's denominator option.",
+  survey = "The indicator's survey coverage estimate for this year (%), when a survey has one.",
+  survey_lower = "The lower bound of the survey estimate's confidence interval (%).",
+  survey_upper = "The upper bound of the survey estimate's confidence interval (%).",
+  difference = "Coverage minus the survey estimate (percentage points); positive when the facility-based coverage is higher.",
+  survey_year = "The survey year the derived denominators start from (the base year of the ANC1/Penta1-derived and population-growth options)."
 )
 
 # How the parts combine.
