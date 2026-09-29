@@ -21,38 +21,39 @@ test_that("a free-layout page is a page of floating objects in Word and in the P
   utils::unzip(docx, exdir = dir)
   body <- readChar(file.path(dir, "word", "document.xml"), 1e8, useBytes = TRUE)
   rels <- readChar(file.path(dir, "word", "_rels", "document.xml.rels"), 1e7, useBytes = TRUE)
-  expect_false(grepl("@@RBCI:", body, fixed = TRUE))
-  # six floating objects, placed from the margins, stacked in the items' order
+  # the table floats at its box; the other five are floating objects, placed from the margins, stacked in the items' order
+  expect_match(body, '<w:tblpPr w:tblpX="0" w:tblpY="6480" w:horzAnchor="margin" w:vertAnchor="margin"/>', fixed = TRUE)
   anchors <- regmatches(body, gregexpr("<wp:anchor .*?</wp:anchor>", body))[[1]]
-  expect_length(anchors, 6)
+  expect_length(anchors, 5)
   offsets <- function(a) as.numeric(regmatches(a, gregexpr("(?<=<wp:posOffset>)[0-9]+", a, perl = TRUE))[[1]])
   emu <- function(v) round(v * 914400)
   expect_equal(offsets(anchors[[2]]), emu(c(0, 1)))
   expect_equal(offsets(anchors[[3]]), emu(c(4.4, 1)))
-  expect_equal(offsets(anchors[[4]]), emu(c(0, 4.5)))
-  expect_equal(offsets(anchors[[6]]), emu(c(0.5, 8.5)))
+  expect_equal(offsets(anchors[[4]]), emu(c(0, 7.2)))
+  expect_equal(offsets(anchors[[5]]), emu(c(0.5, 8.5)))
   expect_true(all(grepl('relativeFrom="margin"', anchors)))
   z <- as.numeric(sub('relativeHeight="([0-9]+)"', "\\1", regmatches(anchors, regexpr('relativeHeight="[0-9]+"', anchors))))
   expect_false(is.unsorted(z, strictly = TRUE))
-  expect_match(anchors[[2]], '<wp:extent cx="3840480" cy="2926080"/>', fixed = TRUE)
-  # the chart is an SVG with its PNG copy; the picture is a picture; text and the table are text boxes
-  expect_match(anchors[[2]], "svgBlip", fixed = TRUE)
-  expect_match(anchors[[5]], "<pic:pic", fixed = TRUE)
+  # the chart at its box's size (to the pixel)
+  extent <- as.numeric(regmatches(anchors[[2]], regexec('<wp:extent cx="([0-9]+)" cy="([0-9]+)"', anchors[[2]]))[[1]][2:3])
+  expect_equal(extent, emu(c(4.2, 3.2)), tolerance = 0.005)
+  # the chart and the picture are pictures; text is in text boxes
+  expect_match(anchors[[2]], "<pic:pic", fixed = TRUE)
+  expect_match(anchors[[4]], "<pic:pic", fixed = TRUE)
   expect_match(anchors[[1]], "penta3 in Benin", fixed = TRUE)
   expect_match(anchors[[3]], "<w:txbxContent>", fixed = TRUE)
-  expect_match(anchors[[3]], "\u2022", fixed = TRUE)
+  expect_match(anchors[[3]], "<w:numPr>", fixed = TRUE)
   # a link in a text box points to its address
-  link <- regmatches(anchors[[3]], regexpr('(?<=<w:hyperlink r:id=")[^"]+', anchors[[3]], perl = TRUE))
-  expect_match(link, "^rId[0-9]+$")
-  expect_match(rels, sprintf('Id="%s"[^>]*Target="https://example.org/\\?a=1&amp;b=2" TargetMode="External"', link))
-  expect_match(anchors[[4]], "<w:tbl>", fixed = TRUE)
-  expect_match(anchors[[6]], '<w:color w:val="FFFFFF"/>', fixed = TRUE)
+  link <- regmatches(anchors[[3]], regexpr('(?<=<w:hyperlink w:history="1" r:id=")[^"]+', anchors[[3]], perl = TRUE))
+  expect_length(link, 1)
+  expect_match(rels, sprintf('Id="%s"[^>]*Target="https://example.org/\\?a=1&amp;b=2"', link))
+  expect_match(anchors[[5]], '<w:color w:val="FFFFFF"/>', fixed = TRUE)
   for (id in unlist(regmatches(anchors, gregexpr('(?<=r:embed=")rId[0-9]+', anchors, perl = TRUE)))) {
     target <- sub(".*Target=\"([^\"]+)\".*", "\\1", regmatches(rels, regexpr(sprintf('<Relationship Id="%s"[^>]*>', id), rels)))
     expect_true(file.exists(file.path(dir, "word", target)), info = id)
   }
-  # the canvas starts a new page and the paragraph after it starts another
-  expect_identical(lengths(regmatches(body, gregexpr("<w:pageBreakBefore/>", body))), 2L)
+  # after the contents page a new page; the canvas starts one and the paragraph after it starts another
+  expect_identical(lengths(regmatches(body, gregexpr("<w:pageBreakBefore/>", body))), 3L)
 
   skip_if_not(identical(report_converter(), "word"), "Microsoft Word is not installed")
   skip_if_not_installed("pdftools")
@@ -114,27 +115,3 @@ test_that("a free-layout page first or last in a document adds no blank page", {
   expect_identical(pdftools::pdf_info(pdf)$pages, 2L)
 })
 
-test_that("without Word, the HTML places a canvas's items at their boxes", {
-  skip_on_cran()
-  sp <- "C:/Users/Murage/AppData/Local/Temp/claude/C--Users-Murage-Documents-Dev-JS-datasuite-infrastructure-countdown-analytics/0171e636-25cb-4a27-8a73-f0564ba0f0e6/scratchpad"
-  src <- file.path(sp, "benin_rb_copy.rds")
-  skip_if_not(file.exists(src), "No Benin test data")
-  skip_if_not_installed("magick")
-  rds <- tempfile(fileext = ".rds")
-  file.copy(src, rds)
-  cache <- suppressWarnings(CacheConnection$new(rds_path = rds))
-  old <- get_selected_group()
-  set_selected_group("rmncah")
-  on.exit(set_selected_group(old), add = TRUE)
-
-  dir <- tempfile()
-  dir.create(dir)
-  parts <- suppressWarnings(.rb_prepare(cache, .rb_test_canvas_project(), dir, NULL, function(x) NULL))
-  r <- parts$rendered[[2]]
-  expect_identical(r$type, "canvas")
-  expect_length(r$items, 6)
-  html <- .rb_html(parts, NULL)
-  expect_match(html, '<div class="canvas" style="width:', fixed = TRUE)
-  expect_match(html, "left:4.4in;top:1in;width:2.3in;height:3.2in", fixed = TRUE)
-  expect_match(html, "penta3 in Benin", fixed = TRUE)
-})

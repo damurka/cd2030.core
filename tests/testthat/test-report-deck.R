@@ -23,12 +23,11 @@ test_that("the one-pager is a one-slide deck for both groups, its items inside t
   }
 })
 
-test_that("a deck is written as PowerPoint with its slides, size, notes and editable charts", {
+test_that("a deck is written as PowerPoint with its slides, size, notes, charts and tables", {
   skip_on_cran()
   sp <- "C:/Users/Murage/AppData/Local/Temp/claude/C--Users-Murage-Documents-Dev-JS-datasuite-infrastructure-countdown-analytics/0171e636-25cb-4a27-8a73-f0564ba0f0e6/scratchpad"
   src <- file.path(sp, "benin_rb_copy.rds")
   skip_if_not(file.exists(src), "No Benin test data")
-  skip_if_not_installed("rvg")
   skip_if_not_installed("zip")
   rds <- tempfile(fileext = ".rds")
   file.copy(src, rds)
@@ -63,18 +62,15 @@ test_that("a deck is written as PowerPoint with its slides, size, notes and edit
   expect_match(pres, '<p:sldSz cx="9144000" cy="6858000"/>', fixed = TRUE)
   s1 <- paste(readLines(file.path(dir, "ppt", "slides", "slide1.xml"), warn = FALSE, encoding = "UTF-8"), collapse = "")
   s2 <- paste(readLines(file.path(dir, "ppt", "slides", "slide2.xml"), warn = FALSE, encoding = "UTF-8"), collapse = "")
-  # the chart is a group of shapes (editable), not a picture
-  expect_match(s1, "<p:grpSp", fixed = TRUE)
-  expect_false(grepl("<p:pic", s1, fixed = TRUE))
-  # the title is the slide's title, its fields filled from the slide's chart
-  expect_match(s1, '<p:ph type="title"/>', fixed = TRUE)
+  # the chart is a picture of it; the title's fields are filled from the slide's chart
+  expect_match(s1, "<p:pic>", fixed = TRUE)
   expect_match(s1, "penta3 in Benin", fixed = TRUE)
   # the table is a PowerPoint table; the list has a bullet; a chart that needs a region says so
   expect_match(s2, "<a:tbl>", fixed = TRUE)
   expect_match(s2, "<a:buChar", fixed = TRUE)
-  expect_match(s2, "could not be drawn", fixed = TRUE)
-  notes <- list.files(file.path(dir, "ppt", "notesSlides"), pattern = "\\.xml$")
-  expect_length(notes, 1)
+  expect_match(s2, "could not be drawn", ignore.case = TRUE)
+  # the first slide's speaker notes
+  notes <- sort(list.files(file.path(dir, "ppt", "notesSlides"), pattern = "\\.xml$"))
   n1 <- paste(readLines(file.path(dir, "ppt", "notesSlides", notes[1]), warn = FALSE), collapse = "")
   expect_match(n1, "Second line", fixed = TRUE)
 

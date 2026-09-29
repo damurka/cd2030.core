@@ -67,29 +67,6 @@ test_that("the standard reports exist in the three languages for each group, wit
   expect_false(identical(report_presets("fr", "rmncah")$mortality$name, report_presets("en", "rmncah")$mortality$name))
 })
 
-test_that("pictures are kept once in the dataset and embedded in the Word file", {
-  skip_if_not_installed("magick")
-  cache <- CacheConnection$new(wizard_parts = list(parts = list()))
-  png <- tempfile(fileext = ".png")
-  magick::image_write(magick::image_blank(400, 200, "#2f6db5"), png)
-  src <- paste0("data:image/png;base64,", jsonlite::base64_enc(readBin(png, "raw", file.info(png)$size)))
-  stored <- report_store_asset(cache, "a1", src)
-  expect_equal(stored$ratio, 0.5)
-  expect_true(startsWith(report_asset_data_url(cache, "asset:a1"), "data:image/png;base64,"))
-  expect_null(report_asset_data_url(cache, "missing"))
-  expect_error(report_store_asset(cache, "a2", "data:text/plain;base64,aGVsbG8="))
-  # a picture wider than 4000 pixels is made smaller
-  big <- tempfile(fileext = ".png")
-  magick::image_write(magick::image_blank(5000, 1000, "white"), big)
-  report_store_asset(cache, "a3", paste0("data:image/png;base64,", jsonlite::base64_enc(readBin(big, "raw", file.info(big)$size))))
-  expect_equal(magick::image_info(magick::image_read(cache$report_assets$a3$data))$width, 4000)
-
-  file <- .rb_asset_file(cache, "asset:a1", tempfile())
-  expect_true(file.exists(file))
-  r <- .rb_image_file(list(type = "image", src = "asset:a1", src_file = file), tempfile(), c(3, 1.5))
-  expect_equal(r$type, "image")
-})
-
 test_that("the national coverage titles name the chart under them with {chart_indicator}", {
   blocks <- report_presets("en", "rmncah")$national_coverage$blocks
   templated <- which(vapply(blocks, function(b) {

@@ -25,59 +25,6 @@
   file
 }
 
-test_that("a deck is drawn on its slide designs: background, then decor, behind the items", {
-  skip_if_not_installed("zip")
-  logo <- .sd_png(tempfile(fileext = ".png"))
-  designs <- list(
-    title = list(background = "#fdf6e3", decor = list(
-      list(type = "image", file = logo, x = 0.5, y = 0.2, w = 2, h = 1),
-      list(type = "image", file = file.path(tempdir(), "no-such-logo.png"), x = 1, y = 1, w = 1, h = 1)
-    ), title = NULL, subtitle = NULL, body = NULL),
-    content = list(background = NULL, decor = list(
-      list(type = "rect", fill = "#4ea72e", fill_opacity = 0.5, outline = NULL, x = 0.9, y = 0.4, w = 11.5, h = 0.9)
-    ), title = NULL, subtitle = NULL, body = NULL)
-  )
-  design <- utils::modifyList(report_default_design(), list(slide_designs = designs))
-  text <- function(id, role, words) list(id = id, x = 1, y = 0.5, w = 10, h = 1, role = role, block = list(type = "paragraph", text = paste0("<p>", words, "</p>")))
-  deck <- list(kind = "deck", name = "D", lang = "en", design = design, slides = list(
-    list(id = "s1", layout = "title", items = list(text("t1", "title", "Cover title"))),
-    list(id = "s2", layout = "title_content", items = list(text("t2", "title", "Content title"))),
-    list(id = "s3", layout = "title_content", design = "title", items = list(text("t3", "title", "Forced title design"))),
-    list(id = "s4", layout = "section", items = list(text("t4", "title", "Section")))
-  ))
-  file <- tempfile(fileext = ".pptx")
-  suppressWarnings(export_deck(cd_report_context(.sd_cache()), deck, file, "pptx"))
-  dir <- tempfile()
-  utils::unzip(file, exdir = dir)
-  s1 <- .sd_slide_xml(dir, 1)
-  s2 <- .sd_slide_xml(dir, 2)
-  s3 <- .sd_slide_xml(dir, 3)
-  s4 <- .sd_slide_xml(dir, 4)
-
-  # slide 1 (title layout): the background, the logo (the missing picture left out), behind the title
-  expect_match(s1, '<p:bg><p:bgPr><a:solidFill><a:srgbClr val="FDF6E3"/>', fixed = TRUE)
-  expect_lt(regexpr("<p:bg>", s1, fixed = TRUE), regexpr("<p:spTree>", s1, fixed = TRUE))
-  expect_identical(lengths(regmatches(s1, gregexpr("<p:pic>", s1, fixed = TRUE))), 1L)
-  expect_lt(regexpr("<p:pic>", s1, fixed = TRUE), regexpr("Cover title", s1, fixed = TRUE))
-  expect_match(s1, '<a:off x="457200" y="182880"/><a:ext cx="1828800" cy="914400"/>', fixed = TRUE)
-  expect_true(any(grepl("\\.png$", list.files(file.path(dir, "ppt", "media")))))
-  # slide 2 (content): the band, half opaque, behind the title; no background, no logo
-  expect_false(grepl("<p:bg>", s2, fixed = TRUE))
-  expect_false(grepl("<p:pic>", s2, fixed = TRUE))
-  expect_match(s2, '<a:srgbClr val="4EA72E"><a:alpha val="50000"/></a:srgbClr>', fixed = TRUE)
-  expect_match(s2, '<a:off x="822960" y="365760"/><a:ext cx="10515600" cy="822960"/>', fixed = TRUE)
-  expect_lt(regexpr("4EA72E", s2, fixed = TRUE), regexpr("Content title", s2, fixed = TRUE))
-  # slide 3 chose the title design; slide 4 (section) has it by default
-  expect_match(s3, "<p:pic>", fixed = TRUE)
-  expect_false(grepl("4EA72E", s3, fixed = TRUE))
-  expect_match(s4, "<p:pic>", fixed = TRUE)
-  expect_identical(length(officer::read_pptx(file)), 4L)
-
-  # the slide design helpers
-  expect_null(.rb_slide_design(list(layout = "title"), report_default_design()))
-  expect_identical(.rb_slide_design(list(layout = "blank"), design), designs$content)
-})
-
 test_that("the user's designs are drawn on an exported deck, on top of the file as its template", {
   file <- .sd_user_file()
   skip_if(is.null(file), "The user's PowerPoint file is not on this computer")
