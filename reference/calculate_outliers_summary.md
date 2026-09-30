@@ -53,7 +53,7 @@ This function:
   - `mean_out_four`: average across a subset of key indicators
     (excluding IPD)
 
-Values are expressed as percentages (0–100).
+Values are expressed as percentages (0-100).
 
 @return A tibble of class `cd_outlier`.
 
@@ -61,6 +61,6 @@ Values are expressed as percentages (0–100).
 
 ``` r
 if (FALSE) { # \dontrun{
-  calculate_outliers_summary(data, admin_level = "district")
+calculate_outliers_summary(data, admin_level = "district")
 } # }
 ```

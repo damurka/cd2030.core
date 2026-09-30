@@ -13,8 +13,12 @@ equiplot(
   .data,
   variables,
   group_by,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
   x_title = NULL,
   legend_title = NULL,
+  legend_labels = NULL,
   reverse_y_axis = FALSE,
   connect_dots = TRUE,
   dot_size = NULL
@@ -25,53 +29,51 @@ equiplot(
 
 - .data:
 
-  A data frame containing the data to be plotted.
+  A data frame with one row per group and one column per variable
+  (values in percent, plotted on a 0-100 scale).
 
 - variables:
 
-  A vector of column names in `.data` representing the variables to
-  plot.
+  Character vector of the column names to plot as dots; each becomes a
+  coloured series.
 
 - group_by:
 
-  A column in `.data` to group the data by (e.g., countries or regions).
+  The column (unquoted or as a string) whose values form the rows of the
+  plot (y axis).
+
+- title, subtitle, caption:
+
+  Optional plot title, subtitle and caption. Each must be a single
+  string or `NULL`.
 
 - x_title:
 
-  Optional. A title for the x-axis.
+  Optional x-axis title. Defaults to a percentage label.
 
 - legend_title:
 
-  Optional. A title for the legend.
+  Optional title of the colour legend.
+
+- legend_labels:
+
+  Optional named vector or list mapping variable names to display labels
+  (for example translated labels).
 
 - reverse_y_axis:
 
-  Logical. Whether to reverse the y-axis order. Default is FALSE.
+  Logical. Whether to reverse the order of the groups on the y axis.
+  Default is `FALSE`.
 
 - connect_dots:
 
-  Logical. Whether to connect the dots with lines. Default is TRUE.
+  Logical. Whether to draw a line connecting the dots of each group.
+  Default is `TRUE`.
 
 - dot_size:
 
-  Optional. Controls the size of the dots (1 to 5, with 5 being the
-  largest).
+  Optional dot size, clamped to 1-5. Defaults to 4.
 
 ## Value
 
-A ggplot object representing the dot plot.
-
-## Examples
-
-``` r
-if (FALSE) { # \dontrun{
-equiplot(
-  .data = data,
-  variables = c("Var1", "Var2", "Var3"),
-  group_by = Country,
-  x_title = "Percentage (%)",
-  legend_title = "Variables",
-  reverse_y_axis = TRUE
-)
-} # }
-```
+A `ggplot` object.

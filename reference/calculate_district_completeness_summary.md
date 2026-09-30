@@ -14,6 +14,11 @@ calculate_district_completeness_summary(.data, region = NULL)
 
   A `cd_data` object.
 
+- region:
+
+  Optional name of an `adminlevel_1` region. If supplied, only districts
+  in that region are included. Default is `NULL` (all districts).
+
 ## Value
 
 A `cd_district_completeness_summary` tibble:

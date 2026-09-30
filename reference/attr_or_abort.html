@@ -11,7 +11,7 @@ required metadata on structured objects."><meta name="description" content="cd20
 
     <a class="navbar-brand me-2" href="../index.html">cd2030.core</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -20,15 +20,10 @@ required metadata on structured objects."><meta name="description" content="cd20
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting started</a></li>
-    <li><a class="dropdown-item" href="../articles/workflow.html">Workflow overview</a></li>
-  </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/aphrcwaro/cd2030.core" aria-label="GitHub repository"><span class="fa fab fa-github"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/damurka/cd2030.core" aria-label="GitHub repository"><span class="fa fab fa-github"></span></a></li>
       </ul></div>
 
 
@@ -38,7 +33,7 @@ required metadata on structured objects."><meta name="description" content="cd20
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Retrieve an Attribute or Abort with Error</h1>
-      <small class="dont-index">Source: <a href="https://github.com/aphrcwaro/cd2030.core/blob/main/R/utils-cd-data.R" class="external-link"><code>R/utils-cd-data.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/damurka/cd2030.core/blob/main/R/utils-cd-data.R" class="external-link"><code>R/utils-cd-data.R</code></a></small>
       <div class="d-none name"><code>attr_or_abort.Rd</code></div>
     </div>
 
@@ -72,12 +67,12 @@ required metadata on structured objects.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/structure.html" class="external-link">structure</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>a <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>, attr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>my_attr <span class="op">=</span> <span class="st">"value"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu">attr_or_abort</span><span class="op">(</span><span class="va">obj</span>, <span class="st">"my_attr"</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error in attr_or_abort(obj, "my_attr"):</span> could not find function "attr_or_abort"</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">obj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/structure.html" class="external-link">structure</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>a <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>, my_attr <span class="op">=</span> <span class="st">"value"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">cd2030.core</span><span class="fu">:::</span><span class="fu">attr_or_abort</span><span class="op">(</span><span class="va">obj</span>, <span class="st">"my_attr"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "value"</span>
 <span class="r-in"><span><span class="co">#&gt; "value"</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># attr_or_abort(obj, "missing") would throw an error</span></span></span>
+<span class="r-in"><span><span class="co"># cd2030.core:::attr_or_abort(obj, "missing") would throw an error</span></span></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

@@ -18,4 +18,4 @@ generate_fpet_summary(.data)
 
 ## Value
 
-A `cd_fpet` object.
+A `cd_fpet_data` object.

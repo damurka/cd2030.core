@@ -9,7 +9,7 @@ specific indicator and denominator.
 
 ``` r
 # S3 method for class 'cd_mapping_filtered'
-plot(x, ...)
+plot(x, title = NULL, caption = NULL, legend = NULL, ..., options = NULL)
 ```
 
 ## Arguments
@@ -17,13 +17,38 @@ plot(x, ...)
 - x:
 
   A `cd_mapping_filtered` object. Created using
-  [`filter_mapping_data()`](https://aphrcwaro.github.io/cd2030.core/reference/filter_mapping_data.md),
-  and must include spatial geometry and metadata attributes
-  (`indicator`, `palette`, `column`).
+  [`filter_mapping_data()`](filter_mapping_data.md), and must include
+  spatial geometry and metadata attributes (`indicator`, `palette`,
+  `column`).
+
+- title:
+
+  (Optional) A scalar character string to override the default plot
+  title. Defaults to `NULL`.
+
+- caption:
+
+  (Optional) A scalar character string to override the default plot
+  caption. Defaults to `NULL`.
+
+- legend:
+
+  (Optional) A scalar character string to override the default legend
+  title. Defaults to `NULL`.
 
 - ...:
 
-  Additional arguments (currently unused).
+  Chart options by name (see
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html));
+  other arguments are ignored.
+
+- options:
+
+  (Optional) A
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
+  object: text, legend, fonts and sizes the user changed. Applied last,
+  so it wins over `title` and the other arguments above. Any chart
+  option can also be given by name in `...`.
 
 ## Value
 
@@ -32,14 +57,19 @@ indicator by region and year.
 
 ## See also
 
-[`filter_mapping_data()`](https://aphrcwaro.github.io/cd2030.core/reference/filter_mapping_data.md),
-[`get_mapping_data()`](https://aphrcwaro.github.io/cd2030.core/reference/get_mapping_data.md)
+[`filter_mapping_data()`](filter_mapping_data.md),
+[`get_mapping_data()`](get_mapping_data.md)
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
 # Assuming `map_data` is filtered with filter_mapping_data()
-plot(map_data)
+plot(
+  map_data,
+  title = "Penta 1 Coverage by Region",
+  legend = "Coverage (%)",
+  caption = "Source: DHIS2 2024"
+)
 } # }
 ```

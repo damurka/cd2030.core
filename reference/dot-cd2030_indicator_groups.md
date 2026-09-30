@@ -2,8 +2,7 @@
 
 `.cd2030_indicator_groups` defines the built-in indicator groups (a.k.a.
 *profiles*) shipped with the package. Users can **override or extend**
-these via
-[`register_indicator_group()`](https://aphrcwaro.github.io/cd2030.core/reference/register_indicator_group.md);
+these via [`register_indicator_group()`](register_indicator_group.md);
 the live view used throughout the package is the merged result returned
 by `.get_all_groups()`.
 
@@ -27,8 +26,9 @@ contains a character vector of indicator codes.
 ## Examples
 
 ``` r
-names(.cd2030_indicator_groups)              # built-in groups
-#> Error: object '.cd2030_indicator_groups' not found
-.cd2030_indicator_groups$rmncah$anc          # RMNCAH ANC indicators
-#> Error: object '.cd2030_indicator_groups' not found
+names(cd2030.core:::.cd2030_indicator_groups)      # built-in groups
+#> [1] "vaccine" "rmncah" 
+cd2030.core:::.cd2030_indicator_groups$rmncah$anc  # RMNCAH ANC indicators
+#> [1] "anc1"           "anc_1trimester" "anc4"           "ipt2"          
+#> [5] "ipt3"           "syphilis_test"  "ifa90"          "hiv_test"      
 ```

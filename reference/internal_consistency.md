@@ -24,15 +24,40 @@ plot_comparison(
   title = NULL,
   x_label = NULL,
   y_label = NULL,
+  legend = NULL,
   call = caller_env(),
   ...
 )
 
-plot_comparison_anc1_penta1(.data)
+plot_comparison_anc1_penta1(
+  .data,
+  title = "Comparison of numbers of ANC1 and Penta1 by year",
+  x_label = "ANC1",
+  y_label = "Penta1",
+  legend = NULL,
+  ...,
+  options = NULL
+)
 
-plot_comparison_penta1_penta3(.data)
+plot_comparison_penta1_penta3(
+  .data,
+  title = "Comparison of numbers of Penta1 and Penta3 by year",
+  x_label = "Penta1",
+  y_label = "Penta3",
+  legend = NULL,
+  ...,
+  options = NULL
+)
 
-plot_comparison_opv1_opv3(.data)
+plot_comparison_opv1_opv3(
+  .data,
+  title = "Comparison of numbers of Penta1 and Penta3 by year",
+  x_label = "Penta1",
+  y_label = "Penta3",
+  legend = NULL,
+  ...,
+  options = NULL
+)
 ```
 
 ## Arguments
@@ -63,6 +88,11 @@ plot_comparison_opv1_opv3(.data)
 
   Character. Label for the y-axis. Defaults to `y_var`.
 
+- legend:
+
+  Optional named list or vector overriding the legend labels. Recognised
+  names are `district`, `linear_fit` and `diagonale`. Default is `NULL`.
+
 - call:
 
   The calling environment, used for error handling. Default is
@@ -72,6 +102,12 @@ plot_comparison_opv1_opv3(.data)
 
   Additional parameters for further customization, such as point size,
   line type, or color.
+
+- options:
+
+  A
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
+  object; see `plot_comparison()`.
 
 ## Value
 

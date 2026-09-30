@@ -1,9 +1,8 @@
 # Retrieve Attribute or Return NULL if Missing
 
-A safe variant of
-[`attr_or_abort()`](https://aphrcwaro.github.io/cd2030.core/reference/attr_or_abort.md)
-that returns `NULL` instead of throwing an error when the specified
-attribute does not exist.
+A safe variant of [`attr_or_abort()`](attr_or_abort.md) that returns
+`NULL` instead of throwing an error when the specified attribute does
+not exist.
 
 ## Usage
 
@@ -28,12 +27,12 @@ The value of the specified attribute, or `NULL` if not present.
 ## Examples
 
 ``` r
-obj <- structure(list(a = 1), attr = list(my_attr = "value"))
-attr_or_null(obj, "my_attr")
-#> Error in attr_or_null(obj, "my_attr"): could not find function "attr_or_null"
+obj <- structure(list(a = 1), my_attr = "value")
+cd2030.core:::attr_or_null(obj, "my_attr")
+#> [1] "value"
 #> "value"
 
-attr_or_null(obj, "missing")
-#> Error in attr_or_null(obj, "missing"): could not find function "attr_or_null"
+cd2030.core:::attr_or_null(obj, "missing")
+#> NULL
 #> NULL
 ```

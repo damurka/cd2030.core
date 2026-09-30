@@ -8,7 +8,7 @@ counts, while preserving subnational proportions from the base year.
 ## Usage
 
 ``` r
-calculate_derived_coverage(.data, indicator, base_year, region = NULL)
+calculate_derived_coverage(.data, indicator)
 ```
 
 ## Arguments
@@ -21,10 +21,6 @@ calculate_derived_coverage(.data, indicator, base_year, region = NULL)
 - indicator:
 
   A character string specifying the indicator to calculate coverage for.
-
-- base_year:
-
-  Integer. The year from which denominator proportions are derived.
 
 ## Value
 
@@ -42,6 +38,7 @@ This allows estimating:
 ## Examples
 
 ``` r
-calculate_derived_coverage(dhis_data, "penta1", 2019)
-#> Error in calculate_derived_coverage(dhis_data, "penta1", 2019): unused argument (2019)
+if (FALSE) { # \dontrun{
+calculate_derived_coverage(population_metrics, "penta1")
+} # }
 ```

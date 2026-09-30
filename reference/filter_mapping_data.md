@@ -9,7 +9,7 @@ and color palette for visualization.
 filter_mapping_data(
   .data,
   indicator,
-  denominator = c("dhis2", "anc1", "penta1", "penta1derived"),
+  denominator = c("dhis2", "anc1", "penta1", "penta1derived", "anc1derived"),
   palette = c("Reds", "Blues", "Greens", "Purples", "YlGnBu"),
   plot_year = NULL
 )
@@ -20,7 +20,7 @@ filter_mapping_data(
 - .data:
 
   A `cd_mapping` object returned by
-  [`get_mapping_data()`](https://aphrcwaro.github.io/cd2030.core/reference/get_mapping_data.md).
+  [`get_mapping_data()`](get_mapping_data.md).
 
 - indicator:
 
@@ -28,7 +28,8 @@ filter_mapping_data(
 
 - denominator:
 
-  Character. One of: `"dhis2"`, `"anc1"`, `"penta1"`, `"penta1derived"`.
+  Character. One of: `"dhis2"`, `"anc1"`, `"penta1"`, `"penta1derived"`,
+  `"anc1derived"`.
 
 - palette:
 

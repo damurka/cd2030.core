@@ -2,7 +2,7 @@
 
 Returns the **merged** definition for a group (built-in overlaid with
 any override). If `group` is omitted, uses
-[`get_selected_group()`](https://aphrcwaro.github.io/cd2030.core/reference/get_selected_group.md).
+[`get_selected_group()`](get_selected_group.md).
 
 ## Usage
 
@@ -29,7 +29,7 @@ get_indicator_groups("rmncah")
 #> [5] "ipt3"           "syphilis_test"  "ifa90"          "hiv_test"      
 #> 
 #> $idelv
-#>  [1] "sba"              "instdeliveries"   "instlivebirths"   "csection"        
+#>  [1] "sba"              "ideliv"           "instlivebirths"   "csection"        
 #>  [5] "low_bweight"      "pnc48h"           "total_stillbirth" "stillbirth_f"    
 #>  [9] "stillbirth_m"     "maternal_deaths"  "neonatal_deaths" 
 #> 

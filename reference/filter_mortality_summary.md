@@ -10,9 +10,10 @@ spatial plotting.
 filter_mortality_summary(
   .data,
   country_iso,
-  indicator = c("mmr", "sbr"),
+  indicator = c("mmr", "sbr", "nn"),
   plot_year = NULL,
-  subnational_map = NULL
+  subnational_map = NULL,
+  palette = c("Reds", "Blues", "Greens", "Purples", "YlGnBu")
 )
 ```
 
@@ -21,7 +22,7 @@ filter_mortality_summary(
 - .data:
 
   A `cd_mortality_summary` object created by
-  [`create_mortality_summary()`](https://aphrcwaro.github.io/cd2030.core/reference/create_mortality_summary.md).
+  [`create_mortality_summary()`](create_mortality_summary.md).
 
 - country_iso:
 
@@ -39,6 +40,11 @@ filter_mortality_summary(
 - subnational_map:
 
   Optional. A data frame to join with the shapefile to add metadata.
+
+- palette:
+
+  Character. RColorBrewer sequential palette for the map (default
+  `"Reds"`).
 
 ## Value
 

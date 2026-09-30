@@ -1,51 +1,50 @@
-# Plot Filtered Service Utilization Indicators
+# Plot Service Utilization Indicators
 
-Generates a faceted map of service utilization metrics across
-subnational units (admin level 1) for each available year. Uses spatial
-polygons filled by the selected indicator.
+Visualizes service utilization over time from a
+`cd_service_utilization_filtered` object.
 
 ## Usage
 
 ``` r
 # S3 method for class 'cd_service_utilization_filtered'
-plot(x, ...)
+plot(x, labels = NULL, ..., options = NULL)
 ```
 
 ## Arguments
 
 - x:
 
-  A `cd_service_utilization_filtered` object returned by
-  [`filter_service_utilization()`](https://aphrcwaro.github.io/cd2030.core/reference/filter_service_utilization.md).
+  A `cd_service_utilization_filtered` object created by
+  [`filter_service_utilization()`](filter_service_utilization.md).
+
+- labels:
+
+  (Optional) A named list to override the default English text of the
+  chart drawn, e.g. with translations. Valid keys: `title`, `x_axis`,
+  `y_axis`, and the legend entries `y1` and `y2` of its two series (for
+  `opd` and `ipd`: under-5 and all ages). Defaults to `NULL`.
 
 - ...:
 
-  Additional arguments (currently unused).
+  not used
+
+- options:
+
+  (Optional) A
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
+  object: text, legend, fonts and sizes a user changed. Applied last, so
+  it wins over the arguments above; the plot's own defaults are used for
+  whatever it does not set. Any chart option can also be given by name
+  in `...`.
 
 ## Value
 
-A `ggplot2` object representing faceted service utilization maps by
-year.
-
-## Details
-
-This function:
-
-- Extracts the appropriate indicator (`mean_opd_under5` or
-  `mean_ipd_under5`)
-
-- Projects the data to WGS84 for map consistency
-
-- Renders the spatial data using `geom_sf()` with a sequential purple
-  color scale
-
-- Facets by year and applies the package's custom plot theme
+A `ggplot2` plot object.
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
-filtered <- filter_service_utilization(service_data, "UGA", indicator = "opd", plot_years = 2019:2022)
-plot(filtered)
+plot(filter_service_utilization(dat, indicator = 'opd'))
 } # }
 ```

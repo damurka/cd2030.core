@@ -11,7 +11,10 @@ adjusted values for analysis purposes.
 generate_adjustment_values(
   .data,
   adjustment = c("default", "custom", "none"),
-  k_factors = NULL
+  k_factors = NULL,
+  settings = NULL,
+  area = NULL,
+  level = c("adminlevel_1", "district")
 )
 ```
 
@@ -39,6 +42,19 @@ generate_adjustment_values(
   each indicator group (e.g., `c(anc = 0.3, idelv = 0.2, ...)`).
   Required if `adjustment = "custom"`.
 
+- settings:
+
+  The adjustment settings
+  ([`adjust_service_data()`](adjust_service_data.md)): when given, the
+  counts after each step are given too (`_completeness`, `_outliers`),
+  and the reported counts are those of the data kept (the removed years
+  and areas left out).
+
+- area, level:
+
+  One area only: a region (`level = "adminlevel_1"`) or a district
+  (`"district"`); `NULL`, all.
+
 ## Value
 
 A `cd_adjustment_values` tibble containing:
@@ -60,16 +76,16 @@ This function performs the following steps:
     service counts.
 
 3.  **Adjusted Summation**: Applies
-    [`adjust_service_data()`](https://aphrcwaro.github.io/cd2030.core/reference/adjust_service_data.md)
-    to compute adjusted values, then calculates the yearly sums.
+    [`adjust_service_data()`](adjust_service_data.md) to compute
+    adjusted values, then calculates the yearly sums.
 
 4.  **Combining Results**: Merges unadjusted and adjusted yearly counts
     for comparison.
 
 ## See also
 
-[`adjust_service_data()`](https://aphrcwaro.github.io/cd2030.core/reference/adjust_service_data.md)
-for the detailed adjustment function.
+[`adjust_service_data()`](adjust_service_data.md) for the detailed
+adjustment function.
 
 ## Examples
 

@@ -14,7 +14,8 @@ prepare_population_metrics(
   .data,
   admin_level = c("national", "adminlevel_1", "district"),
   un_estimates = NULL,
-  region = NULL
+  region = NULL,
+  show_district = TRUE
 )
 ```
 
@@ -37,6 +38,18 @@ prepare_population_metrics(
   Optional. A tibble containing UN population estimates with columns for
   `un_population`, `un_births`, `un_popgrowth`, and related metrics.
   This parameter is only required for national-level calculations.
+
+- region:
+
+  Optional name of an `adminlevel_1` region. If supplied, only that
+  region's rows are used. Only valid with
+  `admin_level = 'adminlevel_1'`. Default is `NULL`.
+
+- show_district:
+
+  Logical. When `region` is supplied, whether to return metrics by
+  district within the region (`TRUE`, the default) or for the region as
+  a whole.
 
 ## Value
 

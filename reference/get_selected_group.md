@@ -1,9 +1,9 @@
 # Get the globally selected indicator group
 
 Returns the last group set via
-[`set_selected_group()`](https://aphrcwaro.github.io/cd2030.core/reference/set_selected_group.md).
-If none is set for the session, falls back to
-`getOption("cd2030.selected_group", "rmncah")` and caches it.
+[`set_selected_group()`](set_selected_group.md). If none is set for the
+session, falls back to `getOption("cd2030.selected_group", "rmncah")`
+and caches it.
 
 ## Usage
 

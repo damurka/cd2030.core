@@ -16,8 +16,10 @@ plot_comparison(
   title = NULL,
   x_label = NULL,
   y_label = NULL,
+  legend = NULL,
   call = caller_env(),
-  ...
+  ...,
+  options = NULL
 )
 ```
 
@@ -50,6 +52,12 @@ plot_comparison(
 
   Character. Label for the y-axis. Defaults to the value of `y_var`.
 
+- legend:
+
+  Optional named list or vector overriding the legend labels. Recognised
+  names are `district`, `linear_fit` and `diagonale`; unnamed entries
+  keep their defaults. Default is `NULL`.
+
 - call:
 
   The calling environment.
@@ -58,6 +66,15 @@ plot_comparison(
 
   Additional arguments for customization, such as `size`, `color`, or
   `linetype`, for finer control over plot appearance.
+
+- options:
+
+  (Optional) A
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
+  object: text, legend, fonts and sizes a user changed. Applied last, so
+  it wins over the arguments above; the plot's own defaults are used for
+  whatever it does not set. Any chart option can also be given by name
+  in `...`.
 
 ## Value
 

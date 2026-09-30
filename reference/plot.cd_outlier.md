@@ -11,7 +11,13 @@ plot(
   x,
   selection_type = c("region", "indicator", "heat_map"),
   indicator = NULL,
-  ...
+  threshold = .cd_method$data_quality$reporting_threshold,
+  title = NULL,
+  x_axis = NULL,
+  y_axis = NULL,
+  legend = NULL,
+  ...,
+  options = NULL
 )
 ```
 
@@ -36,9 +42,36 @@ plot(
   Optional. Specific indicator name (e.g., `"penta3"`). Required for
   `"region"` view.
 
+- threshold:
+
+  Numeric. Upper cut-off (in percent) of the middle colour band; values
+  above it are shown as good. Default is `90`.
+
+- title:
+
+  Optional plot title. Defaults to a title based on `selection_type`.
+
+- x_axis, y_axis:
+
+  Optional x- and y-axis titles. Default to `"Year"` and a "Percent
+  non-outliers" label.
+
+- legend:
+
+  Optional legend title. Defaults to a "Percent non-outliers" label.
+
 - ...:
 
   Not used.
+
+- options:
+
+  (Optional) A
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
+  object: text, legend, fonts and sizes a user changed. Applied last, so
+  it wins over the arguments above; the plot's own defaults are used for
+  whatever it does not set. Any chart option can also be given by name
+  in `...`.
 
 ## Value
 

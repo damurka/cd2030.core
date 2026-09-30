@@ -2,8 +2,7 @@
 
 Persists the selected group in session state and as an option
 (`options(cd2030.selected_group = <name>)`). Downstream helpers can
-retrieve it with
-[`get_selected_group()`](https://aphrcwaro.github.io/cd2030.core/reference/get_selected_group.md).
+retrieve it with [`get_selected_group()`](get_selected_group.md).
 
 ## Usage
 

@@ -27,10 +27,10 @@ The value of the specified attribute.
 ## Examples
 
 ``` r
-obj <- structure(list(a = 1), attr = list(my_attr = "value"))
-attr_or_abort(obj, "my_attr")
-#> Error in attr_or_abort(obj, "my_attr"): could not find function "attr_or_abort"
+obj <- structure(list(a = 1), my_attr = "value")
+cd2030.core:::attr_or_abort(obj, "my_attr")
+#> [1] "value"
 #> "value"
 
-# attr_or_abort(obj, "missing") would throw an error
+# cd2030.core:::attr_or_abort(obj, "missing") would throw an error
 ```

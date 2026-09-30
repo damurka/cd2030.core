@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">cd2030.core</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -16,15 +16,10 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting started</a></li>
-    <li><a class="dropdown-item" href="../articles/workflow.html">Workflow overview</a></li>
-  </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/aphrcwaro/cd2030.core" aria-label="GitHub repository"><span class="fa fab fa-github"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/damurka/cd2030.core" aria-label="GitHub repository"><span class="fa fab fa-github"></span></a></li>
       </ul></div>
 
 
@@ -34,14 +29,113 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/aphrcwaro/cd2030.core/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/damurka/cd2030.core/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="cd2030core-development-version">cd2030.core (development version)<a class="anchor" aria-label="anchor" href="#cd2030core-development-version"></a></h2>
-<ul><li>Initial Release</li>
+<h2 class="pkg-version" data-toc-text="1.3.5" id="cd2030core-135">cd2030.core 1.3.5<a class="anchor" aria-label="anchor" href="#cd2030core-135"></a></h2>
+<ul><li>Data Adjustment is one page for the data kept and how it is corrected (the Remove Years page is gone; its years are the page’s first section):
+<ul><li>Remove years everywhere, or a region’s or district’s data for some or every year.</li>
+<li>Completeness by each indicator group’s k or an indicator’s own, outliers and missing values – each can be switched off everywhere or for a region or district, with its own k; a district’s rules come before its region’s, a region’s before everywhere’s.</li>
+<li>Beside each setting, what the check pages found (reporting rates, districts below the threshold, outliers and missing values by indicator: <code><a href="../reference/adjustment_evidence.html">adjustment_evidence()</a></code>).</li>
+<li>The settings are saved in the dataset (<code>cache$adjustment_settings</code>, <code>cache$set_adjustment_settings()</code>); a dataset saved before reads its k-factors and removed years as settings (<code><a href="../reference/adjustment_settings_from_k.html">adjustment_settings_from_k()</a></code>).</li>
+<li>New: <code><a href="../reference/adjustment_settings_default.html">adjustment_settings_default()</a></code>, <code><a href="../reference/adjustment_settings_check.html">adjustment_settings_check()</a></code>, <code><a href="../reference/adjustment_settings_footnote.html">adjustment_settings_footnote()</a></code> (the rules in a sentence each, for reports) and <code><a href="../reference/adjustment_steps_used.html">adjustment_steps_used()</a></code>; <code><a href="../reference/adjust_service_data.html">adjust_service_data()</a></code> and <code><a href="../reference/generate_adjustment_values.html">generate_adjustment_values()</a></code> take <code>settings</code> (and the latter an <code>area</code> and <code>level</code>).</li>
+</ul></li>
+<li>Data Adjustment Changes shows, for each year, the reported count beside the adjusted count made of its parts (completeness, missing values, the outliers’ correction; a correction that lowers the count drawn as removed), with the same in a table – a step an indicator does not get reads “Off” – for every area, a region or a district, and the rules in force. The adjustment report chart is the same.</li>
+<li>Tables show a table’s loader while they are computed.</li>
+<li>Bayesian models: <code>bayes_model_key()</code>, <code>bayes_model_cached()</code>, <code>bayes_model_inputs()</code> and <code>keep_bayes_model()</code>, so an app can fit a model in the background and keep it.</li>
+<li>Requires datasuite.ui 0.4.0 (reports written by Quire’s writers).</li>
 </ul></div>
-  </main></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.3.4" id="cd2030core-134">cd2030.core 1.3.4<a class="anchor" aria-label="anchor" href="#cd2030core-134"></a></h2>
+<ul><li>The AI can read and change a saved report instead of replacing it: new AI bridge actions (datasuite.ui 0.3.4’s <code>report_list()</code>, <code>report_read()</code> and <code>report_update_blocks()</code>):
+<ul><li>
+<code>listReports</code> (read): the reports saved in the dataset.</li>
+<li>
+<code>readReport</code> (read): a report’s blocks in order – the text of its headings, paragraphs and notes, and for each chart and table its kind, settings, options and a short table of the data it shows – and its language.</li>
+<li>
+<code>updateBlocks</code> (replace): targeted changes by block id – write or rewrite text, change a chart’s kind, settings, chart options or layout, insert blocks after one, remove or move blocks – checked as a whole and saved once, with the report’s id kept; everything else in the report stays as it is. The user’s permission setting may ask them first, with a summary such as <code>Write 5 paragraphs in the report "Benin National Coverage" (benin.rds)</code> or each change (<code>Chart "Coverage trend" (anc4): Coverage trend -&gt; Coverage map; year none -&gt; 2023</code>). The Reports page shows the change at once, the open report too.</li>
+</ul></li>
+<li>A report the AI saves (<code>saveReport</code>) carries its own id, as the builder’s reports do: the Reports page saves edits by it, so edits to a report the AI had saved were not saved (datasuite.ui 0.3.4 also repairs the reports saved before).</li>
+<li>Needs datasuite.ui 0.3.4; every package in Imports has a minimum version.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.3.3" id="cd2030core-133">cd2030.core 1.3.3<a class="anchor" aria-label="anchor" href="#cd2030core-133"></a></h2>
+<ul><li>
+<code>CacheConnection$denominator_comparison(indicator, admin_level, region)</code>: the Denominator Selection comparison as one tidy table – for each indicator and year, its coverage under each denominator option (id and label) next to the survey estimate of that year with its bounds, the difference in percentage points, and which denominator is the one chosen for the indicator. The same numbers as the Denominator Selection charts (<code><a href="../reference/calculate_derived_coverage.html">calculate_derived_coverage()</a></code>), one row per denominator, so the Countdown AI can compare the options in one call. By default it compares the indicators the page does. It is chartable, defined in <code><a href="../reference/cache_definition.html">cache_definition()</a></code>, and its new columns (<code>denominator_label</code>, <code>selected</code>, <code>coverage</code>, <code>survey</code>, <code>survey_lower</code>, <code>survey_upper</code>, <code>difference</code>, <code>survey_year</code>) are in the data dictionary.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.3.2" id="cd2030core-132">cd2030.core 1.3.2<a class="anchor" aria-label="anchor" href="#cd2030core-132"></a></h2>
+<ul><li>Portuguese: the translations and the report presets’ questions read as Portuguese is written in Mozambique and Angola (European norm) instead of Brazilian Portuguese (“Contagem decrescente para 2030”, “nados vivos”, “Dados em falta”, “Transferir”…).</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.3.1" id="cd2030core-131">cd2030.core 1.3.1<a class="anchor" aria-label="anchor" href="#cd2030core-131"></a></h2>
+<ul><li>A data dictionary: <code><a href="../reference/cd_dictionary.html">cd_dictionary()</a></code> says what the ids and column names in the package’s data mean – the six denominator options (id, label, what it is, levels), indicators, target populations, reporting rates, fixed columns and how names are built (<code>cov_&lt;indicator&gt;_&lt;denominator&gt;</code>, <code>&lt;population&gt;_&lt;denominator&gt;</code>, <code>r_&lt;indicator&gt;</code>, …). <code><a href="../reference/cd_describe_columns.html">cd_describe_columns()</a></code> reads column names with it (“Coverage of Pentavalent 3 (%), denominator: Penta1 population growth (penta1derived)”) and never guesses a name it can’t read. <code><a href="../reference/cd_denominator_labels.html">cd_denominator_labels()</a></code> gives the labels, translated when given a translator.</li>
+<li>The denominators have one set of labels everywhere – UN projections, DHIS2 projections, ANC1-derived, Penta1-derived, ANC1 population growth, Penta1 population growth – in the denominator chip, the Denominator Selection charts, the reports and the plot legends (new translation keys <code>lbl_denom_anc1_growth</code> and <code>lbl_denom_penta1_growth</code>). <code>anc1</code>/<code>penta1</code> are the -derived options and <code>anc1derived</code>/<code>penta1derived</code> the population-growth ones; the ids are unchanged.</li>
+<li>
+<code>inst/scripts/export-data-dictionary.R</code> writes the docs’ “Data dictionary” reference page from it.</li>
+<li>Every public member of <code>CacheConnection</code> is defined (<code>R/cache-definitions.R</code>): <code><a href="../reference/cache_definition.html">cache_definition()</a></code> says what each data point is in the methodology’s terms – its kind (data, setting, reference, mapping, check, value, store, state, method, action), its grain (what one row is) and key columns, its unit, where the user sets it in the app and which pages show it, the methodology docs section it comes from, the defaults it follows (ids of <code><a href="../reference/cd_methodology_defaults.html">cd_methodology_defaults()</a></code>) and the members it is computed from. Columns are left to the data dictionary. <code><a href="../reference/cache_manifest.html">cache_manifest()</a></code> includes each member’s <code>definition</code>. A test fails when a member is added without one, or when a docs link or default reference doesn’t resolve. Eight members are marked draft with a note (among them <code>get_regional_estimates()</code>, which fails for a region because it reads an undefined object).</li>
+<li>
+<code>inst/scripts/export-cache-reference.R</code> writes the docs’ “CacheConnection reference” page from the definitions.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.3.0" id="cd2030core-130">cd2030.core 1.3.0<a class="anchor" aria-label="anchor" href="#cd2030core-130"></a></h2>
+<p>The constants of the Countdown methodology are defined once, in <code>R/methodology-defaults.R</code>:</p>
+<ul><li>
+<code><a href="../reference/cd_methodology_defaults.html">cd_methodology_defaults()</a></code> lists them (the adjustment’s k and reporting-rate cutoff, the 5 x MAD outlier rule, the district reporting threshold, the ratio ranges and score components, the default rates of the denominators, the coverage targets, the mortality flags), each with its step, indicator group, unit, label, note and source file. The functions that use them read them from there, so the documented values are the ones the code runs with.</li>
+<li>
+<code>inst/scripts/export-methodology-defaults.R</code> writes them as the JSON the DataSuite docs read; the AI guide sync workflow also regenerates it on each release and opens a pull request on the docs.</li>
+</ul><p>The AI bridge actions:</p>
+<ul><li>
+<code>setFilters</code> only changes the view; <code>saveReport</code> and <code>addGraph</code> add, or replace when the id given is already saved; <code>generateReport</code> adds a file, or replaces one of the same name. Each describes itself for the user’s confirmation, which DataSuite asks only before a replacement.</li>
+<li>A report’s image block that names a figure the AI saved in the dataset’s analysis folder is stored in the dataset as a picture, so the report keeps it (PNG or JPEG from that folder only, up to 5 MB).</li>
+<li>Generated reports go in the analysis folder’s <code>reports/</code>.</li>
+<li>Requires datasuite.ui 0.3.0.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.2.0" id="cd2030core-120">cd2030.core 1.2.0<a class="anchor" aria-label="anchor" href="#cd2030core-120"></a></h2>
+<p>For the Countdown AI in DataSuite (countdown-analytics/docs/AI-PLAN.md), everything around <code>CacheConnection</code>:</p>
+<ul><li>The MCP server (<code>cd2030_mcp_server()</code> and its tools) is removed; the AI works from <code>CacheConnection</code> itself.</li>
+<li>
+<code><a href="../reference/cache_manifest.html">cache_manifest()</a></code>: every public member of <code>CacheConnection</code> with its arguments (defaults, allowed values), its documentation and whether it writes or can be charted, plus the report kinds, read from the installed package.</li>
+<li>
+<code>CacheConnection$decompose_change()</code>: which districts (or regions) drive a change in an indicator’s coverage between two years, split into service delivery and denominator, with a reporting-rate flag.</li>
+<li>
+<code>CacheConnection$revision</code> goes up with every saved change; <code>init_CacheConnection(read_only = TRUE)</code> opens a dataset without ever writing it (the AI’s copy).</li>
+<li>Custom charts: report kind <code>custom_chart</code> (data from a <code>CacheConnection</code> member, fixed transforms, a plot description; never code), <code><a href="../reference/cd_chartable_members.html">cd_chartable_members()</a></code>, <code><a href="../reference/cd_member_data.html">cd_member_data()</a></code>, <code><a href="../reference/cd_custom_chart_data.html">cd_custom_chart_data()</a></code>, and saved graphs in the dataset (<code>set_graph()</code>, <code>graphs</code>), which reports can use.</li>
+<li>The AI bridge: the Countdown pages’ charts and tables say which report kind they are and with which options; the state has the dataset’s path, country and revision; new actions <code>saveReport</code>, <code>addGraph</code> and <code>generateReport</code>.</li>
+<li>Requires datasuite.ui 0.2.0.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.1" id="cd2030core-111">cd2030.core 1.1.1<a class="anchor" aria-label="anchor" href="#cd2030core-111"></a></h2>
+<p>Documentation only; no change to the code.</p>
+<ul><li>A new README: what the package does, where it fits (DataSuite, the Countdown apps, datasuite.ui), installing from r-universe, a walkthrough on the bundled Kenya data, <code>CacheConnection</code>, indicator groups, reports, building an app with <code><a href="../reference/countdown-pages.html">cd_app()</a></code>, developing and releasing.</li>
+<li>
+<code><a href="../reference/cd2030.core-package.html">?cd2030.core</a></code> and <code>?countdown-pages</code> give overviews of the entry points and the Countdown pages.</li>
+<li>The pkgdown reference index lists every help topic; <code>URL</code> and <code>BugReports</code> point to github.com/damurka/cd2030.core.</li>
+<li>The Bayesian coverage packages come from <a href="https://alkemalab.r-universe.dev" class="external-link uri">https://alkemalab.r-universe.dev</a> (<code>Additional_repositories</code>).</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.1.0" id="cd2030core-110">cd2030.core 1.1.0<a class="anchor" aria-label="anchor" href="#cd2030core-110"></a></h2>
+<ul><li>Report builder: standard reports rebuilt as blocks (<code><a href="../reference/report_presets.html">report_presets()</a></code>), exported to Word, PowerPoint and PDF through datasuite.ui’s report engine; <code><a href="../reference/cd_report_context.html">cd_report_context()</a></code> is a dataset’s report context.</li>
+<li>The Countdown pages every Countdown app shares (data quality, denominators, coverage, equity, the Load Data wizard, filters, nav sections and <code><a href="../reference/countdown-pages.html">cd_app()</a></code>) moved here from the apps, built on datasuite.ui.</li>
+<li>Chart options (<code><a href="https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html" class="external-link">cd_chart_options()</a></code> and friends) and the report engine now live in datasuite.ui; they are imported and re-exported here, so existing code keeps working.</li>
+<li>Countdown’s translations (indicator names, chart titles, page texts) are in <code>inst/translation/cd2030.json</code>.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.0.0" id="cd2030core-100">cd2030.core 1.0.0<a class="anchor" aria-label="anchor" href="#cd2030core-100"></a></h2>
+<ul><li>Initial Release</li>
+<li>
+<code>CacheConnection</code> now names a file-backed cache after its source file’s basename (<code>&lt;stem&gt;.rds</code>) instead of <code>&lt;country&gt;_&lt;timestamp&gt;.rds</code>, and loads an existing matching cache directly instead of treating a fresh parse as authoritative when one is already present – this decision now lives entirely in <code>CacheConnection</code> itself, so it applies uniformly regardless of caller.</li>
+<li>Added <code>cd2030_mcp_server()</code>, an optional (<code>mcptools</code>/<code>ellmer</code> <code>Suggests</code>) Model Context Protocol server exposing read-only tools – data quality, coverage, inequality, mortality, service utilization, health system, and private-sector queries, plus report generation and coverage charts – over an already-processed <code>.rds</code> cache, for use with LLM clients like Claude Desktop or Claude Code.</li>
+<li>Expanded the MCP server from 12 to 38 tools, covering every remaining read-only <code>CacheConnection</code> method (mutating setters and non-data methods remain deliberately unreachable).</li>
+<li>Standardized MCP tool naming/documentation against the CD2030 analytical framework’s own vocabulary (<code>get_coverage_targets</code>, <code>get_continuum_of_care</code> renamed to match; DQA/mortality/health-system tool descriptions now cite the framework’s official metric IDs and named indices), and added the three “Equity Assessment” equiplot tools (<code>get_equiplot_area</code>, <code>get_equiplot_wealth</code>, <code>get_equiplot_education</code>), bringing the total to 41.</li>
+<li>Fixed stray <code><a href="https://rdrr.io/r/base/print.html" class="external-link">print()</a></code> debug statements in <code>generate_report()</code>, <code><a href="../reference/generate_coverage_data.html">generate_coverage_data()</a></code>, and <code><a href="../reference/generate_bayes_model.html">generate_bayes_model()</a></code> that corrupted the MCP server’s stdio JSON-RPC stream (stdout doubles as the wire protocol, so any incidental console output there breaks every client response).</li>
+<li>MCP tool results are now also capped by total cell count (<code>max_cells</code>, default 5000), not just row count: a row-only cap doesn’t protect against a very wide table (e.g. <code>get_indicator_coverage</code> at district level, ~190 columns), where even a handful of rows produced a megabyte-scale response that crashed a live client connection.</li>
+<li>Six MCP tools (<code>get_overall_score</code>, <code>get_inequality</code>, <code>get_completeness_summary</code>, <code>get_outliers_summary</code>, <code>get_reporting_rate</code>, <code>get_service_utilization_summary</code>) now read <code>CacheConnection</code>’s cached active bindings (e.g. <code>reporting_rate_district</code>) instead of always calling the always-recomputing <code>calculate_*</code>/<code>compute_*</code> method, whenever no <code>region</code> filter is requested – the exact case those bindings cover. Verified identical output to a direct recompute for all six.</li>
+</ul></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

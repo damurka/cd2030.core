@@ -8,7 +8,7 @@ disaggregation within that region.
 ## Usage
 
 ``` r
-get_admin_columns(admin_level, region = NULL)
+get_admin_columns(admin_level, region = NULL, show_district = TRUE)
 ```
 
 ## Arguments
@@ -21,6 +21,11 @@ get_admin_columns(admin_level, region = NULL)
 
   Optional. If provided, must be used only with
   `admin_level = "adminlevel_1"`.
+
+- show_district:
+
+  Optional. If show_district is true `adminlevel_1` will include
+  `district` column
 
 ## Value
 

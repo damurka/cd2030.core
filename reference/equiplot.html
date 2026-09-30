@@ -13,7 +13,7 @@ across subgroups, allowing insights into disparities."><meta name="description" 
 
     <a class="navbar-brand me-2" href="../index.html">cd2030.core</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -22,15 +22,10 @@ across subgroups, allowing insights into disparities."><meta name="description" 
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting started</a></li>
-    <li><a class="dropdown-item" href="../articles/workflow.html">Workflow overview</a></li>
-  </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/aphrcwaro/cd2030.core" aria-label="GitHub repository"><span class="fa fab fa-github"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/damurka/cd2030.core" aria-label="GitHub repository"><span class="fa fab fa-github"></span></a></li>
       </ul></div>
 
 
@@ -40,7 +35,7 @@ across subgroups, allowing insights into disparities."><meta name="description" 
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Create Dot Plots for Equity Analysis</h1>
-      <small class="dont-index">Source: <a href="https://github.com/aphrcwaro/cd2030.core/blob/main/R/equiplot.R" class="external-link"><code>R/equiplot.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/damurka/cd2030.core/blob/main/R/equiplot.R" class="external-link"><code>R/equiplot.R</code></a></small>
       <div class="d-none name"><code>equiplot.Rd</code></div>
     </div>
 
@@ -57,8 +52,12 @@ across subgroups, allowing insights into disparities.</p>
 <span>  <span class="va">.data</span>,</span>
 <span>  <span class="va">variables</span>,</span>
 <span>  <span class="va">group_by</span>,</span>
+<span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  subtitle <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  caption <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  x_title <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  legend_title <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  legend_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  reverse_y_axis <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  connect_dots <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  dot_size <span class="op">=</span> <span class="cn">NULL</span></span>
@@ -70,57 +69,57 @@ across subgroups, allowing insights into disparities.</p>
 
 
 <dl><dt id="arg--data">.data<a class="anchor" aria-label="anchor" href="#arg--data"></a></dt>
-<dd><p>A data frame containing the data to be plotted.</p></dd>
+<dd><p>A data frame with one row per group and one column per variable
+(values in percent, plotted on a 0-100 scale).</p></dd>
 
 
 <dt id="arg-variables">variables<a class="anchor" aria-label="anchor" href="#arg-variables"></a></dt>
-<dd><p>A vector of column names in <code>.data</code> representing the variables to plot.</p></dd>
+<dd><p>Character vector of the column names to plot as dots; each
+becomes a coloured series.</p></dd>
 
 
 <dt id="arg-group-by">group_by<a class="anchor" aria-label="anchor" href="#arg-group-by"></a></dt>
-<dd><p>A column in <code>.data</code> to group the data by (e.g., countries or regions).</p></dd>
+<dd><p>The column (unquoted or as a string) whose values form the
+rows of the plot (y axis).</p></dd>
+
+
+<dt id="arg-title-subtitle-caption">title, subtitle, caption<a class="anchor" aria-label="anchor" href="#arg-title-subtitle-caption"></a></dt>
+<dd><p>Optional plot title, subtitle and caption.
+Each must be a single string or <code>NULL</code>.</p></dd>
 
 
 <dt id="arg-x-title">x_title<a class="anchor" aria-label="anchor" href="#arg-x-title"></a></dt>
-<dd><p>Optional. A title for the x-axis.</p></dd>
+<dd><p>Optional x-axis title. Defaults to a percentage label.</p></dd>
 
 
 <dt id="arg-legend-title">legend_title<a class="anchor" aria-label="anchor" href="#arg-legend-title"></a></dt>
-<dd><p>Optional. A title for the legend.</p></dd>
+<dd><p>Optional title of the colour legend.</p></dd>
+
+
+<dt id="arg-legend-labels">legend_labels<a class="anchor" aria-label="anchor" href="#arg-legend-labels"></a></dt>
+<dd><p>Optional named vector or list mapping variable names to
+display labels (for example translated labels).</p></dd>
 
 
 <dt id="arg-reverse-y-axis">reverse_y_axis<a class="anchor" aria-label="anchor" href="#arg-reverse-y-axis"></a></dt>
-<dd><p>Logical. Whether to reverse the y-axis order. Default is FALSE.</p></dd>
+<dd><p>Logical. Whether to reverse the order of the groups on
+the y axis. Default is <code>FALSE</code>.</p></dd>
 
 
 <dt id="arg-connect-dots">connect_dots<a class="anchor" aria-label="anchor" href="#arg-connect-dots"></a></dt>
-<dd><p>Logical. Whether to connect the dots with lines. Default is TRUE.</p></dd>
+<dd><p>Logical. Whether to draw a line connecting the dots of
+each group. Default is <code>TRUE</code>.</p></dd>
 
 
 <dt id="arg-dot-size">dot_size<a class="anchor" aria-label="anchor" href="#arg-dot-size"></a></dt>
-<dd><p>Optional. Controls the size of the dots (1 to 5, with 5 being the largest).</p></dd>
+<dd><p>Optional dot size, clamped to 1-5. Defaults to 4.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A ggplot object representing the dot plot.</p>
+    <p>A <code>ggplot</code> object.</p>
     </div>
 
-    <div class="section level2">
-    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="fu">equiplot</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  .data <span class="op">=</span> <span class="va">data</span>,</span></span>
-<span class="r-in"><span>  variables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Var1"</span>, <span class="st">"Var2"</span>, <span class="st">"Var3"</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  group_by <span class="op">=</span> <span class="va">Country</span>,</span></span>
-<span class="r-in"><span>  x_title <span class="op">=</span> <span class="st">"Percentage (%)"</span>,</span></span>
-<span class="r-in"><span>  legend_title <span class="op">=</span> <span class="st">"Variables"</span>,</span></span>
-<span class="r-in"><span>  reverse_y_axis <span class="op">=</span> <span class="cn">TRUE</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
-<span class="r-in"><span></span></span>
-</code></pre></div>
-    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

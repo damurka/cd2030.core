@@ -8,19 +8,33 @@ color gradient by value.
 
 ``` r
 # S3 method for class 'cd_mortality_summary_filtered'
-plot(x, ...)
+plot(x, labels = NULL, ..., options = NULL)
 ```
 
 ## Arguments
 
 - x:
 
-  A `cd_mortality_summary_filtered` object returned by
-  `filter_mortality_rate()`.
+  A `cd_mortality_summary_filtered` object.
+
+- labels:
+
+  (Optional) A named list to override the default English text, e.g.
+  with translations. Valid keys: `title` and `legend` (the legend
+  title). Defaults to `NULL`.
 
 - ...:
 
   Additional arguments (not used).
+
+- options:
+
+  (Optional) A
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
+  object: text, legend, fonts and sizes a user changed. Applied last, so
+  it wins over the arguments above; the plot's own defaults are used for
+  whatever it does not set. Any chart option can also be given by name
+  in `...`.
 
 ## Value
 
@@ -44,7 +58,8 @@ The function:
 
 ``` r
 if (FALSE) { # \dontrun{
-filtered <- filter_mortality_summary(mortality_data, "UGA", indicator = "mmr", plot_year = 2020:2022)
+filtered <- filter_mortality_summary(mortality_data, "UGA", indicator = "mmr",
+                                     plot_year = 2020:2022)
 plot(filtered)
 } # }
 ```

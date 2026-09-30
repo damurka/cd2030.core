@@ -42,7 +42,7 @@ Reserved names `"auto"` and `"custom"` cannot be registered.
   layered on top of the built-in according to `on_conflict`.
 
 - The merged, live view is available via `.get_all_groups()` or
-  [`get_indicator_groups()`](https://aphrcwaro.github.io/cd2030.core/reference/get_indicator_groups.md).
+  [`get_indicator_groups()`](get_indicator_groups.md).
 
 ## Examples
 

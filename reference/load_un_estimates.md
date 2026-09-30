@@ -24,9 +24,9 @@ load_un_estimates(path = NULL, .data = NULL, country_iso, start_year, end_year)
 
   Character. ISO3 code of the country.
 
-- start_year, :
+- start_year, end_year:
 
-  end_year Integers. Year range to include.
+  Integers. First and last year (inclusive) to include.
 
 ## Value
 

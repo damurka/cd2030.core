@@ -1,15 +1,23 @@
 # Plot National Coverage Data
 
-This function generates a line plot to visualize national immunization
-coverage data across years, allowing comparison between different
-estimates (e.g., DHIS2 estimates, WUENIC estimates, and Survey
-estimates).
+This function generates a line plot to visualize immunization coverage
+data across years, allowing comparison between different estimates
+(e.g., DHIS2 estimates, WUENIC estimates, and Survey estimates).
 
 ## Usage
 
 ``` r
 # S3 method for class 'cd_coverage_filtered'
-plot(x, ...)
+plot(
+  x,
+  title = NULL,
+  x_axis = NULL,
+  y_axis = NULL,
+  caption = NULL,
+  labels = NULL,
+  ...,
+  options = NULL
+)
 ```
 
 ## Arguments
@@ -17,43 +25,48 @@ plot(x, ...)
 - x:
 
   A data frame of type `cd_coverage_filtered`, containing year-wise
-  national coverage data for the specified country and indicator.
+  coverage data for the specified indicator.
+
+- title:
+
+  (Optional) A scalar character string to override the default plot
+  title. Defaults to `NULL`.
+
+- x_axis:
+
+  (Optional) A scalar character string to override the default x-axis
+  label. Defaults to `NULL`.
+
+- y_axis:
+
+  (Optional) A scalar character string to override the default y-axis
+  label. Defaults to `NULL`.
+
+- caption:
+
+  (Optional) A scalar character string to override the default
+  denominator caption. Defaults to `NULL`.
+
+- labels:
+
+  (Optional) A named list or vector to override the legend keys for
+  translation. Valid keys: `dhis2`, `wuenic`, `survey`, `ci`. Defaults
+  to `NULL`.
 
 - ...:
 
-  Additional arguments passed to or from other methods (currently
-  unused).
+  Chart options by name (see
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html));
+  other arguments are ignored.
+
+- options:
+
+  (Optional) A
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
+  object: text, legend, fonts and sizes the user changed. Applied last,
+  so it wins over `title` and the other arguments above. Any chart
+  option can also be given by name in `...`.
 
 ## Value
 
-A ggplot object displaying a line plot of the national coverage data by
-year, with lines and points representing different estimate types.
-
-## Details
-
-This plot function transforms the coverage data into a long format
-suitable for plotting with ggplot2, and extracts the denominator
-information for display in the plot caption. It shows coverage values
-for each year, with different lines and points for each estimate type.
-
-The plot includes:
-
-- **Y-axis**: Coverage percentage.
-
-- **X-axis**: Year.
-
-- **Line color**: Represents different estimates (e.g., DHIS2, Survey).
-
-- **Caption**: Indicates the denominator used in the coverage
-  calculation.
-
-This function is meant to be used with the `cd_coverage_filtered` class,
-which contains coverage values for different indicators and estimates.
-
-## Examples
-
-``` r
-if (FALSE) { # \dontrun{
-  plot(filter_coverage(dt_adj, indicator = "bcg", denominator = "anc1"))
-} # }
-```
+A `ggplot` object displaying a line plot of the coverage data.

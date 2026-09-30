@@ -1,37 +1,69 @@
 # A Specialized Dot Plot for Maternal Education Analysis
 
-`equiplot_education` generates a dot plot comparing coverage across
-maternal education levels (no education, primary, and secondary or
-higher) for a specific indicator across years.
+Plots survey estimates of an indicator by year for each level of
+maternal education.
 
 ## Usage
 
 ``` r
-equiplot_education(.data, indicator, x_title = NULL, dot_size = NULL)
+equiplot_education(
+  .data,
+  indicator,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  legend_title = NULL,
+  legend_labels = NULL,
+  dot_size = NULL,
+  ...,
+  options = NULL
+)
 ```
 
 ## Arguments
 
 - .data:
 
-  A data frame containing the data to be plotted.
+  Equity survey data with `year`, `level` and `r_<indicator>` columns.
 
 - indicator:
 
-  A string specifying the indicator to be analyzed (e.g., 'sba').
+  Character. The indicator to plot; its `r_<indicator>` column is used.
+
+- title, subtitle, caption:
+
+  Optional plot title, subtitle and caption.
 
 - x_title:
 
-  Optional. A title for the x-axis. Defaults to ' Coverage (%)'.
+  Optional x-axis title. Defaults to the indicator name followed by
+  "Coverage".
 
-## Value
+- legend_title:
 
-A ggplot object representing the dot plot.
+  Optional legend title. Defaults to a title describing the grouping
+  (for example `"Area of residence"`).
 
-## Examples
+- legend_labels:
 
-``` r
-if (FALSE) { # \dontrun{
-equiplot_education(data, indicator = "sba")
-} # }
-```
+  Optional named vector or list mapping group names to display labels.
+
+- dot_size:
+
+  Optional dot size, clamped to 1-5. Defaults to 4.
+
+- ...:
+
+  Chart options (see
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html))
+  given by name, applied as with `options`.
+
+- options:
+
+  (Optional) A
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
+  object: text, legend, fonts and sizes a user changed. Applied last, so
+  it wins over the arguments above; the plot's own defaults are used for
+  whatever it does not set. Any chart option can also be given by name
+  in `...`.

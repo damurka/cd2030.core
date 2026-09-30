@@ -20,6 +20,12 @@ save_dhis2_excel(.data, filename, last_org)
   A string specifying the file path and name where the Excel workbook
   will be saved.
 
+- last_org:
+
+  Character. Name of the lowest organisation-unit column (for example
+  `"district"`). Used as the key header column on every sheet, followed
+  by `year` and `month` where relevant.
+
 ## Value
 
 Saves the workbook to the specified filename.

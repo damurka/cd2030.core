@@ -1,7 +1,6 @@
 # Plot Line Graph for Multiple Series with Dynamic Y-axis Scaling
 
-Generates a line graph for specified y variables over a shared x-axis,
-with dynamic scaling of the y-axis based on the data.
+Plot Line Graph for Multiple Series with Dynamic Y-axis Scaling
 
 ## Usage
 
@@ -10,11 +9,14 @@ plot_line_graph(
   .data,
   x,
   y_vars,
-  y_labels,
   title,
-  y_axis_title,
+  y_axis,
+  x_axis,
+  legend_labels,
   hline = NULL,
-  hline_style = "dashed"
+  hline_style = "dashed",
+  options = NULL,
+  ...
 )
 ```
 
@@ -22,36 +24,52 @@ plot_line_graph(
 
 - .data:
 
-  A data frame containing the variables to plot.
+  A data frame.
 
 - x:
 
-  The unquoted column name for the x-axis variable (e.g., `year`).
+  The column name for the x-axis (e.g., "year").
 
 - y_vars:
 
-  A character vector of column names for the y variables to plot.
-
-- y_labels:
-
-  A character vector of labels for the y variables (must match the
-  length of `y_vars`).
+  Vector of column names for the y-axis data.
 
 - title:
 
-  The title of the plot.
+  Plot title.
 
-- y_axis_title:
+- y_axis:
 
-  The title of the y-axis.
+  Label for the y-axis.
+
+- x_axis:
+
+  Label for the x-axis.
+
+- legend_labels:
+
+  Vector of labels for the legend (must match y_vars length).
 
 - hline:
 
-  An optional numeric value to draw a horizontal line.
+  Optional numeric value for a horizontal reference line.
 
 - hline_style:
 
-  The line style for the horizontal line, default is "dashed".
+  Style of the horizontal line.
+
+- options:
+
+  (Optional) A
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
+  object: text, legend, fonts and sizes a user changed. Applied last, so
+  it wins over the arguments above. Default is `NULL`.
+
+- ...:
+
+  Chart options (see
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html))
+  given by name, applied as with `options`.
 
 ## Value
 

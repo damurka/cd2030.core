@@ -10,7 +10,7 @@ reshapes the data for analysis and visualisation.
 filter_coverage(
   .data,
   indicator,
-  denominator = c("dhis2", "anc1", "penta1", "penta1derived"),
+  denominator = c("dhis2", "anc1", "penta1", "penta1derived", "anc1derived"),
   region = NULL
 )
 ```
@@ -28,6 +28,13 @@ filter_coverage(
 - denominator:
 
   Denominator sources for coverage calculations (e.g., `"dhis2"`).
+
+- region:
+
+  Name of the subnational unit (at the data's `admin_level`) to keep.
+  Required for subnational data that was not already calculated for a
+  single region; must be `NULL` for national data or data calculated for
+  a region. Default is `NULL`.
 
 ## Value
 

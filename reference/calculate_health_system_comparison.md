@@ -8,14 +8,8 @@ district and admin level 1 for the latest year.
 ``` r
 calculate_health_system_comparison(
   .data,
-  sbr = 0.02,
-  nmr = 0.025,
-  pnmr = 0.024,
-  anc1survey = 0.98,
-  dpt1survey = 0.97,
-  survey_year = 2019,
-  twin = 0.015,
-  preg_loss = 0.03
+  admin1_coverage_data,
+  admin2_coverage_data
 )
 ```
 
@@ -23,40 +17,23 @@ calculate_health_system_comparison(
 
 - .data:
 
-  A data frame containing raw health system inputs including year,
-  population, coverage, and facility indicators.
+  A `cd_data` object containing raw health system inputs including year,
+  population, and facility indicators.
 
-- sbr:
+- admin1_coverage_data:
 
-  Numeric. The stillbirth rate (default: 0.02).
+  A coverage data frame at admin level 1 (with `year`, `adminlevel_1`
+  and `cov_*` columns), such as the output of
+  [`calculate_indicator_coverage()`](calculate_indicator_coverage.md)
+  for `admin_level = "adminlevel_1"`. Its latest year defines the year
+  kept in the result.
 
-- nmr:
+- admin2_coverage_data:
 
-  Numeric. The neonatal mortality rate (default: 0.025).
-
-- pnmr:
-
-  Numeric. The post-neonatal mortality rate (default: 0.024).
-
-- anc1survey:
-
-  Numeric. Survey-based ANC-1 coverage rate (default: 0.98).
-
-- dpt1survey:
-
-  Numeric. Survey-based Penta-1 coverage rate (default: 0.97).
-
-- survey_year:
-
-  Integer. The year of Penta-1 survey provided
-
-- twin:
-
-  Numeric. The twin birth rate (default: 0.015).
-
-- preg_loss:
-
-  Numeric. The pregnancy loss rate (default: 0.03).
+  A coverage data frame at district level (with `year`, `adminlevel_1`,
+  `district` and `cov_*` columns), such as the output of
+  [`calculate_indicator_coverage()`](calculate_indicator_coverage.md)
+  for `admin_level = "district"`.
 
 ## Value
 

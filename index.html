@@ -25,7 +25,7 @@
 
     <a class="navbar-brand me-2" href="index.html">cd2030.core</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,20 +35,13 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/getting-started.html">Getting started</a></li>
-    <li><a class="dropdown-item" href="articles/workflow.html">Workflow overview</a></li>
-  </ul>
-</li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/aphrcwaro/cd2030.core" aria-label="GitHub repository"><span class="fa fab fa-github"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/damurka/cd2030.core" aria-label="GitHub repository"><span class="fa fab fa-github"></span></a></li>
       </ul>
 </div>
 
@@ -59,69 +52,160 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="cd2030core">cd2030.core<a class="anchor" aria-label="anchor" href="#cd2030core"></a>
 </h1></div>
-<!-- badges: start -->
-<!-- badges: end -->
-<div class="section level2">
-<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
-</h2>
-<p>This is a web app for analysing vaccine data for the Countdown 2030. It’s also an R package so you can use some features in the code directly.</p>
-</div>
-<div class="section level2">
-<h2 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
-</h2>
+<p>Countdown to 2030 analysis of routine health facility data. cd2030.core loads a country’s facility data, checks its quality, adjusts it for incomplete reporting and outliers, chooses denominators, and computes coverage, inequality, mortality, service utilization, health system and family planning indicators, each with a chart. It also holds everything the Countdown Shiny apps share: the analysis pages, the Load Data wizard, the filters and the app frame (<code><a href="reference/countdown-pages.html">cd_app()</a></code>), and Countdown’s content for the report builder (standard reports, the charts and tables a report can hold).</p>
+<p>It is used in two ways:</p>
 <ul>
-<li>Analyze vaccine data for Countdown 2030.</li>
-<li>Use as an R package for programmatic access.</li>
-<li>Interactive visualizations for quick insights.</li>
+<li>
+<strong>From R</strong>, as an analysis library: load a dataset, call the functions, plot the results.</li>
+<li>
+<strong>Through the apps</strong>, cd2030.rmncah, cd2030.vaxx and cd2030.pooled, which are Shiny front ends to it and run inside DataSuite.</li>
+</ul>
+<div class="section level2">
+<h2 id="where-it-fits">Where it fits<a class="anchor" aria-label="anchor" href="#where-it-fits"></a>
+</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">DataSuite</span> (VS Code based)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>  └─ countdown<span class="sc">-</span>analytics            the DataSuite extension<span class="sc">:</span> lists the apps, adds the AI tools</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>       └─ cd2030.rmncah <span class="sc">/</span> cd2030.vaxx <span class="sc">/</span> cd2030.pooled    the apps, one R package each<span class="sc">:</span> <span class="fu">run_app</span>()</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>            └─ cd2030.core          THIS PACKAGE<span class="sc">:</span> analysis, Countdown pages, wizard, report content</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>                 └─ datasuite.ui    generic interface kit, chart options, report <span class="fu">builder</span> (knows nothing of Countdown)</span></code></pre></div>
+<ul>
+<li>
+<strong>datasuite.ui</strong> (<a href="https://github.com/damurka/datasuite.ui" class="external-link uri">https://github.com/damurka/datasuite.ui</a>) is the generic layer: Shiny/React components, the page frame, chart options and the Word/PowerPoint/PDF report engine. cd2030.core plugs Countdown into it (its report content through <code>report_register()</code>, its translations through <code>cd_register_translations()</code>, both in <code>.onLoad</code>). datasuite.ui never calls cd2030.core.</li>
+<li>
+<strong>The apps</strong> (<a href="https://github.com/damurka/cd2030.rmncah" class="external-link uri">https://github.com/damurka/cd2030.rmncah</a>, <code>.vaxx</code>, <code>.pooled</code>) each set their options, list their pages and call <code><a href="reference/countdown-pages.html">cd_app()</a></code>.</li>
+<li>
+<strong>countdown-analytics</strong> (<a href="https://github.com/damurka/countdown-analytics" class="external-link uri">https://github.com/damurka/countdown-analytics</a>) is the DataSuite extension. Its <code>shinyApps</code> entries name each app’s package; DataSuite installs it when the extension is installed, updates it when the extension is updated, and launches it.</li>
+<li>Every package is published at <strong><a href="https://damurka.r-universe.dev" class="external-link uri">https://damurka.r-universe.dev</a></strong> (built on each push to <code>main</code>). The Bayesian model uses bayescoveragemodel and bayescoveragedeploy, suggested packages from <a href="https://alkemalab.r-universe.dev" class="external-link uri">https://alkemalab.r-universe.dev</a>.</li>
 </ul>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>You can install a stable version of cd2030 from <a href="https://github.com/" class="external-link">GitHub</a> with:</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"aphrcwaro/cd2030.core@v1.0.0"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="development-version">Development version<a class="anchor" aria-label="anchor" href="#development-version"></a>
-</h2>
-<p>To get a bug fix or to use a feature from the development version, you can install the development version of cd2030.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"aphrcwaro/cd2030.core"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span></span>
+<span>  <span class="st">"cd2030.core"</span>,</span>
+<span>  repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"https://damurka.r-universe.dev"</span>, <span class="st">"https://alkemalab.r-universe.dev"</span>, <span class="st">"https://cloud.r-project.org"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Many features use suggested packages: PDF export (chromote with Chrome, or Word/LibreOffice), editable PowerPoint charts (rvg), pictures (magick, rsvg, svglite, ragg), the Bayesian model. Install them with <code>dependencies = TRUE</code>. DataSuite installs them for the apps.</p>
 </div>
 <div class="section level2">
-<h2 id="running-the-app">Running the App<a class="anchor" aria-label="anchor" href="#running-the-app"></a>
+<h2 id="using-it-from-r">Using it from R<a class="anchor" aria-label="anchor" href="#using-it-from-r"></a>
 </h2>
-<p>Start the web dashboard:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://aphrcwaro.github.io/cd2030.core/">cd2030.core</a></span><span class="op">)</span></span>
-<span><span class="fu">dashboard</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/damurka/cd2030.core" class="external-link">cd2030.core</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># A dataset: the Countdown Excel workbook (Admin, Population, Reporting and service sheets), a Stata .dta master</span></span>
+<span><span class="co"># file, or a saved .rds. The result is a CacheConnection: the data plus every choice made about it.</span></span>
+<span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"kenya.xlsx"</span>, package <span class="op">=</span> <span class="st">"cd2030.core"</span><span class="op">)</span></span>
+<span><span class="va">cache</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/load_cache_data.html">load_cache_data</a></span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="va">cache</span><span class="op">$</span><span class="va">countdown_data</span>      <span class="co"># the checked data (a cd_data tibble); load_data(path) gives just this</span></span>
+<span></span>
+<span><span class="co"># Data quality</span></span>
+<span><span class="fu"><a href="reference/calculate_average_reporting_rate.html">calculate_average_reporting_rate</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/calculate_outliers_summary.html">calculate_outliers_summary</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/calculate_overall_score.html">calculate_overall_score</a></span><span class="op">(</span><span class="va">data</span>, threshold <span class="op">=</span> <span class="fl">90</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="fu"><a href="reference/calculate_district_reporting_rate.html">calculate_district_reporting_rate</a></span><span class="op">(</span><span class="va">data</span>, threshold <span class="op">=</span> <span class="fl">90</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Adjustment, denominators and coverage go through the cache, which remembers each choice. Coverage also needs the</span></span>
+<span><span class="co"># national rates and survey estimates the Load Data wizard collects (cache$set_national_estimates(),</span></span>
+<span><span class="co"># cache$set_survey_estimates(), ...); the apps' pages show what each analysis needs.</span></span>
+<span><span class="va">cache</span><span class="op">$</span><span class="fu">set_k_factors</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>anc <span class="op">=</span> <span class="fl">0.25</span>, idelv <span class="op">=</span> <span class="fl">0.25</span>, vacc <span class="op">=</span> <span class="fl">0.25</span>, opd <span class="op">=</span> <span class="fl">0.25</span><span class="op">)</span><span class="op">)</span>   <span class="co"># opd only for rmncah</span></span>
+<span><span class="va">coverage</span> <span class="op">&lt;-</span> <span class="va">cache</span><span class="op">$</span><span class="fu">calculate_indicator_coverage</span><span class="op">(</span><span class="st">"national"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># A standard report, written as Word (or "pdf", or "pptx" for a slide deck)</span></span>
+<span><span class="va">reports</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/report_presets.html">report_presets</a></span><span class="op">(</span><span class="st">"en"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/datasuite.ui/man/export_report.html" class="external-link">export_report</a></span><span class="op">(</span><span class="va">cache</span>, <span class="va">reports</span><span class="op">[[</span><span class="st">"data_quality"</span><span class="op">]</span><span class="op">]</span>, <span class="st">"data_quality.docx"</span>, format <span class="op">=</span> <span class="st">"docx"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Save the dataset and its choices next to the data, to reopen later with load_cache_data("kenya.rds")</span></span>
+<span><span class="va">cache</span><span class="op">$</span><span class="fu">set_cache_path</span><span class="op">(</span><span class="st">"kenya.rds"</span><span class="op">)</span></span></code></pre></div>
+<p>The functions are grouped by analysis step in the reference (<code><a href="https://rdrr.io/pkg/cd2030.core/man" class="external-link">help(package = "cd2030.core")</a></code>, and the package overview <code><a href="reference/cd2030.core-package.html">?cd2030.core</a></code>). A few things worth knowing:</p>
+<ul>
+<li>
+<strong>CacheConnection</strong> (<code><a href="reference/CacheConnection.html">?CacheConnection</a></code>) is the dataset object. The apps pass it to every page; its setters record choices (excluded years, adjustment factors, denominators, surveys, region mappings, chart options, saved reports) and its methods compute results with them. It saves itself to an <code>.rds</code> named after the data file.</li>
+<li>
+<strong>Indicator groups</strong> decide which indicators a dataset has. Two are built in, <code>"rmncah"</code> and <code>"vaccine"</code>, and <code><a href="reference/load_data.html">load_data()</a></code> detects which one fits (<code>indicator_group = "auto"</code>). <code><a href="reference/register_indicator_group.html">register_indicator_group()</a></code> adds a custom one; <code><a href="reference/set_selected_group.html">set_selected_group()</a></code> picks the group the package works with; <code><a href="reference/list_indicator_groups.html">list_indicator_groups()</a></code> lists them.</li>
+<li>
+<strong>Chart options and reports.</strong> Every chart is finished with its saved options (<code><a href="reference/cd_finish_plot.html">cd_finish_plot()</a></code>, options from datasuite.ui’s <code><a href="https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html" class="external-link">cd_chart_options()</a></code>, re-exported here). <code><a href="reference/report_presets.html">report_presets()</a></code> are Countdown’s standard reports; <code><a href="https://rdrr.io/pkg/datasuite.ui/man/export_report.html" class="external-link">export_report()</a></code> (datasuite.ui, re-exported) writes any report for a dataset.</li>
+</ul>
 </div>
 <div class="section level2">
-<h2 id="example-usage">Example Usage<a class="anchor" aria-label="anchor" href="#example-usage"></a>
+<h2 id="building-an-app-on-it">Building an app on it<a class="anchor" aria-label="anchor" href="#building-an-app-on-it"></a>
 </h2>
-<p>Analyze vaccine data programmatically:</p>
+<p>An app is a small package whose <code>run_app()</code> says what is particular to it and calls <code><a href="reference/countdown-pages.html">cd_app()</a></code>. <code>cd2030.rmncah::run_app()</code> is the complete example; in outline:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/load_data.html">load_data</a></span><span class="op">(</span><span class="st">"/path/to/hfd/data.xlsx"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/calculate_average_reporting_rate.html">calculate_average_reporting_rate</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">run_app</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">language</span> <span class="op">=</span> <span class="st">"en"</span>, <span class="va">selected_file</span> <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="reference/set_selected_group.html">set_selected_group</a></span><span class="op">(</span><span class="st">"rmncah"</span><span class="op">)</span>                       <span class="co"># the app's indicator group</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span></span>
+<span>    cd2030.app_group <span class="op">=</span> <span class="st">"rmncah"</span>,</span>
+<span>    cd2030.config <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>                            <span class="co"># what the shared pages show for this app (see ?countdown-pages)</span></span>
+<span>      nat_cov_indicators <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"anc4"</span>, <span class="st">"instlivebirths"</span>, <span class="st">"penta3"</span>, <span class="st">"measles1"</span><span class="op">)</span>,</span>
+<span>      consistency_pairs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"anc1"</span>, <span class="st">"penta1"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"penta1"</span>, <span class="st">"penta3"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>      has_maternal <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>    cd2030.help_dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"intro"</span>, package <span class="op">=</span> <span class="st">"myapp"</span><span class="op">)</span>   <span class="co"># the Introduction page's help, per language</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span>  <span class="co"># translations (datasuite.ui's cd_translations()): datasuite.ui's, cd2030.core's (registered when it loads) and the</span></span>
+<span>  <span class="co"># app's own file, merged</span></span>
+<span>  <span class="va">i18n</span> <span class="op">&lt;-</span> <span class="fu">shiny.i18n</span><span class="fu">::</span><span class="fu"><a href="https://appsilon.github.io/shiny.i18n/reference/init_i18n.html" class="external-link">init_i18n</a></span><span class="op">(</span>translation_json_path <span class="op">=</span> <span class="fu">cd_translations</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"translation"</span>, <span class="st">"translation.json"</span>, package <span class="op">=</span> <span class="st">"myapp"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">i18n</span><span class="op">$</span><span class="fu">set_translation_language</span><span class="op">(</span><span class="va">language</span><span class="op">)</span></span>
+<span>  <span class="fu">cd_use_i18n</span><span class="op">(</span><span class="va">i18n</span><span class="op">)</span></span>
+<span></span>
+<span>  <span class="fu"><a href="reference/countdown-pages.html">cd_app</a></span><span class="op">(</span></span>
+<span>    app_name <span class="op">=</span> <span class="st">"My app"</span>, app_version <span class="op">=</span> <span class="st">"1.0.0"</span>, theme <span class="op">=</span> <span class="st">"rmncah"</span>,</span>
+<span>    nav_sections <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="reference/countdown-pages.html">cd_nav_start</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="reference/countdown-pages.html">cd_nav_quality</a></span><span class="op">(</span><span class="op">)</span>, <span class="fu"><a href="reference/countdown-pages.html">cd_nav_denominators</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,  <span class="co"># the sidebar</span></span>
+<span>    registry <span class="op">=</span> <span class="fu">my_pages</span><span class="op">(</span><span class="op">)</span>,                           <span class="co"># every page: the shared ones and the app's own</span></span>
+<span>    i18n <span class="op">=</span> <span class="va">i18n</span>, language <span class="op">=</span> <span class="va">language</span>, selected_file <span class="op">=</span> <span class="va">selected_file</span>,</span>
+<span>    upload_ui <span class="op">=</span> <span class="va">upload_data_ui</span>, upload_server <span class="op">=</span> <span class="va">upload_data_server</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p><code>?countdown-pages</code> lists the shared pages, the Load Data wizard, the filters and the <code>cd2030.config</code> keys. The interface kit they are built from is documented in datasuite.ui (<code>docs/README.md</code>, <code>docs/COMPONENTS.md</code>).</p>
+</div>
+<div class="section level2">
+<h2 id="developing">Developing<a class="anchor" aria-label="anchor" href="#developing"></a>
+</h2>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">load_all</span><span class="op">(</span><span class="op">)</span>     <span class="co"># work on the package</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">test</span><span class="op">(</span><span class="op">)</span>         <span class="co"># tests/testthat (uses inst/extdata/kenya.xlsx)</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">document</span><span class="op">(</span><span class="op">)</span>     <span class="co"># after changing roxygen comments</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">check</span><span class="op">(</span><span class="op">)</span>        <span class="co"># must stay at 0 errors, 0 warnings, 0 notes</span></span></code></pre></div>
+<ul>
+<li>
+<strong>Install locally</strong> with <code>devtools::install(quick = TRUE, upgrade = FALSE, dependencies = FALSE)</code>, after installing your local datasuite.ui. Without <code>dependencies = FALSE</code>, the <code>Remotes: damurka/datasuite.ui</code> field makes devtools reinstall datasuite.ui from GitHub over your local copy.</li>
+<li>
+<strong>Stop running apps first</strong> on Windows: a running Shiny app has the package loaded, and its files can’t be replaced.</li>
+<li>
+<strong>R sources must be ASCII</strong> (R CMD check): write other characters as <code>\u</code> escapes in strings.</li>
+<li>
+<strong>Translations</strong> for text shown in the apps are in <code>inst/translation/cd2030.json</code> (English, French, Portuguese).</li>
+<li>Undefined-global notes from dplyr code are silenced in <code>R/globals.R</code>; add new column names there.</li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="releasing">Releasing<a class="anchor" aria-label="anchor" href="#releasing"></a>
+</h2>
+<ol style="list-style-type: decimal">
+<li>Bump <code>Version:</code> in <code>DESCRIPTION</code> and add a section to <code>NEWS.md</code>.</li>
+<li>
+<code>devtools::check()</code> clean.</li>
+<li>Commit, tag (<code>git tag -a vX.Y.Z -m "cd2030.core X.Y.Z"</code>) and push <code>main</code> and the tag.</li>
+<li>r-universe builds it from <code>main</code> (within minutes when its GitHub app is installed, otherwise within about an hour); see <a href="https://damurka.r-universe.dev/builds" class="external-link uri">https://damurka.r-universe.dev/builds</a>.</li>
+<li>If an app needs the new version, raise its <code>cd2030.core (&gt;= X.Y.Z)</code> in the app’s <code>DESCRIPTION</code>.</li>
+</ol>
+<p>See <a href="NEWS.html">NEWS.md</a> for what changed in each version.</p>
 </div>
 <div class="section level2">
 <h2 id="getting-help">Getting help<a class="anchor" aria-label="anchor" href="#getting-help"></a>
 </h2>
-<p>If you encounter a clear bug, please file an issue with a minimal reproducible example on <img src="https://github.com/aphrcwaro/cd2030.core/issues" alt="Github">.</p>
-</div>
-<div class="section level2">
-<h2 id="contributing">Contributing<a class="anchor" aria-label="anchor" href="#contributing"></a>
-</h2>
-<p>Contributions to improve the **cd2030.core* package are welcome! Please fork the repository, make your changes, and submit a pull request.</p>
+<p>Report bugs at <a href="https://github.com/damurka/cd2030.core/issues" class="external-link uri">https://github.com/damurka/cd2030.core/issues</a>.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li><a href="https://github.com/aphrcwaro/cd2030.core/" class="external-link">Browse source code</a></li>
-<li><a href="https://github.com/aphrcwaro/cd2030.core/issues" class="external-link">Report a bug</a></li>
-<li><a href="articles/getting-started.html">Get started</a></li>
+<li><a href="https://github.com/damurka/cd2030.core/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/damurka/cd2030.core/issues" class="external-link">Report a bug</a></li>
+<li><a href="index.html">Get started</a></li>
 <li><a href="reference/index.html">Reference</a></li>
 </ul>
 </div>

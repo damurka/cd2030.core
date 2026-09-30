@@ -13,7 +13,7 @@ like ANC, Institutional Delivery, PNC, Vaccination, OPD, and IPD."><meta name="d
 
     <a class="navbar-brand me-2" href="../index.html">cd2030.core</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -22,15 +22,10 @@ like ANC, Institutional Delivery, PNC, Vaccination, OPD, and IPD."><meta name="d
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting started</a></li>
-    <li><a class="dropdown-item" href="../articles/workflow.html">Workflow overview</a></li>
-  </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/aphrcwaro/cd2030.core" aria-label="GitHub repository"><span class="fa fab fa-github"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/damurka/cd2030.core" aria-label="GitHub repository"><span class="fa fab fa-github"></span></a></li>
       </ul></div>
 
 
@@ -40,7 +35,7 @@ like ANC, Institutional Delivery, PNC, Vaccination, OPD, and IPD."><meta name="d
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Plot District Reporting Rate Summary</h1>
-      <small class="dont-index">Source: <a href="https://github.com/aphrcwaro/cd2030.core/blob/main/R/plot.reporting_rate.R" class="external-link"><code>R/plot.reporting_rate.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/damurka/cd2030.core/blob/main/R/plot.reporting_rate.R" class="external-link"><code>R/plot.reporting_rate.R</code></a></small>
       <div class="d-none name"><code>plot.cd_district_reporting_rate.Rd</code></div>
     </div>
 
@@ -54,7 +49,17 @@ like ANC, Institutional Delivery, PNC, Vaccination, OPD, and IPD.</p>
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S3 method for class 'cd_district_reporting_rate'</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span></span>
+<span>  <span class="va">x</span>,</span>
+<span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  x_axis <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  y_axis <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  caption <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  indicator_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  facet_ncol <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  options <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -66,8 +71,40 @@ like ANC, Institutional Delivery, PNC, Vaccination, OPD, and IPD.</p>
 processed by <code><a href="calculate_district_reporting_rate.html">calculate_district_reporting_rate()</a></code>.</p></dd>
 
 
+<dt id="arg-title">title<a class="anchor" aria-label="anchor" href="#arg-title"></a></dt>
+<dd><p>Optional plot title. Defaults to a title that includes the
+reporting-rate threshold.</p></dd>
+
+
+<dt id="arg-x-axis-y-axis">x_axis, y_axis<a class="anchor" aria-label="anchor" href="#arg-x-axis-y-axis"></a></dt>
+<dd><p>Optional x- and y-axis titles. By default the x axis
+has no title and the y axis is labelled with a percent sign.</p></dd>
+
+
+<dt id="arg-caption">caption<a class="anchor" aria-label="anchor" href="#arg-caption"></a></dt>
+<dd><p>Optional plot caption. Defaults to a note stating the
+low-reporting threshold.</p></dd>
+
+
+<dt id="arg-indicator-labels">indicator_labels<a class="anchor" aria-label="anchor" href="#arg-indicator-labels"></a></dt>
+<dd><p>Optional named character vector of panel titles,
+keyed by short indicator name (<code>anc</code>, <code>idelv</code>, <code>vacc</code>, <code>pnc</code>, <code>opd</code>,
+<code>ipd</code>). Supplied entries replace the defaults.</p></dd>
+
+
+<dt id="arg-facet-ncol">facet_ncol<a class="anchor" aria-label="anchor" href="#arg-facet-ncol"></a></dt>
+<dd><p>How many service-panel columns the facet grid uses (default 3, unchanged from before this
+param existed – e.g. 4 services lay out 3-then-1). Additive: every existing caller keeps its current
+layout unless it explicitly asks for a different one.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Additional parameters passed to the plotting function.</p></dd>
+
+
+<dt id="arg-options">options<a class="anchor" aria-label="anchor" href="#arg-options"></a></dt>
+<dd><p>(Optional) A <code><a href="https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html" class="external-link">cd_chart_options()</a></code> object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in <code>...</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

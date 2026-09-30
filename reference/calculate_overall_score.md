@@ -10,8 +10,9 @@ consistency of reporting in immunization health facility data.
 calculate_overall_score(
   .data,
   threshold,
-  ratio_pairs = list(ratioAP = c("anc1", "penta1"), ratioPP = c("penta1", "penta3")),
-  region = NULL
+  ratio_pairs = NULL,
+  region = NULL,
+  labels = NULL
 )
 ```
 
@@ -29,6 +30,19 @@ calculate_overall_score(
 - ratio_pairs:
 
   description
+
+- region:
+
+  Optional name of an `adminlevel_1` region. If supplied, all metrics
+  are calculated for that region only. Default is `NULL`.
+
+- labels:
+
+  Optional named list overriding the default row labels. May contain
+  `header` (`h1`, `h2`, `h3`), `section` (`r1a`, `r1b`, `r1c`, `r2a`,
+  `r2b`, `score`) and `metric` (for example `r_anc1_penta1`,
+  `ok_anc1_penta1`) sub-lists; only the supplied entries are replaced.
+  Default is `NULL`.
 
 ## Value
 

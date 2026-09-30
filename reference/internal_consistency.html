@@ -17,7 +17,7 @@ plot_comparison_opv1_opv3 compares OPV1 and OPV3 indicators."><meta name="descri
 
     <a class="navbar-brand me-2" href="../index.html">cd2030.core</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -26,15 +26,10 @@ plot_comparison_opv1_opv3 compares OPV1 and OPV3 indicators."><meta name="descri
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting started</a></li>
-    <li><a class="dropdown-item" href="../articles/workflow.html">Workflow overview</a></li>
-  </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/aphrcwaro/cd2030.core" aria-label="GitHub repository"><span class="fa fab fa-github"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/damurka/cd2030.core" aria-label="GitHub repository"><span class="fa fab fa-github"></span></a></li>
       </ul></div>
 
 
@@ -44,7 +39,7 @@ plot_comparison_opv1_opv3 compares OPV1 and OPV3 indicators."><meta name="descri
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Internal Consistency Plot Functions for Indicator Comparisons</h1>
-      <small class="dont-index">Source: <a href="https://github.com/aphrcwaro/cd2030.core/blob/main/R/1a_checks_internal_consistency.R" class="external-link"><code>R/1a_checks_internal_consistency.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/damurka/cd2030.core/blob/main/R/1a_checks_internal_consistency.R" class="external-link"><code>R/1a_checks_internal_consistency.R</code></a></small>
       <div class="d-none name"><code>internal_consistency.Rd</code></div>
     </div>
 
@@ -66,15 +61,40 @@ pair of indicators, with options for customizing plot titles, axis labels, and t
 <span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  x_label <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  y_label <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  legend <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  call <span class="op">=</span> <span class="fu">caller_env</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">plot_comparison_anc1_penta1</span><span class="op">(</span><span class="va">.data</span><span class="op">)</span></span>
+<span><span class="fu">plot_comparison_anc1_penta1</span><span class="op">(</span></span>
+<span>  <span class="va">.data</span>,</span>
+<span>  title <span class="op">=</span> <span class="st">"Comparison of numbers of ANC1 and Penta1 by year"</span>,</span>
+<span>  x_label <span class="op">=</span> <span class="st">"ANC1"</span>,</span>
+<span>  y_label <span class="op">=</span> <span class="st">"Penta1"</span>,</span>
+<span>  legend <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  options <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">plot_comparison_penta1_penta3</span><span class="op">(</span><span class="va">.data</span><span class="op">)</span></span>
+<span><span class="fu">plot_comparison_penta1_penta3</span><span class="op">(</span></span>
+<span>  <span class="va">.data</span>,</span>
+<span>  title <span class="op">=</span> <span class="st">"Comparison of numbers of Penta1 and Penta3 by year"</span>,</span>
+<span>  x_label <span class="op">=</span> <span class="st">"Penta1"</span>,</span>
+<span>  y_label <span class="op">=</span> <span class="st">"Penta3"</span>,</span>
+<span>  legend <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  options <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">plot_comparison_opv1_opv3</span><span class="op">(</span><span class="va">.data</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">plot_comparison_opv1_opv3</span><span class="op">(</span></span>
+<span>  <span class="va">.data</span>,</span>
+<span>  title <span class="op">=</span> <span class="st">"Comparison of numbers of Penta1 and Penta3 by year"</span>,</span>
+<span>  x_label <span class="op">=</span> <span class="st">"Penta1"</span>,</span>
+<span>  y_label <span class="op">=</span> <span class="st">"Penta3"</span>,</span>
+<span>  legend <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  options <span class="op">=</span> <span class="cn">NULL</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -105,12 +125,22 @@ pair of indicators, with options for customizing plot titles, axis labels, and t
 <dd><p>Character. Label for the y-axis. Defaults to <code>y_var</code>.</p></dd>
 
 
+<dt id="arg-legend">legend<a class="anchor" aria-label="anchor" href="#arg-legend"></a></dt>
+<dd><p>Optional named list or vector overriding the legend labels.
+Recognised names are <code>district</code>, <code>linear_fit</code> and <code>diagonale</code>. Default is
+<code>NULL</code>.</p></dd>
+
+
 <dt id="arg-call">call<a class="anchor" aria-label="anchor" href="#arg-call"></a></dt>
 <dd><p>The calling environment, used for error handling. Default is <code>caller_env()</code>.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Additional parameters for further customization, such as point size, line type, or color.</p></dd>
+
+
+<dt id="arg-options">options<a class="anchor" aria-label="anchor" href="#arg-options"></a></dt>
+<dd><p>A <code><a href="https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html" class="external-link">cd_chart_options()</a></code> object; see <code>plot_comparison()</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

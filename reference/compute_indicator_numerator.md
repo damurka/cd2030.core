@@ -12,7 +12,8 @@ indicators.
 compute_indicator_numerator(
   .data,
   admin_level = c("national", "adminlevel_1", "district"),
-  region = NULL
+  region = NULL,
+  show_district = TRUE
 )
 ```
 
@@ -29,6 +30,17 @@ compute_indicator_numerator(
   Character. Specifies the administrative level for aggregation.
   Available options are: `"national"`, `"adminlevel_1"` and
   `"district"`. Default is `"national"`.
+
+- region:
+
+  Optional name of an `adminlevel_1` region. If supplied, only that
+  region's rows are aggregated. Only valid with
+  `admin_level = "adminlevel_1"`. Default is `NULL`.
+
+- show_district:
+
+  Logical. When `region` is supplied, whether to aggregate by district
+  within the region (`TRUE`, the default) or for the region as a whole.
 
 ## Value
 

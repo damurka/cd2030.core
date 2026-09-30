@@ -7,7 +7,11 @@ completeness-to-incompleteness ratios (CI ratios).
 ## Usage
 
 ``` r
-summarise_completeness_ratio(.data, plot_type = c("mmr", "sbr"), lbr_mean = 0)
+summarise_completeness_ratio(
+  .data,
+  plot_type = c("mmr", "sbr", "nn"),
+  lbr_mean = 0
+)
 ```
 
 ## Arguments

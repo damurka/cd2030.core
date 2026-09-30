@@ -13,16 +13,21 @@ projected, survey-derived, and estimated denominators.
 calculate_indicator_coverage(
   .data,
   admin_level = c("national", "adminlevel_1", "district"),
+  derivation_population = c("totbirths_dhis2", "totlivebirths_dhis2", "totunder1_dhis2",
+    "totpop_dhis2", "un_population", "un_births", "un_under1"),
   un_estimates = NULL,
+  survey_estimates = NULL,
+  subnational_map = NULL,
+  anc1survey = .cd_method$denominators$anc1survey,
+  dpt1survey = .cd_method$denominators$dpt1survey,
+  survey_year = .cd_method$denominators$survey_year,
   region = NULL,
-  sbr = 0.02,
-  nmr = 0.025,
-  pnmr = 0.024,
-  anc1survey = 0.98,
-  dpt1survey = 0.97,
-  survey_year = 2019,
-  twin = 0.015,
-  preg_loss = 0.03
+  show_district = TRUE,
+  sbr = .cd_method$denominators$sbr,
+  nmr = .cd_method$denominators$nmr,
+  pnmr = .cd_method$denominators$pnmr,
+  twin = .cd_method$denominators$twin,
+  preg_loss = .cd_method$denominators$preg_loss
 )
 ```
 
@@ -39,22 +44,30 @@ calculate_indicator_coverage(
   Character. Specifies the administrative level for calculations.
   Options include:`"national", "adminlevel_1"`, and `"district"`.
 
+- derivation_population:
+
+  Character. The population column used as the base for the
+  DTP1/ANC1-derived denominators (`*derived` columns). One of
+  `"totbirths_dhis2"`, `"totlivebirths_dhis2"`, `"totunder1_dhis2"`,
+  `"totpop_dhis2"`, `"un_population"`, `"un_births"` or `"un_under1"`.
+  Defaults to the first.
+
 - un_estimates:
 
   Optional. A tibble containing UN population estimates. Required for
   national-level calculations.
 
-- sbr:
+- survey_estimates:
 
-  Numeric. The stillbirth rate. Default is `0.02`.
+  Optional. A data frame of subnational survey estimates (`r_*` columns
+  such as `r_anc1` and `r_penta1`, and optionally mortality rates). Used
+  for subnational levels to replace the default rates below where survey
+  values are available. Default is `NULL`.
 
-- nmr:
+- subnational_map:
 
-  Numeric. Neonatal mortality rate. Default is `0.025`.
-
-- pnmr:
-
-  Numeric. Post-neonatal mortality rate. Default is `0.024`.
+  Optional. A data frame mapping survey regions to `adminlevel_1` units,
+  used when joining `survey_estimates`. Default is `NULL`.
 
 - anc1survey:
 
@@ -69,6 +82,29 @@ calculate_indicator_coverage(
 - survey_year:
 
   Interger. The year of Penta-1 survey provided
+
+- region:
+
+  Optional name of an `adminlevel_1` region to restrict the calculation
+  to. Only valid with `admin_level = "adminlevel_1"`. Default is `NULL`.
+
+- show_district:
+
+  Logical. When `region` is supplied, whether to return results by
+  district within that region (`TRUE`, the default) or aggregated for
+  the region.
+
+- sbr:
+
+  Numeric. The stillbirth rate. Default is `0.02`.
+
+- nmr:
+
+  Numeric. Neonatal mortality rate. Default is `0.025`.
+
+- pnmr:
+
+  Numeric. Post-neonatal mortality rate. Default is `0.024`.
 
 - twin:
 

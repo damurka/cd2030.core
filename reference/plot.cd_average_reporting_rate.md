@@ -3,7 +3,7 @@
 Visualizes reporting rates for selected health service indicators at
 sub-national levels, using heat maps or bar plots. Intended for use with
 outputs from
-[`calculate_average_reporting_rate()`](https://aphrcwaro.github.io/cd2030.core/reference/calculate_average_reporting_rate.md)
+[`calculate_average_reporting_rate()`](calculate_average_reporting_rate.md)
 at `"adminlevel_1"` or `"district"` level.
 
 ## Usage
@@ -14,8 +14,13 @@ plot(
   x,
   plot_type = c("heat_map", "bar"),
   indicator = c("anc_rr", "idelv_rr", "vacc_rr", "opd_rr", "ipd_rr"),
-  threshold = 90,
-  ...
+  threshold = .cd_method$data_quality$reporting_threshold,
+  title = NULL,
+  x_axis = NULL,
+  y_axis = NULL,
+  legend = NULL,
+  ...,
+  options = NULL
 )
 ```
 
@@ -24,7 +29,7 @@ plot(
 - x:
 
   A `cd_average_reporting_rate` object, typically the output from
-  [`calculate_average_reporting_rate()`](https://aphrcwaro.github.io/cd2030.core/reference/calculate_average_reporting_rate.md).
+  [`calculate_average_reporting_rate()`](calculate_average_reporting_rate.md).
   Must contain subnational data.
 
 - plot_type:
@@ -56,9 +61,32 @@ plot(
   Numeric value (default = 90). Used only in `"heat_map"` mode to define
   the boundary for high reporting rates.
 
+- title:
+
+  Optional plot title. Defaults to a title naming the unit and region.
+
+- x_axis, y_axis:
+
+  Optional x- and y-axis titles. Default to labels suited to
+  `plot_type`.
+
+- legend:
+
+  Optional legend title. Defaults to a label suited to `plot_type`.
+
 - ...:
 
-  Reserved for future use.
+  Chart options (see
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html))
+  given by name, applied as with `options`.
+
+- options:
+
+  (Optional) A
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
+  object: text, legend, fonts and sizes a user changed. Applied last, so
+  it wins over the arguments above; the plot's own defaults are used for
+  whatever it does not set.
 
 ## Value
 

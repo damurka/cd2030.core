@@ -1,19 +1,16 @@
-# Filter and Prepare Service Utilization Data for Mapping
+# Filter Service Utilization Data for a Specific Region and Indicator
 
-Filters a `cd_service_utilization` object by country, indicator, and
-year. Joins spatial data for subnational mapping and renames geometry
-for use with
-[`ggplot2::geom_sf()`](https://ggplot2.tidyverse.org/reference/ggsf.html).
+Prepares a `cd_service_utilization` object for non-spatial plotting
+(e.g., time series) by filtering by administrative region and indicator
+type.
 
 ## Usage
 
 ``` r
 filter_service_utilization(
   .data,
-  country_iso,
-  indicator = c("ipd", "opd"),
-  plot_years = NULL,
-  subnational_map = NULL
+  indicator = c("opd", "ipd", "under5", "cfr", "deaths"),
+  region = NULL
 )
 ```
 
@@ -21,53 +18,43 @@ filter_service_utilization(
 
 - .data:
 
-  A `cd_service_utilization` object returned by
-  [`compute_service_utilization()`](https://aphrcwaro.github.io/cd2030.core/reference/compute_service_utilization.md).
-
-- country_iso:
-
-  Character. ISO3 country code.
+  A `cd_service_utilization` object created by
+  [`compute_service_utilization()`](compute_service_utilization.md).
 
 - indicator:
 
-  Character. Service indicator to map, either `"ipd"` or `"opd"`.
-  Defaults to `"ipd"`.
+  Character. The indicator to visualize. Options include `"opd"`,
+  `"ipd"`, `"under5"` (proportion under 5), `"cfr"` (case fatality
+  rate), or `"deaths"` (proportion of under-5 deaths).
 
-- plot_years:
+- region:
 
-  Optional. Integer or vector of years to include.
-
-- subnational_map:
-
-  Optional. A mapping data frame to link `NAME_1` from the shapefile to
-  internal admin labels.
+  Optional. A single region name to filter when data is subnational
+  (`adminlevel_1` or `district`).
 
 ## Value
 
-A tibble of class `cd_service_utilization_filtered`, ready for faceted
-spatial plotting.
+A tibble of class `cd_service_utilization_filtered`, with an attached
+`indicator` attribute for plotting.
 
 ## Details
 
 This function:
 
-- Selects the under-five service indicator (`mean_opd_under5` or
-  `mean_ipd_under5`)
+- Validates the `.data` class and `indicator` input
 
-- Joins the appropriate admin level 1 shapefile using the specified
-  country ISO
+- If data is subnational, filters it by the specified `region`
 
-- Filters to specified `plot_years` if provided
+- If data is national, ensures `region` is not provided
 
-- Renames the geometry column for compatibility with `geom_sf()`
-
-Only `adminlevel_1` data is currently supported for mapping.
+- Returns a filtered tibble tagged with
+  `cd_service_utilization_filtered` class for downstream plotting
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
-filtered <- filter_service_utilization(service_data, "UGA", indicator = "opd", plot_years = 2019:2022)
-plot(filtered)
+# Filter IPD indicator for Central region
+filtered <- filter_service_utilization(service_data, indicator = "ipd", region = "Central")
 } # }
 ```

@@ -26,7 +26,7 @@ The detected group name (character scalar).
 
 Detection considers the merged view from `.get_all_groups()` (i.e.,
 built-ins plus any user overrides registered via
-[`register_indicator_group()`](https://aphrcwaro.github.io/cd2030.core/reference/register_indicator_group.md)).
+[`register_indicator_group()`](register_indicator_group.md)).
 
 ## Examples
 

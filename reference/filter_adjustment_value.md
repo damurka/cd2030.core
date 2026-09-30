@@ -18,7 +18,7 @@ filter_adjustment_value(.data, indicator)
 - indicator:
 
   A single indicator name. Must be one of
-  [`get_all_indicators()`](https://aphrcwaro.github.io/cd2030.core/reference/get_all_indicators.md).
+  [`get_all_indicators()`](get_all_indicators.md).
 
 ## Value
 

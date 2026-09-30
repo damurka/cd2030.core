@@ -9,41 +9,64 @@ views.
 
 ``` r
 # S3 method for class 'cd_derived_coverage'
-plot(x, region = NULL, ...)
+plot(
+  x,
+  type = c("bar", "trend"),
+  title = NULL,
+  x_label = NULL,
+  y_label = NULL,
+  legend_labels = list(),
+  ...,
+  options = NULL
+)
 ```
 
 ## Arguments
 
 - x:
 
-  A `cd_coverage_trends` object returned by `generate_coverage_data()`.
+  A `cd_derived_coverage` object.
 
-- region:
+- type:
 
-  (Optional) A region or district name. Required for subnational data,
-  must be `NULL` for national data.
+  A character string specifying the plot type: `"bar"` or `"trend"`.
+  `"trend"` can only be applied nationally or to a specific region.
+  Defaults to `"bar"`.
+
+- title:
+
+  (Optional) A scalar character string to override the default plot
+  title. Defaults to `NULL`.
+
+- x_label:
+
+  (Optional) A scalar character string to override the default x-axis
+  label. Defaults to `NULL`.
+
+- y_label:
+
+  (Optional) A scalar character string to override the default y-axis
+  label. Defaults to `NULL`.
+
+- legend_labels:
+
+  (Optional) A named list of character strings to override specific
+  default legend labels (e.g., `list(penta1derived = "Custom Penta1")`).
 
 - ...:
 
-  Additional arguments passed to `ggplot2` layers (not used).
+  Chart options by name (see
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html));
+  other arguments are ignored.
+
+- options:
+
+  (Optional) A
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
+  object: text, legend, fonts and sizes the user changed. Applied last,
+  so it wins over `title` and the other arguments above. Any chart
+  option can also be given by name in `...`.
 
 ## Value
 
-A ggplot object showing coverage trends.
-
-## Details
-
-The plot title and y-axis labels are automatically generated from the
-indicator metadata stored in the input object attributes.
-
-## Examples
-
-``` r
-if (FALSE) { # \dontrun{
-generate_coverage_data(dhis_data, "penta1", 2019) %>%
-  plot(region = "Nairobi")
-
-generate_coverage_data(dhis_data, "rota1", 2019) %>%
-  plot()
-} # }
-```
+A `ggplot` object showing coverage trends over time.

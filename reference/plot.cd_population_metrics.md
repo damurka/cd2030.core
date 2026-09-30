@@ -1,15 +1,23 @@
 # Plot National Population or Births Metrics
 
-This function generates a plot to visualize national-level demographic
-data for total population or live births over time.It compares DHIS-2
-and UN projections for the specified metric, limited to national-level
-data due to the availability of UN estimates.
+Generates a line graph to visualize national-level demographic data,
+comparing DHIS-2 data/projections against UN estimates. This function is
+restricted to national-level data.
 
 ## Usage
 
 ``` r
 # S3 method for class 'cd_population_metrics'
-plot(x, metric = c("population", "births"), ...)
+plot(
+  x,
+  metric = c("population", "births", "under1"),
+  title = NULL,
+  x_label = NULL,
+  y_label = NULL,
+  legend_labels = NULL,
+  ...,
+  options = NULL
+)
 ```
 
 ## Arguments
@@ -21,46 +29,66 @@ plot(x, metric = c("population", "births"), ...)
 
 - metric:
 
-  A character string specifying the type of data to plot. It must be one
+  A character string specifying the type of data to plot. Must be one
   of:
 
-  - **'population'**: Plots total population estimates in thousands from
-    DHIS-2 and UN sources.
+  - **'population'**: Total population estimates (in thousands).
 
-  - **'births'**: Plots total live births in thousands from DHIS-2 and
-    UN sources.
+  - **'births'**: Total live births (in thousands).
+
+  - **'under1'**: Population under 1 year of age (in thousands).
+
+- title:
+
+  Optional. A custom title for the plot. If `NULL`, a default title
+  based on the metric is used.
+
+- x_label:
+
+  Optional. Custom label for the x-axis. Defaults to "Year".
+
+- y_label:
+
+  Optional. Custom label for the y-axis. Defaults to "population".
+
+- legend_labels:
+
+  Optional. A character vector of custom labels for the legend items.
+  Must match the number of lines plotted for the selected metric:
+
+  - 'population': 2 labels
+
+  - 'births': 3 labels
+
+  - 'under1': 2 labels
 
 - ...:
 
-  Additional arguments (not used in this function).
+  Additional arguments passed to the plotting function.
+
+- options:
+
+  (Optional) A
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
+  object: text, legend, fonts and sizes a user changed. Applied last, so
+  it wins over the arguments above; the plot's own defaults are used for
+  whatever it does not set. Any chart option can also be given by name
+  in `...`.
 
 ## Value
 
-A ggplot object visualizing the selected demographic data over time.
+A ggplot object.
 
 ## Details
 
-The `plot_population_metrics` function provides visualizations based on
-the selected `metric`:
+The function compares local Health Management Information System
+(DHIS-2) data with United Nations (UN) estimates.
 
-- **Population Plot**: Shows total population (in thousands) by year,
-  with separate lines for DHIS-2 and UN projections.
+**Default Configuration:**
 
-- **Live Births Plot**: Displays total live births (in thousands) by
-  year, comparing DHIS-2 and UN projections.
+- **Population**: Compares `un_population` vs `totpop_dhis2`.
 
-This function supports only national-level data as UN estimates are not
-available at subnational levels. Attempting to plot subnational data
-will result in an error.
+- **Births**: Compares `un_births` vs `totlivebirths_dhis2` vs
+  `totbirths_dhis2`.
 
-## Examples
-
-``` r
-if (FALSE) { # \dontrun{
-# Plot total population estimates at the national level
-plot(population_metrics_data, metric = "population")
-
-# Plot total live births estimates at the national level
-plot(population_metrics_data, metric = "births")
-} # }
-```
+- **Under 1**: Compares `un_under1` vs `totunder1_dhis2`.

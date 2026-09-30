@@ -12,7 +12,9 @@ immunization coverage and health service utilization studies.
 adjust_service_data(
   .data,
   adjustment = c("default", "custom", "none"),
-  k_factors = NULL
+  k_factors = NULL,
+  settings = NULL,
+  steps = FALSE
 )
 ```
 
@@ -40,6 +42,20 @@ adjust_service_data(
   A named numeric vector of custom k-factor values between 0 and 1 for
   each indicator group (e.g., `c(anc = 0.3, idelv = 0.2, ...)`). Used
   only if `adjustment = "custom"`.
+
+- settings:
+
+  The adjustment settings
+  ([`adjustment_settings_default()`](adjustment_settings_default.md);
+  the Data Adjustment page's): the years and areas removed, and each
+  indicator's k, outlier and missing-value switches, everywhere or for
+  an area. When given, `adjustment` and `k_factors` are not used.
+
+- steps:
+
+  `TRUE`: a list of the data after each step (`completeness`,
+  `outliers`, `missing`), for showing what each changed (see
+  [`generate_adjustment_values()`](generate_adjustment_values.md)).
 
 ## Value
 
@@ -79,10 +95,9 @@ data quality and consistency:
 
 ## See also
 
-[`new_countdown()`](https://aphrcwaro.github.io/cd2030.core/reference/new_countdown.md)
-for creating `cd_data` objects and
-[`generate_adjustment_values()`](https://aphrcwaro.github.io/cd2030.core/reference/generate_adjustment_values.md)
-for generating adjustment summaries.
+[`new_countdown()`](new_countdown.md) for creating `cd_data` objects and
+[`generate_adjustment_values()`](generate_adjustment_values.md) for
+generating adjustment summaries.
 
 ## Examples
 

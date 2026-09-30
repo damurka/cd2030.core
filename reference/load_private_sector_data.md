@@ -9,7 +9,7 @@ internal preprocessing for c-section share calculation.
 load_private_sector_data(
   path = NULL,
   .data = NULL,
-  country_iso,
+  country_iso = NULL,
   level = c("national", "area")
 )
 ```
@@ -67,8 +67,8 @@ This function:
 
 ## See also
 
-[`load_csection_estimates()`](https://aphrcwaro.github.io/cd2030.core/reference/load_csection_estimates.md),
-[`prepare_private_sector_plot_data()`](https://aphrcwaro.github.io/cd2030.core/reference/prepare_private_sector_plot_data.md)
+[`load_csection_estimates()`](load_csection_estimates.md),
+[`prepare_private_sector_plot_data()`](prepare_private_sector_plot_data.md)
 
 ## Examples
 

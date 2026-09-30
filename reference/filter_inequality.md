@@ -10,7 +10,7 @@ and renames relevant columns to streamline further analyses.
 filter_inequality(
   .data,
   indicator,
-  denominator = c("dhis2", "anc1", "penta1", "penta1derived")
+  denominator = c("dhis2", "anc1", "penta1", "penta1derived", "anc1derived")
 )
 ```
 
@@ -29,10 +29,6 @@ filter_inequality(
 
   A character vector of denominators to filter by (e.g., `"dhis2"`,
   `"anc1"`).
-
-- ...:
-
-  Not used
 
 ## Value
 

@@ -8,7 +8,11 @@ indicators.
 ## Usage
 
 ``` r
-calculate_district_reporting_rate(.data, threshold = 90, region = NULL)
+calculate_district_reporting_rate(
+  .data,
+  threshold = .cd_method$data_quality$reporting_threshold,
+  region = NULL
+)
 ```
 
 ## Arguments
@@ -34,7 +38,7 @@ A tibble of class `cd_district_reporting_rate`.
 
 ``` r
 if (FALSE) { # \dontrun{
-  calculate_district_reporting_rate(data, threshold = 90)
-  calculate_district_reporting_rate(data, threshold = 85, region = "Eastern")
+calculate_district_reporting_rate(data, threshold = 90)
+calculate_district_reporting_rate(data, threshold = 85, region = "Eastern")
 } # }
 ```

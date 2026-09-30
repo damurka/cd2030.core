@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">cd2030.core</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -16,15 +16,10 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting started</a></li>
-    <li><a class="dropdown-item" href="../articles/workflow.html">Workflow overview</a></li>
-  </ul></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/aphrcwaro/cd2030.core" aria-label="GitHub repository"><span class="fa fab fa-github"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/damurka/cd2030.core" aria-label="GitHub repository"><span class="fa fab fa-github"></span></a></li>
       </ul></div>
 
 
@@ -34,7 +29,7 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Compare District vs Admin 1 Health Metrics</h1>
-      <small class="dont-index">Source: <a href="https://github.com/aphrcwaro/cd2030.core/blob/main/R/plot.health_system.R" class="external-link"><code>R/plot.health_system.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/damurka/cd2030.core/blob/main/R/plot.health_system.R" class="external-link"><code>R/plot.health_system.R</code></a></small>
       <div class="d-none name"><code>plot.cd_health_system_comparison.Rd</code></div>
     </div>
 
@@ -49,7 +44,14 @@
 <span>  <span class="va">x</span>,</span>
 <span>  indicator <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cov_instdeliveries_hstaff"</span>, <span class="st">"ratio_opd_u5_hstaff"</span>, <span class="st">"ratio_ipd_u5_hos"</span>,</span>
 <span>    <span class="st">"ratio_ipd_u5_bed"</span><span class="op">)</span>,</span>
-<span>  denominator <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  denominator <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  title <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  x_axis <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  y_axis <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  caption <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  legend_labels <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  options <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -67,6 +69,36 @@
 
 <dt id="arg-denominator">denominator<a class="anchor" aria-label="anchor" href="#arg-denominator"></a></dt>
 <dd><p>Optional for cov_ indicators. Must be one of 'dhis2', 'anc1', 'penta1'.</p></dd>
+
+
+<dt id="arg-title">title<a class="anchor" aria-label="anchor" href="#arg-title"></a></dt>
+<dd><p>(Optional) Custom title for the plot.</p></dd>
+
+
+<dt id="arg-x-axis">x_axis<a class="anchor" aria-label="anchor" href="#arg-x-axis"></a></dt>
+<dd><p>(Optional) Custom label for the x-axis.</p></dd>
+
+
+<dt id="arg-y-axis">y_axis<a class="anchor" aria-label="anchor" href="#arg-y-axis"></a></dt>
+<dd><p>(Optional) Custom label for the y-axis.</p></dd>
+
+
+<dt id="arg-caption">caption<a class="anchor" aria-label="anchor" href="#arg-caption"></a></dt>
+<dd><p>(Optional) Custom caption text (R-squared will automatically be prepended to this).</p></dd>
+
+
+<dt id="arg-legend-labels">legend_labels<a class="anchor" aria-label="anchor" href="#arg-legend-labels"></a></dt>
+<dd><p>(Optional) A named list to override default legend labels (keys: 'admin', 'linear').</p></dd>
+
+
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>Chart options (see <code><a href="https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html" class="external-link">cd_chart_options()</a></code>) given by name, applied as
+with <code>options</code>.</p></dd>
+
+
+<dt id="arg-options">options<a class="anchor" aria-label="anchor" href="#arg-options"></a></dt>
+<dd><p>(Optional) A <code><a href="https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html" class="external-link">cd_chart_options()</a></code> object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
+arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in <code>...</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

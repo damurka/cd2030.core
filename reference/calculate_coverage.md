@@ -8,35 +8,18 @@ prepared for analysis at various administrative levels.
 ## Usage
 
 ``` r
-calculate_coverage(
-  .data,
-  admin_level = c("national", "adminlevel_1", "district"),
-  survey_data,
-  wuenic_data,
-  region = NULL,
-  un_estimates = NULL,
-  sbr = 0.02,
-  nmr = 0.025,
-  pnmr = 0.024,
-  anc1survey = 0.98,
-  dpt1survey = 0.97,
-  survey_year = 2019,
-  twin = 0.015,
-  preg_loss = 0.03,
-  subnational_map = NULL
-)
+calculate_coverage(.data, survey_data, wuenic_data, subnational_map = NULL)
 ```
 
 ## Arguments
 
 - .data:
 
-  A `cd_data` data frame with DHIS2 coverage metrics.
-
-- admin_level:
-
-  Character. Specifies the administrative level for calculations.
-  Options include:`"national", "adminlevel_1"`, and `"district"`.
+  A `cd_indicator_coverage` data frame with DHIS2 coverage metrics (as
+  returned by
+  [`calculate_indicator_coverage()`](calculate_indicator_coverage.md)).
+  Its `admin_level` and `region` attributes determine the level of the
+  result.
 
 - survey_data:
 
@@ -45,45 +28,6 @@ calculate_coverage(
 - wuenic_data:
 
   A data frame containing WHO-UNICEF (WUENIC) coverage estimates.
-
-- un_estimates:
-
-  Optional. A tibble containing UN population estimates. Required for
-  national-level calculations.
-
-- sbr:
-
-  Numeric. The stillbirth rate. Default is `0.02`.
-
-- nmr:
-
-  Numeric. Neonatal mortality rate. Default is `0.025`.
-
-- pnmr:
-
-  Numeric. Post-neonatal mortality rate. Default is `0.024`.
-
-- anc1survey:
-
-  Numeric. Survey-derived coverage rate for ANC-1 (antenatal care, first
-  visit). Default is `0.98`.
-
-- dpt1survey:
-
-  Numeric. Survey-derived coverage rate for Penta-1 (DPT1 vaccination).
-  Default is `0.97`.
-
-- survey_year:
-
-  Integer. The year of Penta-1 survey provided
-
-- twin:
-
-  Numeric. Twin birth rate. Default is `0.015`.
-
-- preg_loss:
-
-  Numeric. Pregnancy loss rate
 
 - subnational_map:
 

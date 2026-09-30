@@ -9,6 +9,7 @@ along with overall completeness summaries.
 calculate_completeness_summary(
   .data,
   admin_level = c("national", "adminlevel_1", "district"),
+  threshold = .cd_method$data_quality$reporting_threshold,
   region = NULL
 )
 ```
@@ -22,6 +23,17 @@ calculate_completeness_summary(
 - admin_level:
 
   One of `'national'`, `'adminlevel_1'`, or `'district'`.
+
+- threshold:
+
+  Integer. Completeness threshold (in percent) stored as an attribute on
+  the result and used when plotting. Default is `90`.
+
+- region:
+
+  Optional name of an `adminlevel_1` region. If supplied, only that
+  region's rows are kept and results are shown by district. Only valid
+  with `admin_level = 'adminlevel_1'`. Default is `NULL`.
 
 ## Value
 

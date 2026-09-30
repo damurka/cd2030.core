@@ -9,14 +9,7 @@ specified range.
 ## Usage
 
 ``` r
-calculate_district_ratios_summary(
-  .data,
-  ratio_pairs = list(ratioAP = c("anc1", "penta1"), ratioPP = c("penta1", "penta3"),
-    ratioOO = c("opv1", "opv3"), ratioPPcv = c("penta1", "pcv1"), ratioPR = c("penta1",
-    "rota1")),
-  adequate_range = c(1, 1.5),
-  region = NULL
-)
+calculate_district_ratios_summary(.data)
 ```
 
 ## Arguments
@@ -25,27 +18,6 @@ calculate_district_ratios_summary(
 
   A data frame containing indicator data by district and year. The data
   frame should include all indicators specified in `ratio_pairs`.
-
-- ratio_pairs:
-
-  A named list where each element represents a pair of indicators for
-  ratio calculation. The default pairs are:
-
-  - `"ratioAP"`: ANC1 to PENTA1 (i.e., `anc1/penta1`)
-
-  - `"ratioPP"`: PENTA1 to PENTA3 (i.e., `penta1/penta3`)
-
-  - `"ratioOO"`: OPV1 to OPV3 (i.e., `opv1/opv3`)
-
-- adequate_range:
-
-  A numeric vector of length 2 that specifies the lower and upper bounds
-  for adequacy. Ratios within this range will be flagged as adequate.
-  Default is `c(1, 1.5)`.
-
-- region:
-
-  Optional. Restrict analysis to one region (`adminlevel_1`).
 
 ## Value
 

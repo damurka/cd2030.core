@@ -43,16 +43,15 @@ median and MAD, respectively.
   considered.
 
 - Missing values in the calculated statistics are replaced using
-  [`robust_max()`](https://aphrcwaro.github.io/cd2030.core/reference/robust_max.md),
-  ensuring that meaningful fallback values are provided.
+  [`robust_max()`](robust_max.md), ensuring that meaningful fallback
+  values are provided.
 
 ## See also
 
-- [`add_outlier5std_column()`](https://aphrcwaro.github.io/cd2030.core/reference/add_outlier5std_column.md)
-  for generating outlier flags based on these columns.
+- [`add_outlier5std_column()`](add_outlier5std_column.md) for generating
+  outlier flags based on these columns.
 
-- [`robust_max()`](https://aphrcwaro.github.io/cd2030.core/reference/robust_max.md)
-  for calculating max value
+- [`robust_max()`](robust_max.md) for calculating max value
 
 ## Examples
 

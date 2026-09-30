@@ -10,7 +10,17 @@ Institutional Delivery, PNC, Vaccination, OPD, and IPD.
 
 ``` r
 # S3 method for class 'cd_district_reporting_rate'
-plot(x, ...)
+plot(
+  x,
+  title = NULL,
+  x_axis = NULL,
+  y_axis = NULL,
+  caption = NULL,
+  indicator_labels = NULL,
+  facet_ncol = 3,
+  ...,
+  options = NULL
+)
 ```
 
 ## Arguments
@@ -19,11 +29,48 @@ plot(x, ...)
 
   A `cd_district_reporting_rate` data frame containing reporting rate
   data, processed by
-  [`calculate_district_reporting_rate()`](https://aphrcwaro.github.io/cd2030.core/reference/calculate_district_reporting_rate.md).
+  [`calculate_district_reporting_rate()`](calculate_district_reporting_rate.md).
+
+- title:
+
+  Optional plot title. Defaults to a title that includes the
+  reporting-rate threshold.
+
+- x_axis, y_axis:
+
+  Optional x- and y-axis titles. By default the x axis has no title and
+  the y axis is labelled with a percent sign.
+
+- caption:
+
+  Optional plot caption. Defaults to a note stating the low-reporting
+  threshold.
+
+- indicator_labels:
+
+  Optional named character vector of panel titles, keyed by short
+  indicator name (`anc`, `idelv`, `vacc`, `pnc`, `opd`, `ipd`). Supplied
+  entries replace the defaults.
+
+- facet_ncol:
+
+  How many service-panel columns the facet grid uses (default 3,
+  unchanged from before this param existed – e.g. 4 services lay out
+  3-then-1). Additive: every existing caller keeps its current layout
+  unless it explicitly asks for a different one.
 
 - ...:
 
   Additional parameters passed to the plotting function.
+
+- options:
+
+  (Optional) A
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
+  object: text, legend, fonts and sizes a user changed. Applied last, so
+  it wins over the arguments above; the plot's own defaults are used for
+  whatever it does not set. Any chart option can also be given by name
+  in `...`.
 
 ## Value
 

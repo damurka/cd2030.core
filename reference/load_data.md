@@ -3,7 +3,7 @@
 Loads a cleaned dataset from an Excel (.xlsx/.xls) or Stata (.dta) file,
 optionally **registers** a profile override, and returns a tibble of
 class `cd_data`. Group selection is resolved from the data inside
-[`new_countdown()`](https://aphrcwaro.github.io/cd2030.core/reference/new_countdown.md):
+[`new_countdown()`](new_countdown.md):
 
 - `"auto"` detects the best-matching group (built-ins + any overrides)
 
@@ -23,7 +23,8 @@ load_data(
   admin_sheet_name = NULL,
   population_sheet_name = NULL,
   reporting_sheet_name = NULL,
-  service_sheet_names = NULL
+  service_sheet_names = NULL,
+  validate = TRUE
 )
 ```
 
@@ -79,6 +80,19 @@ load_data(
   Character vector of service-data sheets. Default: all sheets matching
   `"Service_data"` if not supplied.
 
+- validate:
+
+  Logical. Whether to run Tier B quality checks (district-name
+  consistency, missing months, unrecognized months – see
+  `R/0_data_quality_checks.R`) as part of loading. Default `TRUE`,
+  matching the pipeline's long-standing behavior. `FALSE` lets a file
+  with data-quality problems (as opposed to *structural* ones – Tier A,
+  e.g. a missing admin column – which always run regardless) load
+  anyway, for a caller that wants to run those checks itself later,
+  progressively, against the already-loaded data (see
+  [`run_all_quality_checks()`](run_all_quality_checks.md)) rather than
+  as an upfront hard stop.
+
 ## Value
 
 A tibble of class `cd_data`.
@@ -86,11 +100,10 @@ A tibble of class `cd_data`.
 ## Details
 
 The actual **group resolution** occurs in
-[`new_countdown()`](https://aphrcwaro.github.io/cd2030.core/reference/new_countdown.md),
-using indicators **from the loaded data**. If `profile` is a definition,
-it is registered via
-[`register_indicator_group()`](https://aphrcwaro.github.io/cd2030.core/reference/register_indicator_group.md)
-**before** loading, so auto-detection considers it.
+[`new_countdown()`](new_countdown.md), using indicators **from the
+loaded data**. If `profile` is a definition, it is registered via
+[`register_indicator_group()`](register_indicator_group.md) **before**
+loading, so auto-detection considers it.
 
 ## Examples
 

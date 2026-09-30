@@ -9,7 +9,7 @@ above a specified threshold for a given indicator and denominator.
 filter_high_performers(
   .data,
   indicator,
-  denominator = c("dhis2", "anc1", "penta1", "penta1derived"),
+  denominator = c("dhis2", "anc1", "penta1", "penta1derived", "anc1derived"),
   threshold = 90
 )
 ```
@@ -26,27 +26,13 @@ filter_high_performers(
 
 - denominator:
 
-  A string. The denominator used in coverage calculation. One of:
-  `"dhis2"`, `"anc1"`, `"penta1"`, `"penta1derived"`.
+  A string. The denominator used in coverage calculation.
 
 - threshold:
 
-  A numeric threshold for filtering. Default is `90`.
+  Numeric. Minimum coverage (in percent, compared after rounding) an
+  area must reach to be kept. Default is `90`.
 
 ## Value
 
-A filtered data frame with the following columns: `adminlevel_1`,
-`district`, `year`, and the selected coverage column.
-
-## Examples
-
-``` r
-if (FALSE) { # \dontrun{
-filter_high_performers(
-  .data = survey_data,
-  indicator = "penta3",
-  denominator = "penta1",
-  threshold = 85
-)
-} # }
-```
+A filtered data frame retaining regions meeting the threshold.
