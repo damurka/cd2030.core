@@ -152,11 +152,19 @@ reference:
 
   - title: "Data Adjustment"
     desc: >
-      Adjust for incomplete reporting and handle extreme values for improved estimates.
+      Adjust for incomplete reporting and handle extreme values for improved estimates: the settings (the years and
+      areas removed; completeness, outliers and missing values everywhere or by region or district) and what the
+      checks found beside them.
     contents:
       - filter_out_years
       - generate_adjustment_values
       - adjust_service_data
+      - adjustment_settings_default
+      - adjustment_settings_from_k
+      - adjustment_settings_check
+      - adjustment_settings_footnote
+      - adjustment_steps_used
+      - adjustment_evidence
       - plot.cd_adjustment_values_filtered
       - tbl_sum.cd_adjustment_values
 
@@ -290,10 +298,21 @@ reference:
       What DataSuite's Countdown AI reads from the package: CacheConnection's members, custom charts.
     contents:
       - cache_manifest
+      - cache_definition
       - cd_chartable_members
       - cd_member_data
       - cd_custom_chart_data
 
+
+  - title: "Data Dictionary and Methodology"
+    desc: >
+      What the package's ids and column names mean, the denominator options' labels, and the constants of the
+      Countdown methodology the package runs with.
+    contents:
+      - cd_dictionary
+      - cd_describe_columns
+      - cd_denominator_labels
+      - cd_methodology_defaults
 
   - title: "Utility Functions"
     desc: >
