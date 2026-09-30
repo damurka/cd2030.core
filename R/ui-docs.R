@@ -24,7 +24,7 @@
 #' ([CacheConnection]) as a reactive:
 #' * data quality: `data_quality`, `reporting_rate`, `data_completeness`, `outlier_detection`, `consistency_check`,
 #'   `internal_consistency`, `overall_score`, `calculate_ratios`;
-#' * adjustment: `remove_years`, `data_adjustment`, `adjustment_changes`;
+#' * adjustment: `data_adjustment` (the years and areas removed are its first section), `adjustment_changes`;
 #' * denominators: `denominator_assessment`, `denominator_selection`, `subnational_denominator`;
 #' * national and sub-national analysis: `national_coverage`, `subnational_coverage`, `coverage`, `coverage_trends`,
 #'   `national_inequality`, `subnational_inequality`, `inequality`, `equity`, `national_target`, `subnational_target`,
@@ -63,7 +63,7 @@
 #' @aliases national_coverage_server national_coverage_ui national_inequality_server national_inequality_ui national_rates_required_fields national_rates_server
 #' @aliases national_rates_ui national_target_server national_target_ui nr_field nr_group outlier_detection_server
 #' @aliases outlier_detection_ui overall_score_server overall_score_ui push_upload_on_remount reference_estimates_server reference_estimates_ui
-#' @aliases remove_years_server remove_years_ui reporting_rate_server reporting_rate_ui restore_default_control rr_indicators
+#' @aliases reporting_rate_server reporting_rate_ui restore_default_control rr_indicators
 #' @aliases shapefile_step_server shapefile_step_ui step_map_mapping_complete step_national_rates_complete step_quality_complete step_shapefile_complete
 #' @aliases step_shapefile_touched step_survey_files_complete step_survey_mapping_complete step_upload_complete subnational_coverage_server subnational_coverage_ui
 #' @aliases subnational_denominator_server subnational_denominator_ui subnational_inequality_server subnational_inequality_ui subnational_mapping_server subnational_mapping_ui

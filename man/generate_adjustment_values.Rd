@@ -7,7 +7,10 @@
 generate_adjustment_values(
   .data,
   adjustment = c("default", "custom", "none"),
-  k_factors = NULL
+  k_factors = NULL,
+  settings = NULL,
+  area = NULL,
+  level = c("adminlevel_1", "district")
 )
 }
 \arguments{
@@ -23,6 +26,12 @@ generate_adjustment_values(
 \item{k_factors}{A named numeric vector of custom k-factor values between 0 and 1 for
 each indicator group (e.g., \code{c(anc = 0.3, idelv = 0.2, ...)}). Required if
 \code{adjustment = "custom"}.}
+
+\item{settings}{The adjustment settings (\code{\link[=adjust_service_data]{adjust_service_data()}}): when given, the counts after each step are
+given too (\verb{_completeness}, \verb{_outliers}), and the reported counts are those of the data kept (the removed years
+and areas left out).}
+
+\item{area, level}{One area only: a region (\code{level = "adminlevel_1"}) or a district (\code{"district"}); \code{NULL}, all.}
 }
 \value{
 A \code{cd_adjustment_values} tibble containing:

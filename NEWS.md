@@ -1,3 +1,27 @@
+# cd2030.core 1.3.5
+
+* Data Adjustment is one page for the data kept and how it is corrected (the Remove Years page is gone; its years
+  are the page's first section):
+  - Remove years everywhere, or a region's or district's data for some or every year.
+  - Completeness by each indicator group's k or an indicator's own, outliers and missing values -- each can be
+    switched off everywhere or for a region or district, with its own k; a district's rules come before its
+    region's, a region's before everywhere's.
+  - Beside each setting, what the check pages found (reporting rates, districts below the threshold, outliers and
+    missing values by indicator: `adjustment_evidence()`).
+  - The settings are saved in the dataset (`cache$adjustment_settings`, `cache$set_adjustment_settings()`); a dataset
+    saved before reads its k-factors and removed years as settings (`adjustment_settings_from_k()`).
+  - New: `adjustment_settings_default()`, `adjustment_settings_check()`, `adjustment_settings_footnote()` (the rules in
+    a sentence each, for reports) and `adjustment_steps_used()`; `adjust_service_data()` and
+    `generate_adjustment_values()` take `settings` (and the latter an `area` and `level`).
+* Data Adjustment Changes shows, for each year, the reported count beside the adjusted count made of its parts
+  (completeness, missing values, the outliers' correction; a correction that lowers the count drawn as removed), with
+  the same in a table -- a step an indicator does not get reads "Off" -- for every area, a region or a district, and
+  the rules in force. The adjustment report chart is the same.
+* Tables show a table's loader while they are computed.
+* Bayesian models: `bayes_model_key()`, `bayes_model_cached()`, `bayes_model_inputs()` and `keep_bayes_model()`, so
+  an app can fit a model in the background and keep it.
+* Requires datasuite.ui 0.4.0 (reports written by Quire's writers).
+
 # cd2030.core 1.3.4
 
 * The AI can read and change a saved report instead of replacing it: new AI bridge actions (datasuite.ui 0.3.4's

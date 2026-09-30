@@ -23,7 +23,7 @@
 #' @rawNamespace export(mapping_provenance_banner, national_coverage_server, national_coverage_ui, national_inequality_server, national_inequality_ui, national_rates_required_fields)
 #' @rawNamespace export(national_rates_server, national_rates_ui, national_target_server, national_target_ui, nr_field, nr_group)
 #' @rawNamespace export(outlier_detection_server, outlier_detection_ui, overall_score_server, overall_score_ui, push_upload_on_remount, reference_estimates_server)
-#' @rawNamespace export(reference_estimates_ui, remove_years_server, remove_years_ui, reporting_rate_server, reporting_rate_ui, restore_default_control)
+#' @rawNamespace export(reference_estimates_ui, reporting_rate_server, reporting_rate_ui, restore_default_control)
 #' @rawNamespace export(rr_indicators, shapefile_step_server, shapefile_step_ui, step_map_mapping_complete, step_national_rates_complete, step_quality_complete)
 #' @rawNamespace export(step_shapefile_complete, step_shapefile_touched, step_survey_files_complete, step_survey_mapping_complete, step_upload_complete, subnational_coverage_server)
 #' @rawNamespace export(subnational_coverage_ui, subnational_denominator_server, subnational_denominator_ui, subnational_inequality_server, subnational_inequality_ui, subnational_mapping_server)

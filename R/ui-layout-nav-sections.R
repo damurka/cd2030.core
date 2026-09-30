@@ -18,7 +18,6 @@ cd_nav_quality <- function() {
       cd_nav_item("title_consist_main", tabName = "internal_consistency", icon = "scale-balanced"),
       cd_nav_item("title_score_main", tabName = "overall_score", icon = "star")
     )),
-    cd_nav_item("btn_adjust_remove_years", tabName = "remove_years", icon = "trash"),
     # Sliders for the group, a pencil for applying an adjustment, a clock for the log of past ones -- they used to be
     # the same icon. (pen-to-square has an outline weight in Font Awesome Free, unlike toggle-on.)
     cd_nav_item("title_adjust_main", icon = "sliders", children = list(

@@ -7,7 +7,9 @@
 adjust_service_data(
   .data,
   adjustment = c("default", "custom", "none"),
-  k_factors = NULL
+  k_factors = NULL,
+  settings = NULL,
+  steps = FALSE
 )
 }
 \arguments{
@@ -25,6 +27,13 @@ values between 0 and 1.
 \item{k_factors}{A named numeric vector of custom k-factor values between 0 and 1
 for each indicator group (e.g., \code{c(anc = 0.3, idelv = 0.2, ...)}). Used only if
 \code{adjustment = "custom"}.}
+
+\item{settings}{The adjustment settings (\code{\link[=adjustment_settings_default]{adjustment_settings_default()}}; the Data Adjustment page's): the years
+and areas removed, and each indicator's k, outlier and missing-value switches, everywhere or for an area. When
+given, \code{adjustment} and \code{k_factors} are not used.}
+
+\item{steps}{\code{TRUE}: a list of the data after each step (\code{completeness}, \code{outliers}, \code{missing}), for showing what
+each changed (see \code{\link[=generate_adjustment_values]{generate_adjustment_values()}}).}
 }
 \value{
 A \code{cd_adjusted_data} object containing adjusted service data, where outliers are flagged

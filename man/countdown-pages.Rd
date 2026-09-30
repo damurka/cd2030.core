@@ -110,8 +110,6 @@
 \alias{push_upload_on_remount}
 \alias{reference_estimates_server}
 \alias{reference_estimates_ui}
-\alias{remove_years_server}
-\alias{remove_years_ui}
 \alias{reporting_rate_server}
 \alias{reporting_rate_ui}
 \alias{restore_default_control}
@@ -177,7 +175,7 @@ screens, the dataset header (with its denominator row, \code{cd_denominator_head
 \itemize{
 \item data quality: \code{data_quality}, \code{reporting_rate}, \code{data_completeness}, \code{outlier_detection}, \code{consistency_check},
 \code{internal_consistency}, \code{overall_score}, \code{calculate_ratios};
-\item adjustment: \code{remove_years}, \code{data_adjustment}, \code{adjustment_changes};
+\item adjustment: \code{data_adjustment} (the years and areas removed are its first section), \code{adjustment_changes};
 \item denominators: \code{denominator_assessment}, \code{denominator_selection}, \code{subnational_denominator};
 \item national and sub-national analysis: \code{national_coverage}, \code{subnational_coverage}, \code{coverage}, \code{coverage_trends},
 \code{national_inequality}, \code{subnational_inequality}, \code{inequality}, \code{equity}, \code{national_target}, \code{subnational_target},

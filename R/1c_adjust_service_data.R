@@ -15,6 +15,11 @@
 #' @param k_factors A named numeric vector of custom k-factor values between 0 and 1
 #'   for each indicator group (e.g., `c(anc = 0.3, idelv = 0.2, ...)`). Used only if
 #'   `adjustment = "custom"`.
+#' @param settings The adjustment settings ([adjustment_settings_default()]; the Data Adjustment page's): the years
+#'   and areas removed, and each indicator's k, outlier and missing-value switches, everywhere or for an area. When
+#'   given, `adjustment` and `k_factors` are not used.
+#' @param steps `TRUE`: a list of the data after each step (`completeness`, `outliers`, `missing`), for showing what
+#'   each changed (see [generate_adjustment_values()]).
 #'
 #' @details
 #' This function prepares service data through a series of steps to ensure data quality and consistency:
@@ -67,37 +72,49 @@
 #' @export
 adjust_service_data <- function(.data,
                                 adjustment = c("default", "custom", "none"),
-                                k_factors = NULL) {
+                                k_factors = NULL,
+                                settings = NULL,
+                                steps = FALSE) {
   district = year = month = NULL
 
   check_cd_data(.data)
 
   adjustment <- arg_match(adjustment)
 
-  # k = 0.25 for every group (.cd_method, R/methodology-defaults.R)
-  k_defaults <- .cd_method_by_group(.cd_method$adjustment$k, .cd_method$adjustment$k_groups)
-
-  if (adjustment == "none") {
-    cd_info(c("i" = "No adjustment applied. Data returned as-is."))
-    return(new_countdown(.data, "cd_adjusted_data"))
-  }
-
-  if (adjustment == "custom") {
-    if (is.null(k_factors) || any(k_factors < 0 | k_factors > 1)) {
-      cd_abort(c("x" = "k_factors must be a numeric vector with values between 0 and 1 for each indicator group."))
+  if (is.null(settings)) {
+    if (adjustment == "none") {
+      cd_info(c("i" = "No adjustment applied. Data returned as-is."))
+      return(new_countdown(.data, "cd_adjusted_data"))
     }
-
-    common_names <- intersect(names(k_defaults), names(k_factors))
-    k_defaults[common_names] <- k_factors[common_names]
+    if (adjustment == "custom") {
+      if (is.null(k_factors) || any(k_factors < 0 | k_factors > 1)) {
+        cd_abort(c("x" = "k_factors must be a numeric vector with values between 0 and 1 for each indicator group."))
+      }
+      settings <- adjustment_settings_from_k(k_factors)
+    } else {
+      settings <- adjustment_settings_default(groups = .cd_method$adjustment$k_groups)
+    }
   }
+  settings <- adjustment_settings_check(settings)
+
+  # the data kept: the years and areas removed go (their population with them: it is on the same rows)
+  .data <- .adjust_remove(.data, settings)
 
   indicator_groups <- get_indicator_groups()
   all_indicators <- get_adjustment_indicators()
-  last_year <- robust_max(.data$year)
-  rr_cutoff <- .cd_method$adjustment$reporting_rate_cutoff
+  outlier_indicators <- c(all_indicators, "ipd_total", "ipd_under5")
   rr_window <- .cd_method$adjustment$reporting_rate_window
+  rr_cutoff <- .cd_method$adjustment$reporting_rate_cutoff
 
-  merged_data <- .data %>%
+  # each district's k and switches for each indicator (its own settings, its region's, everywhere's)
+  plan <- .adjust_plan(distinct(.data, adminlevel_1, district), settings, all_indicators, intersect(outlier_indicators, names(.data)))
+  plan_cols <- setdiff(names(plan), "district")
+  clean <- function(d) d %>% select(-any_of(c(paste0(all_indicators, "_rr"), plan_cols)))
+
+  # 1. completeness: each value scaled by its reporting rate and its k (a rate below the cutoff, or missing, replaced by
+  # the district's median of the rates within the window first)
+  completeness <- .data %>%
+    left_join(plan, by = "district") %>%
     mutate(
       across(
         all_of(all_indicators),
@@ -117,16 +134,8 @@ adjust_service_data <- function(.data,
       across(
         all_of(all_indicators),
         ~ {
-          # Identify the main indicator group for the current sub-indicator
-          group <- names(keep(indicator_groups, ~ cur_column() %in% .x))
-
-          # Retrieve the rate column for the current group directly within cur_data()
           rate <- get(paste0(cur_column(), "_rr"))
-
-          # Retrieve the k-value from the k_defaults list based on the group
-          k_value <- k_defaults[[group]]
-
-          # Apply the adjustment formula if the rate is not missing or zero
+          k_value <- get(paste0("k__", cur_column()))
           if_else(
             !is.na(rate) & rate != 0,
             round(. * (1 + (1 / (rate / 100) - 1) * k_value), 1),
@@ -134,33 +143,51 @@ adjust_service_data <- function(.data,
           )
         }
       )
-    ) %>%
-    add_outlier5std_column(c(all_indicators, 'ipd_total','ipd_under5')) %>%
+    )
+
+  # 2. outliers: a month more than 5 x MAD from the district's median replaced by the district's median for the year
+  # (the months that are not outliers), where the indicator's outliers are corrected
+  outliers <- completeness %>%
+    add_outlier5std_column(intersect(outlier_indicators, names(completeness))) %>%
     mutate(
       across(
-        all_of(c(all_indicators, 'ipd_total','ipd_under5')),
+        all_of(intersect(outlier_indicators, names(completeness))),
         ~ {
           outlier <- get(paste0(cur_column(), "_outlier5std"))
+          correct <- get(paste0("out__", cur_column()))
           med <- round(median(if_else(outlier != 1, ., NA_real_), na.rm = TRUE), 0)
 
-          if_else(outlier == 1, robust_max(med), .)
+          if_else(outlier == 1 & correct, robust_max(med), .)
         }
       ),
+      .by = c(district, year)
+    )
+
+  # 3. missing values: an empty month filled with the district's median for the year, where the indicator's missing
+  # values are filled
+  missing <- outliers %>%
+    mutate(
       across(
         all_of(all_indicators),
         ~ {
+          fill <- get(paste0("miss__", cur_column()))
           med <- round(median(if_else(!is.na(.), ., NA_real_), na.rm = TRUE), 0)
           max_med <- robust_max(med)
           if_else(
-            is.na(.) & !is.na(max_med),
+            is.na(.) & !is.na(max_med) & fill,
             max_med,
             .
           )
         }
       ),
       .by = c(district, year)
-    ) %>%
-    select(-any_of(paste0(all_indicators, "_rr")))
+    )
 
-  new_countdown(merged_data, "cd_adjusted_data", indicator_group = get_selected_group())
+  # (a district-year removed on purpose leaves that district out of that year: the check for it is not run then)
+  out <- new_countdown(clean(missing), "cd_adjusted_data", indicator_group = get_selected_group(), validate = !length(settings$removals))
+  attr(out, "adjustment_settings") <- settings
+  if (isTRUE(steps)) {
+    return(list(completeness = clean(completeness), outliers = clean(outliers), missing = out))
+  }
+  out
 }

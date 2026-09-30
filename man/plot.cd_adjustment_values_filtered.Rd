@@ -11,6 +11,8 @@
   y_axis = NULL,
   legend_labels = NULL,
   ...,
+  type = c("stacked", "change", "totals"),
+  zoom = TRUE,
   options = NULL
 )
 }
@@ -30,6 +32,16 @@ the defaults ("N of \code{indicator} before adjustment" and "N of \code{indicato
 after adjustment"). Default is \code{NULL}.}
 
 \item{...}{Additional arguments (currently not used).}
+
+\item{type}{With the adjustment's steps in \code{x} (\code{\link[=generate_adjustment_values]{generate_adjustment_values()}} with \code{settings}): \code{"stacked"} (the
+default) draws, each year, the reported count beside the adjusted count made of its parts -- the reported count,
+what completeness added, what filling missing values added, and the outliers' correction (a correction that lowers
+the total drawn faded above the bar: the part taken away); \code{"change"} what each step changed, labelled with its
+share of the reported count; \code{"totals"} the counts side by side. Legend labels: \code{raw}, \code{completeness},
+\code{outliers}, \code{missing} (and \code{adjusted} for \code{"totals"}).}
+
+\item{zoom}{\code{"stacked"}: \code{TRUE} starts the axis near the smallest bar, so changes of a few percent can be seen (a
+note says where it starts); \code{FALSE} from zero.}
 
 \item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
 arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}

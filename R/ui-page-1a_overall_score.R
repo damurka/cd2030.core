@@ -11,7 +11,7 @@ overall_score_ui <- function(id, i18n) {
       i18n = i18n,
       status = "success",
       width = 12,
-      cd_spinner(uiOutput(ns("overall_score")))
+      cd_table_spinner(uiOutput(ns("overall_score")))
     )
   )
 }

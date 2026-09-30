@@ -3212,6 +3212,168 @@
       "en": "Higher than average",
       "fr": "Supérieure à la moyenne",
       "pt": "Acima da média"
+    },
+    {
+      "key": "lbl_adj_changes_area",
+      "en": "Area",
+      "fr": "Zone",
+      "pt": "Área"
+    },
+    {
+      "key": "lbl_adj_all_areas",
+      "en": "All areas",
+      "fr": "Toutes les zones",
+      "pt": "Todas as áreas"
+    },
+    {
+      "key": "lbl_adj_group_regions",
+      "en": "Regions",
+      "fr": "Régions",
+      "pt": "Regiões"
+    },
+    {
+      "key": "lbl_adj_changes_adjusted",
+      "en": "The data is adjusted with these rules:",
+      "fr": "Les données sont ajustées avec ces règles :",
+      "pt": "Os dados estão ajustados com estas regras:"
+    },
+    {
+      "key": "lbl_adj_changes_not_adjusted",
+      "en": "The data is not adjusted yet. These are the rules Adjust data will apply:",
+      "fr": "Les données ne sont pas encore ajustées. Voici les règles qu'appliquera Ajuster les données :",
+      "pt": "Os dados ainda não estão ajustados. Estas são as regras que Ajustar os dados aplicará:"
+    },
+    {
+      "key": "lbl_adjust_n_completeness",
+      "en": "After completeness",
+      "fr": "Après la complétude",
+      "pt": "Após a completude"
+    },
+    {
+      "key": "lbl_adjust_n_outliers",
+      "en": "After outliers",
+      "fr": "Après les valeurs aberrantes",
+      "pt": "Após os valores atípicos"
+    },
+    {
+      "key": "lbl_adj_see_changes",
+      "en": "View the changes the adjustment made",
+      "fr": "Voir les changements faits par l'ajustement",
+      "pt": "Ver as alterações feitas pelo ajuste"
+    },
+    {
+      "key": "lbl_adj_group_anc",
+      "en": "Antenatal care",
+      "fr": "Soins prénatals",
+      "pt": "Cuidados pré-natais"
+    },
+    {
+      "key": "lbl_adj_group_idelv",
+      "en": "Delivery and postnatal care",
+      "fr": "Accouchement et soins postnatals",
+      "pt": "Parto e cuidados pós-natais"
+    },
+    {
+      "key": "lbl_adj_group_vacc",
+      "en": "Vaccination",
+      "fr": "Vaccination",
+      "pt": "Vacinação"
+    },
+    {
+      "key": "lbl_adj_group_opd",
+      "en": "Outpatient visits",
+      "fr": "Consultations externes",
+      "pt": "Consultas externas"
+    },
+    {
+      "key": "lbl_adj_group_ipd",
+      "en": "Inpatient admissions",
+      "fr": "Hospitalisations",
+      "pt": "Internamentos"
+    },
+    {
+      "key": "msg_adj_done",
+      "en": "The data is adjusted with these settings.",
+      "fr": "Les données sont ajustées avec ces paramètres.",
+      "pt": "Os dados estão ajustados com estas definições."
+    },
+    {
+      "key": "msg_adj_failed",
+      "en": "The data could not be adjusted:",
+      "fr": "Les données n'ont pas pu être ajustées :",
+      "pt": "Não foi possível ajustar os dados:"
+    },
+    {
+      "key": "plt_title_adjust_steps",
+      "en": "What each adjustment step changed: {indicator}",
+      "fr": "Ce que chaque étape de l'ajustement a changé : {indicator}",
+      "pt": "O que cada etapa do ajuste alterou: {indicator}"
+    },
+    {
+      "key": "lbl_adjust_change_axis",
+      "en": "Change from the reported number",
+      "fr": "Écart par rapport au nombre rapporté",
+      "pt": "Diferença em relação ao número notificado"
+    },
+    {
+      "key": "lbl_adjust_step_completeness",
+      "en": "Completeness",
+      "fr": "Complétude",
+      "pt": "Completude"
+    },
+    {
+      "key": "lbl_adjust_step_outliers",
+      "en": "Outliers",
+      "fr": "Valeurs aberrantes",
+      "pt": "Valores atípicos"
+    },
+    {
+      "key": "lbl_adjust_step_missing",
+      "en": "Missing values",
+      "fr": "Valeurs manquantes",
+      "pt": "Valores em falta"
+    },
+    {
+      "key": "lbl_adj_changes_other",
+      "en": "Other indicator",
+      "fr": "Autre indicateur",
+      "pt": "Outro indicador"
+    },
+    {
+      "key": "lbl_adj_changes_none",
+      "en": "None",
+      "fr": "Aucun",
+      "pt": "Nenhum"
+    },
+    {
+      "key": "title_adj_changes_chart",
+      "en": "{indicator}: reported and adjusted, by year",
+      "fr": "{indicator} : rapporté et ajusté, par année",
+      "pt": "{indicator}: notificado e ajustado, por ano"
+    },
+    {
+      "key": "lbl_adj_changes_off",
+      "en": "Off",
+      "fr": "Désactivé",
+      "pt": "Desativado"
+    },
+    {
+      "key": "lbl_adj_changes_reported",
+      "en": "Reported",
+      "fr": "Rapporté",
+      "pt": "Notificado"
+    },
+    {
+      "key": "lbl_adj_changes_adjusted_col",
+      "en": "Adjusted",
+      "fr": "Ajusté",
+      "pt": "Ajustado"
+    },
+    {
+      "key": "lbl_adj_changes_change",
+      "en": "Change",
+      "fr": "Écart",
+      "pt": "Variação"
     }
   ]
 }

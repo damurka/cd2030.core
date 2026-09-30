@@ -43,7 +43,7 @@ cd_table_ui <- function(id, i18n, title_key, control_type = c("year", "indicator
       class = "cd-stack",
       # The control on the left, "This table only" on the right -- project/ReportingRate.dc.html's own table card.
       div(class = "cd-table-controls", left_control_ui, span(class = "cd-table-hint", i18n$t("lbl_table_only"))),
-      cd_spinner(reactableOutput(ns("table")))
+      cd_table_spinner(reactableOutput(ns("table")))
     )
   )
 }

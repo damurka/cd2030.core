@@ -225,11 +225,12 @@ CacheConnection <- R6::R6Class(
       }
     },
 
-    #' @description Processes raw data into adjusted data using excluded years and k-factors.
+    #' @description Processes raw data into adjusted data with the adjustment settings (`adjustment_settings`: the
+    #'   years and areas removed, each indicator's k, outlier and missing-value switches, everywhere or by area).
     adjust_data = function() {
       self$set_adjusted_flag(FALSE)
       data <- self$data_with_excluded_years %>%
-        adjust_service_data(adjustment = "custom", k_factors = self$k_factors)
+        adjust_service_data(settings = self$adjustment_settings)
       self$set_adjusted_data(data)
     },
 
@@ -574,6 +575,22 @@ CacheConnection <- R6::R6Class(
         private$update_field("adjusted_data", NULL)
         private$invalidate_downstream_adjusted()
       }
+    },
+
+    #' @description Sets the adjustment settings (see [adjust_service_data()]) the Data Adjustment page edits. Keeps
+    #'   `excluded_years` (its removed years) and `k_factors` (its k per group, everywhere) in step with them; the
+    #'   adjusted data is made again by `adjust_data()`.
+    #' @param value The settings list ([adjustment_settings_check()] tidies and validates it).
+    set_adjustment_settings = function(value) {
+      value <- adjustment_settings_check(value)
+      if (private$setter("adjustment_settings", value, is.list)) {
+        private$setter("excluded_years", as.numeric(value$removed_years), is.numeric)
+        k <- unlist(value$everywhere$group_k)
+        if (length(k)) private$setter("k_factors", utils::modifyList(as.list(self$k_factors), as.list(k)) %>% unlist(), is.numeric)
+        private$update_field("adjusted_data", NULL)
+        private$invalidate_downstream_adjusted()
+      }
+      invisible(self)
     },
 
     #' @description Sets the correction factors for under-reporting.
@@ -1372,6 +1389,54 @@ CacheConnection <- R6::R6Class(
         private$update_field("bayesian_models", models_list)
       }
       return(models_list[[key]])
+    },
+
+    #' @description The key a Bayesian model is kept under (its admin level, indicator and denominator).
+    #' @param admin_level Administrative level ("national", "adminlevel_1").
+    #' @param indicator Character. Indicator name (e.g., 'penta3').
+    bayes_model_key = function(admin_level, indicator) {
+      admin_level <- arg_match(admin_level, c('national', 'adminlevel_1'))
+      indicator <- arg_match(indicator, c('anc4', 'anc_1trimester', 'ideliv', 'measles1', 'penta3'))
+      paste(admin_level, indicator, self$get_denominator(indicator), sep = "_")
+    },
+
+    #' @description The Bayesian model already made for an indicator (by [get_bayes_model()] or kept with
+    #'   `keep_bayes_model()`), or `NULL`: nothing is fitted.
+    #' @param admin_level Administrative level ("national", "adminlevel_1").
+    #' @param indicator Character. Indicator name (e.g., 'penta3').
+    bayes_model_cached = function(admin_level, indicator) {
+      models_list <- private$getter("bayesian_models")
+      if (is.null(models_list)) return(NULL)
+      models_list[[self$bayes_model_key(admin_level, indicator)]]
+    },
+
+    #' @description What [generate_bayes_model()] needs for an indicator, to fit it in another R process (a
+    #'   Shiny ExtendedTask, so the app is not frozen for the minutes a fit takes); its result is kept with
+    #'   `keep_bayes_model()` under `key`.
+    #' @param admin_level Administrative level ("national", "adminlevel_1").
+    #' @param indicator Character. Indicator name (e.g., 'penta3').
+    #' @return A list: `key`, `coverage_data`, `overall_score`, `indicator`, `denominator`.
+    bayes_model_inputs = function(admin_level, indicator) {
+      admin_level <- arg_match(admin_level, c('national', 'adminlevel_1'))
+      indicator <- arg_match(indicator, c('anc4', 'anc_1trimester', 'ideliv', 'measles1', 'penta3'))
+      list(
+        key = self$bayes_model_key(admin_level, indicator),
+        coverage_data = self$calculate_coverage(admin_level),
+        overall_score = self$overall_score,
+        indicator = indicator,
+        denominator = self$get_denominator(indicator)
+      )
+    },
+
+    #' @description Keeps a Bayesian model fitted elsewhere (see `bayes_model_inputs()`).
+    #' @param key The key it was fitted for (`bayes_model_inputs()$key`).
+    #' @param model The model ([generate_bayes_model()]'s result).
+    keep_bayes_model = function(key, model) {
+      models_list <- private$getter("bayesian_models")
+      if (is.null(models_list)) models_list <- list()
+      models_list[[key]] <- model
+      private$update_field("bayesian_models", models_list)
+      invisible(self)
     }
   ),
 
@@ -1512,6 +1577,13 @@ CacheConnection <- R6::R6Class(
 
     #' @field k_factors Active Binding: Gets the named vector of numeric adjustment ratios.
     k_factors = function(value) private$getter("k_factors", value),
+
+    #' @field adjustment_settings Active Binding: The Data Adjustment page's settings (see [adjust_service_data()]); a
+    #'   dataset saved before they existed gets them from its `k_factors` and `excluded_years`.
+    adjustment_settings = function(value) {
+      if (!missing(value)) cd_abort(c("x" = "Use {.fun set_adjustment_settings}."))
+      private$getter("adjustment_settings", value) %||% adjustment_settings_from_k(self$k_factors, self$excluded_years)
+    },
 
     #' @field adjusted_flag Active Binding: Gets boolean representing if adjustments are active.
     adjusted_flag = function(value) private$getter("adjusted_flag", value),
@@ -2257,6 +2329,8 @@ CacheConnection <- R6::R6Class(
       subnational_regions = NULL,
       performance_threshold = .cd_method$data_quality$reporting_threshold,
       excluded_years = numeric(),
+      # the Data Adjustment page's settings (NULL: from k_factors and excluded_years, see adjustment_settings)
+      adjustment_settings = NULL,
       k_factors = .cd_method_by_group(.cd_method$adjustment$k_start, .cd_method$adjustment$k_start_groups),
       denominator = "penta1",
       maternal_denominator = "anc1",

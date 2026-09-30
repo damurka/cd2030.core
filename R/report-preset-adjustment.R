@@ -100,20 +100,22 @@
                             indicators = c("instlivebirths", "ideliv", "anc1", "penta1", "penta3", "bcg", "measles1"))
 )
 
-# One indicator's yearly numbers before and after the adjustments for completeness and outliers (the cache's k factors)
+# One indicator's yearly numbers as reported, after each adjustment step and adjusted (the dataset's adjustment settings)
 .rb_draw_adj_comparison <- function(cache, b, i18n) {
   t <- function(key, fallback) .rb_t(i18n, key, fallback)
   ind <- b$indicator %||% "penta1"
   indicator <- .rb_ind_name(i18n, ind)
   fill <- function(text) gsub("{indicator}", indicator, text, fixed = TRUE)
-  cache$countdown_data %>%
-    generate_adjustment_values(adjustment = "custom", k_factors = cache$k_factors) %>%
+  cache$data_with_excluded_years %>%
+    generate_adjustment_values(settings = cache$adjustment_settings) %>%
     filter_adjustment_value(ind) %>%
     plot(
-      title = fill(t("plt_title_adjust_comparison", "Comparison of number of {indicator} before and after adjustments for completness and outliers")),
+      title = fill(t("title_adj_changes_chart", "{indicator}: reported and adjusted, by year")),
       legend_labels = c(
-        raw = fill(t("lbl_adjust_n_before", "N of {indicator} before adjustment")),
-        adjusted = fill(t("lbl_adjust_n_after", "N of {indicator} after adjustment"))
+        raw = t("lbl_adj_changes_reported", "Reported"),
+        completeness = t("lbl_adjust_step_completeness", "Completeness"),
+        outliers = t("lbl_adjust_step_outliers", "Outliers"),
+        missing = t("lbl_adjust_step_missing", "Missing values")
       )
     )
 }

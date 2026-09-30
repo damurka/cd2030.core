@@ -12,6 +12,10 @@
 #' @param k_factors A named numeric vector of custom k-factor values between 0 and 1 for
 #'   each indicator group (e.g., `c(anc = 0.3, idelv = 0.2, ...)`). Required if
 #'   `adjustment = "custom"`.
+#' @param settings The adjustment settings ([adjust_service_data()]): when given, the counts after each step are
+#'   given too (`_completeness`, `_outliers`), and the reported counts are those of the data kept (the removed years
+#'   and areas left out).
+#' @param area,level One area only: a region (`level = "adminlevel_1"`) or a district (`"district"`); `NULL`, all.
 #'
 #' @details This function performs the following steps:
 #'   1. **Data Validation**: Ensures `.data` is of the `cd_data` class and `adjustment`
@@ -45,34 +49,49 @@
 #' @export
 generate_adjustment_values <- function(.data,
                                        adjustment = c("default", "custom", "none"),
-                                       k_factors = NULL) {
+                                       k_factors = NULL,
+                                       settings = NULL,
+                                       area = NULL,
+                                       level = c("adminlevel_1", "district")) {
   year <- NULL
 
   check_cd_data(.data)
   adjustment <- arg_match(adjustment)
+  level <- arg_match(level)
 
   all_indicators <- get_all_indicators()
+  if (!is.null(area)) {
+    keep <- if (level == "district") .data$district %in% area else .data$adminlevel_1 %in% area
+    .data <- .data[keep, , drop = FALSE]
+  }
+  yearly <- function(d, suffix) {
+    d %>%
+      summarise(across(any_of(all_indicators), ~ sum(.x, na.rm = TRUE)), .by = year) %>%
+      rename_with(~ paste0(.x, suffix), any_of(all_indicators))
+  }
 
-  unadjusted_data <- .data %>%
-    summarise(
-      across(all_of(all_indicators), ~ sum(.x, na.rm = TRUE)),
-      .by = year
-    ) %>%
-    rename_with(~ paste0(.x, "_raw"), all_of(all_indicators))
+  if (is.null(settings)) {
+    unadjusted_data <- yearly(.data, "_raw")
+    adjusted_data <- yearly(adjust_service_data(.data, adjustment, k_factors), "_adj")
+    combined_data <- unadjusted_data %>% left_join(adjusted_data, by = "year")
+    return(new_tibble(combined_data, class = "cd_adjustment_values"))
+  }
 
-  adjusted_data <- adjust_service_data(.data, adjustment, k_factors) %>%
-    summarise(
-      across(all_of(all_indicators), ~ sum(.x, na.rm = TRUE)),
-      .by = year
-    ) %>%
-    rename_with(~ paste0(.x, "_adj"), all_of(all_indicators))
-
-  combined_data <- unadjusted_data %>%
-    left_join(adjusted_data, by = "year")
+  # the reported counts of the data kept, then the counts after each step
+  settings <- adjustment_settings_check(settings)
+  steps <- adjust_service_data(.data, settings = settings, steps = TRUE)
+  combined_data <- yearly(.adjust_remove(.data, settings), "_raw") %>%
+    left_join(yearly(steps$completeness, "_completeness"), by = "year") %>%
+    left_join(yearly(steps$outliers, "_outliers"), by = "year") %>%
+    left_join(yearly(steps$missing, "_adj"), by = "year") %>%
+    arrange(year)
 
   new_tibble(
     combined_data,
-    class = "cd_adjustment_values"
+    class = "cd_adjustment_values",
+    steps = TRUE,
+    area = area,
+    level = if (!is.null(area)) level
   )
 }
 
@@ -102,7 +121,7 @@ filter_adjustment_value <- function(.data, indicator) {
   indicator <- arg_match(indicator, get_all_indicators())
 
   data <- .data %>%
-    select(year, starts_with(indicator)) %>%
+    select(year, any_of(paste0(indicator, c("_raw", "_completeness", "_outliers", "_adj")))) %>%
     mutate(
       # Calculate the difference and percentage difference
       diff = get(paste0(indicator, "_adj")) - get(paste0(indicator, "_raw")),
@@ -113,6 +132,7 @@ filter_adjustment_value <- function(.data, indicator) {
   new_tibble(
     data,
     class = 'cd_adjustment_values_filtered',
-    indicator = indicator
+    indicator = indicator,
+    steps = isTRUE(attr(.data, "steps"))
   )
 }

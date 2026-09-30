@@ -88,6 +88,9 @@ post-Finish page, not something the wizard itself needs a pre-merge equivalent f
 
 \item{\code{k_factors}}{Active Binding: Gets the named vector of numeric adjustment ratios.}
 
+\item{\code{adjustment_settings}}{Active Binding: The Data Adjustment page's settings (see \code{\link[=adjust_service_data]{adjust_service_data()}}); a
+dataset saved before they existed gets them from its \code{k_factors} and \code{excluded_years}.}
+
 \item{\code{adjusted_flag}}{Active Binding: Gets boolean representing if adjustments are active.}
 
 \item{\code{derivation_population}}{Active Binding: Gets the string indicating the origin population indicator.}
@@ -292,6 +295,7 @@ Invalidate Health Systems Cache}
 \item \href{#method-CacheConnection-set_adjusted_data}{\code{CacheConnection$set_adjusted_data()}}
 \item \href{#method-CacheConnection-set_performance_threshold}{\code{CacheConnection$set_performance_threshold()}}
 \item \href{#method-CacheConnection-set_excluded_years}{\code{CacheConnection$set_excluded_years()}}
+\item \href{#method-CacheConnection-set_adjustment_settings}{\code{CacheConnection$set_adjustment_settings()}}
 \item \href{#method-CacheConnection-set_k_factors}{\code{CacheConnection$set_k_factors()}}
 \item \href{#method-CacheConnection-set_adjusted_flag}{\code{CacheConnection$set_adjusted_flag()}}
 \item \href{#method-CacheConnection-set_survey_estimates}{\code{CacheConnection$set_survey_estimates()}}
@@ -371,6 +375,10 @@ Invalidate Health Systems Cache}
 \item \href{#method-CacheConnection-generate_phc_scatter_data}{\code{CacheConnection$generate_phc_scatter_data()}}
 \item \href{#method-CacheConnection-generate_private_sector_data}{\code{CacheConnection$generate_private_sector_data()}}
 \item \href{#method-CacheConnection-get_bayes_model}{\code{CacheConnection$get_bayes_model()}}
+\item \href{#method-CacheConnection-bayes_model_key}{\code{CacheConnection$bayes_model_key()}}
+\item \href{#method-CacheConnection-bayes_model_cached}{\code{CacheConnection$bayes_model_cached()}}
+\item \href{#method-CacheConnection-bayes_model_inputs}{\code{CacheConnection$bayes_model_inputs()}}
+\item \href{#method-CacheConnection-keep_bayes_model}{\code{CacheConnection$keep_bayes_model()}}
 \item \href{#method-CacheConnection-clone}{\code{CacheConnection$clone()}}
 }
 }
@@ -441,7 +449,8 @@ Save current in-memory state to the assigned RDS file, provided state has change
 \if{html}{\out{<a id="method-CacheConnection-adjust_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-adjust_data}{}}}
 \subsection{Method \code{adjust_data()}}{
-Processes raw data into adjusted data using excluded years and k-factors.
+Processes raw data into adjusted data with the adjustment settings (\code{adjustment_settings}: the
+years and areas removed, each indicator's k, outlier and missing-value switches, everywhere or by area).
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CacheConnection$adjust_data()}\if{html}{\out{</div>}}
 }
@@ -984,6 +993,25 @@ Sets a list of years to manually exclude from modeling.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{value}}{Numeric vector of years.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-set_adjustment_settings"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-set_adjustment_settings}{}}}
+\subsection{Method \code{set_adjustment_settings()}}{
+Sets the adjustment settings (see \code{\link[=adjust_service_data]{adjust_service_data()}}) the Data Adjustment page edits. Keeps
+\code{excluded_years} (its removed years) and \code{k_factors} (its k per group, everywhere) in step with them; the
+adjusted data is made again by \code{adjust_data()}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_adjustment_settings(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{The settings list (\code{\link[=adjustment_settings_check]{adjustment_settings_check()}} tidies and validates it).}
 }
 \if{html}{\out{</div>}}
 }
@@ -2350,6 +2378,88 @@ Generates or retrieves a pre-calculated Bayesian mathematical model for an indic
 \item{\code{admin_level}}{Administrative level ("national", "adminlevel_1").}
 
 \item{\code{indicator}}{Character. Indicator name (e.g., 'penta3').}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-bayes_model_key"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-bayes_model_key}{}}}
+\subsection{Method \code{bayes_model_key()}}{
+The key a Bayesian model is kept under (its admin level, indicator and denominator).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$bayes_model_key(admin_level, indicator)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{admin_level}}{Administrative level ("national", "adminlevel_1").}
+
+\item{\code{indicator}}{Character. Indicator name (e.g., 'penta3').}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-bayes_model_cached"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-bayes_model_cached}{}}}
+\subsection{Method \code{bayes_model_cached()}}{
+The Bayesian model already made for an indicator (by \code{\link[=get_bayes_model]{get_bayes_model()}} or kept with
+\code{keep_bayes_model()}), or \code{NULL}: nothing is fitted.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$bayes_model_cached(admin_level, indicator)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{admin_level}}{Administrative level ("national", "adminlevel_1").}
+
+\item{\code{indicator}}{Character. Indicator name (e.g., 'penta3').}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-bayes_model_inputs"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-bayes_model_inputs}{}}}
+\subsection{Method \code{bayes_model_inputs()}}{
+What \code{\link[=generate_bayes_model]{generate_bayes_model()}} needs for an indicator, to fit it in another R process (a
+Shiny ExtendedTask, so the app is not frozen for the minutes a fit takes); its result is kept with
+\code{keep_bayes_model()} under \code{key}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$bayes_model_inputs(admin_level, indicator)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{admin_level}}{Administrative level ("national", "adminlevel_1").}
+
+\item{\code{indicator}}{Character. Indicator name (e.g., 'penta3').}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A list: \code{key}, \code{coverage_data}, \code{overall_score}, \code{indicator}, \code{denominator}.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-keep_bayes_model"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-keep_bayes_model}{}}}
+\subsection{Method \code{keep_bayes_model()}}{
+Keeps a Bayesian model fitted elsewhere (see \code{bayes_model_inputs()}).
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$keep_bayes_model(key, model)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{key}}{The key it was fitted for (\code{bayes_model_inputs()$key}).}
+
+\item{\code{model}}{The model (\code{\link[=generate_bayes_model]{generate_bayes_model()}}'s result).}
 }
 \if{html}{\out{</div>}}
 }

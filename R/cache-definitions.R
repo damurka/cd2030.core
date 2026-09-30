@@ -44,7 +44,6 @@
   consistency = "Internal Consistency",
   outliers = "Outlier Detection",
   score = "Overall Data Quality Score",
-  remove_years = "Remove Years",
   adjustment = "Data Adjustment",
   adjustment_changes = "Data Adjustment Changes",
   denom_assessment = "Denominator Assessment",
@@ -101,10 +100,10 @@
       "The HMIS data as loaded: for each district and month, the service counts, the reporting rates (anc_rr, idelv_rr, vacc_rr, opd_rr, ipd_rr) and the population and health-system figures, merged from the uploaded sheets. Nothing is removed or adjusted in it.",
       grain = "one row per district x year x month", unit = "counts (as reported)",
       key_columns = c("country", "adminlevel_1", "district", "year", "month"),
-      set_on = paste(P$load, "(Finish merges the uploaded sheets)"), shown_on = c(quality_pages, P$remove_years),
+      set_on = paste(P$load, "(Finish merges the uploaded sheets)"), shown_on = c(quality_pages, P$adjustment),
       method = m("analysis-setup", "hmis-data")),
     data_years = .cd_def("value", "The years present in the loaded data, in order.", unit = "years",
-      depends_on = "countdown_data", shown_on = c(P$score, P$remove_years, P$util_dqa, P$util_national, P$hs_national, P$mortality_mapping, P$reports)),
+      depends_on = "countdown_data", shown_on = c(P$score, P$adjustment, P$util_dqa, P$util_national, P$hs_national, P$mortality_mapping, P$reports)),
     subnational_regions = .cd_def("data", "The dataset's geography: every district with the first-level region (adminlevel_1) it belongs to.",
       grain = "one row per adminlevel_1 x district", key_columns = c("adminlevel_1", "district"), depends_on = "countdown_data",
       shown_on = "the region and district filters of every sub-national page"),
@@ -123,8 +122,8 @@
     read_only = .cd_def("state", "Whether this copy of the dataset never writes its .rds (the AI's copy is read-only).", unit = "logical"),
 
     # ---- data preparation ---------------------------------------------------------------------------------------
-    excluded_years = .cd_def("setting", "Years removed from the analysis because their data are unreliable; every result after Remove Years leaves them out.",
-      unit = "years", set_on = paste(P$remove_years, "(Select years to remove)"), shown_on = c(P$remove_years, P$adjustment),
+    excluded_years = .cd_def("setting", "Years removed from the analysis because their data are unreliable; every result after the adjustment leaves them out (the removed years of adjustment_settings).",
+      unit = "years", set_on = paste(P$adjustment, "(Data kept for analysis)"), shown_on = c(P$adjustment),
       method = m("data-adjustment", "remove-years")),
     data_with_excluded_years = .cd_def("data", "countdown_data without the excluded years: the data the adjustment starts from.",
       grain = "one row per district x year x month", unit = "counts (as reported)",
@@ -133,6 +132,9 @@
     k_factors = .cd_def("setting", "The completeness adjustment factor k for each service group (anc, idelv, vacc, and opd/ipd for RMNCAH): the assumed ratio of service volume in non-reporting facilities to that in reporting ones.",
       unit = "factor (0 to 1)", default = "adj_k_start", range = "adj_k_options",
       set_on = paste(P$adjustment, "(K-Factors)"), shown_on = c(P$adjustment, P$adjustment_changes, P$reports),
+      method = m("data-adjustment", "configuring-the-k-factor")),
+    adjustment_settings = .cd_def("setting", "What the adjustment does: the years removed everywhere, an area's data removed for some or every year (its services and population), and each indicator's completeness k, outlier and missing-value correction -- everywhere, or with a region's or district's own settings (a district's win over its region's).",
+      unit = "settings", set_on = paste(P$adjustment, "(Adjust data)"), shown_on = c(P$adjustment, P$adjustment_changes, P$reports),
       method = m("data-adjustment", "configuring-the-k-factor")),
     adjusted_flag = .cd_def("state", "Whether the data have been adjusted (TRUE once Adjust data has run with the current years and k-factors).",
       unit = "logical", set_on = paste(P$adjustment, "(Adjust data)"), shown_on = c(P$adjustment, P$adjustment_changes)),
@@ -532,7 +534,15 @@
     get_bayes_model = .cd_def("method", "The Bayesian model of one indicator's coverage (anc4, anc_1trimester, ideliv, measles1 or penta3) with its chosen denominator, nationally or by region, combining the routine data and the surveys; fitted once and kept in the dataset.",
       depends_on = c("calculate_coverage", "overall_score", "get_denominator"), shown_on = P$bayesian,
       method = m("bayesian-coverage", "method"), status = "draft",
-      note = "The model object's structure comes from the Bayesian packages (bayescoveragemodel); not evaluated in the checks here.")
+      note = "The model object's structure comes from the Bayesian packages (bayescoveragemodel); not evaluated in the checks here."),
+    bayes_model_key = .cd_def("method", "The key a Bayesian model is kept under: its admin level, indicator and chosen denominator.",
+      depends_on = "get_denominator", shown_on = P$bayesian),
+    bayes_model_cached = .cd_def("method", "The Bayesian model already fitted for an indicator (by get_bayes_model() or kept with keep_bayes_model()), or NULL: nothing is fitted.",
+      depends_on = "bayes_model_key", shown_on = P$bayesian),
+    bayes_model_inputs = .cd_def("method", "What fitting one indicator's Bayesian model needs (its coverage data, the overall score, the indicator and denominator, the key), so the app fits it in another R process without freezing.",
+      depends_on = c("calculate_coverage", "overall_score", "get_denominator", "bayes_model_key"), shown_on = P$bayesian),
+    keep_bayes_model = .cd_def("method", "Keeps a Bayesian model fitted in another R process under its key, so the page and reports use it without fitting it again.",
+      depends_on = "bayes_model_key", shown_on = P$bayesian)
   )
 
   c(defs, methods)
