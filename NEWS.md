@@ -1,3 +1,13 @@
+# cd2030.core 1.3.6
+
+* `notebook_data()`: a folder's Countdown datasets for DataSuite's notebooks (an app's `notebookData`) -- by name in
+  R, and as Stata files for Python and Stata notebooks, made again when their `.rds` changes.
+* The Bayesian model's packages are installed when it is first wanted: `cd_bayes_packages_missing()` (checked without
+  loading Stan), `cd_request_bayes_packages()` (inside DataSuite, asks it to install them) and
+  `cd_bayes_install_command()` (the `install.packages()` call, for plain R). DESCRIPTION's `Config/datasuite/onDemand`
+  keeps DataSuite's background install from fetching them; R itself ignores it.
+* No longer suggests chromote, countrycode, png, ragg, rsvg, svglite or systemfonts, which nothing used.
+
 # cd2030.core 1.3.5
 
 * Data Adjustment is one page for the data kept and how it is corrected (the Remove Years page is gone; its years
