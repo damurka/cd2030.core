@@ -28,10 +28,9 @@ cd_bayes_packages_missing <- function() {
 cd_request_bayes_packages <- function(packages = cd_bayes_packages_missing()) {
   packages <- intersect(packages, .bayes_packages)
   if (!length(packages) || !nzchar(Sys.getenv("CDSUITE_SHINY_ID"))) return(invisible(FALSE))
-  # one line on the R session's output, which DataSuite reads (message() goes to stderr, which is not buffered)
-  message("DATASUITE_HOST_REQUEST ", sprintf('{"action":"installPackages","packages":[%s]}',
-    paste0('"', packages, '"', collapse = ",")))
-  invisible(TRUE)
+  # DataSuite's "installPackages" request (Jovian's host channel, or a line on the R session's output); the packages
+  # as a list, so that one package is still sent as an array
+  datasuite.ui::ds_host_request("installPackages", list(packages = as.list(packages)))
 }
 
 #' The R command that installs the Bayesian model's packages

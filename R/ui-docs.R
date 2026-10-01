@@ -33,7 +33,10 @@
 #' The Introduction page (`introduction_ui(id, i18n)`, `introduction_server(id, selected_language)`) shows the app's
 #' help in the chosen language; `cd_app()` adds it.
 #'
-#' **The Load Data wizard.** `upload_box_*`, `wizard_steps_*` and `wizard_landing_*` make the screen; its steps are
+#' **The Load Data wizard.** `cd_upload_data_ui()` / `cd_upload_data_server()` are the Load Data screen (`cd_app()`'s
+#' default): the page header and the wizard, the same for every app, which describes its own part of it with
+#' `options(cd2030.wizard = list(national_rates_groups, reference_uploads))` (see `R/ui-wizard-wizard-config.R`).
+#' `upload_box_*`, `wizard_steps_*` and `wizard_landing_*` make the screen; its steps are
 #' `wizard_step_defs` (upload, data quality, survey files, national rates, shapefile, survey and map mappings), each with
 #' a `step_*_complete()` test, and `compute_step_states()` works out which are done, blocked or optional. The steps'
 #' pages are `national_rates_*`, `survey_upload_*`, `reference_estimates_*`, `shapefile_step_*`, `map_survey_*` and
@@ -41,7 +44,8 @@
 #'
 #' **Filters and building blocks.** `cd_admin_level_*`, `cd_indicator_*`, `cd_denominator_*`, `cd_population_*`,
 #' `cd_years_input()` / `cd_years_sync()`, the scoped page (`cd_scope()`, `cd_scoped_page_*`, `cd_scope_filters()`),
-#' tabbed charts (`cd_tabbed_charts_*`), tables (`cd_table_*`) and the coverage chart card (`cd_coverage_plot_*`).
+#' tabbed charts (`cd_tabbed_charts_*`), tables (`cd_table_*`), a flextable in a card with its picture and Excel
+#' downloads (`cd_table_card_*`) and the coverage chart card (`cd_coverage_plot_*`).
 #'
 #' @name countdown-pages
 #' @keywords internal
@@ -53,6 +57,7 @@
 #' @aliases cd_only_denominators cd_palette_chip cd_population_server cd_population_ui cd_rate_status_cell cd_saved_copy_name
 #' @aliases cd_scope_filters cd_scope_server cd_scoped_page_server cd_scoped_page_ui cd_tabbed_charts_server cd_tabbed_charts_ui
 #' @aliases cd_table_server cd_table_ui cd_wizard_check_group cd_wizard_config cd_wizard_field_group cd_wizard_indicator_group
+#' @aliases cd_table_card_server cd_table_card_ui cd_upload_data_server cd_upload_data_ui
 #' @aliases cd_wizard_national_rate_fields cd_wizard_rate_field cd_wizard_survey_field cd_years_input cd_years_sync compute_step_states
 #' @aliases consistency_check_server consistency_check_ui consistency_pair_keys consistency_pair_label coverage_server coverage_trends_server
 #' @aliases coverage_trends_ui coverage_ui data_adjustment_server data_adjustment_ui data_completeness_server data_completeness_ui

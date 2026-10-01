@@ -62,14 +62,6 @@ plot.cd_ratios_summary <- function(x, title = NULL,
   years <- x %>%
     distinct(year) %>%
     pull(year)
-  base_colors <- c("darkgreen", "darkgoldenrod3", "firebrick4", "springgreen3", "darkolivegreen3", "steelblue2")
-
-  extra_needed <- robust_max(c(0, length(years) - length(base_colors)))
-  extra_colors <- if (extra_needed > 0) {
-    scales::hue_pal()(extra_needed)
-  } else {
-    NULL
-  }
 
   x_labels_default <- c(
     "anc1_penta1"   = "Ratio ANC1 / Penta1",
@@ -91,8 +83,7 @@ plot.cd_ratios_summary <- function(x, title = NULL,
   plot_x <- if (!is.null(x_axis)) x_axis else NULL
   plot_y <- if (!is.null(y_axis)) y_axis else NULL
 
-  color_mapping <- c(base_colors, extra_colors)
-  names(color_mapping) <- years
+  color_mapping <- cd_year_colours(years)
 
   plot_data %>%
     ggplot(aes(name, value, fill = year)) +
@@ -113,8 +104,6 @@ plot.cd_ratios_summary <- function(x, title = NULL,
       x_axis = plot_x,
       y_axis = plot_y
     ) +
-    theme(
-      plot.title = element_text(size = 14, hjust = 0.5),
-      panel.grid.major.y = element_line(colour = "lightblue1", linetype = "dashed"),
-    )
+    cd_dashed_grid_theme(x = FALSE) +
+    theme(plot.title = element_text(size = 14, hjust = 0.5))
 }

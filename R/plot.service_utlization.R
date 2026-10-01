@@ -145,10 +145,7 @@ plot.cd_service_utilization_prepared <- function(x, labels = NULL, ..., options 
   legend <- labels$legend %||% legend
 
   x %>%
-    st_set_geometry('geometry') %>%
-    st_as_sf() %>%
-    st_set_crs(4326) %>%
-    st_transform(crs = 4326) %>%
+    .cd_as_map() %>%
     ggplot() +
     geom_sf(aes(fill = !!sym(indicator)), color = "white") +
     facet_wrap(~ year, scales = "fixed", ncol = 5) +
@@ -159,20 +156,8 @@ plot.cd_service_utilization_prepared <- function(x, labels = NULL, ..., options 
     ) +
     cd_plot_theme(title = title) +
     labs(title = title) +
-    theme(
-      panel.border = element_blank(),
-      panel.spacing = unit(1, "lines"),
-      legend.key.size = unit(6, "mm"),
-      legend.background = element_blank(),
-      legend.title = element_text(size = 11),
-      legend.text = element_text(size = 9),
-      axis.text = element_blank(),
-      axis.ticks = element_blank(),
-      axis.title = element_blank(),
-      axis.line = element_blank(),
-      strip.text = element_text(size = 12, face = "bold"),
-      aspect.ratio = 1
-    )
+    cd_map_theme() +
+    theme(legend.key.size = unit(6, "mm"), legend.text = element_text(size = 9))
 }
 
 #' Plot S3 method for Service Utilization Admin1

@@ -194,7 +194,7 @@ plot_line_graph <- function(.data, x, y_vars, title, y_axis, x_axis, legend_labe
       labels = scales::label_number(accuracy = 1, big.mark = ",")
       # expand = c(0, 0)
     ) +
-    scale_color_manual(values = set_names(c("darkgreen", "orange", "blue", "purple", "red2", "brown")[1:length(y_vars)], legend_labels)) +
+    scale_color_manual(values = set_names(.cd_palette$series[1:length(y_vars)], legend_labels)) +
     cd_plot_theme(
       title = title,
       x_axis = x_axis,
@@ -247,6 +247,116 @@ cd_bar_theme <- function(title = NULL, x_axis = NULL, y_axis = NULL, legend = NU
   )
 }
 
+# ---- shared palettes and theme pieces -------------------------------------------------------------------------------
+# The colours more than one chart uses, and the theme tweaks they repeat, live here so a chart's look changes in one
+# place.
+
+.cd_palette <- list(
+  # a value against a threshold, worst first: below the lower cut, between the cuts, at or above the threshold (the
+  # data quality heat maps and bars; see .cd_category_fill())
+  traffic_light = c("red", "orange", "forestgreen"),
+  # one colour per year, for bars dodged by year (see cd_year_colours())
+  years = c("darkgreen", "darkgoldenrod3", "firebrick4", "springgreen3", "darkolivegreen3", "steelblue2"),
+  # the same for the district reporting-rate bars
+  years_reporting = c("darkgreen", "orangered", "royalblue4", "indianred4", "darkslategray4"),
+  # one colour per line (plot_line_graph())
+  series = c("darkgreen", "orange", "blue", "purple", "red2", "brown"),
+  # Data Adjustment, the stacked chart: the reported count and what each step adds to it
+  adjustment_parts = c(raw = "#c9ced3", completeness = "#9b5758", outliers = "#cfaa50", missing = "#2f6db5"),
+  # Data Adjustment, the change and totals charts: the counts before, between and after the steps
+  adjustment_steps = c(raw = "darkgreen", completeness = "#9b5758", outliers = "#3f88c5", missing = "#cfaa50", adjusted = "darkgoldenrod3"),
+  # public against private providers
+  public_private = c(Public = "#2196F3", Private = "#E91E63"),
+  # an area's values against the national value (inequality), and the regions against the nation (mortality)
+  subnational_national = c("skyblue3", "red1"),
+  regions_national = c("forestgreen", "orangered"),
+  # the median and the plausible range (subnational mortality)
+  median_range = c("red", "blue")
+)
+
+# The fill for three categories `levels` (worst first) in the traffic-light colours: every category is in the legend,
+# even one no value falls in.
+.cd_category_fill <- function(levels, colours = .cd_palette$traffic_light) {
+  scale_fill_manual(values = set_names(colours, levels), limits = levels, breaks = levels, drop = FALSE)
+}
+
+# One colour per year: `base` first, then as many more as there are years (scales::hue_pal()), named by year.
+cd_year_colours <- function(years, base = .cd_palette$years) {
+  extra_needed <- robust_max(c(0, length(years) - length(base)), 0)
+  colours <- c(base, if (extra_needed > 0) scales::hue_pal()(extra_needed))
+  names(colours) <- years
+  colours
+}
+
+# Dashed major grid lines: light blue across the chart, and light grey down it unless `x = FALSE`.
+cd_dashed_grid_theme <- function(x = TRUE) {
+  out <- theme(panel.grid.major.y = element_line(colour = "lightblue1", linetype = "dashed"))
+  if (x) out <- out + theme(panel.grid.major.x = element_line(colour = "gray90", linetype = "dashed"))
+  out
+}
+
+# Maps drawn one per year (facet_wrap()): no axes, grid or border, square panels. Each map adds its own legend sizes.
+cd_map_theme <- function() {
+  theme(
+    panel.border = element_blank(),
+    panel.spacing = unit(1, "lines"),
+    legend.background = element_blank(),
+    legend.title = element_text(size = 11),
+    axis.text = element_blank(),
+    axis.ticks = element_blank(),
+    axis.title = element_blank(),
+    axis.line = element_blank(),
+    strip.text = element_text(size = 12, face = "bold"),
+    aspect.ratio = 1
+  )
+}
+
+# A data frame with a `geometry` column as an sf object on WGS 84, ready for geom_sf(). sf is used through `sf::` (not
+# imported), so it is loaded only when a map is drawn or a shapefile read.
+.cd_as_map <- function(x) {
+  x %>%
+    sf::st_set_geometry("geometry") %>%
+    sf::st_as_sf() %>%
+    sf::st_set_crs(4326) %>%
+    sf::st_transform(crs = 4326)
+}
+
+#' A minimal chart theme
+#'
+#' [ggplot2::theme_minimal()] with a choice of grid lines, for the apps' light charts (cd2030.pooled's charts, the
+#' subnational coverage dot plot and heat map).
+#'
+#' @param base_size The base font size, in points.
+#' @param grid Which grid lines to keep: `"all"` (the theme's own), `"major"` (no minor lines), `"x"` (only the
+#'   vertical major lines, for horizontal bars and dot plots), `"y"` (only the horizontal major lines) or `"none"`.
+#' @param grid_colour The colour of the lines `"x"` or `"y"` keeps, or `NULL` for the theme's own.
+#'
+#' @return A ggplot2 theme.
+#' @examples
+#' library(ggplot2)
+#' ggplot(mtcars, aes(mpg, factor(cyl))) +
+#'   geom_point() +
+#'   cd_minimal_theme(grid = "x")
+#' @export
+cd_minimal_theme <- function(base_size = 11, grid = c("all", "major", "x", "y", "none"), grid_colour = NULL) {
+  grid <- arg_match(grid)
+  out <- theme_minimal(base_size = base_size)
+  # the lines kept along one axis, in their own colour if one is given
+  only <- function(kept, dropped) {
+    elements <- list(panel.grid.minor = element_blank())
+    elements[[dropped]] <- element_blank()
+    if (!is.null(grid_colour)) elements[[kept]] <- element_line(colour = grid_colour)
+    out + do.call(theme, elements)
+  }
+  switch(grid,
+    all = out,
+    major = out + theme(panel.grid.minor = element_blank()),
+    x = only("panel.grid.major.x", "panel.grid.major.y"),
+    y = only("panel.grid.major.y", "panel.grid.major.x"),
+    none = out + theme(panel.grid = element_blank())
+  )
+}
+
 cd_categorized_heatmap <- function(data,
                                    x_col,
                                    y_col,
@@ -260,7 +370,7 @@ cd_categorized_heatmap <- function(data,
                                    text_size = 4) {
   check_scalar_integerish(threshold)
 
-  colors <- c("red", "orange", "forestgreen")
+  colors <- .cd_palette$traffic_light
   if (reverse) colors <- rev(colors)
 
   cut_low <- if (reverse) 100 - threshold else 70
@@ -286,12 +396,7 @@ cd_categorized_heatmap <- function(data,
   ggplot(dt, aes(x = !!sym(x_col), y = !!sym(y_col), fill = color_category)) +
     geom_tile(color = "white", show.legend = TRUE) +
     geom_text(aes(label = .value_round), color = "black", size = text_size, vjust = 0.5) +
-    scale_fill_manual(
-      values = set_names(colors, lvl),
-      limits = lvl,
-      breaks = lvl,
-      drop = FALSE
-    ) +
+    .cd_category_fill(lvl, colors) +
     scale_x_discrete(expand = expansion(mult = 0)) +
     scale_y_discrete(expand = expansion(mult = 0)) +
     cd_heatmap_theme(

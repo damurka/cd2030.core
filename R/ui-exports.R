@@ -13,6 +13,7 @@
 #' @rawNamespace export(cd_denominator_header, cd_palette_chip, cd_population_server, cd_population_ui, cd_rate_status_cell, cd_saved_copy_name)
 #' @rawNamespace export(cd_scope, cd_scope_filters, cd_scope_server, cd_scoped_page_server, cd_scoped_page_ui)
 #' @rawNamespace export(cd_tabbed_charts_server, cd_tabbed_charts_ui, cd_table_server, cd_table_ui, cd_wizard_check_group)
+#' @rawNamespace export(cd_table_card_server, cd_table_card_ui, cd_upload_data_server, cd_upload_data_ui)
 #' @rawNamespace export(cd_wizard_config, cd_wizard_field_group, cd_wizard_indicator_group, cd_wizard_national_rate_fields, cd_wizard_rate_field, cd_wizard_survey_field)
 #' @rawNamespace export(cd_years_input, cd_years_sync, compute_step_states, consistency_check_server, consistency_check_ui, consistency_pair_keys)
 #' @rawNamespace export(consistency_pair_label, coverage_server, coverage_trends_server, coverage_trends_ui, coverage_ui, data_adjustment_server)

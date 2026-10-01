@@ -97,10 +97,9 @@ equiplot <- function(.data, variables, group_by,
       x_axis = x_title %||% "Percentage (%)",
       y_axis = ""
     ) +
+    cd_dashed_grid_theme() +
     theme(
       panel.border = element_blank(),
-      panel.grid.major.y = element_line(colour = "lightblue1", linetype = "dashed"),
-      panel.grid.major.x = element_line(colour = "gray90", linetype = "dashed"),
       legend.background = element_blank(),
       legend.title = element_text(color = "#005866", hjust = 0.5),
       legend.position = "top",

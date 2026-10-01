@@ -116,9 +116,11 @@ reference_estimates_server <- function(id, cache, i18n) {
       # Dataset zone uses), not a separate "Using default data"/"Upload successful" message box underneath it.
       # There's nothing to show for the default/no-override case any more either -- every field already defaults
       # to the app's own bundled data unless overridden, which doesn't need its own explicit notice.
+      # The banner says what went wrong (the file's own error, cleaned), as the Survey Files step's does.
       upload_error <- function(output_id, e) {
         output[[output_id]] <- renderUI({
-          cd_status_banner("error", "title_msg_upload_failed", "err_upload_unsupported", i18n = i18n)
+          clean_message <- clean_error_message(e)
+          cd_status_banner("error", "title_msg_error", str_glue_data(list(clean_message = clean_message), i18n$t("err_upload_failed_general")), i18n = i18n)
         })
       }
 
@@ -139,7 +141,6 @@ reference_estimates_server <- function(id, cache, i18n) {
           cd_set_file_upload("un_data", file_name, session)
         },
         error = function(e) {
-          print(e)
           upload_error("un_error", e)
         })
       })

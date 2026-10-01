@@ -60,7 +60,7 @@ plot.cd_mortality_summary <- function(x, indicator = c('mmr_inst', 'ratio_md_sb'
       color = 'black', vjust = -0.5, hjust = -0.1, size = 3
     ) +
     scale_y_continuous(limits = limits, breaks = breaks, expand = expansion(mult = c(0, 0.05))) +
-    scale_color_manual(values = set_names(c('forestgreen', 'orangered'), c(lbl_regions, label)), breaks = c(label, lbl_regions)) +
+    scale_color_manual(values = set_names(.cd_palette$regions_national, c(lbl_regions, label)), breaks = c(label, lbl_regions)) +
     cd_plot_theme(
       title = title
     ) +
@@ -194,10 +194,7 @@ plot.cd_mortality_summary_filtered <- function(x, labels = NULL, ..., options = 
   legend <- labels$legend %||% legend
 
   x %>%
-    st_set_geometry('geometry') %>%
-    st_as_sf() %>%
-    st_set_crs(4326) %>%
-    st_transform(crs = 4326) %>%
+    .cd_as_map() %>%
     ggplot() +
       geom_sf(aes(fill = !!sym(indicator)), colour = 'white') +
       facet_wrap(~ year, scales = 'fixed', ncol = 5) +
@@ -207,20 +204,8 @@ plot.cd_mortality_summary_filtered <- function(x, labels = NULL, ..., options = 
         name = legend
       ) +
       cd_plot_theme(title = title) +
-      theme(
-        panel.border = element_blank(),
-        panel.spacing = unit(1, "lines"),
-        legend.key.size = unit(6, "mm"),
-        legend.background = element_blank(),
-        legend.title = element_text(size = 11),
-        legend.text = element_text(size = 9),
-        axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        axis.title = element_blank(),
-        axis.line = element_blank(),
-        strip.text = element_text(size = 12, face = "bold"),
-        aspect.ratio = 1
-      )
+      cd_map_theme() +
+      theme(legend.key.size = unit(6, "mm"), legend.text = element_text(size = 9))
 }
 
 #' Plot Subnational Mortality Plausibility
@@ -325,7 +310,7 @@ plot_mortality_plausibility <- function(x,
                                   vjust = -0.5,  show.legend = FALSE) +
 
     # Scales
-    scale_color_manual(name = NULL, values = setNames(c("red", "blue"), c(lbl_median, lbl_plausible))) +
+    scale_color_manual(name = NULL, values = setNames(.cd_palette$median_range, c(lbl_median, lbl_plausible))) +
     scale_linetype_manual(name = NULL, values = setNames(c("solid", "dashed"), c(lbl_median, lbl_plausible))) +
     scale_x_continuous(breaks = min_year:max_year) +
     cd_plot_theme(

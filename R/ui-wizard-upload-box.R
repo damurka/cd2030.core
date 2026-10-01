@@ -265,7 +265,7 @@ upload_box_server <- function(id, i18n, cdsuite_file, is_electron = FALSE) {
         icon_only = FALSE
       )
 
-      # cd_help_button_server() removed along with the box's own "Get help" button (upload_data_ui() has the page's
+      # cd_help_button_server() removed along with the box's own "Get help" button (cd_upload_data_ui() has the page's
       # help button now, wired to the same "loading-data" path via cd_page_header_server()).
 
       list(cache = reactive(initial_cache()), requires_walkthrough = requires_walkthrough, source_path = source_path)

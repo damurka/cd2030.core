@@ -50,6 +50,10 @@
 \alias{cd_wizard_config}
 \alias{cd_wizard_field_group}
 \alias{cd_wizard_indicator_group}
+\alias{cd_table_card_server}
+\alias{cd_table_card_ui}
+\alias{cd_upload_data_server}
+\alias{cd_upload_data_ui}
 \alias{cd_wizard_national_rate_fields}
 \alias{cd_wizard_rate_field}
 \alias{cd_wizard_survey_field}
@@ -185,7 +189,10 @@ screens, the dataset header (with its denominator row, \code{cd_denominator_head
 The Introduction page (\code{introduction_ui(id, i18n)}, \code{introduction_server(id, selected_language)}) shows the app's
 help in the chosen language; \code{cd_app()} adds it.
 
-\strong{The Load Data wizard.} \verb{upload_box_*}, \verb{wizard_steps_*} and \verb{wizard_landing_*} make the screen; its steps are
+\strong{The Load Data wizard.} \code{cd_upload_data_ui()} / \code{cd_upload_data_server()} are the Load Data screen (\code{cd_app()}'s
+default): the page header and the wizard, the same for every app, which describes its own part of it with
+\code{options(cd2030.wizard = list(national_rates_groups, reference_uploads))} (see \code{R/ui-wizard-wizard-config.R}).
+\verb{upload_box_*}, \verb{wizard_steps_*} and \verb{wizard_landing_*} make the screen; its steps are
 \code{wizard_step_defs} (upload, data quality, survey files, national rates, shapefile, survey and map mappings), each with
 a \verb{step_*_complete()} test, and \code{compute_step_states()} works out which are done, blocked or optional. The steps'
 pages are \verb{national_rates_*}, \verb{survey_upload_*}, \verb{reference_estimates_*}, \verb{shapefile_step_*}, \verb{map_survey_*} and
@@ -193,6 +200,7 @@ pages are \verb{national_rates_*}, \verb{survey_upload_*}, \verb{reference_estim
 
 \strong{Filters and building blocks.} \verb{cd_admin_level_*}, \verb{cd_indicator_*}, \verb{cd_denominator_*}, \verb{cd_population_*},
 \code{cd_years_input()} / \code{cd_years_sync()}, the scoped page (\code{cd_scope()}, \verb{cd_scoped_page_*}, \code{cd_scope_filters()}),
-tabbed charts (\verb{cd_tabbed_charts_*}), tables (\verb{cd_table_*}) and the coverage chart card (\verb{cd_coverage_plot_*}).
+tabbed charts (\verb{cd_tabbed_charts_*}), tables (\verb{cd_table_*}), a flextable in a card with its picture and Excel
+downloads (\verb{cd_table_card_*}) and the coverage chart card (\verb{cd_coverage_plot_*}).
 }
 \keyword{internal}

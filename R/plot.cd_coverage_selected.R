@@ -114,8 +114,8 @@ plot.cd_coverage_selected <- function(x,
         facet_wrap(~indicator, scales = "free_y", ncol = 2) +
         scale_x_continuous(limits = c(0, 105), labels = scales::label_number(suffix = "%")) +
         labs(title = t_title, x = t_x, y = y_axis) +
-        theme_minimal(base_size = 8)
-        
+        cd_minimal_theme(base_size = 8)
+
     } else if (type == "heatmap") {
       t_title <- title %||% paste0("Subnational continuum heatmap (", latest_yr, ")")
       t_fill  <- fill_label %||% "Coverage"
@@ -133,12 +133,9 @@ plot.cd_coverage_selected <- function(x,
           labels = scales::label_number(suffix = "%")
         ) +
         labs(title = t_title, x = x_axis, y = y_axis, fill = t_fill) +
-        theme_minimal(base_size = 10) +
-        theme(
-          axis.text.x = element_text(angle = 30, hjust = 1),
-          # Removes default background grid lines so the tile borders stand out sharply
-          panel.grid = element_blank() 
-        )
+        # no grid lines, so the tile borders stand out sharply
+        cd_minimal_theme(base_size = 10, grid = "none") +
+        theme(axis.text.x = element_text(angle = 30, hjust = 1))
     }
   }
 }

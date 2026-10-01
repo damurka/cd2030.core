@@ -129,12 +129,7 @@ plot.cd_outlier <- function(x,
     ggplot(data_prepared, aes(x = factor(year), y = value, fill = color_category)) +
       geom_col(show.legend = TRUE) +
       facet_wrap(~category) +
-      scale_fill_manual(
-        values = set_names(c("red", "orange", "forestgreen"), lvl),
-        limits = lvl,
-        breaks = lvl,
-        drop = FALSE
-      ) +
+      .cd_category_fill(lvl) +
       cd_plot_theme(
         title = plot_title,
         x_axis = plot_x,

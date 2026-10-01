@@ -86,7 +86,7 @@ plot.cd_threshold <- function(x, title = NULL, x_axis = NULL, y_axis = NULL, leg
     geom_hline(yintercept = 80, colour = "red", linewidth = 1.5) +
     scale_y_continuous(breaks = scales::pretty_breaks(n = 11), expand = expansion(mult = c(0,0.1))) +
     scale_fill_manual(
-      values = c("darkgreen", "darkgoldenrod3", "firebrick4", "springgreen3", "darkolivegreen3", "steelblue2"),
+      values = .cd_palette$years,
       name = final_legend_title
     ) +
     cd_plot_theme(

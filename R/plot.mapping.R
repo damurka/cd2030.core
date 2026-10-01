@@ -58,10 +58,7 @@ plot.cd_mapping_filtered <- function(x, title = NULL, caption = NULL, legend = N
   final_legend_title <- legend %||% "Coverage (%)"
 
   p <- x %>%
-    st_set_geometry('geometry') %>%
-    st_as_sf() %>%
-    st_set_crs(4326) %>%
-    st_transform(crs = 4326) %>%
+    .cd_as_map() %>%
     ggplot() +
       geom_sf(aes(fill = !!sym(column))) +
       coord_sf(default_crs = 4326, lims_method = "geometry_bbox") +
@@ -72,20 +69,8 @@ plot.cd_mapping_filtered <- function(x, title = NULL, caption = NULL, legend = N
         legend = final_legend_title,
         caption = final_caption
       ) +
-      theme(
-        panel.border = element_blank(),
-        panel.spacing = unit(1, "lines"),
-        legend.text = element_text(size = 10),
-        legend.key.width = unit(2, "cm"),
-        legend.background = element_blank(),
-        legend.title = element_text(size = 11),
-        axis.text = element_blank(),
-        axis.ticks = element_blank(),
-        axis.title = element_blank(),
-        axis.line = element_blank(),
-        strip.text = element_text(size = 12, face = "bold"),
-        aspect.ratio = 1
-      )
+      cd_map_theme() +
+      theme(legend.text = element_text(size = 10), legend.key.width = unit(2, "cm"))
 
   cd_finish_plot(p, options, ..., .source = x)
 }

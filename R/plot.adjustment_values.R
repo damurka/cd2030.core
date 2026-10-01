@@ -121,7 +121,7 @@ plot.cd_adjustment_values_filtered <- function(x,
                 colour = ifelse(rects$removed, "#b57f0c", NA), linewidth = 0.4) +
       scale_alpha_manual(values = c(`FALSE` = 1, `TRUE` = 0.35), guide = "none") +
       scale_linetype_manual(values = c(`FALSE` = "solid", `TRUE` = "22"), guide = "none") +
-      scale_fill_manual(values = c(raw = "#c9ced3", completeness = "#9b5758", outliers = "#cfaa50", missing = "#2f6db5"),
+      scale_fill_manual(values = .cd_palette$adjustment_parts,
                         labels = unlist(lab[c("raw", "completeness", "outliers", "missing")]), name = NULL, drop = FALSE) +
       scale_x_continuous(breaks = at, labels = as.character(x$year), expand = ggplot2::expansion(add = 0.3)) +
       scale_y_continuous(labels = scales::number_format(), breaks = scales::pretty_breaks(n = 6)) +
@@ -160,7 +160,7 @@ plot.cd_adjustment_values_filtered <- function(x,
         geom_col(position = dodge, width = 0.75) +
         geom_text(aes(label = label, vjust = ifelse(change >= 0, -0.4, 1.3)), position = dodge, size = 3) +
         scale_y_continuous(labels = scales::number_format(), expand = ggplot2::expansion(mult = 0.12)) +
-        scale_fill_manual(values = c(completeness = "#9b5758", outliers = "#3f88c5", missing = "#cfaa50"),
+        scale_fill_manual(values = .cd_palette$adjustment_steps[c("completeness", "outliers", "missing")],
                           labels = unlist(step_labels[c("completeness", "outliers", "missing")]), name = NULL, drop = FALSE) +
         cd_plot_theme(title = title, x_axis = x_axis, y_axis = y_axis %||% "Change from the reported number")
     )
@@ -185,12 +185,7 @@ plot.cd_adjustment_values_filtered <- function(x,
     title <- paste("Comparison of number of", indicator, "before and after adjustment for completeness and outliers")
   }
 
-  fill_colors <- c(
-    raw = "darkgreen",
-    completeness = "#9b5758",
-    outliers = "#3f88c5",
-    adjusted = "darkgoldenrod3"
-  )[keys]
+  fill_colors <- .cd_palette$adjustment_steps[keys]
 
 
   # Prepare data with absolute and percentage difference columns

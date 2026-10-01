@@ -131,7 +131,7 @@ plot.cd_inequality_filtered <- function(x, title = NULL, subtitle = NULL, x_axis
       breaks = breaks,
       labels = function(y) ifelse(y == second_last_break, lbl_madm, ifelse(y == max_break, "", as.character(y))) # Replace max_y - 10 with "MADM"
     ) +
-    scale_color_manual(values = set_names(c('skyblue3', 'red1'), c(lbl_subnat, lbl_nat))) +
+    scale_color_manual(values = set_names(.cd_palette$subnational_national, c(lbl_subnat, lbl_nat))) +
     cd_plot_theme(
       title = final_title,
       y_axis = final_y_axis,
@@ -139,10 +139,9 @@ plot.cd_inequality_filtered <- function(x, title = NULL, subtitle = NULL, x_axis
       subtitle = final_subtitle,
       caption = final_caption
     ) +
+    cd_dashed_grid_theme() +
     theme(
       panel.border = element_blank(),
-      panel.grid.major.y = element_line(colour = "lightblue1", linetype = "dashed"),
-      panel.grid.major.x = element_line(colour = "gray90", linetype = "dashed"),
       plot.title = element_text(size = 16),
       plot.subtitle = element_text(size = 12),
       axis.line = element_line(),

@@ -4,12 +4,13 @@
 #   cd_app(app_name, app_version, theme = "vaccine", nav_sections = cd_nav_sections, registry = cd_page_registry,
 #          i18n = i18n, language = language, selected_file = selected_file)
 #
-# `upload_ui` / `upload_server`: the app's Load Data screen (its part of the wizard), by default the app's
-# upload_data_ui() / upload_data_server() (an app package passes its own).
+# `upload_ui` / `upload_server`: the Load Data screen. By default the app's own upload_data_ui() / upload_data_server()
+# if it has them, otherwise the shared one, cd_upload_data_ui() / cd_upload_data_server() (R/ui-wizard-upload-page.R),
+# which the app sets up with options(cd2030.wizard = ...).
 # `theme`: NULL/"rmncah" (maroon), "vaccine" (blue) or "pooled" (green) -- see the App themes block of cd-ui.css.
 cd_app <- function(app_name, app_version, theme, nav_sections, registry, i18n, language, selected_file,
-                   upload_ui = get0("upload_data_ui", envir = parent.frame()),
-                   upload_server = get0("upload_data_server", envir = parent.frame())) {
+                   upload_ui = get0("upload_data_ui", envir = parent.frame()) %||% cd_upload_data_ui,
+                   upload_server = get0("upload_data_server", envir = parent.frame()) %||% cd_upload_data_server) {
   if (!is.function(upload_ui) || !is.function(upload_server)) {
     stop("cd_app() needs the app's Load Data screen: upload_ui and upload_server.", call. = FALSE)
   }

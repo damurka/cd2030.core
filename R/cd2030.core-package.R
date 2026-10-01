@@ -31,7 +31,6 @@
 #' @import dplyr
 #' @import flextable
 #' @import ggplot2
-#' @import officer
 #' @import rlang
 #' @import tidyr
 #' @importFrom stats as.formula lm median na.omit quantile reorder setNames
@@ -46,7 +45,6 @@
 #' @importFrom haven read_dta
 #' @importFrom haven write_dta
 #' @importFrom htmltools HTML
-#' @importFrom janitor make_clean_names
 #' @importFrom lubridate month
 #' @importFrom lubridate year
 #' @importFrom lubridate ym
@@ -83,12 +81,6 @@
 #' @importFrom readr read_csv
 #' @importFrom readxl excel_sheets
 #' @importFrom readxl read_excel
-#' @importFrom sf st_as_sf
-#' @importFrom sf st_make_valid
-#' @importFrom sf st_read
-#' @importFrom sf st_set_crs
-#' @importFrom sf st_set_geometry
-#' @importFrom sf st_transform
 #' @importFrom stringr fixed
 #' @importFrom stringr str_detect
 #' @importFrom stringr str_ends

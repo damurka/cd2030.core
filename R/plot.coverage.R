@@ -138,10 +138,7 @@ plot.cd_coverage_filtered <- function(x, title = NULL, x_axis = NULL, y_axis = N
       y_axis = final_y_axis,
       caption = final_caption
     ) +
-    theme(
-      panel.grid.major.y = element_line(colour = "lightblue1", linetype = "dashed"),
-      panel.grid.major.x = element_line(colour = "gray90", linetype = "dashed")
-    )
+    cd_dashed_grid_theme()
 
   cd_finish_plot(plot, options, ..., .source = x)
 }

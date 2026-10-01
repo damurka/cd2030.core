@@ -126,7 +126,7 @@ get_country_shapefile <- function(country_iso, level = c("admin_level_1", "distr
   shapefile_path <- system.file(file.path("shapefiles", "admin_level_1.gpkg"), package = "cd2030.core")
   check_file_path(shapefile_path)
 
-  sf_data <- st_read(shapefile_path, layer = country_iso, quiet = TRUE)
+  sf_data <- sf::st_read(shapefile_path, layer = country_iso, quiet = TRUE)
   validate_shapefile(sf_data)
 }
 
@@ -141,8 +141,8 @@ get_country_shapefile <- function(country_iso, level = c("admin_level_1", "distr
 #' @noRd
 validate_shapefile <- function(sf_data) {
   sf_data %>%
-    st_make_valid() %>%
-    st_transform(4326)
+    sf::st_make_valid() %>%
+    sf::st_transform(4326)
 }
 
 #' Read a user-uploaded shapefile folder
@@ -178,7 +178,7 @@ read_shapefile_folder <- function(files_df, call = caller_env()) {
 
   shp_name <- matched$name[tolower(tools::file_ext(matched$name)) == "shp"][1]
   sf_data <- tryCatch(
-    st_read(file.path(tmp_dir, shp_name), quiet = TRUE),
+    sf::st_read(file.path(tmp_dir, shp_name), quiet = TRUE),
     error = function(e) {
       cd_abort(c("x" = paste0("Could not read the uploaded shapefile: ", clean_error_message(e))), call = call)
     }

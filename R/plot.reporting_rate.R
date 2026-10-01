@@ -117,7 +117,6 @@ plot.cd_average_reporting_rate <- function(x,
   plot_leg <- if (!is.null(legend)) legend else label$legend
 
   all_years <- sort(unique(x$year))
-  color_vals <- c("red", "orange", "forestgreen")
 
   greater <- paste0("\u2265 ", threshold)
   mid <- paste0("\u2265 70 and < ", threshold)
@@ -139,12 +138,7 @@ plot.cd_average_reporting_rate <- function(x,
   if (plot_type == "heat_map") {
     ggplot(dt, aes(x = !!sym(admin_level_col), y = year, fill = color_category)) +
       geom_tile(color = "white", show.legend = TRUE) +
-      scale_fill_manual(
-        values = set_names(color_vals, lvl),
-        breaks = lvl,
-        limits = lvl,
-        drop = FALSE
-      ) +
+      .cd_category_fill(lvl) +
       scale_x_discrete(expand = expansion(mult = 0)) +
       scale_y_discrete(expand = expansion(mult = 0)) +
       geom_text(aes(label = !!sym(indicator)), color = "black", size = 4, vjust = 0.5) +
@@ -158,12 +152,7 @@ plot.cd_average_reporting_rate <- function(x,
     ggplot(dt, aes(year, !!sym(indicator), fill = color_category)) +
       geom_col(show.legend = TRUE) +
       facet_wrap(as.formula(paste0("~", admin_level_col))) +
-      scale_fill_manual(
-        values = set_names(color_vals, lvl),
-        breaks = lvl,
-        limits = lvl,
-        drop = FALSE
-      ) +
+      .cd_category_fill(lvl) +
       scale_x_discrete( drop = FALSE, expand = expansion(mult = c(0, 0.05))) +
       cd_bar_theme(
         title = plot_title,
@@ -251,17 +240,7 @@ plot.cd_district_reporting_rate <- function(x,
   years <- x %>%
     distinct(year) %>%
     pull(year)
-  base_colors <- c("darkgreen", "orangered", "royalblue4", "indianred4", "darkslategray4")
-
-  extra_needed <- robust_max(c(0, length(years) - length(base_colors)), 0)
-  extra_colors <- if (extra_needed > 0) {
-    scales::hue_pal()(extra_needed)
-  } else {
-    NULL
-  }
-
-  colors <- c(base_colors, extra_colors)
-  names(colors) <- years
+  colors <- cd_year_colours(years, .cd_palette$years_reporting)
 
   plot_title <- if (!is.null(title)) title else paste("Percentage of districts with low reporting rate (<", threshold, "%) by service and by year")
   plot_x <- if (!is.null(x_axis)) x_axis else NULL

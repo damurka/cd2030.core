@@ -1,3 +1,23 @@
+# cd2030.core 1.3.7
+
+* `cd_table_card_ui()` / `cd_table_card_server()`: a flextable in a chart card, with its picture and its data (Excel)
+  in the card's header; the screen and the picture are drawn by the same function. The Overall Score page uses it (and
+  rmncah's Service Utilization data quality and national Health System pages). DataSuite's AI can read the table.
+* `cd_upload_data_ui()` / `cd_upload_data_server()`: the Load Data screen the apps had each kept a copy of; `cd_app()`
+  uses it unless the app passes its own. An app describes its part of the wizard with `options(cd2030.wizard = ...)`
+  as before.
+* `cd_minimal_theme()`: `ggplot2::theme_minimal()` with a choice of grid lines (the subnational coverage dot plot and
+  heat map, and cd2030.pooled's charts). The colours several charts share (the traffic-light categories, the year
+  colours, Data Adjustment's steps...) and the theme pieces they repeated (the dashed grid, the maps' theme) are
+  defined once (`R/utils-plot-themes.R`); the charts look as before.
+* A failed reference-data upload (UN, WUENIC or UN mortality estimates) says why in its banner, instead of
+  "Unsupported file format" for every error, and no longer prints the error to the console.
+* sf is used through `sf::` instead of imported, so loading cd2030.core no longer loads sf (and GDAL, GEOS and PROJ)
+  until a map is drawn or a shapefile read. officer is no longer imported whole (`officer::fp_border()` is its only
+  use). No longer imports janitor, which nothing used.
+* Needs datasuite.ui 0.4.2: inside DataSuite, `cd_request_bayes_packages()` asks it to install the Bayesian model's
+  packages through `datasuite.ui::ds_host_request()`.
+
 # cd2030.core 1.3.6
 
 * `notebook_data()`: a folder's Countdown datasets for DataSuite's notebooks (an app's `notebookData`) -- by name in

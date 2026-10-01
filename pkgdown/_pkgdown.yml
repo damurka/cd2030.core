@@ -285,6 +285,7 @@ reference:
       - cd_chart_catalog
       - cd_chart_id
       - cd_finish_plot
+      - cd_minimal_theme
 
   - title: "Shiny Apps"
     desc: >

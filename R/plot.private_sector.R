@@ -127,7 +127,7 @@ plot.cd_private_sector_plot_data <- function(x, ..., country_name = NULL, labels
       labels = seq(0, 100, by = 10),
       limits = c(0, robust_max(label_df$y_pos_text, 100) * 1.1) # Max Y-limit considering text position
     ),
-    scale_fill_manual(values = c("Public" = "#2196F3", "Private" = "#E91E63"), # Using more distinct blue/red
+    scale_fill_manual(values = .cd_palette$public_private,
                       labels = sector_labels),
     labs(
       title = country_name,
