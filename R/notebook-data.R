@@ -9,12 +9,14 @@
 # - "list": the datasets and their tables, from the file names alone (no .rds is opened).
 # - "prepare": Stata files of a dataset's tables in `<workspace>/data/` (another dataset's, and the reference
 #   data, in `data/_others/`) for Python and Stata, made when a table is first asked for and again once its .rds has
-#   changed -- checked at most once a `period`, or at once with `force`.
+#   changed -- checked at most once a `period`, or at once with `force`. `tables` says which: the usual ones when not
+#   given (Python's), only those named otherwise (Stata asks for a table when a cell first uses it).
 # - "attach": in a notebook's R session, the names themselves, read from the .rds (read-only) when first used and
 #   again once it has changed, the same way; and ds_list(), ds_use(), ds_save(), ds_reload().
 # Nothing here writes to an .xlsx or an .rds; only `data/` is written.
 
-# The tables of a dataset: the name notebooks use, and how it comes from the (read-only) CacheConnection.
+# The usual tables of a dataset (what Python notebooks get, and what "prepare" writes when not told which): the name
+# notebooks use, and how it comes from the (read-only) CacheConnection.
 .nb_tables <- list(
   countdown_data = function(cc) cc$countdown_data,
   kept_data = function(cc) cc$data_with_excluded_years,
@@ -22,13 +24,38 @@
   national_rates = function(cc) .nb_national_rates(cc),
   national_survey = function(cc) cc$national_survey,
   regional_survey = function(cc) cc$regional_survey,
-  wealth_survey = function(cc) cc$wealth_survey,
+  wealth_survey = function(cc) cc$wiq_survey,
   education_survey = function(cc) cc$education_survey,
   area_survey = function(cc) cc$area_survey,
   un_estimates = function(cc) cc$un_estimates,
   wuenic_estimates = function(cc) cc$wuenic_estimates,
   settings = function(cc) .nb_settings(cc)
 )
+
+# The CacheConnection member each usual table is (the others are members by their own names).
+.nb_table_members <- c(kept_data = "data_with_excluded_years", wealth_survey = "wiq_survey")
+
+# Every table of a dataset: the usual ones, then every other data and reference member of CacheConnection that is a
+# table (cache_definition(); the map, `shapefile`, is not), computed only when a notebook uses it.
+.nb_all_tables <- function() {
+  defs <- cache_definition()
+  members <- names(defs)[vapply(defs, function(d) isTRUE(d$kind %in% c("data", "reference")), logical(1))]
+  members <- setdiff(members, c(names(.nb_tables), .nb_table_members, "shapefile"))
+  c(.nb_tables, lapply(stats::setNames(members, members), function(m) function(cc) cc[[m]]))
+}
+
+# What a table holds, in a sentence (the first of its CacheConnection member's definition).
+.nb_table_what <- function(table) {
+  fixed <- c(
+    national_rates = "The national rates the denominators use: the survey coverage, mortality and other rates.",
+    settings = "The dataset's settings: country, denominators, survey year, excluded years and the adjustment."
+  )
+  if (table %in% names(fixed)) return(fixed[[table]])
+  member <- if (table %in% names(.nb_table_members)) .nb_table_members[[table]] else table
+  what <- tryCatch(cache_definition(member)$what, error = function(e) NULL)
+  if (is.null(what) || !nzchar(what)) return(NA_character_)
+  sub("^(.*?[.:])\\s.*$", "\\1", what, perl = TRUE)
+}
 
 # The package's reference data, as `ref_<name>`.
 .nb_ref_tables <- c("un_estimates", "un_mortality", "wuenic", "fpet", "countries")
@@ -86,17 +113,20 @@
 #'   the workspace's own is always included.
 #' @param force For `"prepare"`: check the `.rds` files now, not only when the last check is older than `period`.
 #' @param period Seconds between checks of an `.rds` for changes (default 60).
+#' @param tables For `"prepare"`: the tables to write (names from `"list"`); the usual ones when `NULL`. Tables
+#'   already written are kept, and written again once their `.rds` has changed.
 #' @return For `"list"` and `"prepare"`, a list (DataSuite reads it as JSON); for `"attach"`, invisibly the names
 #'   attached.
 #' @export
 notebook_data <- function(action = c("list", "prepare", "attach"), folder, workspace = NULL, datasets = NULL,
-                          force = FALSE, period = 60) {
+                          force = FALSE, period = 60, tables = NULL) {
   action <- match.arg(action)
   folder <- normalizePath(folder, winslash = "/", mustWork = TRUE)
   if (!is.null(workspace)) workspace <- normalizePath(workspace, winslash = "/", mustWork = FALSE)
   switch(action,
     list = .nb_list(folder, workspace),
-    prepare = .nb_prepare(folder, workspace, unique(c(.nb_own(workspace), as.character(unlist(datasets)))), isTRUE(force), as.numeric(period)),
+    prepare = .nb_prepare(folder, workspace, unique(c(.nb_own(workspace), as.character(unlist(datasets)))), isTRUE(force), as.numeric(period),
+                          if (is.null(tables)) NULL else as.character(unlist(tables))),
     attach = .nb_attach(folder, workspace, as.numeric(period))
   )
 }
@@ -174,13 +204,17 @@ notebook_data <- function(action = c("list", "prepare", "attach"), folder, works
   scan <- .nb_scan(folder)
   own <- .nb_own(workspace)
   state <- .nb_read_state(workspace)
+  all_tables <- names(.nb_all_tables())
+  what <- vapply(all_tables, .nb_table_what, character(1))
   table_info <- function(stem) {
-    exported <- state$datasets[[stem]]$tables
-    # once prepared, the tables the dataset has (a survey it has none of is left out); before, all it may have
-    names <- if (length(exported)) intersect(names(.nb_tables), names(exported)) else names(.nb_tables)
+    d <- state$datasets[[stem]]
+    exported <- d$tables
+    # every table it may have, each with whether it is written and up to date (`ready`); one found empty when it
+    # was asked for (a survey the dataset has none of) is left out
+    names <- setdiff(all_tables, unlist(d$empty))
     lapply(names, function(t) {
       e <- exported[[t]]
-      list(name = t, rows = e$rows %||% NA, cols = e$cols %||% NA,
+      list(name = t, what = what[[t]], ready = !is.null(e), rows = e$rows %||% NA, cols = e$cols %||% NA,
            stata = sub("\\.dta$", "", basename(.nb_file(workspace %||% folder, stem, t, own))))
     })
   }
@@ -228,7 +262,7 @@ notebook_data <- function(action = c("list", "prepare", "attach"), folder, works
   list(rows = nrow(x), cols = ncol(x), renamed = if (any(renamed)) as.list(stats::setNames(original[renamed], names(x)[renamed])) else NULL)
 }
 
-.nb_prepare <- function(folder, workspace, datasets, force, period) {
+.nb_prepare <- function(folder, workspace, datasets, force, period, tables = NULL) {
   if (is.null(workspace)) stop("A notebook's data needs its workspace (the notebook is not in a .shiny-workspace folder).")
   own <- .nb_own(workspace)
   state <- .nb_read_state(workspace)
@@ -253,15 +287,27 @@ notebook_data <- function(action = c("list", "prepare", "attach"), folder, works
       next
     }
     d <- state$datasets[[stem]] %||% list()
+    defs <- .nb_all_tables()
+    wanted <- intersect(if (is.null(tables)) names(.nb_tables) else tables, names(defs))
+    # a table not written yet is written whatever the period; the ones written are checked once a period
+    missing <- setdiff(wanted, c(names(d$tables), unlist(d$empty)))
     checked <- if (!is.null(d$checked)) as.POSIXct(d$checked, tz = "UTC") else NULL
-    if (!force && !is.null(checked) && as.numeric(difftime(now, checked, units = "secs")) < period) next
+    if (!force && !length(missing) && !is.null(checked) && as.numeric(difftime(now, checked, units = "secs")) < period) next
     info <- file.info(rds)
     stamp <- paste(format(info$mtime, "%Y-%m-%dT%H:%M:%OS3"), info$size)
-    files_there <- length(d$tables) && all(file.exists(vapply(d$tables, function(t) .nb_long(t$file), "")))
+    files_there <- all(file.exists(vapply(d$tables, function(t) .nb_long(t$file), "")))
     d$checked <- format(now, "%Y-%m-%dT%H:%M:%OS3", tz = "UTC")
-    if (identical(d$stamp, stamp) && files_there) {
+    if (identical(d$stamp, stamp) && files_there && !length(missing)) {
       state$datasets[[stem]] <- d
       next
+    }
+    if (!identical(d$stamp, stamp) || !files_there) {
+      # the .rds changed: what was written is out of date, and is written again (with what is asked for now)
+      wanted <- union(wanted, names(d$tables))
+      d$tables <- list()
+      d$empty <- list()
+    } else {
+      wanted <- missing
     }
     cc <- tryCatch(suppressMessages(init_CacheConnection(rds_path = rds, read_only = TRUE)), error = function(e) e)
     if (inherits(cc, "error")) {
@@ -271,23 +317,25 @@ notebook_data <- function(action = c("list", "prepare", "attach"), folder, works
     }
     revision <- tryCatch(cc$revision, error = function(e) NA)
     saved <- format(info$mtime, "%Y-%m-%d %H:%M")
-    tables <- list()
-    for (t in names(.nb_tables)) {
-      x <- tryCatch(.nb_tables[[t]](cc), error = function(e) NULL)
+    written_now <- character()
+    for (t in wanted) {
+      x <- tryCatch(defs[[t]](cc), error = function(e) NULL)
       file <- .nb_file(workspace, stem, t, own)
       if (!is.data.frame(x) || !ncol(x)) {
         unlink(.nb_long(file))
+        d$tables[[t]] <- NULL
+        d$empty <- as.list(union(unlist(d$empty), t))
         next
       }
       written <- .nb_write_dta(x, file, sprintf("%s %s, revision %s, saved %s", stem, t, revision, saved))
-      tables[[t]] <- c(list(file = file), written)
+      d$tables[[t]] <- c(list(file = file), written)
+      written_now <- c(written_now, t)
     }
     d$stamp <- stamp
     d$revision <- revision
     d$saved <- saved
-    d$tables <- tables
     state$datasets[[stem]] <- d
-    refreshed[[length(refreshed) + 1]] <- list(dataset = stem, own = identical(stem, own), revision = revision, saved = saved, tables = as.list(names(tables)))
+    refreshed[[length(refreshed) + 1]] <- list(dataset = stem, own = identical(stem, own), revision = revision, saved = saved, tables = as.list(written_now))
   }
   .nb_write_state(workspace, state)
   own_tables <- names(state$datasets[[own]]$tables %||% list())
@@ -354,7 +402,7 @@ notebook_data <- function(action = c("list", "prepare", "attach"), folder, works
       table <- sub("^.*/", "", name)
     } else if (startsWith(name, "ref_") && sub("^ref_", "", name) %in% .nb_ref_tables) {
       return(get(sub("^ref_", "", name), envir = asNamespace("cd2030.core")))
-    } else if (name %in% names(.nb_tables) && !is.null(own)) {
+    } else if (name %in% names(.nb_all_tables()) && !is.null(own)) {
       stem <- own
       table <- name
     } else {
@@ -362,8 +410,9 @@ notebook_data <- function(action = c("list", "prepare", "attach"), folder, works
       if (is.null(file)) stop("No table called ", name, ". ds_list() shows what there is.", call. = FALSE)
       return(read_saved(file))
     }
-    if (!table %in% names(.nb_tables)) stop(table, " is not one of a dataset's tables: ", paste(names(.nb_tables), collapse = ", "), call. = FALSE)
-    .nb_tables[[table]](dataset(stem))
+    defs <- .nb_all_tables()
+    if (!table %in% names(defs)) stop(table, " is not one of a dataset's tables: ds_list() shows them.", call. = FALSE)
+    defs[[table]](dataset(stem))
   }
 
   env$ds_use <- use
@@ -372,16 +421,16 @@ notebook_data <- function(action = c("list", "prepare", "attach"), folder, works
     rows <- list()
     for (d in l$datasets) {
       if (!identical(d$status, "ok")) {
-        rows[[length(rows) + 1]] <- data.frame(dataset = d$name, table = paste0("(", d$status, ")"), use = NA_character_, saved = NA_character_, stringsAsFactors = FALSE)
+        rows[[length(rows) + 1]] <- data.frame(dataset = d$name, table = paste0("(", d$status, ")"), use = NA_character_, description = d$message %||% NA_character_, saved = NA_character_, stringsAsFactors = FALSE)
         next
       }
       for (t in d$tables) {
         rows[[length(rows) + 1]] <- data.frame(dataset = if (isTRUE(d$own)) paste0(d$name, " (this notebook)") else d$name, table = t$name,
-                                               use = if (isTRUE(d$own)) t$name else paste0(d$name, "/", t$name), saved = d$saved, stringsAsFactors = FALSE)
+                                               use = if (isTRUE(d$own)) t$name else paste0(d$name, "/", t$name), description = t$what %||% NA_character_, saved = d$saved, stringsAsFactors = FALSE)
       }
     }
-    for (s in l$saved) rows[[length(rows) + 1]] <- data.frame(dataset = "(saved in this workspace)", table = s$name, use = s$name, saved = s$saved, stringsAsFactors = FALSE)
-    for (t in l$ref$tables) rows[[length(rows) + 1]] <- data.frame(dataset = paste("cd2030.core", l$ref$version), table = t$name, use = t$name, saved = NA_character_, stringsAsFactors = FALSE)
+    for (s in l$saved) rows[[length(rows) + 1]] <- data.frame(dataset = "(saved in this workspace)", table = s$name, use = s$name, description = "Saved from a notebook (ds_save).", saved = s$saved, stringsAsFactors = FALSE)
+    for (t in l$ref$tables) rows[[length(rows) + 1]] <- data.frame(dataset = paste("cd2030.core", l$ref$version), table = t$name, use = t$name, description = "Reference data built into cd2030.core.", saved = NA_character_, stringsAsFactors = FALSE)
     do.call(rbind, rows)
   }
   env$ds_save <- function(x, name) {
@@ -409,9 +458,10 @@ notebook_data <- function(action = c("list", "prepare", "attach"), folder, works
     makeActiveBinding(name, getter, env)
   }
   if (!is.null(own) && file.exists(file.path(folder, paste0(own, ".rds")))) {
-    for (t in names(.nb_tables)) local({
+    defs <- .nb_all_tables()
+    for (t in names(defs)) local({
       table <- t
-      bind(table, function() .nb_tables[[table]](dataset(own)))
+      bind(table, function() defs[[table]](dataset(own)))
     })
     bind("cache", function() dataset(own))
   }

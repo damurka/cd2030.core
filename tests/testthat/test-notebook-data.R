@@ -88,3 +88,26 @@ test_that("in R the tables are there by name, read when used and again once the 
 
   expect_equal(nb_md5(folder), before)
 })
+
+test_that("every table of the dataset is listed with what it holds, and prepare writes only those asked for", {
+  folder <- nb_folder()
+  ws <- file.path(folder, "CAM_2026_KENYA_TEST_rmncah.shiny-workspace")
+  own <- Filter(function(d) isTRUE(d$own), notebook_data("list", folder, ws)$datasets)[[1]]
+  names <- vapply(own$tables, function(t) t$name, "")
+  expect_true(all(c("countdown_data", "adjusted_data", "indicator_coverage_national", "overall_score") %in% names))
+  expect_false("shapefile" %in% names)
+  expect_false(any(duplicated(names)))
+  what <- vapply(own$tables, function(t) t$what %||% NA_character_, "")
+  expect_match(what[names == "countdown_data"], "HMIS data")
+  expect_false(any(vapply(own$tables, function(t) isTRUE(t$ready), NA)))   # nothing written yet
+
+  p <- notebook_data("prepare", folder, ws, tables = "reporting_rate_national")
+  expect_equal(unlist(p$own_tables), "reporting_rate_national")
+  expect_equal(list.files(file.path(ws, "data"), pattern = "\\.dta$"), "reporting_rate_national.dta")
+  # another table asked for within the period is written at once; the first is kept
+  p <- notebook_data("prepare", folder, ws, tables = "countdown_data")
+  expect_setequal(unlist(p$own_tables), c("reporting_rate_national", "countdown_data"))
+  own <- Filter(function(d) isTRUE(d$own), notebook_data("list", folder, ws)$datasets)[[1]]
+  ready <- Filter(function(t) isTRUE(t$ready), own$tables)
+  expect_setequal(vapply(ready, function(t) t$name, ""), c("reporting_rate_national", "countdown_data"))
+})

@@ -10,7 +10,8 @@ notebook_data(
   workspace = NULL,
   datasets = NULL,
   force = FALSE,
-  period = 60
+  period = 60,
+  tables = NULL
 )
 }
 \arguments{
@@ -28,6 +29,9 @@ the workspace's own is always included.}
 \item{force}{For \code{"prepare"}: check the \code{.rds} files now, not only when the last check is older than \code{period}.}
 
 \item{period}{Seconds between checks of an \code{.rds} for changes (default 60).}
+
+\item{tables}{For \code{"prepare"}: the tables to write (names from \code{"list"}); the usual ones when \code{NULL}. Tables
+already written are kept, and written again once their \code{.rds} has changed.}
 }
 \value{
 For \code{"list"} and \code{"prepare"}, a list (DataSuite reads it as JSON); for \code{"attach"}, invisibly the names

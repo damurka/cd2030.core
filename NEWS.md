@@ -6,6 +6,11 @@
   surviving infants without penta1 (zero-dose) or penta3 (under-vaccinated), as in the Countdown 2030 Stata code.
 * Measles2 coverage is divided by the infants surviving to the second dose (`totmeasles2_*`), as in the Stata code and
   as the derived denominators already did, not by those surviving to the first.
+* Notebook data: a dataset's notebooks get every table the CacheConnection has (51: the data, the results each page
+  shows, the reference data), each listed with what it holds (`ds_list()`'s new `description`, and the list DataSuite
+  shows in Stata's `dslist`). `notebook_data("prepare", tables = )` writes only the tables asked for, so Stata
+  notebooks get a table when a cell first uses it; Python's are the usual twelve, as before. `wealth_survey` is the
+  wealth-quintile survey again (it read a member that does not exist, so it was always empty).
 * `STATA-DIFFERENCES.md` lists where the package and the Countdown 2030 Stata code still differ, by choice.
 
 # cd2030.core 1.3.7
