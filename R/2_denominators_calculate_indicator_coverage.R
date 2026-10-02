@@ -246,7 +246,7 @@ calculate_populations <- function(.data,
         cov_penta1_un = 100 * penta1/(totinftpenta_un * 1000),
         cov_penta3_un = 100 * penta3/(totinftpenta_un * 1000),
         cov_measles1_un = 100 * measles1/(totinftmeasles_un * 1000),
-        cov_measles2_un = 100 * measles2/(totinftmeasles_un * 1000)
+        cov_measles2_un = 100 * measles2/(totmeasles2_un * 1000)
       )
 
       if (get_selected_group() == 'rmncah') {
@@ -288,8 +288,8 @@ calculate_populations <- function(.data,
           cov_ipv1_un = 100 * ipv1/(totinftpenta_un * 1000),
           cov_ipv2_un = 100 * ipv2/(totinftpenta_un * 1000),
 
-          cov_zerodose_un = 100 * ((totinftpenta_un * 1000 - penta1)/totinftpenta_un * 1000),
-          cov_undervax_un = 100 * ((totinftpenta_un * 1000 - penta3)/totinftpenta_un * 1000),
+          cov_zerodose_un = 100 * (totinftpenta_un * 1000 - penta1) / (totinftpenta_un * 1000),
+          cov_undervax_un = 100 * (totinftpenta_un * 1000 - penta3) / (totinftpenta_un * 1000),
           cov_dropout_penta13_un = ((penta1 - penta3)/penta1) * 100,
           cov_dropout_measles12_un = ((measles1 - measles2)/measles1) * 100,
           cov_dropout_penta3mcv1_un = ((penta3 - measles1)/penta3) * 100,
@@ -309,7 +309,7 @@ calculate_populations <- function(.data,
       cov_penta1_dhis2 = 100 * penta1/(totinftpenta_dhis2 * 1000),
       cov_penta3_dhis2 = 100 * penta3/(totinftpenta_dhis2 * 1000),
       cov_measles1_dhis2 = 100 * measles1/(totinftmeasles_dhis2 * 1000),
-      cov_measles2_dhis2 = 100 * measles2/(totinftmeasles_dhis2 * 1000)
+      cov_measles2_dhis2 = 100 * measles2/(totmeasles2_dhis2 * 1000)
     )
 
   if (get_selected_group() == 'rmncah') {
@@ -351,9 +351,9 @@ calculate_populations <- function(.data,
         cov_ipv1_dhis2 = 100 * ipv1/(totinftpenta_dhis2 * 1000),
         cov_ipv2_dhis2 = 100 * ipv2/(totinftpenta_dhis2 * 1000),
 
-        cov_zerodose_dhis2 = 100 * ((totinftpenta_dhis2 * 1000 - penta1)/totinftpenta_dhis2 * 1000),
+        cov_zerodose_dhis2 = 100 * (totinftpenta_dhis2 * 1000 - penta1) / (totinftpenta_dhis2 * 1000),
         # generating undervax indicators
-        cov_undervax_dhis2 = 100 * ((totinftpenta_dhis2 * 1000 - penta3)/totinftpenta_dhis2 * 1000),
+        cov_undervax_dhis2 = 100 * (totinftpenta_dhis2 * 1000 - penta3) / (totinftpenta_dhis2 * 1000),
         # generating drop-out indicators
         cov_dropout_penta13_dhis2 = ((penta1 - penta3)/penta1) * 100,
         cov_dropout_measles12_dhis2 = ((measles1 - measles2)/measles1) * 100,
@@ -372,7 +372,7 @@ calculate_populations <- function(.data,
       cov_penta1_anc1 = 100 * penta1/totinftpenta_anc1,
       cov_penta3_anc1 = 100 * penta3/totinftpenta_anc1,
       cov_measles1_anc1 = 100 * measles1/totinftmeasles_anc1,
-      cov_measles2_anc1 = 100 * measles2/totinftmeasles_anc1
+      cov_measles2_anc1 = 100 * measles2/totmeasles2_anc1
     )
 
   if (get_selected_group() == 'rmncah') {
@@ -413,9 +413,9 @@ calculate_populations <- function(.data,
         cov_ipv1_anc1 = 100 * ipv1/totinftpenta_anc1,
         cov_ipv2_anc1 = 100 * ipv2/totinftpenta_anc1,
 
-        cov_zerodose_anc1 = 100 * ((totinftpenta_anc1 * 1000 - penta1)/totinftpenta_anc1 * 1000),
+        cov_zerodose_anc1 = 100 * (totinftpenta_anc1 - penta1) / totinftpenta_anc1,
         # generating undervax indicators
-        cov_undervax_anc1 = 100 * ((totinftpenta_anc1 * 1000 - penta3)/totinftpenta_anc1 * 1000),
+        cov_undervax_anc1 = 100 * (totinftpenta_anc1 - penta3) / totinftpenta_anc1,
         # generating drop-out indicators
         cov_dropout_penta13_anc1 = ((penta1 - penta3)/penta1) * 100,
         cov_dropout_measles12_anc1 = ((measles1 - measles2)/measles1) * 100,
@@ -434,7 +434,7 @@ calculate_populations <- function(.data,
       cov_penta1_penta1 = 100 * penta1/totinftpenta_penta1,
       cov_penta3_penta1 = 100 * penta3/totinftpenta_penta1,
       cov_measles1_penta1 = 100 * measles1/totinftmeasles_penta1,
-      cov_measles2_penta1 = 100 * measles2/totinftmeasles_penta1
+      cov_measles2_penta1 = 100 * measles2/totmeasles2_penta1
     )
 
   if (get_selected_group() == 'rmncah') {
@@ -476,9 +476,9 @@ calculate_populations <- function(.data,
         cov_ipv1_penta1 = 100 * ipv1/totinftpenta_penta1,
         cov_ipv2_penta1 = 100 * ipv2/totinftpenta_penta1,
 
-        cov_zerodose_penta1 = 100 * ((totinftpenta_penta1 * 1000 - penta1)/totinftpenta_penta1 * 1000),
+        cov_zerodose_penta1 = 100 * (totinftpenta_penta1 - penta1) / totinftpenta_penta1,
         # generating undervax indicators
-        cov_undervax_penta1 = 100 * ((totinftpenta_penta1 * 1000 - penta3)/totinftpenta_penta1 * 1000),
+        cov_undervax_penta1 = 100 * (totinftpenta_penta1 - penta3) / totinftpenta_penta1,
         # generating drop-out indicators
         cov_dropout_penta13_penta1 = ((penta1 - penta3)/penta1) * 100,
         cov_dropout_measles12_penta1 = ((measles1 - measles2)/measles1) * 100,
@@ -643,18 +643,18 @@ calculate_populations <- function(.data,
 
     output_data <- output_data %>%
       mutate(
-        cov_zerodose_penta1derived = 100 * ((totinftpenta_penta1derived * 1000 - penta1)/totinftpenta_penta1derived * 1000),
+        cov_zerodose_penta1derived = 100 * (totinftpenta_penta1derived - penta1) / totinftpenta_penta1derived,
         # generating undervax indicators
-        cov_undervax_penta1derived = 100 * ((totinftpenta_penta1derived * 1000 - penta3)/totinftpenta_penta1derived * 1000),
+        cov_undervax_penta1derived = 100 * (totinftpenta_penta1derived - penta3) / totinftpenta_penta1derived,
         # generating drop-out indicators
         cov_dropout_penta13_penta1derived = ((penta1 - penta3)/penta1) * 100,
         cov_dropout_measles12_penta1derived = ((measles1 - measles2)/measles1) * 100,
         cov_dropout_penta3mcv1_penta1derived = ((penta3 - measles1)/penta3) * 100,
         cov_dropout_penta1mcv1_penta1derived = ((penta1 - measles1)/penta1) * 100,
 
-        cov_zerodose_anc1derived = 100 * ((totinftpenta_anc1derived * 1000 - penta1)/totinftpenta_anc1derived * 1000),
+        cov_zerodose_anc1derived = 100 * (totinftpenta_anc1derived - penta1) / totinftpenta_anc1derived,
         # generating undervax indicators
-        cov_undervax_anc1derived = 100 * ((totinftpenta_anc1derived * 1000 - penta3)/totinftpenta_anc1derived * 1000),
+        cov_undervax_anc1derived = 100 * (totinftpenta_anc1derived - penta3) / totinftpenta_anc1derived,
         # generating drop-out indicators
         cov_dropout_penta13_anc1derived = ((penta1 - penta3)/penta1) * 100,
         cov_dropout_measles12_anc1derived = ((measles1 - measles2)/measles1) * 100,

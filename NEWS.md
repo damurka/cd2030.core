@@ -1,3 +1,13 @@
+# cd2030.core 1.3.8
+
+* `calculate_indicator_coverage()`: zero-dose and under-vaccinated coverage were wrong by a factor of about a million
+  (the population in thousands was multiplied by 1000 instead of divided: `(pop*1000 - penta1)/pop*1000`), and for the
+  ANC1-, Penta1- and derived denominators, which are counts, the 1000 did not belong at all. They are now the share of
+  surviving infants without penta1 (zero-dose) or penta3 (under-vaccinated), as in the Countdown 2030 Stata code.
+* Measles2 coverage is divided by the infants surviving to the second dose (`totmeasles2_*`), as in the Stata code and
+  as the derived denominators already did, not by those surviving to the first.
+* `STATA-DIFFERENCES.md` lists where the package and the Countdown 2030 Stata code still differ, by choice.
+
 # cd2030.core 1.3.7
 
 * `cd_table_card_ui()` / `cd_table_card_server()`: a flextable in a chart card, with its picture and its data (Excel)
