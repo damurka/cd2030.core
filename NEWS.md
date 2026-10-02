@@ -11,6 +11,7 @@
   shows in Stata's `dslist`). `notebook_data("prepare", tables = )` writes only the tables asked for, so Stata
   notebooks get a table when a cell first uses it; Python's are the usual twelve, as before. `wealth_survey` is the
   wealth-quintile survey again (it read a member that does not exist, so it was always empty).
+* Requires datasuite.ui 0.4.3: charts and tables already drawn follow a change of language.
 * `STATA-DIFFERENCES.md` lists where the package and the Countdown 2030 Stata code still differ, by choice.
 
 # cd2030.core 1.3.7
