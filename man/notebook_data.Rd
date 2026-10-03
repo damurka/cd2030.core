@@ -5,7 +5,7 @@
 \title{Notebook data: a folder's Countdown datasets for DataSuite's notebooks}
 \usage{
 notebook_data(
-  action = c("list", "prepare", "attach"),
+  action = c("list", "prepare", "attach", "describe"),
   folder,
   workspace = NULL,
   datasets = NULL,
@@ -17,7 +17,9 @@ notebook_data(
 \arguments{
 \item{action}{\code{"list"} (the datasets and their tables, from the file names alone), \code{"prepare"} (Stata files of the
 tables of \code{datasets}, for Python and Stata, made or remade when their \code{.rds} changed) or \code{"attach"} (in a
-notebook's R session: the tables by name, and \code{ds_list()}, \code{ds_use()}, \code{ds_save()}, \code{ds_reload()}).}
+notebook's R session: the tables by name, and \code{ds_list()}, \code{ds_use()}, \code{ds_save()}, \code{ds_reload()}) or
+\code{"describe"} (the own dataset's tables with their columns and what each column holds, for an assistant writing
+code; read from the \code{.rds}, which is not changed).}
 
 \item{folder}{The folder holding the Excel files, the \code{.rds} files and their workspaces.}
 
@@ -31,11 +33,12 @@ the workspace's own is always included.}
 \item{period}{Seconds between checks of an \code{.rds} for changes (default 60).}
 
 \item{tables}{For \code{"prepare"}: the tables to write (names from \code{"list"}); the usual ones when \code{NULL}. Tables
-already written are kept, and written again once their \code{.rds} has changed.}
+already written are kept, and written again once their \code{.rds} has changed. For \code{"describe"}: the tables to
+describe; the usual ones when \code{NULL}.}
 }
 \value{
-For \code{"list"} and \code{"prepare"}, a list (DataSuite reads it as JSON); for \code{"attach"}, invisibly the names
-attached.
+For \code{"list"}, \code{"prepare"} and \code{"describe"}, a list (DataSuite reads it as JSON); for \code{"attach"},
+invisibly the names attached.
 }
 \description{
 What DataSuite's notebooks call (an app's \code{notebookData}): the datasets of a folder -- each app's saved \code{.rds}

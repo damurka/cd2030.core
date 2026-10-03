@@ -106,7 +106,9 @@
 #'
 #' @param action `"list"` (the datasets and their tables, from the file names alone), `"prepare"` (Stata files of the
 #'   tables of `datasets`, for Python and Stata, made or remade when their `.rds` changed) or `"attach"` (in a
-#'   notebook's R session: the tables by name, and `ds_list()`, `ds_use()`, `ds_save()`, `ds_reload()`).
+#'   notebook's R session: the tables by name, and `ds_list()`, `ds_use()`, `ds_save()`, `ds_reload()`) or
+#'   `"describe"` (the own dataset's tables with their columns and what each column holds, for an assistant writing
+#'   code; read from the `.rds`, which is not changed).
 #' @param folder The folder holding the Excel files, the `.rds` files and their workspaces.
 #' @param workspace The notebook's workspace (`<stem>.shiny-workspace`): its `.rds` is the notebook's own dataset.
 #' @param datasets For `"prepare"`: the datasets (their `.rds` file names without `.rds`, or `"ref"`) to prepare;
@@ -114,11 +116,12 @@
 #' @param force For `"prepare"`: check the `.rds` files now, not only when the last check is older than `period`.
 #' @param period Seconds between checks of an `.rds` for changes (default 60).
 #' @param tables For `"prepare"`: the tables to write (names from `"list"`); the usual ones when `NULL`. Tables
-#'   already written are kept, and written again once their `.rds` has changed.
-#' @return For `"list"` and `"prepare"`, a list (DataSuite reads it as JSON); for `"attach"`, invisibly the names
-#'   attached.
+#'   already written are kept, and written again once their `.rds` has changed. For `"describe"`: the tables to
+#'   describe; the usual ones when `NULL`.
+#' @return For `"list"`, `"prepare"` and `"describe"`, a list (DataSuite reads it as JSON); for `"attach"`,
+#'   invisibly the names attached.
 #' @export
-notebook_data <- function(action = c("list", "prepare", "attach"), folder, workspace = NULL, datasets = NULL,
+notebook_data <- function(action = c("list", "prepare", "attach", "describe"), folder, workspace = NULL, datasets = NULL,
                           force = FALSE, period = 60, tables = NULL) {
   action <- match.arg(action)
   folder <- normalizePath(folder, winslash = "/", mustWork = TRUE)
@@ -127,8 +130,40 @@ notebook_data <- function(action = c("list", "prepare", "attach"), folder, works
     list = .nb_list(folder, workspace),
     prepare = .nb_prepare(folder, workspace, unique(c(.nb_own(workspace), as.character(unlist(datasets)))), isTRUE(force), as.numeric(period),
                           if (is.null(tables)) NULL else as.character(unlist(tables))),
-    attach = .nb_attach(folder, workspace, as.numeric(period))
+    attach = .nb_attach(folder, workspace, as.numeric(period)),
+    describe = .nb_describe(folder, workspace, if (is.null(tables)) NULL else as.character(unlist(tables)))
   )
+}
+
+# The own dataset's tables as an assistant writing a notebook's code needs them: what each holds, its grain and key
+# columns, and every column with what it holds (cd_describe_columns()) and its type; `stata` is the column's name in
+# Stata where that differs (Stata names are at most 32 characters). A table the dataset does not have is left out.
+.nb_describe <- function(folder, workspace, tables = NULL) {
+  own <- .nb_own(workspace)
+  rds <- if (!is.null(own)) file.path(folder, paste0(own, ".rds"))
+  if (is.null(rds) || !file.exists(rds)) return(list(error = "The notebook's dataset has no .rds in its folder."))
+  cc <- tryCatch(suppressMessages(init_CacheConnection(rds_path = rds, read_only = TRUE)), error = function(e) e)
+  if (inherits(cc, "error")) return(list(error = conditionMessage(cc)))
+  defs <- .nb_all_tables()
+  wanted <- intersect(if (is.null(tables)) names(.nb_tables) else tables, names(defs))
+  described <- lapply(wanted, function(t) {
+    x <- tryCatch(defs[[t]](cc), error = function(e) NULL)
+    if (!is.data.frame(x) || !ncol(x)) return(NULL)
+    cols <- names(x)
+    meaning <- tryCatch(cd_describe_columns(cols)$description, error = function(e) rep(NA_character_, length(cols)))
+    stata <- make.unique(.nb_stata_name(cols), sep = "_")
+    member <- if (t %in% names(.nb_table_members)) .nb_table_members[[t]] else t
+    def <- tryCatch(cache_definition(member), error = function(e) NULL)
+    list(
+      name = t, what = def$what %||% .nb_table_what(t), grain = def$grain, key_columns = as.list(def$key_columns), rows = nrow(x),
+      columns = lapply(seq_along(cols), function(i) {
+        c(list(name = cols[[i]], type = class(x[[i]])[[1]]),
+          if (!is.na(meaning[[i]])) list(what = meaning[[i]]),
+          if (stata[[i]] != cols[[i]]) list(stata = stata[[i]]))
+      })
+    )
+  })
+  list(dataset = own, revision = tryCatch(cc$revision, error = function(e) NA), tables = Filter(Negate(is.null), described))
 }
 
 # The workspace's own dataset: its folder's name without `.shiny-workspace`.
@@ -473,6 +508,10 @@ notebook_data <- function(action = c("list", "prepare", "attach"), folder, works
     name <- s$name
     if (!exists(name, envir = env, inherits = FALSE)) bind(name, function() read_saved(saved_file(name)))
   })
+  # which of these are tables, for the kernel's variables pane and data viewer (Jovian's Elara lists and reads an
+  # environment's tables named in "jovian.tables", without reading the others or running these bindings)
+  tables <- Filter(function(n) bindingIsActive(n, env), ls(env))
+  attr(env, "jovian.tables") <- setdiff(tables, "cache")
 
   invisible(ls(env))
 }

@@ -76,6 +76,10 @@ test_that("in R the tables are there by name, read when used and again once the 
   expect_gt(nrow(get("ds_use", data_env)("OTHER - COUNTRY_rmncah/countdown_data")), 0)
   expect_gt(nrow(get("ref_wuenic", data_env)), 0)
   expect_true("OTHER - COUNTRY_rmncah/kept_data" %in% get("ds_list", data_env)()$use)
+  # the kernel's variables pane lists these tables (and only tables: not cache, not the ds_* functions)
+  tables <- attr(data_env, "jovian.tables", exact = TRUE)
+  expect_true(all(c("countdown_data", "ref_wuenic") %in% tables))
+  expect_false(any(c("cache", "ds_list", "ds_use") %in% tables))
 
   rds <- file.path(folder, "CAM_2026_KENYA_TEST_rmncah.rds")
   Sys.setFileTime(rds, Sys.time() + 5)
@@ -110,4 +114,26 @@ test_that("every table of the dataset is listed with what it holds, and prepare 
   own <- Filter(function(d) isTRUE(d$own), notebook_data("list", folder, ws)$datasets)[[1]]
   ready <- Filter(function(t) isTRUE(t$ready), own$tables)
   expect_setequal(vapply(ready, function(t) t$name, ""), c("reporting_rate_national", "countdown_data"))
+})
+
+test_that("describe gives each table's columns with what they hold, and leaves the .rds as it was", {
+  folder <- nb_folder()
+  ws <- file.path(folder, "CAM_2026_KENYA_TEST_rmncah.shiny-workspace")
+  before <- nb_md5(folder)
+  d <- notebook_data("describe", folder, ws)
+  expect_null(d$error)
+  expect_equal(d$dataset, "CAM_2026_KENYA_TEST_rmncah")
+  tables <- vapply(d$tables, function(t) t$name, "")
+  expect_true("countdown_data" %in% tables)
+  expect_false("adjusted_data" %in% tables)   # not adjusted: the dataset has none
+  cd <- d$tables[[match("countdown_data", tables)]]
+  expect_match(cd$what, "reporting rates")
+  expect_true("district" %in% unlist(cd$key_columns))
+  cols <- stats::setNames(cd$columns, vapply(cd$columns, function(c) c$name, ""))
+  expect_match(cols$anc_rr$what, "Reporting rate, antenatal care")
+  expect_equal(cols$anc_rr$type, "numeric")
+  only <- notebook_data("describe", folder, ws, tables = "settings")
+  expect_equal(vapply(only$tables, function(t) t$name, ""), "settings")
+  expect_equal(nb_md5(folder), before)
+  expect_match(notebook_data("describe", folder, file.path(folder, "OLD_PROJECT.shiny-workspace"))$error, "no .rds")
 })

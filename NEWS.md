@@ -11,6 +11,11 @@
   shows in Stata's `dslist`). `notebook_data("prepare", tables = )` writes only the tables asked for, so Stata
   notebooks get a table when a cell first uses it; Python's are the usual twelve, as before. `wealth_survey` is the
   wealth-quintile survey again (it read a member that does not exist, so it was always empty).
+* `notebook_data("describe")`: the notebook's dataset's tables with their columns and what each column holds
+  (`cd_describe_columns()`), its grain and key columns, read from the `.rds` without changing it. DataSuite gives it to
+  its assistant when it writes a notebook's code, and shows it when you hover a table or a column in a notebook.
+* In R notebooks, the attached data (`datasuite:data`) names its tables in the attribute `jovian.tables`, so the
+  kernel's variables pane and data viewer list and show them without reading the others or the `ds_*` functions.
 * Requires datasuite.ui 0.4.3: charts and tables already drawn follow a change of language.
 * `STATA-DIFFERENCES.md` lists where the package and the Countdown 2030 Stata code still differ, by choice.
 
