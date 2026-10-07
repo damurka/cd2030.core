@@ -32,4 +32,5 @@
 #' @rawNamespace export(survey_fields, survey_upload_server, survey_upload_ui, target_server, target_ui, upload_box_server)
 #' @rawNamespace export(upload_box_ui, wizard_fields, wizard_landing_server, wizard_landing_ui, wizard_step_defs, wizard_steps_server)
 #' @rawNamespace export(wizard_steps_ui)
+#' @rawNamespace export(bayesian_page_server, bayesian_server, bayesian_ui, cd_bayes_indicators, cd_start_bayes_workers)
 NULL

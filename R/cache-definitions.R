@@ -542,7 +542,9 @@
     bayes_model_inputs = .cd_def("method", "What fitting one indicator's Bayesian model needs (its coverage data, the overall score, the indicator and denominator, the key), so the app fits it in another R process without freezing.",
       depends_on = c("calculate_coverage", "overall_score", "get_denominator", "bayes_model_key"), shown_on = P$bayesian),
     keep_bayes_model = .cd_def("method", "Keeps a Bayesian model fitted in another R process under its key, so the page and reports use it without fitting it again.",
-      depends_on = "bayes_model_key", shown_on = P$bayesian)
+      depends_on = "bayes_model_key", shown_on = P$bayesian),
+    bayes_estimates = .cd_def("method", "The estimates of the Bayesian models already fitted at an admin level, as one table: coverage by year from 2010 to 2030, in percent, with the 95% and 80% intervals, for each indicator fitted with the denominator selected now (a row per region at admin level 1). NULL when none is fitted; nothing is fitted here.",
+      depends_on = c("bayes_model_key", "get_denominator"), shown_on = P$bayesian)
   )
 
   c(defs, methods)

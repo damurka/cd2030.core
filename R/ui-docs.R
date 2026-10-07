@@ -58,6 +58,7 @@
 #' @aliases cd_scope_filters cd_scope_server cd_scoped_page_server cd_scoped_page_ui cd_tabbed_charts_server cd_tabbed_charts_ui
 #' @aliases cd_table_server cd_table_ui cd_wizard_check_group cd_wizard_config cd_wizard_field_group cd_wizard_indicator_group
 #' @aliases cd_table_card_server cd_table_card_ui cd_upload_data_server cd_upload_data_ui
+#' @aliases bayesian_page_server bayesian_server bayesian_ui cd_bayes_indicators cd_start_bayes_workers
 #' @aliases cd_wizard_national_rate_fields cd_wizard_rate_field cd_wizard_survey_field cd_years_input cd_years_sync compute_step_states
 #' @aliases consistency_check_server consistency_check_ui consistency_pair_keys consistency_pair_label coverage_server coverage_trends_server
 #' @aliases coverage_trends_ui coverage_ui data_adjustment_server data_adjustment_ui data_completeness_server data_completeness_ui

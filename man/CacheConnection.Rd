@@ -379,6 +379,7 @@ Invalidate Health Systems Cache}
 \item \href{#method-CacheConnection-bayes_model_cached}{\code{CacheConnection$bayes_model_cached()}}
 \item \href{#method-CacheConnection-bayes_model_inputs}{\code{CacheConnection$bayes_model_inputs()}}
 \item \href{#method-CacheConnection-keep_bayes_model}{\code{CacheConnection$keep_bayes_model()}}
+\item \href{#method-CacheConnection-bayes_estimates}{\code{CacheConnection$bayes_estimates()}}
 \item \href{#method-CacheConnection-clone}{\code{CacheConnection$clone()}}
 }
 }
@@ -2405,7 +2406,7 @@ The key a Bayesian model is kept under (its admin level, indicator and denominat
 \if{html}{\out{<a id="method-CacheConnection-bayes_model_cached"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-bayes_model_cached}{}}}
 \subsection{Method \code{bayes_model_cached()}}{
-The Bayesian model already made for an indicator (by \code{\link[=get_bayes_model]{get_bayes_model()}} or kept with
+The Bayesian model already made for an indicator (by \code{get_bayes_model()} or kept with
 \code{keep_bayes_model()}), or \code{NULL}: nothing is fitted.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CacheConnection$bayes_model_cached(admin_level, indicator)}\if{html}{\out{</div>}}
@@ -2462,6 +2463,28 @@ Keeps a Bayesian model fitted elsewhere (see \code{bayes_model_inputs()}).
 \item{\code{model}}{The model (\code{\link[=generate_bayes_model]{generate_bayes_model()}}'s result).}
 }
 \if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-bayes_estimates"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-bayes_estimates}{}}}
+\subsection{Method \code{bayes_estimates()}}{
+The estimates of the Bayesian models already fitted at an admin level, as one table
+(\code{\link[=bayes_model_estimates]{bayes_model_estimates()}} of each, with the denominator it was fitted for). Only the models for the
+denominators selected now, as the Bayesian pages show; nothing is fitted here.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$bayes_estimates(admin_level)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{admin_level}}{Administrative level ("national", "adminlevel_1").}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A tibble, or \code{NULL} when no model has been fitted at that level.
 }
 }
 \if{html}{\out{<hr>}}

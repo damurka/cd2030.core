@@ -20,13 +20,6 @@ last step -- this surfaces the same problem at Data Quality instead, non-abortin
 every other check here.
 }
 \details{
-A deliberately NOT-yet-replicated counterpart: "every indicator the selected group needs is
-present" (\code{check_required_columns_exist()}, \code{utils.R}) still only runs at Finish. Its check is
-against columns \code{standardize_data()} computes/renames during the merge itself (reporting-rate
-\verb{_rr} columns, \code{instdeliveries} -> \code{ideliv}) -- checking for those names against the RAW,
-pre-standardize sheets produces false positives (confirmed live: a real, known-good file flagged
-as "missing" columns it actually has, just not yet under their final names) that would incorrectly
-block a user with no real problem. A correct pre-merge version would need to replicate
-\code{standardize_data()}'s own rename/compute logic just to know what to look for -- a real gap
-(Finish can still abort on this), left for follow-up work rather than shipped half-right.
+Its counterpart, "every column the selected group needs is present", is
+\code{check_required_columns_presheet()}.
 }

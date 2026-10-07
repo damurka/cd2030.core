@@ -1,3 +1,27 @@
+# cd2030.core 1.3.9
+
+* Load Data: the required columns are checked at the Data Quality step, not only at Finish. `new_countdown()`'s
+  check (`check_required_columns_exist()`) now also covers the population columns (`Total_Population`,
+  `Population_under_5years`, `Population_under_1year`, `Live_births`, `Total_births`, `Women_15_49_years`,
+  `Pop_growth_rate`) besides the group's indicators and reporting rates, and the wizard asks the same question of
+  the unmerged sheets (`check_required_columns_presheet()`), naming what is missing by sheet, as the workbook
+  spells it. A workbook without `Pop_growth_rate` used to pass every check and fail at Finish with "`false` must
+  be a vector, not `NULL`" in the first district.
+* Load Data: every data quality issue can be downloaded as an Excel workbook from the Data Quality step: a
+  summary of the checks and one row per issue, with nothing shortened (`quality_issues_table()`,
+  `write_quality_issues()`).
+* Bayesian model, sub-national: it is fitted. `generate_bayes_model()` stopped with "Column `source` doesn't exist"
+  for every indicator: the regional coverage had the survey's `source` as `source.x` beside the admin mapping's own
+  `source` (`source.y`), because the mapping was joined whole. Only its two names are joined now
+  (`calculate_coverage()` and `calculate_indicator_coverage()` at admin level 1), so regional coverage has `source`
+  again and no `admin1_key`.
+* The Bayesian models' estimates as tables: `bayes_model_estimates()` (coverage by year, 2010 to 2030, in percent,
+  with the 95% and 80% intervals; a row per region for a sub-national model) and a dataset's
+  `$bayes_estimates(admin_level)`, every model already fitted at a level in one table.
+* The Bayesian Analysis pages are here (`bayesian_ui()`, `bayesian_page_server()`, moved from cd2030.rmncah), for
+  every app: their tabs are `cd_cfg("bayes_indicators")` (default `cd_bayes_indicators`). future and promises are
+  imported for them.
+
 # cd2030.core 1.3.8
 
 * `calculate_indicator_coverage()`: zero-dose and under-vaccinated coverage were wrong by a factor of about a million

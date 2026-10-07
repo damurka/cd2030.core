@@ -2740,6 +2740,18 @@
       "pt": "A folha Admin tem as colunas país, admin-1 e distrito"
     },
     {
+      "key": "chk_dq_required_columns",
+      "en": "Every column the indicator group needs is present",
+      "fr": "Toutes les colonnes nécessaires au groupe d'indicateurs sont présentes",
+      "pt": "Todas as colunas de que o grupo de indicadores precisa estão presentes"
+    },
+    {
+      "key": "btn_dq_download_issues",
+      "en": "Download all issues (Excel)",
+      "fr": "Télécharger tous les problèmes (Excel)",
+      "pt": "Transferir todos os problemas (Excel)"
+    },
+    {
       "key": "chk_dq_single_country",
       "en": "Admin sheet names exactly one country",
       "fr": "La feuille Admin ne nomme qu'un seul pays",
@@ -2858,6 +2870,12 @@
       "en": "Checks that the Admin_data sheet has a country column and a first_admin_level (region) column, by looking for those exact column names.",
       "fr": "Vérifie que la feuille Admin_data comporte une colonne country et une colonne first_admin_level (région), en recherchant ces noms de colonnes exacts.",
       "pt": "Verifica se a folha Admin_data tem uma coluna country e uma coluna first_admin_level (região), procurando esses nomes de coluna exatos."
+    },
+    {
+      "key": "pop_dq_required_columns",
+      "en": "Checks that the sheets have every column the selected indicator group needs, by their exact names: each of the group's indicators in the service data, a reporting rate for each of its categories in Reporting_completeness, and in Population_data: Total_Population, Population_under_5years, Population_under_1year, Live_births, Total_births, Women_15_49_years and Pop_growth_rate.",
+      "fr": "Vérifie que les feuilles comportent toutes les colonnes nécessaires au groupe d'indicateurs sélectionné, par leurs noms exacts : chacun des indicateurs du groupe dans les données de service, un taux de complétude pour chacune de ses catégories dans Reporting_completeness, et dans Population_data : Total_Population, Population_under_5years, Population_under_1year, Live_births, Total_births, Women_15_49_years et Pop_growth_rate.",
+      "pt": "Verifica se as folhas têm todas as colunas de que o grupo de indicadores selecionado precisa, pelos seus nomes exatos: cada um dos indicadores do grupo nos dados de serviço, uma taxa de reporte para cada uma das suas categorias em Reporting_completeness, e em Population_data: Total_Population, Population_under_5years, Population_under_1year, Live_births, Total_births, Women_15_49_years e Pop_growth_rate."
     },
     {
       "key": "pop_dq_single_country",
@@ -3374,6 +3392,48 @@
       "en": "Change",
       "fr": "Écart",
       "pt": "Variação"
+    },
+    {
+      "key": "title_bayesian_analysis",
+      "en": "Bayesian Analysis",
+      "fr": "Analyse bayésienne",
+      "pt": "Análise bayesiana"
+    },
+    {
+      "key": "plot_title_bayes_coverage",
+      "en": "Bayesian Coverage Model Estimates",
+      "fr": "Estimations du modèle de couverture bayésien",
+      "pt": "Estimativas do modelo de cobertura bayesiano"
+    },
+    {
+      "key": "plot_legend_source",
+      "en": "Source: Survey Data & DHIS2 Routine Data",
+      "fr": "Source : Données d'enquête et données de routine DHIS2",
+      "pt": "Fonte: Dados de inquérito e dados de rotina DHIS2"
+    },
+    {
+      "key": "sub_bayesian",
+      "en": "Model coverage estimates with a Bayesian approach.",
+      "fr": "Modélisez les estimations de couverture avec une approche bayésienne.",
+      "pt": "Modele as estimativas de cobertura com uma abordagem bayesiana."
+    },
+    {
+      "key": "msg_bayes_needs_packages",
+      "en": "The Bayesian model needs extra packages (a large download; a few minutes to install). They are installed only when you use the model.",
+      "fr": "Le modèle bayésien nécessite des paquets supplémentaires (un téléchargement important ; quelques minutes d'installation). Ils ne sont installés que lorsque vous utilisez le modèle.",
+      "pt": "O modelo bayesiano precisa de pacotes adicionais (uma transferência grande; alguns minutos para instalar). Só são instalados quando utiliza o modelo."
+    },
+    {
+      "key": "btn_bayes_install_packages",
+      "en": "Install the Bayesian model",
+      "fr": "Installer le modèle bayésien",
+      "pt": "Instalar o modelo bayesiano"
+    },
+    {
+      "key": "msg_bayes_installing_packages",
+      "en": "Installing the Bayesian model. DataSuite shows the progress in its status bar and offers to restart the app when it is done.",
+      "fr": "Installation du modèle bayésien. DataSuite affiche la progression dans sa barre d'état et propose de redémarrer l'application une fois terminé.",
+      "pt": "A instalar o modelo bayesiano. O DataSuite mostra o progresso na barra de estado e propõe reiniciar a aplicação quando terminar."
     }
   ]
 }

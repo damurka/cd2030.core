@@ -11,22 +11,56 @@ check_file_path <- function(path, call = caller_env()) {
   invisible(TRUE)
 }
 
-check_required_columns_exist <- function(.data, resolved_group, call = caller_env()) {
-  # Indicator groups required for analysis within Countdown 2030
-  indicator_groups <- get_indicator_groups(resolved_group)
+# The population columns every dataset needs, whatever its indicator group: prepare_population_metrics() renames
+# each of them, so the denominators fail without one. Their names after standardize_data().
+.required_population_columns <- c(
+  "total_pop", "under5_pop", "under1_pop", "live_births", "total_births", "women15_49", "pop_rate"
+)
 
-  # Check for any missing columns within the indicator groups
-  missing_cols <- list_c(imap(indicator_groups, ~ setdiff(c(.x, paste0(.y, "_rr")), colnames(.data))))
+#' The columns a dataset of an indicator group needs and does not have
+#'
+#' The one definition of "required": the group's indicators, a reporting rate for each of its categories, and the
+#' population columns. `check_required_columns_exist()` (what `new_countdown()` stops on) and the Load Data
+#' wizard's Data Quality step (`check_required_columns_presheet()`) both ask it.
+#'
+#' @param column_names The data's column names, as `standardize_data()` leaves them.
+#' @param resolved_group The indicator group's name.
+#' @return A list of three character vectors: `indicators`, `reporting`, `population`.
+#' @noRd
+required_columns_missing <- function(column_names, resolved_group) {
+  indicator_groups <- get_indicator_groups(resolved_group)
+  list(
+    indicators = setdiff(unname(list_c(indicator_groups)), column_names),
+    reporting = setdiff(paste0(names(indicator_groups), "_rr"), column_names),
+    population = setdiff(.required_population_columns, column_names)
+  )
+}
+
+#' Missing columns, said as a user would look for them: by sheet, under the names the workbook uses
+#' @noRd
+describe_missing_columns <- function(missing, resolved_group) {
+  problems <- character(0)
+  if (length(missing$population) > 0) {
+    columns <- .raw_column_names(missing$population)
+    problems <- c(problems, "x" = cd_fmt("The Population_data sheet is missing column(s): {.field {paste(columns, collapse = ', ')}}."))
+  }
+  if (length(missing$reporting) > 0) {
+    columns <- .raw_column_names(missing$reporting)
+    problems <- c(problems, "x" = cd_fmt("The Reporting_completeness sheet is missing column(s): {.field {paste(columns, collapse = ', ')}}."))
+  }
+  if (length(missing$indicators) > 0) {
+    columns <- .raw_column_names(missing$indicators)
+    problems <- c(problems, "x" = cd_fmt("The service data is missing indicator column(s) of the {.val {resolved_group}} group: {.field {paste(columns, collapse = ', ')}}."))
+  }
+  problems
+}
+
+check_required_columns_exist <- function(.data, resolved_group, call = caller_env()) {
+  missing <- required_columns_missing(colnames(.data), resolved_group)
 
   # Abort with a detailed error message if required columns are missing
-  if (length(missing_cols) > 0) {
-    cd_abort(
-      c(
-        "x" = "Data does not contain all indicators for group '{resolved_group}'.",
-        "!" = '{.field {paste(missing_cols, collapse = ", ")}}'
-      ),
-      call = call
-    )
+  if (length(unlist(missing)) > 0) {
+    run_quality_checks(list(required_columns = function() describe_missing_columns(missing, resolved_group)), call = call)
   }
 }
 

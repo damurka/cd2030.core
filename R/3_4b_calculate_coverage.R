@@ -200,6 +200,13 @@ join_subnational_map <- function(.data, admin_level, map) {
 
   if (admin_level != "national") {
     if (!is.null(map)) {
+      # Only the two names. The mapping also says how each pair was made (its own `source`: "auto" or "user") and
+      # carries a key (`admin1_key`): joined whole, its `source` met the survey's (DHS, MICS, ...) and the coverage
+      # came out with `source.x` and `source.y` and no `source`, which is what the sub-national Bayesian model
+      # stopped on ("Column `source` doesn't exist").
+      map <- map %>%
+        select(all_of(c("adminlevel_1", "admin_level_1"))) %>%
+        distinct()
       .data <- .data %>%
         left_join(map, join_by(adminlevel_1)) %>%
         filter(!is.na(admin_level_1)) %>%

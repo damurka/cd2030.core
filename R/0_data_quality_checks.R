@@ -64,6 +64,34 @@ check_admin_columns <- function(admin_data) {
   c("x" = cd_fmt("The Admin_data sheet is missing column(s): {.field {paste(missing, collapse = ', ')}}."))
 }
 
+#' Check the sheets have every column the selected indicator group needs, before they are merged
+#'
+#' What `new_countdown()` stops on at Finish (`check_required_columns_exist()`), asked at the Data Quality step
+#' instead: the group's indicators, a reporting rate for each of its categories, and the population columns.
+#' It reads only the sheets' column names, as they will be once merged and standardized
+#' (`.standardized_column_names()`, which shares `standardize_data()`'s own list of renames), so a
+#' column the merge renames or computes is not reported as missing -- what kept this check out of the step
+#' before -- and what it reports is what Finish would.
+#'
+#' Confirmed live on a workbook from the Data Extractor, whose Population sheet has no `Pop_growth_rate`:
+#' it passed every check, and Finish failed in `standardize_data()` with "`false` must be a vector, not
+#' `NULL`" in the first district.
+#'
+#' @param parts Named list of cleaned per-sheet tibbles.
+#' @param group The indicator group to check against. Default: the selected one (the wizard sets it at upload).
+#' @export
+check_required_columns_presheet <- function(parts, group = get_selected_group()) {
+  column_names <- unique(unlist(lapply(parts, colnames), use.names = FALSE))
+  if (length(column_names) == 0) {
+    return(NULL)
+  }
+  missing <- required_columns_missing(.standardized_column_names(column_names), group)
+  if (length(unlist(missing)) == 0) {
+    return(NULL)
+  }
+  describe_missing_columns(missing, group)
+}
+
 #' Check the Admin_data sheet names exactly one country
 #'
 #' `new_countdown()` later does `distinct(country) %>% pull(country)` and passes the result
@@ -420,15 +448,8 @@ check_district_year_completeness <- function(population_data) {
 #' last step -- this surfaces the same problem at Data Quality instead, non-abortingly, same as
 #' every other check here.
 #'
-#' A deliberately NOT-yet-replicated counterpart: "every indicator the selected group needs is
-#' present" (`check_required_columns_exist()`, `utils.R`) still only runs at Finish. Its check is
-#' against columns `standardize_data()` computes/renames during the merge itself (reporting-rate
-#' `_rr` columns, `instdeliveries` -> `ideliv`) -- checking for those names against the RAW,
-#' pre-standardize sheets produces false positives (confirmed live: a real, known-good file flagged
-#' as "missing" columns it actually has, just not yet under their final names) that would incorrectly
-#' block a user with no real problem. A correct pre-merge version would need to replicate
-#' `standardize_data()`'s own rename/compute logic just to know what to look for -- a real gap
-#' (Finish can still abort on this), left for follow-up work rather than shipped half-right.
+#' Its counterpart, "every column the selected group needs is present", is
+#' `check_required_columns_presheet()`.
 #'
 #' @param parts Named list of cleaned per-sheet tibbles.
 #' @param admin_sheet_name Name of the admin sheet within `parts`.
@@ -614,7 +635,108 @@ check_population_vs_births <- function(parts, population_sheet_name, service_she
   shown <- utils::head(detail, 10)
   more <- if (length(detail) > length(shown)) paste0(" (+", length(detail) - length(shown), " more)") else ""
   margin_pct <- margin * 100
-  c("x" = cd_fmt("District-year(s) where estimated population live births is lower than reported institutional counts, beyond a {margin_pct}% margin: {.field {paste(shown, collapse = '; ')}}{more}."))
+  problems <- c("x" = cd_fmt("District-year(s) where estimated population live births is lower than reported institutional counts, beyond a {margin_pct}% margin: {.field {paste(shown, collapse = '; ')}}{more}."))
+  # the sentence names ten; every one of them, for quality_issues_table()
+  attr(problems, "rows") <- dplyr::select(flagged, "district", "year", "live_births", "total_delivered")
+  problems
+}
+
+# --- Every issue as a table, and as a workbook -------------------------------------------------
+
+# A check's name in the workbook, where the wizard gives no translation of its own
+.quality_check_names <- c(
+  admin_columns = "Admin sheet columns",
+  required_columns = "Required columns",
+  single_country = "One country",
+  country_recognized = "Country recognized",
+  district_cross_sheet = "Districts across sheets",
+  district_consistency = "District consistency",
+  month_presence = "Months present",
+  month_validity = "Month names",
+  population_vs_births = "Population live births against reported births",
+  population_service_collision = "Service data mixed up with population data",
+  indicator_emptiness = "Empty indicators",
+  month_language_consistency = "Month names in more than one language",
+  survey_admin_names = "Survey admin names",
+  shapefile_admin_names = "Shapefile admin names"
+)
+
+#' One line per thing a check found
+#' @noRd
+.quality_issue_items <- function(detail) {
+  rows <- attr(detail, "rows", exact = TRUE)
+  if (is.data.frame(rows)) {
+    detail <- rows
+  }
+  if (is.null(detail)) {
+    return(character(0))
+  }
+  if (is.data.frame(detail)) {
+    if (nrow(detail) == 0) {
+      return(character(0))
+    }
+    columns <- lapply(names(detail), function(name) paste0(name, ": ", format(detail[[name]], trim = TRUE)))
+    return(do.call(paste, c(columns, sep = "; ")))
+  }
+  cli::ansi_strip(as.character(unname(detail)))
+}
+
+#' Every data quality result as tables: a summary of the checks, and one row per issue
+#'
+#' @param results What `run_all_quality_checks()` returns.
+#' @param labels Optional named character vector: a check's key (`names(results)`) to the name to show for
+#'   it (the wizard passes its translated ones). A check without one gets a plain English name.
+#' @return A list of two tibbles. `summary`: `check`, `severity`, `status` (`"passed"` or `"issue"`), `issues`
+#'   (how many). `issues`: `check`, `severity`, `issue`, one row for each thing a check found (each
+#'   district-year, each name, each sentence), with nothing shortened.
+#' @export
+quality_issues_table <- function(results, labels = NULL) {
+  label_of <- function(key) {
+    label <- if (key %in% names(labels)) labels[[key]] else .quality_check_names[key]
+    if (is.null(label) || is.na(label)) key else unname(label)
+  }
+  keys <- names(results)
+  items <- lapply(results, function(r) if (isTRUE(r$ok)) character(0) else .quality_issue_items(r$detail))
+  failed <- !vapply(results, function(r) isTRUE(r$ok), logical(1))
+  severity <- vapply(results, function(r) as.character(r$severity %||% NA_character_), character(1))
+  check <- vapply(keys, label_of, character(1))
+
+  list(
+    summary = dplyr::tibble(
+      check = unname(check),
+      severity = unname(severity),
+      status = ifelse(unname(failed), "issue", "passed"),
+      issues = unname(lengths(items))
+    ),
+    issues = dplyr::tibble(
+      check = rep(unname(check), lengths(items)),
+      severity = rep(unname(severity), lengths(items)),
+      issue = unlist(items, use.names = FALSE) %||% character(0)
+    )
+  )
+}
+
+#' Write every data quality result to an Excel workbook
+#'
+#' Two sheets: `Summary` (each check, whether it passed, how many issues) and `Issues` (one row per issue).
+#'
+#' @inheritParams quality_issues_table
+#' @param path Where to write the `.xlsx`.
+#' @return `path`, invisibly.
+#' @export
+write_quality_issues <- function(results, path, labels = NULL) {
+  tables <- quality_issues_table(results, labels)
+  wb <- openxlsx::createWorkbook()
+  header <- openxlsx::createStyle(textDecoration = "bold")
+  for (sheet in c("Summary", "Issues")) {
+    table <- tables[[tolower(sheet)]]
+    openxlsx::addWorksheet(wb, sheet)
+    openxlsx::writeData(wb, sheet, table, headerStyle = header)
+    openxlsx::freezePane(wb, sheet, firstRow = TRUE)
+    openxlsx::setColWidths(wb, sheet, cols = seq_along(table), widths = if (sheet == "Issues") c(44, 14, 110) else c(44, 14, 10, 8))
+  }
+  openxlsx::saveWorkbook(wb, path, overwrite = TRUE)
+  invisible(path)
 }
 
 # --- Non-aborting aggregator: run everything against an already-loaded cache -----------------
@@ -672,6 +794,7 @@ run_all_quality_checks <- function(cache) {
   service_sheet_names <- wp$service_sheet_names
 
   admin_columns <- check_admin_columns(parts[[admin_sheet_name]])
+  required_columns <- check_required_columns_presheet(parts)
   single_country <- check_single_country(parts[[admin_sheet_name]])
   country_recognized <- check_country_recognized(parts, admin_sheet_name)
   district_cross_sheet <- check_district_cross_sheet(parts, admin_sheet_name)
@@ -688,6 +811,7 @@ run_all_quality_checks <- function(cache) {
 
   list(
     admin_columns = list(ok = is.null(admin_columns), severity = "blocking", detail = admin_columns),
+    required_columns = list(ok = is.null(required_columns), severity = "blocking", detail = required_columns),
     single_country = list(ok = is.null(single_country), severity = "blocking", detail = single_country),
     country_recognized = list(ok = is.null(country_recognized), severity = "blocking", detail = country_recognized),
     district_cross_sheet = list(ok = is.null(district_cross_sheet), severity = "blocking", detail = district_cross_sheet),

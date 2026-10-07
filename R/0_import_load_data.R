@@ -706,6 +706,61 @@ parse_month_name <- function(month) {
 #' }
 #'
 #' @noRd
+# What standardize_data() renames: the name the analysis uses = the name the workbook's sheets use. Kept as
+# data, apart from the function, so the Data Quality step can ask "which required columns will be missing?" of
+# the sheets' names alone, before anything is merged (.standardized_column_names()).
+.standardize_renames <- c(
+  adminlevel_1 = "first_admin_level",
+  ideliv = "instdelivery",
+  pnc48h = "pnc_48h",
+  pop_rate = "pop_growth_rate",
+  total_pop = "total_population",
+  under5_pop = "population_under_5years",
+  under1_pop = "population_under_1year",
+  live_births = "live_births",
+  total_births = "total_births",
+  women15_49 = "women_15_49_years",
+  total_hospitals = "number_hospitals",
+  total_hcenters = "number_hcenters",
+  total_facilities = "total_number_health_facilities",
+  total_profit = "number_pfacilities_profit",
+  total_nonprofit = "number_pfacilities_nonprofit",
+  total_physicians = "total_physicians",
+  total_nurses = "total_nurses_midwives",
+  total_nonclinique_phys = "total_nonclinique_physicians",
+  total_beds = "number_hospital_beds",
+  total_stillbirth = "stillbirth_total",
+  stillbirth_f = "stillbirth_fresh",
+  stillbirth_m = "stillbirth_macerated",
+  idelv_rr = "instdelivey_reporting_rate"
+)
+
+#' The column names a set of sheets will have once merged and standardized
+#'
+#' What `standardize_data()` and `new_countdown()` do to the names, done to the names alone: the renames above,
+#' `_reporting_rate` -> `_rr`, `instdeliveries` -> `ideliv`, and `stillbirth_total`, which is computed.
+#' @param column_names The sheets' column names (lower case, no spaces, as `read_and_clean_sheet()` leaves them).
+#' @noRd
+.standardized_column_names <- function(column_names) {
+  x <- unique(column_names)
+  if (all(c("stillbirth_fresh", "stillbirth_macerated") %in% x)) {
+    x <- union(x, "stillbirth_total")
+  }
+  hit <- match(x, .standardize_renames)
+  x[!is.na(hit)] <- names(.standardize_renames)[hit[!is.na(hit)]]
+  x <- gsub("_reporting_rate", "_rr", x)
+  x[x == "instdeliveries"] <- "ideliv"
+  unique(x)
+}
+
+#' The workbook's name for a standardized column: what a user looks for in the sheet
+#' @noRd
+.raw_column_names <- function(column_names) {
+  hit <- match(column_names, names(.standardize_renames))
+  column_names[!is.na(hit)] <- unname(.standardize_renames[hit[!is.na(hit)]])
+  sub("_rr$", "_reporting_rate", column_names)
+}
+
 standardize_data <- function(.data, call = caller_env()) {
   country <- month <- district <- . <- year <- total_population <- pop_growth_rate <- popgrowthrate <-
     meanpopgrowthrate <- adminlevel_1 <- first_admin_level <- stillbirth_fresh <-
@@ -722,6 +777,11 @@ standardize_data <- function(.data, call = caller_env()) {
   # correct, unchanged, for every OTHER caller that still merges before normalizing (e.g.
   # save_dhis2_master_data(), save_data.R).
   already_normalized <- "raw_month" %in% colnames(.data)
+
+  # A workbook without pop_growth_rate: the name fell through to the NULL above, which if_else() below refused
+  # ("`false` must be a vector, not `NULL`") in the first district. The column is not made up here: it stays
+  # absent, for new_countdown()'s required-columns check to name (check_required_columns_exist()).
+  has_growth_rate <- "pop_growth_rate" %in% colnames(.data)
 
   data <- .data %>%
     mutate(
@@ -774,38 +834,14 @@ standardize_data <- function(.data, call = caller_env()) {
       meanpopgrowthrate = mean(popgrowthrate, na.rm = TRUE),
 
       # Update pop_growth_rate with rounded mean if applicable
-      pop_growth_rate = round(if_else(!is.na(meanpopgrowthrate), meanpopgrowthrate, pop_growth_rate), 1),
+      pop_growth_rate = if (has_growth_rate) round(if_else(!is.na(meanpopgrowthrate), meanpopgrowthrate, pop_growth_rate), 1),
 
       # Apply the calculations by district
       .by = district
     ) %>%
     # Drop the specified columns and intermediate variables
     select(-matches("_reporting_received$|_reporting_expected$")) %>%
-    rename(
-      adminlevel_1 = any_of("first_admin_level"),
-      ideliv = any_of("instdelivery"),
-      pnc48h = any_of("pnc_48h"),
-      pop_rate = any_of("pop_growth_rate"),
-      total_pop = any_of("total_population"),
-      under5_pop = any_of("population_under_5years"),
-      under1_pop = any_of("population_under_1year"),
-      live_births = any_of("live_births"),
-      total_births = any_of("total_births"),
-      women15_49 = any_of("women_15_49_years"),
-      total_hospitals = any_of("number_hospitals"),
-      total_hcenters = any_of("number_hcenters"),
-      total_facilities = any_of("total_number_health_facilities"),
-      total_profit = any_of("number_pfacilities_profit"),
-      total_nonprofit = any_of("number_pfacilities_nonprofit"),
-      total_physicians = any_of("total_physicians"),
-      total_nurses = any_of("total_nurses_midwives"),
-      total_nonclinique_phys = any_of("total_nonclinique_physicians"),
-      total_beds = any_of("number_hospital_beds"),
-      total_stillbirth = any_of("stillbirth_total"),
-      stillbirth_f = any_of("stillbirth_fresh"),
-      stillbirth_m = any_of("stillbirth_macerated"),
-      idelv_rr = any_of("instdelivey_reporting_rate")
-    ) %>%
+    rename(any_of(.standardize_renames)) %>%
     rename_with(~ gsub("_reporting_rate", "_rr", .x)) %>% # Rename columns ending with '_reporting_rate' to '_rr'
     # rename(idelv_rr = any_of('instdelivey_rr')) %>%
     relocate(country, adminlevel_1, district, year, month) %>%

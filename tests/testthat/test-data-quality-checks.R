@@ -24,6 +24,129 @@ test_that("check_admin_columns fails when a required column is missing", {
   expect_match(problems, "first_admin_level", all = FALSE)
 })
 
+# Required columns: one definition, asked of merged data (new_countdown) and of unmerged sheets (Data Quality) ----
+
+# Sheets as read_and_clean_sheet() leaves them, with every column the vaccine group needs
+required_parts <- function(drop = character(0)) {
+  groups <- get_indicator_groups("vaccine")
+  indicators <- unname(unlist(groups))
+  key <- tibble::tibble(district = "Baringo County", year = 2024)
+  service <- dplyr::bind_cols(key, month = "January", tibble::as_tibble(stats::setNames(as.list(rep(1, length(indicators))), indicators)))
+  reporting <- dplyr::bind_cols(key, month = "January", tibble::as_tibble(stats::setNames(as.list(rep(90, length(groups))), paste0(names(groups), "_reporting_rate"))))
+  population <- dplyr::bind_cols(key, tibble::tibble(
+    total_population = 1, population_under_5years = 1, population_under_1year = 1,
+    live_births = 1, total_births = 1, women_15_49_years = 1, pop_growth_rate = 2.1
+  ))
+  admin <- tibble::tibble(country = "Kenya", first_admin_level = "Rift Valley", district = "Baringo County")
+  parts <- list(Service_data = service, Reporting_completeness = reporting, Population_data = population, Admin_data = admin)
+  lapply(parts, function(sheet) sheet[, setdiff(colnames(sheet), drop), drop = FALSE])
+}
+
+# Empty data with the columns those sheets will have once merged and standardized
+merged_like <- function(parts) {
+  columns <- .standardized_column_names(unique(unlist(lapply(parts, colnames))))
+  tibble::as_tibble(stats::setNames(rep(list(numeric(0)), length(columns)), columns))
+}
+
+test_that("check_required_columns_presheet passes sheets that have every column, under the workbook's names", {
+  # the names are the sheets' own (total_population, *_reporting_rate): what the merge renames is not "missing"
+  expect_null(check_required_columns_presheet(required_parts(), group = "vaccine"))
+})
+
+test_that("check_required_columns_presheet names a missing population column as the workbook calls it", {
+  # as the Data Extractor's workbook was: everything but the growth rate
+  problems <- check_required_columns_presheet(required_parts(drop = "pop_growth_rate"), group = "vaccine")
+  expect_length(problems, 1)
+  expect_match(problems, "Population_data")
+  expect_match(problems, "pop_growth_rate")
+  expect_no_match(problems, "total_population")
+})
+
+test_that("check_required_columns_presheet reports indicators and reporting rates by their sheet", {
+  groups <- get_indicator_groups("vaccine")
+  indicator <- unname(unlist(groups))[1]
+  rate <- paste0(names(groups)[1], "_reporting_rate")
+  problems <- check_required_columns_presheet(required_parts(drop = c(indicator, rate, "women_15_49_years")), group = "vaccine")
+  expect_length(problems, 3)
+  expect_match(problems, "women_15_49_years", all = FALSE)
+  expect_match(problems, rate, all = FALSE, fixed = TRUE)
+  expect_match(problems, indicator, all = FALSE, fixed = TRUE)
+})
+
+test_that("the sheets and the merged data are asked the same question", {
+  # what the Data Quality step reports is what new_countdown() would stop on at Finish
+  for (drop in list(character(0), "pop_growth_rate", c("total_births", "live_births"))) {
+    parts <- required_parts(drop = drop)
+    before <- check_required_columns_presheet(parts, group = "vaccine")
+    after <- describe_missing_columns(required_columns_missing(colnames(merged_like(parts)), "vaccine"), "vaccine")
+    expect_identical(unname(before), if (length(after)) unname(after) else NULL)
+  }
+})
+
+test_that("check_required_columns_exist stops on a missing population column, naming it", {
+  expect_error(check_required_columns_exist(merged_like(required_parts(drop = "pop_growth_rate")), "vaccine"), "pop_growth_rate")
+  expect_no_error(check_required_columns_exist(merged_like(required_parts()), "vaccine"))
+})
+
+test_that("standardize_data does not fail on data without pop_growth_rate, and does not make the column up", {
+  merged <- tibble::tibble(
+    country = "Kenya", first_admin_level = "Rift Valley", district = "Baringo County",
+    year = c(2023, 2023, 2024, 2024), month = c("January", "February", "January", "February"),
+    total_population = c(1000, 1000, 1030, 1030), stillbirth_fresh = 1, stillbirth_macerated = 1
+  )
+  out <- standardize_data(merged)
+  expect_false("pop_rate" %in% colnames(out))
+  expect_true("total_pop" %in% colnames(out))
+
+  with_rate <- standardize_data(dplyr::mutate(merged, pop_growth_rate = 2.5))
+  expect_type(with_rate$pop_rate, "double")
+})
+
+# Every issue as a table and a workbook ------------------------------------------------------------
+
+test_that("quality_issues_table has a row per check and a row per issue, nothing shortened", {
+  flagged <- tibble::tibble(district = paste("District", 1:14), year = 2024, live_births = 10, total_delivered = 20)
+  sentence <- c("x" = "District-year(s) where ...: District 1 2024; ... (+4 more).")
+  attr(sentence, "rows") <- flagged
+  results <- list(
+    admin_columns = list(ok = TRUE, severity = "blocking", detail = NULL),
+    required_columns = list(ok = FALSE, severity = "blocking", detail = c("x" = "The Population_data sheet is missing column(s): pop_growth_rate.")),
+    population_vs_births = list(ok = FALSE, severity = "informational", detail = sentence),
+    indicator_emptiness = list(ok = FALSE, severity = "informational", detail = c("hiv_test", "bcg")),
+    population_service_collision = list(ok = TRUE, severity = "informational", detail = tibble::tibble(district = character(0), year = integer(0)))
+  )
+  tables <- quality_issues_table(results, labels = c(required_columns = "Colonnes requises"))
+
+  expect_equal(nrow(tables$summary), 5)
+  expect_equal(tables$summary$status, c("passed", "issue", "issue", "issue", "passed"))
+  expect_equal(tables$summary$issues, c(0L, 1L, 14L, 2L, 0L))
+  expect_equal(tables$summary$check[2], "Colonnes requises")
+  expect_equal(tables$summary$check[1], "Admin sheet columns")
+
+  expect_equal(nrow(tables$issues), 17)
+  expect_match(tables$issues$issue[1], "pop_growth_rate")
+  expect_equal(sum(tables$issues$check == "Population live births against reported births"), 14)
+  expect_match(tables$issues$issue[15], "District 14")
+  expect_equal(tail(tables$issues$issue, 2), c("hiv_test", "bcg"))
+})
+
+test_that("write_quality_issues writes the two sheets", {
+  results <- list(
+    required_columns = list(ok = FALSE, severity = "blocking", detail = c("x" = "The Population_data sheet is missing column(s): pop_growth_rate.")),
+    month_presence = list(ok = TRUE, severity = "blocking", detail = NULL)
+  )
+  path <- withr::local_tempfile(fileext = ".xlsx")
+  write_quality_issues(results, path)
+  expect_equal(openxlsx::getSheetNames(path), c("Summary", "Issues"))
+  expect_equal(openxlsx::read.xlsx(path, "Summary")$status, c("issue", "passed"))
+  expect_match(openxlsx::read.xlsx(path, "Issues")$issue, "pop_growth_rate")
+
+  # nothing found: the workbook is still written, every check passed
+  results$required_columns <- list(ok = TRUE, severity = "blocking", detail = NULL)
+  write_quality_issues(results, path)
+  expect_equal(openxlsx::read.xlsx(path, "Summary")$status, c("passed", "passed"))
+})
+
 test_that("check_single_country passes with exactly one distinct country", {
   admin_data <- tibble::tibble(country = c("Kenya", "Kenya", "Kenya"))
   expect_null(check_single_country(admin_data))

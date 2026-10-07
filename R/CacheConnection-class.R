@@ -1400,7 +1400,7 @@ CacheConnection <- R6::R6Class(
       paste(admin_level, indicator, self$get_denominator(indicator), sep = "_")
     },
 
-    #' @description The Bayesian model already made for an indicator (by [get_bayes_model()] or kept with
+    #' @description The Bayesian model already made for an indicator (by `get_bayes_model()` or kept with
     #'   `keep_bayes_model()`), or `NULL`: nothing is fitted.
     #' @param admin_level Administrative level ("national", "adminlevel_1").
     #' @param indicator Character. Indicator name (e.g., 'penta3').
@@ -1437,6 +1437,25 @@ CacheConnection <- R6::R6Class(
       models_list[[key]] <- model
       private$update_field("bayesian_models", models_list)
       invisible(self)
+    },
+
+    #' @description The estimates of the Bayesian models already fitted at an admin level, as one table
+    #'   ([bayes_model_estimates()] of each, with the denominator it was fitted for). Only the models for the
+    #'   denominators selected now, as the Bayesian pages show; nothing is fitted here.
+    #' @param admin_level Administrative level ("national", "adminlevel_1").
+    #' @return A tibble, or `NULL` when no model has been fitted at that level.
+    bayes_estimates = function(admin_level) {
+      admin_level <- arg_match(admin_level, c('national', 'adminlevel_1'))
+      models_list <- private$getter("bayesian_models")
+      if (!length(models_list)) return(NULL)
+      tables <- lapply(c('anc4', 'anc_1trimester', 'ideliv', 'measles1', 'penta3'), function(indicator) {
+        model <- models_list[[self$bayes_model_key(admin_level, indicator)]]
+        if (is.null(model)) return(NULL)
+        tibble::add_column(bayes_model_estimates(model), denominator = self$get_denominator(indicator), .after = "indicator")
+      })
+      tables <- Filter(Negate(is.null), tables)
+      if (!length(tables)) return(NULL)
+      dplyr::bind_rows(tables)
     }
   ),
 

@@ -32,8 +32,7 @@
                       variants = c(maternal = "Maternal", child = "Child"), groups = "rmncah"),
     continuum_units = k("chart", "subnational", "Continuum of care: latest coverage by region",
                         variants = c(maternal = "Maternal", child = "Child"), groups = "rmncah", tall = TRUE),
-    # national only: the sub-national model cannot be fitted yet (generate_bayes_model() selects a `source` column that
-    # the regional coverage has as source.x and source.y)
+    # national only in reports: a sub-national fit is one model for every region and takes several minutes
     bayes_coverage = k("chart", "national", "Bayesian coverage model estimates", c("anc4", "anc_1trimester", "ideliv", "measles1", "penta3"),
                        groups = "rmncah"),
     # denominators

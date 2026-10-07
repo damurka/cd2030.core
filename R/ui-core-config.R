@@ -8,6 +8,7 @@
 #
 # Keys used by the shared modules (see each module's use of cd_cfg() for its default):
 #   nat_cov_indicators      tabs of national/sub-national coverage (may include "fpet", which adds the family planning chart)
+#   bayes_indicators        tabs of the Bayesian coverage model pages (default: every indicator the model has, cd_bayes_indicators)
 #   target_indicators       tabs of the coverage-target pages
 #   equity_indicators       tabs of Equity Assessment; equity_custom_exclude: indicators its Custom picker leaves out
 #   cov_trend_indicators, sub_derived_indicators, survey_comp_indicators   tabs of the three Denominator Selection cards

@@ -130,6 +130,32 @@ generate_bayes_model <- function(coverage_data,
   return(local_model)
 }
 
+#' A Bayesian model's estimates as a table
+#'
+#' The fitted coverage by year (2010 to 2030), in percent like the other coverage tables: the median with its 95%
+#' and 80% intervals. A sub-national model gives a row per region and year.
+#'
+#' @param model A model from [generate_bayes_model()].
+#' @return A tibble: `indicator`, `adminlevel_1` (a sub-national model only), `year`, `estimate`, `lower` and
+#'   `upper` (95%), `lower_80` and `upper_80`.
+#' @export
+bayes_model_estimates <- function(model) {
+  check_cd_class(model, "cd_bayes_model")
+  temporal <- model$posteriors$temporal
+  quantiles <- c(estimate = "50%", lower = "2.5%", upper = "97.5%", lower_80 = "10%", upper_80 = "90%")
+  if (!is.data.frame(temporal) || !all(c("year", quantiles) %in% names(temporal))) {
+    cd_abort(c("x" = "The model has no estimates by year."))
+  }
+  out <- tibble::tibble(indicator = attr_or_abort(model, "indicator"), year = as.integer(temporal$year))
+  for (name in names(quantiles)) {
+    out[[name]] <- temporal[[quantiles[[name]]]] * 100
+  }
+  if ("admin1" %in% names(temporal)) {
+    out <- tibble::add_column(out, adminlevel_1 = as.character(temporal$admin1), .after = "indicator")
+  }
+  dplyr::arrange(out, dplyr::across(dplyr::any_of(c("adminlevel_1", "year"))))
+}
+
 #' Plot S3 method for Bayesian Coverage Model
 #'
 #' Leverages the bayescoveragemodel package's internal plotting function

@@ -54,6 +54,11 @@
 \alias{cd_table_card_ui}
 \alias{cd_upload_data_server}
 \alias{cd_upload_data_ui}
+\alias{bayesian_page_server}
+\alias{bayesian_server}
+\alias{bayesian_ui}
+\alias{cd_bayes_indicators}
+\alias{cd_start_bayes_workers}
 \alias{cd_wizard_national_rate_fields}
 \alias{cd_wizard_rate_field}
 \alias{cd_wizard_survey_field}

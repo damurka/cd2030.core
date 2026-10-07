@@ -41,6 +41,7 @@ data_quality_ui <- function(id, i18n) {
     status = "success",
     solidHeader = TRUE,
     width = 12,
+    toolbar = cd_download_button_ui(ns("download_issues")),
     cd_spinner(uiOutput(ns("checklist")))
   )
 }
@@ -112,9 +113,37 @@ data_quality_server <- function(id, cache, i18n) {
         dq_row(isTRUE(r$ok), i18n$t(pass_key), str_glue_data(list(n = n, fields = fields), i18n$t(warn_key)), info_key)
       }
 
-      output$checklist <- renderUI({
+      # What every row below shows, and what the download writes
+      quality_results <- reactive({
         req(cache())
-        results <- run_all_quality_checks(cache())
+        run_all_quality_checks(cache())
+      })
+
+      # Every issue, in full, as a workbook: a row of the list says how many districts or names a check found
+      # and names the first of them; someone fixing the file needs them all (write_quality_issues()).
+      cd_download_button_server(
+        id = "download_issues",
+        filename = reactive("data-quality-issues"),
+        extension = reactive("xlsx"),
+        data = quality_results,
+        i18n = i18n,
+        label = "btn_dq_download_issues",
+        icon = "table",
+        button_class = "cd-tool-btn",
+        content = function(file, results) {
+          keys <- c(
+            admin_columns = "chk_dq_admin_columns", required_columns = "chk_dq_required_columns",
+            single_country = "chk_dq_single_country", country_recognized = "chk_dq_country_match",
+            district_cross_sheet = "chk_dq_district_cross_sheet", district_consistency = "chk_dq_district_consistency",
+            month_presence = "chk_dq_month_presence", month_validity = "chk_dq_month_validity",
+            population_vs_births = "chk_dq_population_vs_births"
+          )
+          write_quality_issues(results, file, labels = vapply(keys, function(k) i18n$t(k), character(1)))
+        }
+      )
+
+      output$checklist <- renderUI({
+        results <- quality_results()
 
         # The one check that's still a genuine, unconditional parse-time abort (see this file's own
         # header comment) -- reaching this screen at all already means it passed.
@@ -137,6 +166,7 @@ data_quality_server <- function(id, cache, i18n) {
               )
             }),
             dq_prose_row(results$admin_columns, "chk_dq_admin_columns", "pop_dq_admin_columns"),
+            dq_prose_row(results$required_columns, "chk_dq_required_columns", "pop_dq_required_columns"),
             dq_prose_row(results$single_country, "chk_dq_single_country", "pop_dq_single_country"),
             dq_prose_row(results$country_recognized, "chk_dq_country_match", "pop_dq_country_match"),
             dq_prose_row(results$district_cross_sheet, "chk_dq_district_cross_sheet", "pop_dq_district_cross_sheet"),
