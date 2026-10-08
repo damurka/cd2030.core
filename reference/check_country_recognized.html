@@ -17,7 +17,7 @@ every other check here."><meta name="description" content="cd2030.core — Count
 
     <a class="navbar-brand me-2" href="../index.html">cd2030.core</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -71,15 +71,8 @@ every other check here.</p>
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>A deliberately NOT-yet-replicated counterpart: "every indicator the selected group needs is
-present" (<code>check_required_columns_exist()</code>, <code>utils.R</code>) still only runs at Finish. Its check is
-against columns <code>standardize_data()</code> computes/renames during the merge itself (reporting-rate
-<code>_rr</code> columns, <code>instdeliveries</code> -&gt; <code>ideliv</code>) – checking for those names against the RAW,
-pre-standardize sheets produces false positives (confirmed live: a real, known-good file flagged
-as "missing" columns it actually has, just not yet under their final names) that would incorrectly
-block a user with no real problem. A correct pre-merge version would need to replicate
-<code>standardize_data()</code>'s own rename/compute logic just to know what to look for – a real gap
-(Finish can still abort on this), left for follow-up work rather than shipped half-right.</p>
+    <p>Its counterpart, "every column the selected group needs is present", is
+<code><a href="check_required_columns_presheet.html">check_required_columns_presheet()</a></code>.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

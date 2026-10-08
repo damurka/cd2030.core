@@ -29,16 +29,5 @@ check_country_recognized(parts, admin_sheet_name)
 
 ## Details
 
-A deliberately NOT-yet-replicated counterpart: "every indicator the
-selected group needs is present" (`check_required_columns_exist()`,
-`utils.R`) still only runs at Finish. Its check is against columns
-`standardize_data()` computes/renames during the merge itself
-(reporting-rate `_rr` columns, `instdeliveries` -\> `ideliv`) – checking
-for those names against the RAW, pre-standardize sheets produces false
-positives (confirmed live: a real, known-good file flagged as "missing"
-columns it actually has, just not yet under their final names) that
-would incorrectly block a user with no real problem. A correct pre-merge
-version would need to replicate `standardize_data()`'s own
-rename/compute logic just to know what to look for – a real gap (Finish
-can still abort on this), left for follow-up work rather than shipped
-half-right.
+Its counterpart, "every column the selected group needs is present", is
+[`check_required_columns_presheet()`](check_required_columns_presheet.md).

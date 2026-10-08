@@ -157,7 +157,8 @@ run_app <- function(language = "en", selected_file = NA) {
     nav_sections = list(cd_nav_start(), cd_nav_quality(), cd_nav_denominators()),  # the sidebar
     registry = my_pages(),                           # every page: the shared ones and the app's own
     i18n = i18n, language = language, selected_file = selected_file,
-    upload_ui = upload_data_ui, upload_server = upload_data_server
+    # the Load Data screen, the same for every app; its fields come from options(cd2030.wizard = ...) (?countdown-pages)
+    upload_ui = cd_upload_data_ui, upload_server = cd_upload_data_server
   )
 }
 ```
@@ -363,12 +364,20 @@ never stops the load.
 - [`check_population_vs_births()`](check_population_vs_births.md) :
   Check that estimated population live births aren't lower than reported
   institutional counts
+- [`check_required_columns_presheet()`](check_required_columns_presheet.md)
+  : Check the sheets have every column the selected indicator group
+  needs, before they are merged
 - [`check_shapefile_admin_names()`](check_shapefile_admin_names.md) :
   Flag dataset admin-1 names that have no matching shapefile region
 - [`check_single_country()`](check_single_country.md) : Check the
   Admin_data sheet names exactly one country
 - [`check_survey_admin_names()`](check_survey_admin_names.md) : Flag
   dataset admin-1 names that have no matching survey region
+- [`quality_issues_table()`](quality_issues_table.md) : Every data
+  quality result as tables: a summary of the checks, and one row per
+  issue
+- [`write_quality_issues()`](write_quality_issues.md) : Write every data
+  quality result to an Excel workbook
 
 ### Reporting Rates
 
@@ -687,12 +696,23 @@ Generate and interpret FPET (Family Planning Estimation Tool) estimates.
 ## Bayesian Coverage Model
 
 Coverage modelled with bayescoveragemodel / bayescoveragedeploy
-(suggested packages, from <https://alkemalab.r-universe.dev>).
+(suggested packages, from <https://alkemalab.r-universe.dev>), installed
+when the model is first wanted.
 
 - [`generate_bayes_model()`](generate_bayes_model.md) : Generate
   Bayesian Coverage Model Object
 - [`plot(`*`<cd_bayes_model>`*`)`](plot.cd_bayes_model.md) : Plot S3
   method for Bayesian Coverage Model
+- [`bayes_model_estimates()`](bayes_model_estimates.md) : A Bayesian
+  model's estimates as a table
+- [`slim_bayes_model()`](slim_bayes_model.md) : A Bayesian model without
+  the sampler's draws and the compiled Stan model
+- [`cd_bayes_packages_missing()`](cd_bayes_packages_missing.md) : The
+  Bayesian model's packages that are not installed
+- [`cd_request_bayes_packages()`](cd_request_bayes_packages.md) : Ask
+  DataSuite to install the Bayesian model's packages
+- [`cd_bayes_install_command()`](cd_bayes_install_command.md) : The R
+  command that installs the Bayesian model's packages
 
 ## Reports and Charts
 
@@ -710,6 +730,7 @@ context; and the saved chart options every chart is finished with.
 - [`cd_chart_id()`](cd_chart_id.md) : The id of a chart
 - [`cd_finish_plot()`](cd_finish_plot.md) : Finish a plot: apply the
   chart options
+- [`cd_minimal_theme()`](cd_minimal_theme.md) : A minimal chart theme
 
 ## Shiny Apps
 
@@ -764,6 +785,15 @@ the apps are built from.
   [`cd_wizard_config`](countdown-pages.md)
   [`cd_wizard_field_group`](countdown-pages.md)
   [`cd_wizard_indicator_group`](countdown-pages.md)
+  [`cd_table_card_server`](countdown-pages.md)
+  [`cd_table_card_ui`](countdown-pages.md)
+  [`cd_upload_data_server`](countdown-pages.md)
+  [`cd_upload_data_ui`](countdown-pages.md)
+  [`bayesian_page_server`](countdown-pages.md)
+  [`bayesian_server`](countdown-pages.md)
+  [`bayesian_ui`](countdown-pages.md)
+  [`cd_bayes_indicators`](countdown-pages.md)
+  [`cd_start_bayes_workers`](countdown-pages.md)
   [`cd_wizard_national_rate_fields`](countdown-pages.md)
   [`cd_wizard_rate_field`](countdown-pages.md)
   [`cd_wizard_survey_field`](countdown-pages.md)
@@ -892,6 +922,8 @@ with.
   ids and column names in the package's data mean
 - [`cd_describe_columns()`](cd_describe_columns.md) : Read column names
   with the data dictionary
+- [`notebook_data()`](notebook_data.md) : Notebook data: a folder's
+  Countdown datasets for DataSuite's notebooks
 - [`cd_denominator_labels()`](cd_denominator_labels.md) : The
   denominator options' labels
 - [`cd_methodology_defaults()`](cd_methodology_defaults.md) : The

@@ -1,5 +1,180 @@
 # Changelog
 
+## cd2030.core 1.3.10
+
+- Bayesian Analysis no longer holds the app up. The fit already ran in
+  another R process, but its result did not: a fitted model carried the
+  sampler’s draws and the compiled Stan model (13 MB national, 41 MB
+  sub-national), which were brought back from the worker, kept in the
+  dataset and written to its file, taking 3 to 6 seconds when a fit
+  ended and again, for every model kept, each time anything else in the
+  dataset changed.
+  [`generate_bayes_model()`](../reference/generate_bayes_model.md) now
+  returns the model without them (`keep_samples = FALSE`: about 30 KB
+  and 170 KB), the charts and
+  [`bayes_model_estimates()`](../reference/bayes_model_estimates.md)
+  being drawn from the summary it keeps, pixel for pixel as before.
+  Models already saved in a dataset are held without their draws when it
+  is opened, and written so at its next save
+  ([`slim_bayes_model()`](../reference/slim_bayes_model.md)).
+
+- Requires datasuite.ui 0.4.4 (the Ask AI button’s hint is its text, not
+  the markup around it).
+
+- Maps: choosing years one after another no longer sets the maps
+  redrawing without end. Each choice was sent back to the years chip,
+  and arrived after the next click, undoing it; the two selections then
+  replaced each other for good
+  ([`cd_years_sync()`](../reference/countdown-pages.md), on every page
+  with a years chip).
+
+- Charts in reports are drawn without tick marks on their axes, as the
+  charts on the pages are (`cd_report_theme()`). A chart’s Tick marks
+  option still draws them for that chart.
+
+- Reports take the app’s colour: the Countdown report theme (accent and
+  headings) is the vaccine app’s blue in the vaccine app, as its pages
+  are, where every app’s reports were the RMNCAH maroon
+  (`cd_app(theme = )`). A report saved before keeps the colours saved
+  with it; choosing the Countdown theme again in its Design gives it the
+  app’s.
+
+## cd2030.core 1.3.9
+
+- Load Data: the required columns are checked at the Data Quality step,
+  not only at Finish.
+  [`new_countdown()`](../reference/new_countdown.md)’s check
+  (`check_required_columns_exist()`) now also covers the population
+  columns (`Total_Population`, `Population_under_5years`,
+  `Population_under_1year`, `Live_births`, `Total_births`,
+  `Women_15_49_years`, `Pop_growth_rate`) besides the group’s indicators
+  and reporting rates, and the wizard asks the same question of the
+  unmerged sheets
+  ([`check_required_columns_presheet()`](../reference/check_required_columns_presheet.md)),
+  naming what is missing by sheet, as the workbook spells it. A workbook
+  without `Pop_growth_rate` used to pass every check and fail at Finish
+  with “`false` must be a vector, not `NULL`” in the first district.
+- Load Data: every data quality issue can be downloaded as an Excel
+  workbook from the Data Quality step: a summary of the checks and one
+  row per issue, with nothing shortened
+  ([`quality_issues_table()`](../reference/quality_issues_table.md),
+  [`write_quality_issues()`](../reference/write_quality_issues.md)).
+- Bayesian model, sub-national: it is fitted.
+  [`generate_bayes_model()`](../reference/generate_bayes_model.md)
+  stopped with “Column `source` doesn’t exist” for every indicator: the
+  regional coverage had the survey’s `source` as `source.x` beside the
+  admin mapping’s own `source` (`source.y`), because the mapping was
+  joined whole. Only its two names are joined now
+  ([`calculate_coverage()`](../reference/calculate_coverage.md) and
+  [`calculate_indicator_coverage()`](../reference/calculate_indicator_coverage.md)
+  at admin level 1), so regional coverage has `source` again and no
+  `admin1_key`.
+- The Bayesian models’ estimates as tables:
+  [`bayes_model_estimates()`](../reference/bayes_model_estimates.md)
+  (coverage by year, 2010 to 2030, in percent, with the 95% and 80%
+  intervals; a row per region for a sub-national model) and a dataset’s
+  `$bayes_estimates(admin_level)`, every model already fitted at a level
+  in one table.
+- The Bayesian Analysis pages are here
+  ([`bayesian_ui()`](../reference/countdown-pages.md),
+  [`bayesian_page_server()`](../reference/countdown-pages.md), moved
+  from cd2030.rmncah), for every app: their tabs are
+  `cd_cfg("bayes_indicators")` (default `cd_bayes_indicators`). future
+  and promises are imported for them.
+
+## cd2030.core 1.3.8
+
+- [`calculate_indicator_coverage()`](../reference/calculate_indicator_coverage.md):
+  zero-dose and under-vaccinated coverage were wrong by a factor of
+  about a million (the population in thousands was multiplied by 1000
+  instead of divided: `(pop*1000 - penta1)/pop*1000`), and for the
+  ANC1-, Penta1- and derived denominators, which are counts, the 1000
+  did not belong at all. They are now the share of surviving infants
+  without penta1 (zero-dose) or penta3 (under-vaccinated), as in the
+  Countdown 2030 Stata code.
+- Measles2 coverage is divided by the infants surviving to the second
+  dose (`totmeasles2_*`), as in the Stata code and as the derived
+  denominators already did, not by those surviving to the first.
+- Notebook data: a dataset’s notebooks get every table the
+  CacheConnection has (51: the data, the results each page shows, the
+  reference data), each listed with what it holds (`ds_list()`’s new
+  `description`, and the list DataSuite shows in Stata’s `dslist`).
+  `notebook_data("prepare", tables = )` writes only the tables asked
+  for, so Stata notebooks get a table when a cell first uses it;
+  Python’s are the usual twelve, as before. `wealth_survey` is the
+  wealth-quintile survey again (it read a member that does not exist, so
+  it was always empty).
+- `notebook_data("describe")`: the notebook’s dataset’s tables with
+  their columns and what each column holds
+  ([`cd_describe_columns()`](../reference/cd_describe_columns.md)), its
+  grain and key columns, read from the `.rds` without changing it.
+  DataSuite gives it to its assistant when it writes a notebook’s code,
+  and shows it when you hover a table or a column in a notebook.
+- In R notebooks, the attached data (`datasuite:data`) names its tables
+  in the attribute `jovian.tables`, so the kernel’s variables pane and
+  data viewer list and show them without reading the others or the
+  `ds_*` functions.
+- Requires datasuite.ui 0.4.3: charts and tables already drawn follow a
+  change of language.
+- `STATA-DIFFERENCES.md` lists where the package and the Countdown 2030
+  Stata code still differ, by choice.
+
+## cd2030.core 1.3.7
+
+- [`cd_table_card_ui()`](../reference/countdown-pages.md) /
+  [`cd_table_card_server()`](../reference/countdown-pages.md): a
+  flextable in a chart card, with its picture and its data (Excel) in
+  the card’s header; the screen and the picture are drawn by the same
+  function. The Overall Score page uses it (and rmncah’s Service
+  Utilization data quality and national Health System pages).
+  DataSuite’s AI can read the table.
+- [`cd_upload_data_ui()`](../reference/countdown-pages.md) /
+  [`cd_upload_data_server()`](../reference/countdown-pages.md): the Load
+  Data screen the apps had each kept a copy of;
+  [`cd_app()`](../reference/countdown-pages.md) uses it unless the app
+  passes its own. An app describes its part of the wizard with
+  `options(cd2030.wizard = ...)` as before.
+- [`cd_minimal_theme()`](../reference/cd_minimal_theme.md):
+  [`ggplot2::theme_minimal()`](https://ggplot2.tidyverse.org/reference/ggtheme.html)
+  with a choice of grid lines (the subnational coverage dot plot and
+  heat map, and cd2030.pooled’s charts). The colours several charts
+  share (the traffic-light categories, the year colours, Data
+  Adjustment’s steps…) and the theme pieces they repeated (the dashed
+  grid, the maps’ theme) are defined once (`R/utils-plot-themes.R`); the
+  charts look as before.
+- A failed reference-data upload (UN, WUENIC or UN mortality estimates)
+  says why in its banner, instead of “Unsupported file format” for every
+  error, and no longer prints the error to the console.
+- sf is used through `sf::` instead of imported, so loading cd2030.core
+  no longer loads sf (and GDAL, GEOS and PROJ) until a map is drawn or a
+  shapefile read. officer is no longer imported whole
+  ([`officer::fp_border()`](https://davidgohel.github.io/officer/reference/fp_border.html)
+  is its only use). No longer imports janitor, which nothing used.
+- Needs datasuite.ui 0.4.2: inside DataSuite,
+  [`cd_request_bayes_packages()`](../reference/cd_request_bayes_packages.md)
+  asks it to install the Bayesian model’s packages through
+  [`datasuite.ui::ds_host_request()`](https://rdrr.io/pkg/datasuite.ui/man/ds_host_request.html).
+
+## cd2030.core 1.3.6
+
+- [`notebook_data()`](../reference/notebook_data.md): a folder’s
+  Countdown datasets for DataSuite’s notebooks (an app’s `notebookData`)
+  – by name in R, and as Stata files for Python and Stata notebooks,
+  made again when their `.rds` changes.
+- The Bayesian model’s packages are installed when it is first wanted:
+  [`cd_bayes_packages_missing()`](../reference/cd_bayes_packages_missing.md)
+  (checked without loading Stan),
+  [`cd_request_bayes_packages()`](../reference/cd_request_bayes_packages.md)
+  (inside DataSuite, asks it to install them) and
+  [`cd_bayes_install_command()`](../reference/cd_bayes_install_command.md)
+  (the
+  [`install.packages()`](https://rdrr.io/r/utils/install.packages.html)
+  call, for plain R). DESCRIPTION’s `Config/datasuite/onDemand` keeps
+  DataSuite’s background install from fetching them; R itself ignores
+  it.
+- No longer suggests chromote, countrycode, png, ragg, rsvg, svglite or
+  systemfonts, which nothing used.
+
 ## cd2030.core 1.3.5
 
 - Data Adjustment is one page for the data kept and how it is corrected

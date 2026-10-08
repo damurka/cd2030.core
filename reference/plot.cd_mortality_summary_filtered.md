@@ -50,7 +50,9 @@ The function:
 
 - Projects the geometry to WGS84 for consistent map rendering
 
-- Facets by year and uses `geom_sf()` to draw filled polygons
+- Facets by year and uses
+  [`geom_sf()`](https://ggplot2.tidyverse.org/reference/ggsf.html) to
+  draw filled polygons
 
 - Applies a sequential `Reds` color scale with gray for missing values
 

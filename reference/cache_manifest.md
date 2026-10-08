@@ -24,5 +24,5 @@ A list (JSON-able with `jsonlite::toJSON(auto_unbox = TRUE)`):
 ``` r
 m <- cache_manifest()
 length(m$members)
-#> [1] 203
+#> [1] 204
 ```

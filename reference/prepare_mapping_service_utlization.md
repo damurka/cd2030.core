@@ -61,7 +61,8 @@ This function:
 
 - Filters to specified `plot_years` if provided
 
-- Renames the geometry column for compatibility with `geom_sf()`
+- Renames the geometry column for compatibility with
+  [`geom_sf()`](https://ggplot2.tidyverse.org/reference/ggsf.html)
 
 Only `adminlevel_1` data is currently supported for mapping.
 

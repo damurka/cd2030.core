@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">cd2030.core</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -406,6 +406,13 @@
 
         <dt>
 
+          <code><a href="check_required_columns_presheet.html">check_required_columns_presheet()</a></code>
+
+        </dt>
+        <dd>Check the sheets have every column the selected indicator group needs, before they are merged</dd>
+
+        <dt>
+
           <code><a href="check_shapefile_admin_names.html">check_shapefile_admin_names()</a></code>
 
         </dt>
@@ -424,6 +431,20 @@
 
         </dt>
         <dd>Flag dataset admin-1 names that have no matching survey region</dd>
+
+        <dt>
+
+          <code><a href="quality_issues_table.html">quality_issues_table()</a></code>
+
+        </dt>
+        <dd>Every data quality result as tables: a summary of the checks, and one row per issue</dd>
+
+        <dt>
+
+          <code><a href="write_quality_issues.html">write_quality_issues()</a></code>
+
+        </dt>
+        <dd>Write every data quality result to an Excel workbook</dd>
       </dl></div><div class="section level2">
 
       <h3 id="reporting-rates">Reporting Rates<a class="anchor" aria-label="anchor" href="#reporting-rates"></a></h3>
@@ -1307,7 +1328,7 @@
       </dl></div><div class="section level2">
       <h2 id="bayesian-coverage-model">Bayesian Coverage Model<a class="anchor" aria-label="anchor" href="#bayesian-coverage-model"></a></h2>
 
-      <div class="section-desc"><p>Coverage modelled with bayescoveragemodel / bayescoveragedeploy (suggested packages, from <a href="https://alkemalab.r-universe.dev" class="external-link uri">https://alkemalab.r-universe.dev</a>).</p></div>
+      <div class="section-desc"><p>Coverage modelled with bayescoveragemodel / bayescoveragedeploy (suggested packages, from <a href="https://alkemalab.r-universe.dev" class="external-link uri">https://alkemalab.r-universe.dev</a>), installed when the model is first wanted.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -1327,6 +1348,41 @@
 
         </dt>
         <dd>Plot S3 method for Bayesian Coverage Model</dd>
+
+        <dt>
+
+          <code><a href="bayes_model_estimates.html">bayes_model_estimates()</a></code>
+
+        </dt>
+        <dd>A Bayesian model's estimates as a table</dd>
+
+        <dt>
+
+          <code><a href="slim_bayes_model.html">slim_bayes_model()</a></code>
+
+        </dt>
+        <dd>A Bayesian model without the sampler's draws and the compiled Stan model</dd>
+
+        <dt>
+
+          <code><a href="cd_bayes_packages_missing.html">cd_bayes_packages_missing()</a></code>
+
+        </dt>
+        <dd>The Bayesian model's packages that are not installed</dd>
+
+        <dt>
+
+          <code><a href="cd_request_bayes_packages.html">cd_request_bayes_packages()</a></code>
+
+        </dt>
+        <dd>Ask DataSuite to install the Bayesian model's packages</dd>
+
+        <dt>
+
+          <code><a href="cd_bayes_install_command.html">cd_bayes_install_command()</a></code>
+
+        </dt>
+        <dd>The R command that installs the Bayesian model's packages</dd>
       </dl></div><div class="section level2">
       <h2 id="reports-and-charts">Reports and Charts<a class="anchor" aria-label="anchor" href="#reports-and-charts"></a></h2>
 
@@ -1378,6 +1434,13 @@
 
         </dt>
         <dd>Finish a plot: apply the chart options</dd>
+
+        <dt>
+
+          <code><a href="cd_minimal_theme.html">cd_minimal_theme()</a></code>
+
+        </dt>
+        <dd>A minimal chart theme</dd>
       </dl></div><div class="section level2">
       <h2 id="shiny-apps">Shiny Apps<a class="anchor" aria-label="anchor" href="#shiny-apps"></a></h2>
 
@@ -1390,7 +1453,7 @@
 
       <dl><dt>
 
-          <code><a href="countdown-pages.html">countdown-pages</a></code> <code><a href="countdown-pages.html">adjustment_changes_server</a></code> <code><a href="countdown-pages.html">adjustment_changes_ui</a></code> <code><a href="countdown-pages.html">calculate_ratios_server</a></code> <code><a href="countdown-pages.html">calculate_ratios_ui</a></code> <code><a href="countdown-pages.html">cd_admin_level_choices</a></code> <code><a href="countdown-pages.html">cd_admin_level_server</a></code> <code><a href="countdown-pages.html">cd_admin_level_ui</a></code> <code><a href="countdown-pages.html">cd_admin_parts</a></code> <code><a href="countdown-pages.html">cd_app</a></code> <code><a href="countdown-pages.html">cd_cfg</a></code> <code><a href="countdown-pages.html">cd_coverage_plot_server</a></code> <code><a href="countdown-pages.html">cd_coverage_plot_toolbar_ui</a></code> <code><a href="countdown-pages.html">cd_coverage_plot_ui</a></code> <code><a href="countdown-pages.html">cd_default_indicator_set</a></code> <code><a href="countdown-pages.html">cd_default_indicators</a></code> <code><a href="countdown-pages.html">cd_denominator_chip_keys</a></code> <code><a href="countdown-pages.html">cd_denominator_choices</a></code> <code><a href="countdown-pages.html">cd_denominator_header</a></code> <code><a href="countdown-pages.html">cd_denominator_options</a></code> <code><a href="countdown-pages.html">cd_denominator_row</a></code> <code><a href="countdown-pages.html">cd_denominator_server</a></code> <code><a href="countdown-pages.html">cd_denominator_ui</a></code> <code><a href="countdown-pages.html">cd_has_maternal</a></code> <code><a href="countdown-pages.html">cd_indicator_server</a></code> <code><a href="countdown-pages.html">cd_indicator_ui</a></code> <code><a href="countdown-pages.html">cd_nav_denominators</a></code> <code><a href="countdown-pages.html">cd_nav_national</a></code> <code><a href="countdown-pages.html">cd_nav_quality</a></code> <code><a href="countdown-pages.html">cd_nav_start</a></code> <code><a href="countdown-pages.html">cd_nav_subnational</a></code> <code><a href="countdown-pages.html">cd_only_denominators</a></code> <code><a href="countdown-pages.html">cd_palette_chip</a></code> <code><a href="countdown-pages.html">cd_population_server</a></code> <code><a href="countdown-pages.html">cd_population_ui</a></code> <code><a href="countdown-pages.html">cd_rate_status_cell</a></code> <code><a href="countdown-pages.html">cd_saved_copy_name</a></code> <code><a href="countdown-pages.html">cd_scope_filters</a></code> <code><a href="countdown-pages.html">cd_scope_server</a></code> <code><a href="countdown-pages.html">cd_scoped_page_server</a></code> <code><a href="countdown-pages.html">cd_scoped_page_ui</a></code> <code><a href="countdown-pages.html">cd_tabbed_charts_server</a></code> <code><a href="countdown-pages.html">cd_tabbed_charts_ui</a></code> <code><a href="countdown-pages.html">cd_table_server</a></code> <code><a href="countdown-pages.html">cd_table_ui</a></code> <code><a href="countdown-pages.html">cd_wizard_check_group</a></code> <code><a href="countdown-pages.html">cd_wizard_config</a></code> <code><a href="countdown-pages.html">cd_wizard_field_group</a></code> <code><a href="countdown-pages.html">cd_wizard_indicator_group</a></code> <code><a href="countdown-pages.html">cd_wizard_national_rate_fields</a></code> <code><a href="countdown-pages.html">cd_wizard_rate_field</a></code> <code><a href="countdown-pages.html">cd_wizard_survey_field</a></code> <code><a href="countdown-pages.html">cd_years_input</a></code> <code><a href="countdown-pages.html">cd_years_sync</a></code> <code><a href="countdown-pages.html">compute_step_states</a></code> <code><a href="countdown-pages.html">consistency_check_server</a></code> <code><a href="countdown-pages.html">consistency_check_ui</a></code> <code><a href="countdown-pages.html">consistency_pair_keys</a></code> <code><a href="countdown-pages.html">consistency_pair_label</a></code> <code><a href="countdown-pages.html">coverage_server</a></code> <code><a href="countdown-pages.html">coverage_trends_server</a></code> <code><a href="countdown-pages.html">coverage_trends_ui</a></code> <code><a href="countdown-pages.html">coverage_ui</a></code> <code><a href="countdown-pages.html">data_adjustment_server</a></code> <code><a href="countdown-pages.html">data_adjustment_ui</a></code> <code><a href="countdown-pages.html">data_completeness_server</a></code> <code><a href="countdown-pages.html">data_completeness_ui</a></code> <code><a href="countdown-pages.html">data_quality_server</a></code> <code><a href="countdown-pages.html">data_quality_ui</a></code> <code><a href="countdown-pages.html">den_indicators</a></code> <code><a href="countdown-pages.html">denominator_assessment_server</a></code> <code><a href="countdown-pages.html">denominator_assessment_ui</a></code> <code><a href="countdown-pages.html">denominator_selection_server</a></code> <code><a href="countdown-pages.html">denominator_selection_ui</a></code> <code><a href="countdown-pages.html">equity_server</a></code> <code><a href="countdown-pages.html">equity_ui</a></code> <code><a href="countdown-pages.html">get_national_rates</a></code> <code><a href="countdown-pages.html">inequality_server</a></code> <code><a href="countdown-pages.html">inequality_ui</a></code> <code><a href="countdown-pages.html">internal_consistency_server</a></code> <code><a href="countdown-pages.html">internal_consistency_ui</a></code> <code><a href="countdown-pages.html">introduction_server</a></code> <code><a href="countdown-pages.html">introduction_ui</a></code> <code><a href="countdown-pages.html">list_missing_units</a></code> <code><a href="countdown-pages.html">map_shapefile_server</a></code> <code><a href="countdown-pages.html">map_shapefile_ui</a></code> <code><a href="countdown-pages.html">map_survey_server</a></code> <code><a href="countdown-pages.html">map_survey_ui</a></code> <code><a href="countdown-pages.html">mapping_modal_server</a></code> <code><a href="countdown-pages.html">mapping_modal_ui</a></code> <code><a href="countdown-pages.html">mapping_provenance_banner</a></code> <code><a href="countdown-pages.html">national_coverage_server</a></code> <code><a href="countdown-pages.html">national_coverage_ui</a></code> <code><a href="countdown-pages.html">national_inequality_server</a></code> <code><a href="countdown-pages.html">national_inequality_ui</a></code> <code><a href="countdown-pages.html">national_rates_required_fields</a></code> <code><a href="countdown-pages.html">national_rates_server</a></code> <code><a href="countdown-pages.html">national_rates_ui</a></code> <code><a href="countdown-pages.html">national_target_server</a></code> <code><a href="countdown-pages.html">national_target_ui</a></code> <code><a href="countdown-pages.html">nr_field</a></code> <code><a href="countdown-pages.html">nr_group</a></code> <code><a href="countdown-pages.html">outlier_detection_server</a></code> <code><a href="countdown-pages.html">outlier_detection_ui</a></code> <code><a href="countdown-pages.html">overall_score_server</a></code> <code><a href="countdown-pages.html">overall_score_ui</a></code> <code><a href="countdown-pages.html">push_upload_on_remount</a></code> <code><a href="countdown-pages.html">reference_estimates_server</a></code> <code><a href="countdown-pages.html">reference_estimates_ui</a></code> <code><a href="countdown-pages.html">reporting_rate_server</a></code> <code><a href="countdown-pages.html">reporting_rate_ui</a></code> <code><a href="countdown-pages.html">restore_default_control</a></code> <code><a href="countdown-pages.html">rr_indicators</a></code> <code><a href="countdown-pages.html">shapefile_step_server</a></code> <code><a href="countdown-pages.html">shapefile_step_ui</a></code> <code><a href="countdown-pages.html">step_map_mapping_complete</a></code> <code><a href="countdown-pages.html">step_national_rates_complete</a></code> <code><a href="countdown-pages.html">step_quality_complete</a></code> <code><a href="countdown-pages.html">step_shapefile_complete</a></code> <code><a href="countdown-pages.html">step_shapefile_touched</a></code> <code><a href="countdown-pages.html">step_survey_files_complete</a></code> <code><a href="countdown-pages.html">step_survey_mapping_complete</a></code> <code><a href="countdown-pages.html">step_upload_complete</a></code> <code><a href="countdown-pages.html">subnational_coverage_server</a></code> <code><a href="countdown-pages.html">subnational_coverage_ui</a></code> <code><a href="countdown-pages.html">subnational_denominator_server</a></code> <code><a href="countdown-pages.html">subnational_denominator_ui</a></code> <code><a href="countdown-pages.html">subnational_inequality_server</a></code> <code><a href="countdown-pages.html">subnational_inequality_ui</a></code> <code><a href="countdown-pages.html">subnational_mapping_server</a></code> <code><a href="countdown-pages.html">subnational_mapping_ui</a></code> <code><a href="countdown-pages.html">subnational_target_server</a></code> <code><a href="countdown-pages.html">subnational_target_ui</a></code> <code><a href="countdown-pages.html">survey_comparison_server</a></code> <code><a href="countdown-pages.html">survey_comparison_ui</a></code> <code><a href="countdown-pages.html">survey_estimates_required_fields</a></code> <code><a href="countdown-pages.html">survey_fields</a></code> <code><a href="countdown-pages.html">survey_upload_server</a></code> <code><a href="countdown-pages.html">survey_upload_ui</a></code> <code><a href="countdown-pages.html">target_server</a></code> <code><a href="countdown-pages.html">target_ui</a></code> <code><a href="countdown-pages.html">upload_box_server</a></code> <code><a href="countdown-pages.html">upload_box_ui</a></code> <code><a href="countdown-pages.html">wizard_fields</a></code> <code><a href="countdown-pages.html">wizard_landing_server</a></code> <code><a href="countdown-pages.html">wizard_landing_ui</a></code> <code><a href="countdown-pages.html">wizard_step_defs</a></code> <code><a href="countdown-pages.html">wizard_steps_server</a></code> <code><a href="countdown-pages.html">wizard_steps_ui</a></code>
+          <code><a href="countdown-pages.html">countdown-pages</a></code> <code><a href="countdown-pages.html">adjustment_changes_server</a></code> <code><a href="countdown-pages.html">adjustment_changes_ui</a></code> <code><a href="countdown-pages.html">calculate_ratios_server</a></code> <code><a href="countdown-pages.html">calculate_ratios_ui</a></code> <code><a href="countdown-pages.html">cd_admin_level_choices</a></code> <code><a href="countdown-pages.html">cd_admin_level_server</a></code> <code><a href="countdown-pages.html">cd_admin_level_ui</a></code> <code><a href="countdown-pages.html">cd_admin_parts</a></code> <code><a href="countdown-pages.html">cd_app</a></code> <code><a href="countdown-pages.html">cd_cfg</a></code> <code><a href="countdown-pages.html">cd_coverage_plot_server</a></code> <code><a href="countdown-pages.html">cd_coverage_plot_toolbar_ui</a></code> <code><a href="countdown-pages.html">cd_coverage_plot_ui</a></code> <code><a href="countdown-pages.html">cd_default_indicator_set</a></code> <code><a href="countdown-pages.html">cd_default_indicators</a></code> <code><a href="countdown-pages.html">cd_denominator_chip_keys</a></code> <code><a href="countdown-pages.html">cd_denominator_choices</a></code> <code><a href="countdown-pages.html">cd_denominator_header</a></code> <code><a href="countdown-pages.html">cd_denominator_options</a></code> <code><a href="countdown-pages.html">cd_denominator_row</a></code> <code><a href="countdown-pages.html">cd_denominator_server</a></code> <code><a href="countdown-pages.html">cd_denominator_ui</a></code> <code><a href="countdown-pages.html">cd_has_maternal</a></code> <code><a href="countdown-pages.html">cd_indicator_server</a></code> <code><a href="countdown-pages.html">cd_indicator_ui</a></code> <code><a href="countdown-pages.html">cd_nav_denominators</a></code> <code><a href="countdown-pages.html">cd_nav_national</a></code> <code><a href="countdown-pages.html">cd_nav_quality</a></code> <code><a href="countdown-pages.html">cd_nav_start</a></code> <code><a href="countdown-pages.html">cd_nav_subnational</a></code> <code><a href="countdown-pages.html">cd_only_denominators</a></code> <code><a href="countdown-pages.html">cd_palette_chip</a></code> <code><a href="countdown-pages.html">cd_population_server</a></code> <code><a href="countdown-pages.html">cd_population_ui</a></code> <code><a href="countdown-pages.html">cd_rate_status_cell</a></code> <code><a href="countdown-pages.html">cd_saved_copy_name</a></code> <code><a href="countdown-pages.html">cd_scope_filters</a></code> <code><a href="countdown-pages.html">cd_scope_server</a></code> <code><a href="countdown-pages.html">cd_scoped_page_server</a></code> <code><a href="countdown-pages.html">cd_scoped_page_ui</a></code> <code><a href="countdown-pages.html">cd_tabbed_charts_server</a></code> <code><a href="countdown-pages.html">cd_tabbed_charts_ui</a></code> <code><a href="countdown-pages.html">cd_table_server</a></code> <code><a href="countdown-pages.html">cd_table_ui</a></code> <code><a href="countdown-pages.html">cd_wizard_check_group</a></code> <code><a href="countdown-pages.html">cd_wizard_config</a></code> <code><a href="countdown-pages.html">cd_wizard_field_group</a></code> <code><a href="countdown-pages.html">cd_wizard_indicator_group</a></code> <code><a href="countdown-pages.html">cd_table_card_server</a></code> <code><a href="countdown-pages.html">cd_table_card_ui</a></code> <code><a href="countdown-pages.html">cd_upload_data_server</a></code> <code><a href="countdown-pages.html">cd_upload_data_ui</a></code> <code><a href="countdown-pages.html">bayesian_page_server</a></code> <code><a href="countdown-pages.html">bayesian_server</a></code> <code><a href="countdown-pages.html">bayesian_ui</a></code> <code><a href="countdown-pages.html">cd_bayes_indicators</a></code> <code><a href="countdown-pages.html">cd_start_bayes_workers</a></code> <code><a href="countdown-pages.html">cd_wizard_national_rate_fields</a></code> <code><a href="countdown-pages.html">cd_wizard_rate_field</a></code> <code><a href="countdown-pages.html">cd_wizard_survey_field</a></code> <code><a href="countdown-pages.html">cd_years_input</a></code> <code><a href="countdown-pages.html">cd_years_sync</a></code> <code><a href="countdown-pages.html">compute_step_states</a></code> <code><a href="countdown-pages.html">consistency_check_server</a></code> <code><a href="countdown-pages.html">consistency_check_ui</a></code> <code><a href="countdown-pages.html">consistency_pair_keys</a></code> <code><a href="countdown-pages.html">consistency_pair_label</a></code> <code><a href="countdown-pages.html">coverage_server</a></code> <code><a href="countdown-pages.html">coverage_trends_server</a></code> <code><a href="countdown-pages.html">coverage_trends_ui</a></code> <code><a href="countdown-pages.html">coverage_ui</a></code> <code><a href="countdown-pages.html">data_adjustment_server</a></code> <code><a href="countdown-pages.html">data_adjustment_ui</a></code> <code><a href="countdown-pages.html">data_completeness_server</a></code> <code><a href="countdown-pages.html">data_completeness_ui</a></code> <code><a href="countdown-pages.html">data_quality_server</a></code> <code><a href="countdown-pages.html">data_quality_ui</a></code> <code><a href="countdown-pages.html">den_indicators</a></code> <code><a href="countdown-pages.html">denominator_assessment_server</a></code> <code><a href="countdown-pages.html">denominator_assessment_ui</a></code> <code><a href="countdown-pages.html">denominator_selection_server</a></code> <code><a href="countdown-pages.html">denominator_selection_ui</a></code> <code><a href="countdown-pages.html">equity_server</a></code> <code><a href="countdown-pages.html">equity_ui</a></code> <code><a href="countdown-pages.html">get_national_rates</a></code> <code><a href="countdown-pages.html">inequality_server</a></code> <code><a href="countdown-pages.html">inequality_ui</a></code> <code><a href="countdown-pages.html">internal_consistency_server</a></code> <code><a href="countdown-pages.html">internal_consistency_ui</a></code> <code><a href="countdown-pages.html">introduction_server</a></code> <code><a href="countdown-pages.html">introduction_ui</a></code> <code><a href="countdown-pages.html">list_missing_units</a></code> <code><a href="countdown-pages.html">map_shapefile_server</a></code> <code><a href="countdown-pages.html">map_shapefile_ui</a></code> <code><a href="countdown-pages.html">map_survey_server</a></code> <code><a href="countdown-pages.html">map_survey_ui</a></code> <code><a href="countdown-pages.html">mapping_modal_server</a></code> <code><a href="countdown-pages.html">mapping_modal_ui</a></code> <code><a href="countdown-pages.html">mapping_provenance_banner</a></code> <code><a href="countdown-pages.html">national_coverage_server</a></code> <code><a href="countdown-pages.html">national_coverage_ui</a></code> <code><a href="countdown-pages.html">national_inequality_server</a></code> <code><a href="countdown-pages.html">national_inequality_ui</a></code> <code><a href="countdown-pages.html">national_rates_required_fields</a></code> <code><a href="countdown-pages.html">national_rates_server</a></code> <code><a href="countdown-pages.html">national_rates_ui</a></code> <code><a href="countdown-pages.html">national_target_server</a></code> <code><a href="countdown-pages.html">national_target_ui</a></code> <code><a href="countdown-pages.html">nr_field</a></code> <code><a href="countdown-pages.html">nr_group</a></code> <code><a href="countdown-pages.html">outlier_detection_server</a></code> <code><a href="countdown-pages.html">outlier_detection_ui</a></code> <code><a href="countdown-pages.html">overall_score_server</a></code> <code><a href="countdown-pages.html">overall_score_ui</a></code> <code><a href="countdown-pages.html">push_upload_on_remount</a></code> <code><a href="countdown-pages.html">reference_estimates_server</a></code> <code><a href="countdown-pages.html">reference_estimates_ui</a></code> <code><a href="countdown-pages.html">reporting_rate_server</a></code> <code><a href="countdown-pages.html">reporting_rate_ui</a></code> <code><a href="countdown-pages.html">restore_default_control</a></code> <code><a href="countdown-pages.html">rr_indicators</a></code> <code><a href="countdown-pages.html">shapefile_step_server</a></code> <code><a href="countdown-pages.html">shapefile_step_ui</a></code> <code><a href="countdown-pages.html">step_map_mapping_complete</a></code> <code><a href="countdown-pages.html">step_national_rates_complete</a></code> <code><a href="countdown-pages.html">step_quality_complete</a></code> <code><a href="countdown-pages.html">step_shapefile_complete</a></code> <code><a href="countdown-pages.html">step_shapefile_touched</a></code> <code><a href="countdown-pages.html">step_survey_files_complete</a></code> <code><a href="countdown-pages.html">step_survey_mapping_complete</a></code> <code><a href="countdown-pages.html">step_upload_complete</a></code> <code><a href="countdown-pages.html">subnational_coverage_server</a></code> <code><a href="countdown-pages.html">subnational_coverage_ui</a></code> <code><a href="countdown-pages.html">subnational_denominator_server</a></code> <code><a href="countdown-pages.html">subnational_denominator_ui</a></code> <code><a href="countdown-pages.html">subnational_inequality_server</a></code> <code><a href="countdown-pages.html">subnational_inequality_ui</a></code> <code><a href="countdown-pages.html">subnational_mapping_server</a></code> <code><a href="countdown-pages.html">subnational_mapping_ui</a></code> <code><a href="countdown-pages.html">subnational_target_server</a></code> <code><a href="countdown-pages.html">subnational_target_ui</a></code> <code><a href="countdown-pages.html">survey_comparison_server</a></code> <code><a href="countdown-pages.html">survey_comparison_ui</a></code> <code><a href="countdown-pages.html">survey_estimates_required_fields</a></code> <code><a href="countdown-pages.html">survey_fields</a></code> <code><a href="countdown-pages.html">survey_upload_server</a></code> <code><a href="countdown-pages.html">survey_upload_ui</a></code> <code><a href="countdown-pages.html">target_server</a></code> <code><a href="countdown-pages.html">target_ui</a></code> <code><a href="countdown-pages.html">upload_box_server</a></code> <code><a href="countdown-pages.html">upload_box_ui</a></code> <code><a href="countdown-pages.html">wizard_fields</a></code> <code><a href="countdown-pages.html">wizard_landing_server</a></code> <code><a href="countdown-pages.html">wizard_landing_ui</a></code> <code><a href="countdown-pages.html">wizard_step_defs</a></code> <code><a href="countdown-pages.html">wizard_steps_server</a></code> <code><a href="countdown-pages.html">wizard_steps_ui</a></code>
 
         </dt>
         <dd>The Countdown pages, wizard, filters and app frame</dd>
@@ -1468,6 +1531,13 @@
 
         </dt>
         <dd>Read column names with the data dictionary</dd>
+
+        <dt>
+
+          <code><a href="notebook_data.html">notebook_data()</a></code>
+
+        </dt>
+        <dd>Notebook data: a folder's Countdown datasets for DataSuite's notebooks</dd>
 
         <dt>
 

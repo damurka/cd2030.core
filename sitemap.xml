@@ -1,6 +1,7 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>/404.html</loc></url>
 <url><loc>/LICENSE.html</loc></url>
+<url><loc>/STATA-DIFFERENCES.html</loc></url>
 <url><loc>/authors.html</loc></url>
 <url><loc>/index.html</loc></url>
 <url><loc>/news/index.html</loc></url>
@@ -17,6 +18,7 @@
 <url><loc>/reference/adjustment_steps_used.html</loc></url>
 <url><loc>/reference/attr_or_abort.html</loc></url>
 <url><loc>/reference/attr_or_null.html</loc></url>
+<url><loc>/reference/bayes_model_estimates.html</loc></url>
 <url><loc>/reference/cache_definition.html</loc></url>
 <url><loc>/reference/cache_manifest.html</loc></url>
 <url><loc>/reference/calculate_average_reporting_rate.html</loc></url>
@@ -38,6 +40,8 @@
 <url><loc>/reference/calculate_threshold.html</loc></url>
 <url><loc>/reference/cd2030-configuration.html</loc></url>
 <url><loc>/reference/cd2030.core-package.html</loc></url>
+<url><loc>/reference/cd_bayes_install_command.html</loc></url>
+<url><loc>/reference/cd_bayes_packages_missing.html</loc></url>
 <url><loc>/reference/cd_chart_catalog.html</loc></url>
 <url><loc>/reference/cd_chart_id.html</loc></url>
 <url><loc>/reference/cd_chartable_members.html</loc></url>
@@ -48,7 +52,9 @@
 <url><loc>/reference/cd_finish_plot.html</loc></url>
 <url><loc>/reference/cd_member_data.html</loc></url>
 <url><loc>/reference/cd_methodology_defaults.html</loc></url>
+<url><loc>/reference/cd_minimal_theme.html</loc></url>
 <url><loc>/reference/cd_report_context.html</loc></url>
+<url><loc>/reference/cd_request_bayes_packages.html</loc></url>
 <url><loc>/reference/cd_scope.html</loc></url>
 <url><loc>/reference/check_admin_columns.html</loc></url>
 <url><loc>/reference/check_admin_pairing_consistency.html</loc></url>
@@ -66,6 +72,7 @@
 <url><loc>/reference/check_population_service_collision.html</loc></url>
 <url><loc>/reference/check_population_service_collision_presheet.html</loc></url>
 <url><loc>/reference/check_population_vs_births.html</loc></url>
+<url><loc>/reference/check_required_columns_presheet.html</loc></url>
 <url><loc>/reference/check_shapefile_admin_names.html</loc></url>
 <url><loc>/reference/check_single_country.html</loc></url>
 <url><loc>/reference/check_survey_admin_names.html</loc></url>
@@ -138,6 +145,7 @@
 <url><loc>/reference/load_wuenic_data.html</loc></url>
 <url><loc>/reference/merge_and_standardize.html</loc></url>
 <url><loc>/reference/new_countdown.html</loc></url>
+<url><loc>/reference/notebook_data.html</loc></url>
 <url><loc>/reference/plot.cd_adjustment_values_filtered.html</loc></url>
 <url><loc>/reference/plot.cd_average_reporting_rate.html</loc></url>
 <url><loc>/reference/plot.cd_bayes_model.html</loc></url>
@@ -180,6 +188,7 @@
 <url><loc>/reference/prepare_population_metrics.html</loc></url>
 <url><loc>/reference/prepare_private_sector_plot_data.html</loc></url>
 <url><loc>/reference/print.cd_data.html</loc></url>
+<url><loc>/reference/quality_issues_table.html</loc></url>
 <url><loc>/reference/read_shapefile_folder.html</loc></url>
 <url><loc>/reference/reexports.html</loc></url>
 <url><loc>/reference/register_indicator_group.html</loc></url>
@@ -193,6 +202,7 @@
 <url><loc>/reference/save_dhis2_excel.html</loc></url>
 <url><loc>/reference/save_dhis2_master_data.html</loc></url>
 <url><loc>/reference/set_selected_group.html</loc></url>
+<url><loc>/reference/slim_bayes_model.html</loc></url>
 <url><loc>/reference/summarise_completeness_ratio.html</loc></url>
 <url><loc>/reference/tbl_sum.cd_adjustment_values.html</loc></url>
 <url><loc>/reference/tbl_sum.cd_average_reporting_rate.html</loc></url>
@@ -205,5 +215,6 @@
 <url><loc>/reference/tbl_sum.cd_national_denominators.html</loc></url>
 <url><loc>/reference/tbl_sum.cd_outliers_summary.html</loc></url>
 <url><loc>/reference/tbl_sum.cd_ratios_summary.html</loc></url>
+<url><loc>/reference/write_quality_issues.html</loc></url>
 </urlset>
 

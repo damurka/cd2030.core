@@ -721,6 +721,8 @@ object.
 
 - [`CacheConnection$keep_bayes_model()`](#method-CacheConnection-keep_bayes_model)
 
+- [`CacheConnection$bayes_estimates()`](#method-CacheConnection-bayes_estimates)
+
 - [`CacheConnection$clone()`](#method-CacheConnection-clone)
 
 ------------------------------------------------------------------------
@@ -2943,6 +2945,30 @@ Keeps a Bayesian model fitted elsewhere (see `bayes_model_inputs()`).
 
   The model ([`generate_bayes_model()`](generate_bayes_model.md)'s
   result).
+
+------------------------------------------------------------------------
+
+### Method `bayes_estimates()`
+
+The estimates of the Bayesian models already fitted at an admin level,
+as one table ([`bayes_model_estimates()`](bayes_model_estimates.md) of
+each, with the denominator it was fitted for). Only the models for the
+denominators selected now, as the Bayesian pages show; nothing is fitted
+here.
+
+#### Usage
+
+    CacheConnection$bayes_estimates(admin_level)
+
+#### Arguments
+
+- `admin_level`:
+
+  Administrative level ("national", "adminlevel_1").
+
+#### Returns
+
+A tibble, or `NULL` when no model has been fitted at that level.
 
 ------------------------------------------------------------------------
 

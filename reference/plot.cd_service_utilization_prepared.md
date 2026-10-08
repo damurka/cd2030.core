@@ -51,8 +51,9 @@ This function:
 
 - Projects the data to WGS84 for map consistency
 
-- Renders the spatial data using `geom_sf()` with a sequential purple
-  color scale
+- Renders the spatial data using
+  [`geom_sf()`](https://ggplot2.tidyverse.org/reference/ggsf.html) with
+  a sequential purple color scale
 
 - Facets by year and applies the package's custom plot theme
 

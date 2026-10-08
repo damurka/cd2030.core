@@ -11,7 +11,7 @@ defined (R/ui-*.R), and the kit's own components in datasuite.ui's docs/COMPONEN
 
     <a class="navbar-brand me-2" href="../index.html">cd2030.core</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.10</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -67,14 +67,18 @@ screens, the dataset header (with its denominator row, <code>cd_denominator_head
 <code>target</code>, <code>survey_comparison</code>, <code>subnational_mapping</code>.</p></li>
 </ul><p>The Introduction page (<code>introduction_ui(id, i18n)</code>, <code>introduction_server(id, selected_language)</code>) shows the app's
 help in the chosen language; <code>cd_app()</code> adds it.</p>
-<p><strong>The Load Data wizard.</strong> <code>upload_box_*</code>, <code>wizard_steps_*</code> and <code>wizard_landing_*</code> make the screen; its steps are
+<p><strong>The Load Data wizard.</strong> <code>cd_upload_data_ui()</code> / <code>cd_upload_data_server()</code> are the Load Data screen (<code>cd_app()</code>'s
+default): the page header and the wizard, the same for every app, which describes its own part of it with
+<code>options(cd2030.wizard = list(national_rates_groups, reference_uploads))</code> (see <code>R/ui-wizard-wizard-config.R</code>).
+<code>upload_box_*</code>, <code>wizard_steps_*</code> and <code>wizard_landing_*</code> make the screen; its steps are
 <code>wizard_step_defs</code> (upload, data quality, survey files, national rates, shapefile, survey and map mappings), each with
 a <code>step_*_complete()</code> test, and <code>compute_step_states()</code> works out which are done, blocked or optional. The steps'
 pages are <code>national_rates_*</code>, <code>survey_upload_*</code>, <code>reference_estimates_*</code>, <code>shapefile_step_*</code>, <code>map_survey_*</code> and
 <code>map_shapefile_*</code>; <code>cd_wizard_*</code> build their fields.</p>
 <p><strong>Filters and building blocks.</strong> <code>cd_admin_level_*</code>, <code>cd_indicator_*</code>, <code>cd_denominator_*</code>, <code>cd_population_*</code>,
 <code>cd_years_input()</code> / <code>cd_years_sync()</code>, the scoped page (<code><a href="cd_scope.html">cd_scope()</a></code>, <code>cd_scoped_page_*</code>, <code>cd_scope_filters()</code>),
-tabbed charts (<code>cd_tabbed_charts_*</code>), tables (<code>cd_table_*</code>) and the coverage chart card (<code>cd_coverage_plot_*</code>).</p>
+tabbed charts (<code>cd_tabbed_charts_*</code>), tables (<code>cd_table_*</code>), a flextable in a card with its picture and Excel
+downloads (<code>cd_table_card_*</code>) and the coverage chart card (<code>cd_coverage_plot_*</code>).</p>
     </div>
 
   </main></div>

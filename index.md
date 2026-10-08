@@ -157,7 +157,8 @@ run_app <- function(language = "en", selected_file = NA) {
     nav_sections = list(cd_nav_start(), cd_nav_quality(), cd_nav_denominators()),  # the sidebar
     registry = my_pages(),                           # every page: the shared ones and the app's own
     i18n = i18n, language = language, selected_file = selected_file,
-    upload_ui = upload_data_ui, upload_server = upload_data_server
+    # the Load Data screen, the same for every app; its fields come from options(cd2030.wizard = ...) (?countdown-pages)
+    upload_ui = cd_upload_data_ui, upload_server = cd_upload_data_server
   )
 }
 ```
