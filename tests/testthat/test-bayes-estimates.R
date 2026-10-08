@@ -42,3 +42,23 @@ test_that("bayes_model_estimates refuses what is not a fitted model", {
   empty <- structure(list(posteriors = list()), class = c("cd_bayes_model", "list"), indicator = "penta3")
   expect_error(bayes_model_estimates(empty), "no estimates")
 })
+
+test_that("slim_bayes_model drops the draws and the compiled model, and nothing a chart or table reads", {
+  model <- fake_bayes_model(regions = c("Zou", "Alibori"))
+  model$samples <- raw(1e6)
+  model$stan_model <- raw(1e5)
+  model$data <- data.frame(year = 2010)
+  attr(model, "iso") <- "BEN"
+
+  slim <- slim_bayes_model(model)
+  expect_named(slim, c("posteriors", "data"))
+  expect_s3_class(slim, "cd_bayes_model")
+  expect_equal(attr(slim, "indicator"), "penta3")
+  expect_equal(attr(slim, "iso"), "BEN")
+  expect_false(attr(slim, "is_national"))
+  expect_identical(bayes_model_estimates(slim), bayes_model_estimates(model))
+  expect_lt(length(serialize(slim, NULL)), length(serialize(model, NULL)) / 100)
+
+  # a model that has neither is left as it is
+  expect_identical(slim_bayes_model(slim), slim)
+})

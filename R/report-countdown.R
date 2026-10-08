@@ -425,6 +425,18 @@ report_presets <- function(lang = "en", group = get_selected_group()) {
   footer = "Countdown to 2030 \u00b7 {country}"
 )
 
+# The Countdown look in an app's colour: what cd_app(theme = ) gives the app's own pages (cd-ui.css's App themes: the
+# RMNCAH maroon by default, the vaccine app's blue, the pooled app's green), for the reports made in it. Without this
+# every app's reports were maroon: the vaccine app's blue stopped at the report builder.
+.cd_report_theme_for <- function(theme = NULL) {
+  colours <- switch(theme %||% "rmncah",
+    vaccine = list(accent = "#2f6db5", heading_color = "#1f4f86"),
+    pooled = list(accent = "#1f8a5f", heading_color = "#146447"),
+    list()
+  )
+  utils::modifyList(.cd_report_theme_countdown, colours)
+}
+
 # The indicators whose values are fields: {<indicator>_latest} (DHIS2, latest year) and {<indicator>_survey}
 .rb_field_indicators <- c("anc1", "anc4", "anc_1trimester", "instlivebirths", "ideliv", "pnc48h", "bcg", "penta1", "penta3", "measles1")
 

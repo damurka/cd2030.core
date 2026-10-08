@@ -75,3 +75,36 @@ test_that("the national coverage titles name the chart under them with {chart_in
   expect_gt(length(templated), 0)
   expect_true(any(vapply(templated, function(i) i < length(blocks) && identical(blocks[[i + 1]]$type, "chart"), logical(1))))
 })
+
+test_that("the Countdown report theme takes the app's colour", {
+  maroon <- .cd_report_theme_for(NULL)
+  expect_identical(maroon, .cd_report_theme_countdown)
+  expect_identical(.cd_report_theme_for("rmncah"), .cd_report_theme_countdown)
+
+  blue <- .cd_report_theme_for("vaccine")
+  expect_equal(blue$accent, "#2f6db5")
+  expect_equal(blue$heading_color, "#1f4f86")
+  # only the colour: its fonts, palette and footer are the Countdown theme's
+  same <- setdiff(names(maroon), c("accent", "heading_color"))
+  expect_identical(blue[same], maroon[same])
+
+  expect_equal(.cd_report_theme_for("pooled")$accent, "#1f8a5f")
+
+  # what an app registers is what a new report starts from
+  withr::defer(datasuite.ui::report_register(themes = list(countdown = .cd_report_theme_countdown)))
+  datasuite.ui::report_register(themes = list(countdown = blue))
+  expect_equal(datasuite.ui::report_default_design()$accent, "#2f6db5")
+  datasuite.ui::report_register(themes = list(countdown = .cd_report_theme_countdown))
+  expect_equal(datasuite.ui::report_default_design()$accent, "#7d3f40")
+})
+
+test_that("a report's charts have no tick marks, unless the chart asks for them", {
+  p <- ggplot2::ggplot(data.frame(x = 1:3, y = 1:3), ggplot2::aes(x, y)) + ggplot2::geom_point() + cd_report_theme()
+  expect_s3_class(ggplot2::calc_element("axis.ticks", ggplot2::ggplot_build(p)$plot$theme), "element_blank")
+  expect_s3_class(ggplot2::calc_element("axis.ticks.x", ggplot2::ggplot_build(p)$plot$theme), "element_blank")
+  # the axis lines stay
+  expect_s3_class(ggplot2::calc_element("axis.line.x", ggplot2::ggplot_build(p)$plot$theme), "element_line")
+
+  asked <- datasuite.ui::apply_chart_options(p, datasuite.ui::cd_chart_options(axis_ticks = TRUE))
+  expect_s3_class(ggplot2::calc_element("axis.ticks", ggplot2::ggplot_build(asked)$plot$theme), "element_line")
+})

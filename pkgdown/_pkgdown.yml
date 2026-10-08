@@ -98,6 +98,8 @@ reference:
     contents:
       - run_all_quality_checks
       - starts_with("check_")
+      - quality_issues_table
+      - write_quality_issues
 
   - subtitle: "Reporting Rates"
     contents:
@@ -269,10 +271,15 @@ reference:
   - title: "Bayesian Coverage Model"
     desc: >
       Coverage modelled with bayescoveragemodel / bayescoveragedeploy (suggested packages, from
-      https://alkemalab.r-universe.dev).
+      https://alkemalab.r-universe.dev), installed when the model is first wanted.
     contents:
       - generate_bayes_model
       - plot.cd_bayes_model
+      - bayes_model_estimates
+      - slim_bayes_model
+      - cd_bayes_packages_missing
+      - cd_request_bayes_packages
+      - cd_bayes_install_command
 
   - title: "Reports and Charts"
     desc: >
@@ -312,6 +319,7 @@ reference:
     contents:
       - cd_dictionary
       - cd_describe_columns
+      - notebook_data
       - cd_denominator_labels
       - cd_methodology_defaults
 

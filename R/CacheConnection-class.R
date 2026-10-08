@@ -188,6 +188,11 @@ CacheConnection <- R6::R6Class(
       rds_path <- private$.in_memory_data$rds_path
       loaded_data <- readRDS(rds_path)
       loaded_data$rds_path <- rds_path
+      # Models fitted before 1.3.10 were kept with the sampler's draws (13 to 41 MB each): held without them, so
+      # the next save of anything writes a file that much smaller, and takes that much less time
+      if (length(loaded_data$bayesian_models)) {
+        loaded_data$bayesian_models <- lapply(loaded_data$bayesian_models, slim_bayes_model)
+      }
       private$.in_memory_data <- loaded_data
       private$.in_memory_data$countdown_data <- private$.in_memory_data$countdown_data %>%
         rename(ideliv = any_of("ideliv"))
@@ -1434,7 +1439,8 @@ CacheConnection <- R6::R6Class(
     keep_bayes_model = function(key, model) {
       models_list <- private$getter("bayesian_models")
       if (is.null(models_list)) models_list <- list()
-      models_list[[key]] <- model
+      # without the draws, whatever fitted it (see generate_bayes_model()'s keep_samples)
+      models_list[[key]] <- slim_bayes_model(model)
       private$update_field("bayesian_models", models_list)
       invisible(self)
     },

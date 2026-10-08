@@ -53,3 +53,17 @@ test_that("get_named_indicators returns named vector of correct length", {
   expect_equal(length(named), length(get_all_indicators()))
   expect_true(all(names(named) %in% get_indicator_group_names()))
 })
+
+test_that("cd_years_held says when a years chip already holds what was chosen", {
+  all_years <- 2020:2024
+  # what the chip sends is text; what is saved is integers, in the order chosen
+  expect_true(cd_years_held(c("2021", "2023"), c(2023L, 2021L), all_years))
+  expect_false(cd_years_held(c("2021"), c(2021L, 2023L), all_years))
+  expect_false(cd_years_held(c("2021", "2023"), 2021L, all_years))
+  # an empty chip, and no choice, are both every year
+  expect_true(cd_years_held("", all_years, all_years))
+  expect_true(cd_years_held(NULL, NULL, all_years))
+  expect_true(cd_years_held("", NA, all_years))
+  expect_false(cd_years_held("", 2021L, all_years))
+  expect_false(cd_years_held("2021", NULL, all_years))
+})

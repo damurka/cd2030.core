@@ -101,7 +101,9 @@ cd_report_theme <- function(base_size = 10, base_family = "",
       axis.text = element_text(size = small_size),
       axis.text.x = element_text(margin = margin(t = small_rel / 2), vjust = 1),
       axis.text.y = element_text(margin = margin(r = small_rel / 2), hjust = 1),
-      axis.ticks = element_line(colour = "black", linewidth = base_line_size),
+      # no tick marks, as the charts on the app's pages have none: the axis lines and the labels are enough. A
+      # chart's own "Tick marks" option (cd_chart_options(axis_ticks = TRUE)) still draws them for that chart.
+      axis.ticks = element_blank(),
       axis.title = element_text(size = base_size),
       axis.title.x = element_text(margin = margin(t = half_line)),
       axis.title.y = element_text(angle = 90L, margin = margin(r = half_line)),

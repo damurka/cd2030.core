@@ -1,3 +1,24 @@
+# cd2030.core 1.3.10
+
+* Bayesian Analysis no longer holds the app up. The fit already ran in another R process, but its result did not: a
+  fitted model carried the sampler's draws and the compiled Stan model (13 MB national, 41 MB sub-national), which
+  were brought back from the worker, kept in the dataset and written to its file, taking 3 to 6 seconds when a fit
+  ended and again, for every model kept, each time anything else in the dataset changed. `generate_bayes_model()`
+  now returns the model without them (`keep_samples = FALSE`: about 30 KB and 170 KB), the charts and
+  `bayes_model_estimates()` being drawn from the summary it keeps, pixel for pixel as before. Models already saved
+  in a dataset are held without their draws when it is opened, and written so at its next save
+  (`slim_bayes_model()`).
+
+* Requires datasuite.ui 0.4.4 (the Ask AI button's hint is its text, not the markup around it).
+* Maps: choosing years one after another no longer sets the maps redrawing without end. Each choice was sent back
+  to the years chip, and arrived after the next click, undoing it; the two selections then replaced each other for
+  good (`cd_years_sync()`, on every page with a years chip).
+* Charts in reports are drawn without tick marks on their axes, as the charts on the pages are (`cd_report_theme()`).
+  A chart's Tick marks option still draws them for that chart.
+* Reports take the app's colour: the Countdown report theme (accent and headings) is the vaccine app's blue in the
+  vaccine app, as its pages are, where every app's reports were the RMNCAH maroon (`cd_app(theme = )`). A report
+  saved before keeps the colours saved with it; choosing the Countdown theme again in its Design gives it the app's.
+
 # cd2030.core 1.3.9
 
 * Load Data: the required columns are checked at the Data Quality step, not only at Finish. `new_countdown()`'s

@@ -14,6 +14,8 @@ cd_app <- function(app_name, app_version, theme, nav_sections, registry, i18n, l
   if (!is.function(upload_ui) || !is.function(upload_server)) {
     stop("cd_app() needs the app's Load Data screen: upload_ui and upload_server.", call. = FALSE)
   }
+  # the app's reports start in its colour, as its pages are (R/report-countdown.R)
+  datasuite.ui::report_register(themes = list(countdown = .cd_report_theme_for(theme)))
   app_frame(
     app_name, app_version, theme, nav_sections, registry, i18n, language, selected_file,
     start_screens = list(

@@ -14,15 +14,33 @@ cd_years_sync <- function(input, session, id = "years", years, selected) {
   stopifnot(is.reactive(years), is.reactive(selected))
   mounted <- cd_mounted(input, id)
 
+  sent_years <- NULL
   observeEvent(list(years(), selected(), mounted()), {
     req(mounted(), years())
     chosen <- selected()
+    # Not sent back what the chip itself has just chosen. The chip's change is saved (the page's own observer), which
+    # changes selected(), and the update that followed told the chip to hold what it already held -- harmless alone,
+    # but it reaches the browser after the reader's NEXT click: the chip went back to the earlier years, said so,
+    # that was saved and answered in turn, and the two selections chased each other for good, the maps redrawn each
+    # time. The chip is only told its years when they are not the ones it has (a dataset opened, its years changed).
+    if (identical(sent_years, years()) && cd_years_held(isolate(input[[id]]), chosen, years())) {
+      return()
+    }
+    sent_years <<- years()
     cd_update_input(
       id, session,
       options = cd_plain_options(years()),
       value = if (length(chosen) && !all(is.na(chosen))) as.character(chosen) else ""
     )
   })
+}
+
+# Whether a years chip already holds `chosen`: the same years, in any order, an empty chip and no choice both being
+# every year (see cd_years_input()).
+cd_years_held <- function(value, chosen, all_years) {
+  held <- cd_years_input(as.character(value %||% ""), all_years)
+  wanted <- if (length(chosen) && !all(is.na(chosen))) as.integer(chosen) else as.integer(all_years)
+  setequal(held, wanted)
 }
 
 # The years a years chip currently means, as integers. An empty chip ("") means "all years" (see cd_chip_multi()); the

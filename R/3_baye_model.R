@@ -4,12 +4,18 @@
 #' @param overall_score DHIS2 data frame of class 'cd_overall_score'.
 #' @param indicator Indicator character code (e.g., 'anc4', 'penta3').
 #' @param denominator The denominator type to use from DHIS2 (e.g., 'penta1', 'dhis2').
+#' @param keep_samples Whether the model keeps the sampler's draws and the compiled Stan model (`samples`,
+#'   `stan_model`). Default `FALSE`: the charts and [bayes_model_estimates()] read the summary of the draws, which is
+#'   kept either way, and without the draws a model is some 30 KB (national) to 170 KB (sub-national) where it was
+#'   13 MB to 41 MB. A model that size was brought back from the worker that fitted it, kept in the dataset and
+#'   written to its file with every later change, each of which held the app up for seconds.
 #'
 #' @export
 generate_bayes_model <- function(coverage_data,
                                  overall_score,
                                  indicator = c('anc4', 'anc_1trimester', 'ideliv', 'measles1', 'penta3'), 
-                                 denominator = c('anc1', 'dhis2', 'penta1', 'penta1derived', 'anc1derived')) {
+                                 denominator = c('anc1', 'dhis2', 'penta1', 'penta1derived', 'anc1derived'),
+                                 keep_samples = FALSE) {
   
   # Validate inputs
   check_cd_coverage(coverage_data)
@@ -120,6 +126,9 @@ generate_bayes_model <- function(coverage_data,
   # ---------------------------------------------------------
   # 5. Return object safely
   # ---------------------------------------------------------
+  if (!isTRUE(keep_samples)) {
+    local_model <- slim_bayes_model(local_model)
+  }
   class(local_model) <- c('cd_bayes_model', class(local_model))
   
   attr(local_model, "indicator") <- indicator 
@@ -128,6 +137,26 @@ generate_bayes_model <- function(coverage_data,
   attr(local_model, "is_national") <- is_national
   
   return(local_model)
+}
+
+#' A Bayesian model without the sampler's draws and the compiled Stan model
+#'
+#' What makes a fitted model large (`samples`, `stan_model`) and no chart or table reads: see
+#' [generate_bayes_model()]'s `keep_samples`. A model that has neither is returned as it is.
+#'
+#' @param model A fitted model.
+#' @return The model without them, its class and attributes kept.
+#' @export
+slim_bayes_model <- function(model) {
+  heavy <- intersect(c("samples", "stan_model"), names(model))
+  if (!is.list(model) || !length(heavy)) {
+    return(model)
+  }
+  kept <- attributes(model)
+  slim <- unclass(model)[setdiff(names(model), heavy)]
+  kept$names <- names(slim)
+  attributes(slim) <- kept
+  slim
 }
 
 #' A Bayesian model's estimates as a table
