@@ -1,5 +1,40 @@
 # Changelog
 
+## cd2030.core 1.4.2
+
+- National Coverage & Continuum: the heat map of the regions is drawn.
+  Since 1.4.0 it showed “subscript out of bounds” in the app, for every
+  dataset: the numbers on its tiles were coloured through a scale that
+  has no legend, and the app, listing the chart’s legend for the
+  customize panel, failed on it. The numbers are coloured without a
+  scale, so it is drawn on any datasuite.ui (0.5.1 fixes the listing
+  itself).
+- National Inequality and Sub-National Inequality with no region chosen:
+  the chart is drawn. In 1.4.1 it showed “The size of `nm` (2) must be
+  compatible with the size of `x` (3)”: the page gives the label of a
+  region only when one is chosen, and the missing label left the colours
+  one name short.
+- Reporting Rate: the heat map writes each number in the colour that
+  reads on its tile, as the other heat maps do (it was black on all
+  three colours).
+- Data Missingness: the charts for one indicator (“missing indicators by
+  region”, the trend) say “Select an indicator to see this chart” when
+  every indicator is chosen; the loader turned for ever. And the heat
+  map’s card becomes small again when one indicator is chosen
+  (datasuite.ui 0.5.1, now required).
+- The bar charts with a panel a region (reporting rate, outliers by
+  region and by indicator, missing indicators by region) are as tall as
+  their rows of panels need (datasuite.ui 0.5.1).
+- Denominator Selection: the National Coverage card shows its loader
+  while the coverage is worked out. It was blank.
+- `set_k_factors()` on a dataset that has stored adjustment settings
+  (one adjusted on the Data Adjustment page) changes the k in those
+  settings too: they are what `adjust_data()` reads, and the new k was
+  not used.
+- Internal Consistency: no deprecation warnings (`cur_data()`, `size`
+  for a line), and the labels RMNCAH asked for and did not have
+  (`opv1_opv3`, `opt_instdeliveries`) are translated.
+
 ## cd2030.core 1.4.1
 
 - Bayesian Analysis no longer holds the app while a model is fitted.

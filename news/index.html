@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">cd2030.core</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,18 @@
       <small>Source: <a href="https://github.com/damurka/cd2030.core/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.4.2" id="cd2030core-142">cd2030.core 1.4.2<a class="anchor" aria-label="anchor" href="#cd2030core-142"></a></h2>
+<ul><li>National Coverage &amp; Continuum: the heat map of the regions is drawn. Since 1.4.0 it showed “subscript out of bounds” in the app, for every dataset: the numbers on its tiles were coloured through a scale that has no legend, and the app, listing the chart’s legend for the customize panel, failed on it. The numbers are coloured without a scale, so it is drawn on any datasuite.ui (0.5.1 fixes the listing itself).</li>
+<li>National Inequality and Sub-National Inequality with no region chosen: the chart is drawn. In 1.4.1 it showed “The size of <code>nm</code> (2) must be compatible with the size of <code>x</code> (3)”: the page gives the label of a region only when one is chosen, and the missing label left the colours one name short.</li>
+<li>Reporting Rate: the heat map writes each number in the colour that reads on its tile, as the other heat maps do (it was black on all three colours).</li>
+<li>Data Missingness: the charts for one indicator (“missing indicators by region”, the trend) say “Select an indicator to see this chart” when every indicator is chosen; the loader turned for ever. And the heat map’s card becomes small again when one indicator is chosen (datasuite.ui 0.5.1, now required).</li>
+<li>The bar charts with a panel a region (reporting rate, outliers by region and by indicator, missing indicators by region) are as tall as their rows of panels need (datasuite.ui 0.5.1).</li>
+<li>Denominator Selection: the National Coverage card shows its loader while the coverage is worked out. It was blank.</li>
+<li>
+<code>set_k_factors()</code> on a dataset that has stored adjustment settings (one adjusted on the Data Adjustment page) changes the k in those settings too: they are what <code>adjust_data()</code> reads, and the new k was not used.</li>
+<li>Internal Consistency: no deprecation warnings (<code>cur_data()</code>, <code>size</code> for a line), and the labels RMNCAH asked for and did not have (<code>opv1_opv3</code>, <code>opt_instdeliveries</code>) are translated.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.4.1" id="cd2030core-141">cd2030.core 1.4.1<a class="anchor" aria-label="anchor" href="#cd2030core-141"></a></h2>
 <ul><li>Bayesian Analysis no longer holds the app while a model is fitted. 1.4.0 asked for one background worker, and a plan of one worker is run in the app’s own process: every page waited for the whole fit (10 to 13 seconds for a national model, minutes for a sub-national one). The worker is now a separate process whatever their number; starting a fit gives the app back in 0.2 seconds.</li>
