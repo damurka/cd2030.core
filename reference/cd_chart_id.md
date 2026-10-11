@@ -23,3 +23,20 @@ cd_chart_id(x)
 ## Value
 
 A string, or `NULL` when the data does not say what it is.
+
+## Examples
+
+``` r
+data <- load_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#> ℹ Loading Excel "kenya.xlsx" for parts
+#> ! The following columns are empty: anc_1trimester, under5_deaths, total_deaths,
+#>   ipv2, measles_cases
+#> ℹ Successfully loaded and cleaned data
+#> ℹ Auto-detect candidates (|group|): vaccine=19, rmncah=28 -> selected rmncah
+cd_chart_id(calculate_average_reporting_rate(data))
+#> [1] "average_reporting_rate.national"
+
+# plain data does not say what it is
+cd_chart_id(mtcars)
+#> NULL
+```

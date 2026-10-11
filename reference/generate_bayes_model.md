@@ -1,6 +1,10 @@
-# Generate Bayesian Coverage Model Object
+# Generate Bayesian coverage model object
 
-Generate Bayesian Coverage Model Object
+Fits a Bayesian coverage model for one indicator, combining the survey
+estimates and the routine (DHIS2) coverage in `coverage_data` with the
+yearly data quality score in `overall_score`. The model is national or
+sub-national (admin level 1), following the admin level of
+`coverage_data`.
 
 ## Usage
 
@@ -37,8 +41,36 @@ generate_bayes_model(
   Whether the model keeps the sampler's draws and the compiled Stan
   model (`samples`, `stan_model`). Default `FALSE`: the charts and
   [`bayes_model_estimates()`](bayes_model_estimates.md) read the summary
-  of the draws, which is kept either way, and without the draws a model
-  is some 30 KB (national) to 170 KB (sub-national) where it was 13 MB
-  to 41 MB. A model that size was brought back from the worker that
-  fitted it, kept in the dataset and written to its file with every
-  later change, each of which held the app up for seconds.
+  of the draws, which is kept either way, and a model without the draws
+  is much smaller (tens to hundreds of KB instead of tens of MB), so it
+  is quicker to save and to pass between processes.
+
+## Value
+
+An object of class `cd_bayes_model`: the fitted model returned by
+[`bayescoveragedeploy::fit_local_model()`](https://rdrr.io/pkg/bayescoveragedeploy/man/fit_local_model.html)
+(a list, with its `posteriors` summary), without `samples` and
+`stan_model` unless `keep_samples = TRUE`. It carries the attributes
+`indicator`, `model_indicator` (the name the model uses for the
+indicator), `iso` and `is_national`.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+# needs the Bayesian model packages (see cd_bayes_packages_missing()); a fit takes minutes
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+cache <- load_cache_data(path)
+cache$set_national_estimates(list(sbr = 0.02))
+cache$adjust_data()
+
+model <- generate_bayes_model(
+  coverage_data = cache$calculate_coverage("national"),
+  overall_score = cache$overall_score,
+  indicator = "penta3",
+  denominator = "penta1"
+)
+bayes_model_estimates(model)
+plot(model)
+} # }
+```

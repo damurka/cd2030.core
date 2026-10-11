@@ -1,4 +1,4 @@
-# Save Processed Countdown 2030 Data to File
+# Save processed Countdown 2030 data to file
 
 `save_data` saves processed Countdown 2030 data to either an RDS or DTA
 file. It checks that the input data is of class `cd_data` before saving.

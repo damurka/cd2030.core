@@ -1,6 +1,8 @@
 # The denominator options' labels
 
-The denominator options' labels
+Gives the display label of each denominator option, keyed by its id.
+With a translator the labels are translated; a label that has no
+translation stays in English.
 
 ## Usage
 

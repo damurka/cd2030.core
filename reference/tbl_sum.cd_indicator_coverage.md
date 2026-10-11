@@ -1,4 +1,4 @@
-# Table Summary for National Coverage Estimates
+# Table summary for national coverage estimates
 
 `tbl_sum.cd_indicator_coverage` generates a summary label for national
 coverage estimates tables, providing a clear indication of the data

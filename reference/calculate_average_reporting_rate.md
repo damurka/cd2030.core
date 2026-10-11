@@ -1,4 +1,4 @@
-# Reporting Rate Summary by Administrative Level
+# Reporting rate summary by administrative level
 
 `calculate_average_reporting_rate()` computes the average reporting rate
 for each indicator by year and administrative level. For `adminlevel_1`,

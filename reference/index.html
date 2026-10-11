@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">cd2030.core</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.10</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -15,7 +15,14 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/preparing-data.html">Preparing your data</a></li>
+    <li><a class="dropdown-item" href="../articles/data-quality.html">Checking data quality</a></li>
+    <li><a class="dropdown-item" href="../articles/coverage.html">From adjustment to coverage</a></li>
+    <li><a class="dropdown-item" href="../articles/building-an-app.html">Building an app on cd2030.core</a></li>
+  </ul></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -67,49 +74,49 @@
           <code><a href="save_data.html">save_data()</a></code>
 
         </dt>
-        <dd>Save Processed Countdown 2030 Data to File</dd>
+        <dd>Save processed Countdown 2030 data to file</dd>
 
         <dt>
 
           <code><a href="save_dhis2_excel.html">save_dhis2_excel()</a></code>
 
         </dt>
-        <dd>Save DHIS2 Data to an Excel Workbook</dd>
+        <dd>Save DHIS2 data to an Excel workbook</dd>
 
         <dt>
 
           <code><a href="save_dhis2_master_data.html">save_dhis2_master_data()</a></code>
 
         </dt>
-        <dd>Create a Master Dataset from DHIS2 Data</dd>
+        <dd>Create a master dataset from DHIS2 data</dd>
 
         <dt>
 
           <code><a href="load_excel_parts.html">load_excel_parts()</a></code>
 
         </dt>
-        <dd>Read &amp; clean every Countdown 2030 Excel sheet, without merging them</dd>
+        <dd>Read and clean the sheets of a Countdown 2030 workbook</dd>
 
         <dt>
 
           <code><a href="merge_and_standardize.html">merge_and_standardize()</a></code>
 
         </dt>
-        <dd>Merge and standardize an already-<code><a href="../reference/load_excel_parts.html">load_excel_parts()</a></code>-ed set of sheets</dd>
+        <dd>Merge and standardize sheets read by <code><a href="../reference/load_excel_parts.html">load_excel_parts()</a></code></dd>
 
         <dt>
 
           <code><a href="resolve_country_best_effort.html">resolve_country_best_effort()</a></code>
 
         </dt>
-        <dd>Best-effort, non-aborting country resolution from a raw Admin sheet</dd>
+        <dd>Find the country of an Admin sheet without raising an error</dd>
 
         <dt>
 
           <code><a href="generate_admin1_keys.html">generate_admin1_keys()</a></code>
 
         </dt>
-        <dd>Generate a simple, stable-within-one-load synthetic key per admin-1 region</dd>
+        <dd>Generate a key for each admin level 1 unit</dd>
 
         <dt>
 
@@ -132,14 +139,14 @@
           <code><a href="CacheConnection.html">CacheConnection</a></code>
 
         </dt>
-        <dd>CacheConnection Class</dd>
+        <dd>CacheConnection class</dd>
 
         <dt>
 
           <code><a href="init_CacheConnection.html">init_CacheConnection()</a></code>
 
         </dt>
-        <dd>Create a CacheConnection Object</dd>
+        <dd>Create a CacheConnection object</dd>
       </dl></div><div class="section level2">
       <h2 id="external-data-sources">External Data Sources<a class="anchor" aria-label="anchor" href="#external-data-sources"></a></h2>
 
@@ -155,56 +162,56 @@
           <code><a href="load_un_estimates.html">load_un_estimates()</a></code>
 
         </dt>
-        <dd>Load UN Estimates</dd>
+        <dd>Load UN estimates</dd>
 
         <dt>
 
           <code><a href="load_un_mortality_data.html">load_un_mortality_data()</a></code>
 
         </dt>
-        <dd>Load and Filter UN Mortality Estimates</dd>
+        <dd>Load and filter UN mortality estimates</dd>
 
         <dt>
 
           <code><a href="load_wuenic_data.html">load_wuenic_data()</a></code>
 
         </dt>
-        <dd>Load WUENIC Immunization Data</dd>
+        <dd>Load WUENIC immunization data</dd>
 
         <dt>
 
           <code><a href="load_survey_data.html">load_survey_data()</a></code>
 
         </dt>
-        <dd>Load and Process Survey Data</dd>
+        <dd>Load and process survey data</dd>
 
         <dt>
 
           <code><a href="load_equity_data.html">load_equity_data()</a></code>
 
         </dt>
-        <dd>Load and Filter Equity Data</dd>
+        <dd>Load and filter equity data</dd>
 
         <dt>
 
           <code><a href="load_fpet_data.html">load_fpet_data()</a></code>
 
         </dt>
-        <dd>Load FPET Data from CSV File or Use Provided Data</dd>
+        <dd>Load FPET data from CSV file or use provided data</dd>
 
         <dt>
 
           <code><a href="load_private_sector_data.html">load_private_sector_data()</a></code>
 
         </dt>
-        <dd>Load and Prepare Private Sector Data</dd>
+        <dd>Load and prepare private sector data</dd>
 
         <dt>
 
           <code><a href="load_csection_estimates.html">load_csection_estimates()</a></code>
 
         </dt>
-        <dd>Load C-section Share Estimates</dd>
+        <dd>Load C-section share estimates</dd>
       </dl></div><div class="section level2">
       <h2 id="indicator-group-management">Indicator Group Management<a class="anchor" aria-label="anchor" href="#indicator-group-management"></a></h2>
 
@@ -255,7 +262,7 @@
           <code><a href="get_indicator_group_names.html">get_indicator_group_names()</a></code>
 
         </dt>
-        <dd>Get Indicator Group Names</dd>
+        <dd>Get indicator group names</dd>
 
         <dt>
 
@@ -290,154 +297,154 @@
           <code><a href="run_all_quality_checks.html">run_all_quality_checks()</a></code>
 
         </dt>
-        <dd>Run every non-structural quality check against an already-loaded cache, without aborting</dd>
+        <dd>Run all data quality checks and report every result</dd>
 
         <dt>
 
           <code><a href="check_admin_columns.html">check_admin_columns()</a></code>
 
         </dt>
-        <dd>Check the Admin_data sheet has the columns every later step assumes exist</dd>
+        <dd>Check that the Admin sheet has its required columns</dd>
 
         <dt>
 
           <code><a href="check_admin_pairing_consistency.html">check_admin_pairing_consistency()</a></code>
 
         </dt>
-        <dd>Check a district's admin-1 pairing is stable within the Admin sheet itself</dd>
+        <dd>Check that each district has one admin level 1 name in the Admin sheet</dd>
 
         <dt>
 
           <code><a href="check_country_recognized.html">check_country_recognized()</a></code>
 
         </dt>
-        <dd>Check the Admin sheet's single country value is actually a recognized country name, pre-merge</dd>
+        <dd>Check that the country in the Admin sheet is recognized</dd>
 
         <dt>
 
           <code><a href="check_district_consistency.html">check_district_consistency()</a></code>
 
         </dt>
-        <dd>Check a district's admin-1 pairing and spelling are stable across years</dd>
+        <dd>Check that districts are consistent across the dataset</dd>
 
         <dt>
 
           <code><a href="check_district_cross_sheet.html">check_district_cross_sheet()</a></code>
 
         </dt>
-        <dd>Check districts match between the Admin sheet and every other sheet, both directions</dd>
+        <dd>Check that districts match between the Admin sheet and the others</dd>
 
         <dt>
 
           <code><a href="check_district_year_completeness.html">check_district_year_completeness()</a></code>
 
         </dt>
-        <dd>Check every district appears in every year present in the Population sheet</dd>
+        <dd>Check that every district has every year in the Population sheet</dd>
 
         <dt>
 
           <code><a href="check_indicator_emptiness.html">check_indicator_emptiness()</a></code>
 
         </dt>
-        <dd>Flag indicators that are entirely empty across the whole dataset</dd>
+        <dd>Flag indicators that have no data</dd>
 
         <dt>
 
           <code><a href="check_indicator_emptiness_presheet.html">check_indicator_emptiness_presheet()</a></code>
 
         </dt>
-        <dd>Flag indicators entirely empty across every service sheet, pre-merge</dd>
+        <dd>Flag indicators that have no data, before merging</dd>
 
         <dt>
 
           <code><a href="check_month_language_consistency.html">check_month_language_consistency()</a></code>
 
         </dt>
-        <dd>Flag calendar months that different rows/sheets label with different raw text</dd>
+        <dd>Flag months that are written in more than one way</dd>
 
         <dt>
 
           <code><a href="check_month_presence.html">check_month_presence()</a></code>
 
         </dt>
-        <dd>Check every district-year has all 12 calendar months present</dd>
+        <dd>Check that every district-year has all 12 months</dd>
 
         <dt>
 
           <code><a href="check_month_presence_presheet.html">check_month_presence_presheet()</a></code>
 
         </dt>
-        <dd>Check every district-year has all 12 calendar months present, pre-merge</dd>
+        <dd>Check that every district-year has all 12 months, before merging</dd>
 
         <dt>
 
           <code><a href="check_month_validity.html">check_month_validity()</a></code>
 
         </dt>
-        <dd>Check every row's month string parsed to a real calendar month</dd>
+        <dd>Check that every month value is a recognized month</dd>
 
         <dt>
 
           <code><a href="check_month_validity_presheet.html">check_month_validity_presheet()</a></code>
 
         </dt>
-        <dd>Check every row's month string parses to a real calendar month, pre-merge</dd>
+        <dd>Check that every month value is a recognized month, before merging</dd>
 
         <dt>
 
           <code><a href="check_population_service_collision.html">check_population_service_collision()</a></code>
 
         </dt>
-        <dd>Flag district-years where a service indicator looks like it was mixed up with population data</dd>
+        <dd>Flag district-years where service births equal population births</dd>
 
         <dt>
 
           <code><a href="check_population_service_collision_presheet.html">check_population_service_collision_presheet()</a></code>
 
         </dt>
-        <dd>Flag district-years where a service indicator looks mixed up with population data, pre-merge</dd>
+        <dd>Flag service births that equal population births, before merging</dd>
 
         <dt>
 
           <code><a href="check_population_vs_births.html">check_population_vs_births()</a></code>
 
         </dt>
-        <dd>Check that estimated population live births aren't lower than reported institutional counts</dd>
+        <dd>Check that population live births are not below reported births</dd>
 
         <dt>
 
           <code><a href="check_required_columns_presheet.html">check_required_columns_presheet()</a></code>
 
         </dt>
-        <dd>Check the sheets have every column the selected indicator group needs, before they are merged</dd>
+        <dd>Check that the sheets have the columns an indicator group needs</dd>
 
         <dt>
 
           <code><a href="check_shapefile_admin_names.html">check_shapefile_admin_names()</a></code>
 
         </dt>
-        <dd>Flag dataset admin-1 names that have no matching shapefile region</dd>
+        <dd>Flag admin level 1 names with no matching shapefile region</dd>
 
         <dt>
 
           <code><a href="check_single_country.html">check_single_country()</a></code>
 
         </dt>
-        <dd>Check the Admin_data sheet names exactly one country</dd>
+        <dd>Check that the Admin sheet names one country</dd>
 
         <dt>
 
           <code><a href="check_survey_admin_names.html">check_survey_admin_names()</a></code>
 
         </dt>
-        <dd>Flag dataset admin-1 names that have no matching survey region</dd>
+        <dd>Flag admin level 1 names with no matching survey region</dd>
 
         <dt>
 
           <code><a href="quality_issues_table.html">quality_issues_table()</a></code>
 
         </dt>
-        <dd>Every data quality result as tables: a summary of the checks, and one row per issue</dd>
+        <dd>Tabulate data quality results</dd>
 
         <dt>
 
@@ -460,42 +467,42 @@
           <code><a href="calculate_average_reporting_rate.html">calculate_average_reporting_rate()</a></code>
 
         </dt>
-        <dd>Reporting Rate Summary by Administrative Level</dd>
+        <dd>Reporting rate summary by administrative level</dd>
 
         <dt>
 
           <code><a href="calculate_district_reporting_rate.html">calculate_district_reporting_rate()</a></code>
 
         </dt>
-        <dd>District-Level Reporting Rates by Year</dd>
+        <dd>District-level reporting rates by year</dd>
 
         <dt>
 
           <code><a href="plot.cd_average_reporting_rate.html">plot(<i>&lt;cd_average_reporting_rate&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot Sub-National Reporting Rates by Year and Unit</dd>
+        <dd>Plot sub-national reporting rates by year and unit</dd>
 
         <dt>
 
           <code><a href="plot.cd_district_reporting_rate.html">plot(<i>&lt;cd_district_reporting_rate&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot District Reporting Rate Summary</dd>
+        <dd>Plot district reporting rate summary</dd>
 
         <dt>
 
           <code><a href="tbl_sum.cd_average_reporting_rate.html">tbl_sum(<i>&lt;cd_average_reporting_rate&gt;</i>)</a></code>
 
         </dt>
-        <dd>Summary for Average Reporting Rates by Year</dd>
+        <dd>Summary for average reporting rates by year</dd>
 
         <dt>
 
           <code><a href="tbl_sum.cd_district_reporting_rate.html">tbl_sum(<i>&lt;cd_district_reporting_rate&gt;</i>)</a></code>
 
         </dt>
-        <dd>Summary for District-Level Reporting Rates by Year</dd>
+        <dd>Summary for district-level reporting rates by year</dd>
       </dl></div><div class="section level2">
 
       <h3 id="data-completeness">Data Completeness<a class="anchor" aria-label="anchor" href="#data-completeness"></a></h3>
@@ -511,21 +518,21 @@
           <code><a href="calculate_completeness_summary.html">calculate_completeness_summary()</a></code>
 
         </dt>
-        <dd>Summarize Data Completeness by Year</dd>
+        <dd>Summarize data completeness by year</dd>
 
         <dt>
 
           <code><a href="calculate_district_completeness_summary.html">calculate_district_completeness_summary()</a></code>
 
         </dt>
-        <dd>District-Level Completeness Summary</dd>
+        <dd>District-level completeness summary</dd>
 
         <dt>
 
           <code><a href="plot.cd_completeness_summary.html">plot(<i>&lt;cd_completeness_summary&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot Missing Summary</dd>
+        <dd>Plot missing summary</dd>
 
         <dt>
 
@@ -536,10 +543,17 @@
 
         <dt>
 
-          <code><a href="tbl_sum.cd_district_completeness_summary.html">tbl_sum(<i>&lt;cd_district_completeness_summary&gt;</i>)</a></code>
+          <code><a href="tbl_sum.cd_missing_district.html">tbl_sum(<i>&lt;cd_missing_district&gt;</i>)</a></code>
 
         </dt>
-        <dd>Summary for <code>cd_district_completeness_summary</code></dd>
+        <dd>Summary for <code>cd_missing_district</code></dd>
+
+        <dt>
+
+          <code><a href="list_missing_units.html">list_missing_units()</a></code>
+
+        </dt>
+        <dd>List the districts and months with a missing value</dd>
       </dl></div><div class="section level2">
 
       <h3 id="consistency-checks">Consistency Checks<a class="anchor" aria-label="anchor" href="#consistency-checks"></a></h3>
@@ -555,14 +569,14 @@
           <code><a href="internal_consistency.html">plot_comparison()</a></code> <code><a href="internal_consistency.html">plot_comparison_anc1_penta1()</a></code> <code><a href="internal_consistency.html">plot_comparison_penta1_penta3()</a></code> <code><a href="internal_consistency.html">plot_comparison_opv1_opv3()</a></code>
 
         </dt>
-        <dd>Internal Consistency Plot Functions for Indicator Comparisons</dd>
+        <dd>Internal consistency plot functions for indicator comparisons</dd>
 
         <dt>
 
           <code><a href="plot_comparison.cd_data.html">plot_comparison(<i>&lt;cd_data&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot Comparison with Linear Fit and R-squared</dd>
+        <dd>Plot comparison with linear fit and R-squared</dd>
       </dl></div><div class="section level2">
 
       <h3 id="outlier-detection">Outlier Detection<a class="anchor" aria-label="anchor" href="#outlier-detection"></a></h3>
@@ -578,49 +592,49 @@
           <code><a href="calculate_outliers_summary.html">calculate_outliers_summary()</a></code>
 
         </dt>
-        <dd>Annual Summary of Outlier-Free Reporting Rates</dd>
+        <dd>Annual summary of outlier-free reporting rates</dd>
 
         <dt>
 
           <code><a href="calculate_district_outlier_summary.html">calculate_district_outlier_summary()</a></code>
 
         </dt>
-        <dd>District-Level Outlier Summary by Year</dd>
+        <dd>District-level outlier summary by year</dd>
 
         <dt>
 
-          <code><a href="filter_adjustment_value.html">filter_adjustment_value()</a></code>
+          <code><a href="select_adjustment_value.html">select_adjustment_value()</a></code>
 
         </dt>
-        <dd>Filter one indicator’s adjustment values</dd>
+        <dd>Select one indicator's adjustment values</dd>
 
         <dt>
 
           <code><a href="list_outlier_units.html">list_outlier_units()</a></code>
 
         </dt>
-        <dd>Identify Monthly Outliers by District</dd>
+        <dd>Identify monthly outliers by district</dd>
 
         <dt>
 
           <code><a href="plot.cd_outlier.html">plot(<i>&lt;cd_outlier&gt;</i>)</a></code>
 
         </dt>
-        <dd>Visualize Summary of Outlier Detection</dd>
+        <dd>Visualize summary of outlier detection</dd>
 
         <dt>
 
           <code><a href="plot.cd_outlier_list.html">plot(<i>&lt;cd_outlier_list&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot Outlier Time Series for a Region</dd>
+        <dd>Plot outlier time series for a region</dd>
 
         <dt>
 
-          <code><a href="tbl_sum.cd_outliers_summary.html">tbl_sum(<i>&lt;cd_outliers_summary&gt;</i>)</a></code>
+          <code><a href="tbl_sum.cd_outlier.html">tbl_sum(<i>&lt;cd_outlier&gt;</i>)</a></code>
 
         </dt>
-        <dd>Summary for <code>cd_outliers_summary</code></dd>
+        <dd>Summary for <code>cd_outlier</code></dd>
 
         <dt>
 
@@ -640,24 +654,31 @@
 
       <dl><dt>
 
+          <code><a href="calculate_ratios_and_adequacy.html">calculate_ratios_and_adequacy()</a></code>
+
+        </dt>
+        <dd>Calculate indicator ratios and adequacy flags</dd>
+
+        <dt>
+
           <code><a href="calculate_ratios_summary.html">calculate_ratios_summary()</a></code>
 
         </dt>
-        <dd>Calculate Yearly Indicator Ratios Summary with Expected Ratios</dd>
+        <dd>Calculate yearly indicator ratios summary with expected ratios</dd>
 
         <dt>
 
           <code><a href="calculate_district_ratios_summary.html">calculate_district_ratios_summary()</a></code>
 
         </dt>
-        <dd>Calculate District Adequacy Summary</dd>
+        <dd>Calculate district adequacy summary</dd>
 
         <dt>
 
           <code><a href="plot.cd_ratios_summary.html">plot(<i>&lt;cd_ratios_summary&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot Ratios Summary for Indicator Ratios Summary Object</dd>
+        <dd>Plot ratios summary for indicator ratios summary object</dd>
 
         <dt>
 
@@ -687,28 +708,28 @@
           <code><a href="calculate_overall_score.html">calculate_overall_score()</a></code>
 
         </dt>
-        <dd>Calculate Overall Quality Score for Data Quality Metrics</dd>
+        <dd>Calculate overall quality score for data quality metrics</dd>
 
         <dt>
 
           <code><a href="calculate_overall_score1.html">calculate_overall_score1()</a></code>
 
         </dt>
-        <dd>Calculate Overall Quality Score from Summaries</dd>
+        <dd>Calculate overall quality score from summaries</dd>
 
         <dt>
 
           <code><a href="plot.cd_overall_score.html">plot(<i>&lt;cd_overall_score&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot S3 method for Overall Score</dd>
+        <dd>Plot S3 method for overall score</dd>
 
         <dt>
 
           <code><a href="plot.cd_missing_district.html">plot(<i>&lt;cd_missing_district&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot Percent of Districts with Complete Data</dd>
+        <dd>Plot percent of districts with complete data</dd>
       </dl></div><div class="section level2">
       <h2 id="data-adjustment">Data Adjustment<a class="anchor" aria-label="anchor" href="#data-adjustment"></a></h2>
 
@@ -724,21 +745,21 @@
           <code><a href="filter_out_years.html">filter_out_years()</a></code>
 
         </dt>
-        <dd>Filter Dataset by Removing Specified Years</dd>
+        <dd>Filter dataset by removing specified years</dd>
 
         <dt>
 
           <code><a href="generate_adjustment_values.html">generate_adjustment_values()</a></code>
 
         </dt>
-        <dd>Generate Adjusted and Unadjusted Service Counts by Year</dd>
+        <dd>Generate adjusted and unadjusted service counts by year</dd>
 
         <dt>
 
           <code><a href="adjust_service_data.html">adjust_service_data()</a></code>
 
         </dt>
-        <dd>Adjust Service Data for Coverage Analysis</dd>
+        <dd>Adjust service data for coverage analysis</dd>
 
         <dt>
 
@@ -766,7 +787,7 @@
           <code><a href="adjustment_settings_footnote.html">adjustment_settings_footnote()</a></code>
 
         </dt>
-        <dd>What the adjustment settings say, as the reports' footnote</dd>
+        <dd>Describe the adjustment settings as a report footnote</dd>
 
         <dt>
 
@@ -787,7 +808,7 @@
           <code><a href="plot.cd_adjustment_values_filtered.html">plot(<i>&lt;cd_adjustment_values_filtered&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot Adjusted vs. Unadjusted Data for Health Indicators</dd>
+        <dd>Plot adjusted vs. unadjusted data for health indicators</dd>
 
         <dt>
 
@@ -810,84 +831,91 @@
           <code><a href="compute_indicator_numerator.html">compute_indicator_numerator()</a></code>
 
         </dt>
-        <dd>Compute Aggregated Numerators for Health Indicators</dd>
+        <dd>Compute aggregated numerators for health indicators</dd>
 
         <dt>
 
           <code><a href="prepare_population_metrics.html">prepare_population_metrics()</a></code>
 
         </dt>
-        <dd>Compute Population Metrics for DHIS-2 and UN Data</dd>
+        <dd>Compute population metrics for DHIS-2 and UN data</dd>
 
         <dt>
 
           <code><a href="calculate_indicator_coverage.html">calculate_indicator_coverage()</a></code>
 
         </dt>
-        <dd>Calculate Health Coverage Indicators</dd>
+        <dd>Calculate health coverage indicators</dd>
+
+        <dt>
+
+          <code><a href="get_national_rates.html">get_national_rates()</a></code>
+
+        </dt>
+        <dd>Get the rates the denominators use from survey data</dd>
 
         <dt>
 
           <code><a href="calculate_threshold.html">calculate_threshold()</a></code>
 
         </dt>
-        <dd>Calculate Coverage/Dropout Threshold Attainment</dd>
+        <dd>Calculate coverage/dropout threshold attainment</dd>
 
         <dt>
 
           <code><a href="filter_high_performers.html">filter_high_performers()</a></code>
 
         </dt>
-        <dd>Filter High-Performing Areas by Coverage</dd>
+        <dd>Filter high-performing areas by coverage</dd>
 
         <dt>
 
           <code><a href="calculate_derived_coverage.html">calculate_derived_coverage()</a></code>
 
         </dt>
-        <dd>Generate Coverage Data with Derived Denominators</dd>
+        <dd>Generate coverage data with derived denominators</dd>
 
         <dt>
 
           <code><a href="plot_line_graph.html">plot_line_graph()</a></code>
 
         </dt>
-        <dd>Plot Line Graph for Multiple Series with Dynamic Y-axis Scaling</dd>
+        <dd>Plot a line graph of several series</dd>
 
         <dt>
 
           <code><a href="plot.cd_indicator_coverage.html">plot(<i>&lt;cd_indicator_coverage&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot National Denominators and Coverage Indicators</dd>
+        <dd>Plot national denominators and coverage indicators</dd>
 
         <dt>
 
           <code><a href="plot.cd_population_metrics.html">plot(<i>&lt;cd_population_metrics&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot National Population or Births Metrics</dd>
+        <dd>Plot national population or births metrics</dd>
 
         <dt>
 
           <code><a href="plot.cd_derived_coverage.html">plot(<i>&lt;cd_derived_coverage&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot Derived vs Traditional Coverage Over Time</dd>
+        <dd>Plot derived vs traditional coverage over time</dd>
 
         <dt>
 
           <code><a href="tbl_sum.cd_indicator_coverage.html">tbl_sum(<i>&lt;cd_indicator_coverage&gt;</i>)</a></code>
 
         </dt>
-        <dd>Table Summary for National Coverage Estimates</dd>
+        <dd>Table summary for national coverage estimates</dd>
 
         <dt>
 
-          <code><a href="tbl_sum.cd_national_denominators.html">tbl_sum(<i>&lt;cd_national_denominators&gt;</i>)</a></code>
+          <code><a href="tbl_sum.cd_population_metrics.html">tbl_sum(<i>&lt;cd_population_metrics&gt;</i>)</a></code>
 
         </dt>
-        <dd>Summarize National Denominators Data</dd>
+        <dd>Summary for <code>cd_population_metrics</code></dd>
       </dl></div><div class="section level2">
       <h2 id="coverage-inequality">Coverage &amp; Inequality<a class="anchor" aria-label="anchor" href="#coverage-inequality"></a></h2>
 
@@ -900,17 +928,17 @@
 
       <dl><dt>
 
-          <code><a href="filter_coverage.html">filter_coverage()</a></code>
+          <code><a href="select_coverage.html">select_coverage()</a></code>
 
         </dt>
-        <dd>Filter and Reshape Coverage Data</dd>
+        <dd>Select one indicator's coverage</dd>
 
         <dt>
 
           <code><a href="calculate_coverage.html">calculate_coverage()</a></code>
 
         </dt>
-        <dd>Combine Immunization Coverage Data</dd>
+        <dd>Combine immunization coverage data</dd>
 
         <dt>
 
@@ -924,112 +952,112 @@
           <code><a href="generate_coverage_data.html">generate_coverage_data()</a></code>
 
         </dt>
-        <dd>Generate Coverage Data for Continuum of Care</dd>
+        <dd>Generate coverage data for continuum of care</dd>
 
         <dt>
 
           <code><a href="plot.cd_coverage.html">plot(<i>&lt;cd_coverage&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot Coverage by Region</dd>
+        <dd>Plot coverage by region</dd>
 
         <dt>
 
           <code><a href="plot.cd_coverage_selected.html">plot(<i>&lt;cd_coverage_selected&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot S3 method for Coverage Data</dd>
+        <dd>Plot S3 method for coverage data</dd>
 
         <dt>
 
           <code><a href="plot.cd_threshold.html">plot(<i>&lt;cd_threshold&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot Target Threshold Attainment Over Time</dd>
+        <dd>Plot target threshold attainment over time</dd>
 
         <dt>
 
           <code><a href="calculate_inequality.html">calculate_inequality()</a></code>
 
         </dt>
-        <dd>Analyze Subnational Health Coverage Data with Inequality Metrics</dd>
+        <dd>Analyze subnational health coverage data with inequality metrics</dd>
 
         <dt>
 
-          <code><a href="filter_inequality.html">filter_inequality()</a></code>
+          <code><a href="select_inequality.html">select_inequality()</a></code>
 
         </dt>
-        <dd>Filter Subnational Inequality Metrics</dd>
+        <dd>Select one indicator's inequality metrics</dd>
 
         <dt>
 
           <code><a href="equiplot.html">equiplot()</a></code>
 
         </dt>
-        <dd>Create Dot Plots for Equity Analysis</dd>
+        <dd>Create dot plots for equity analysis</dd>
 
         <dt>
 
           <code><a href="equiplot_area.html">equiplot_area()</a></code>
 
         </dt>
-        <dd>A Specialized Dot Plot for Area of Residence Analysis</dd>
+        <dd>A specialized dot plot for area of residence analysis</dd>
 
         <dt>
 
           <code><a href="equiplot_education.html">equiplot_education()</a></code>
 
         </dt>
-        <dd>A Specialized Dot Plot for Maternal Education Analysis</dd>
+        <dd>A specialized dot plot for maternal education analysis</dd>
 
         <dt>
 
           <code><a href="equiplot_wealth.html">equiplot_wealth()</a></code>
 
         </dt>
-        <dd>A Specialized Dot Plot for Wealth Quintile Analysis</dd>
+        <dd>A specialized dot plot for wealth quintile analysis</dd>
 
         <dt>
 
           <code><a href="plot.cd_coverage_filtered.html">plot(<i>&lt;cd_coverage_filtered&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot National Coverage Data</dd>
+        <dd>Plot national coverage data</dd>
 
         <dt>
 
           <code><a href="plot.cd_inequality_filtered.html">plot(<i>&lt;cd_inequality_filtered&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot Subnational Health Coverage Analysis</dd>
+        <dd>Plot subnational health coverage analysis</dd>
 
         <dt>
 
           <code><a href="get_mapping_data.html">get_mapping_data()</a></code>
 
         </dt>
-        <dd>Get Mapping Data for Subnational Coverage Analysis</dd>
+        <dd>Get mapping data for subnational coverage analysis</dd>
 
         <dt>
 
-          <code><a href="filter_mapping_data.html">filter_mapping_data()</a></code>
+          <code><a href="select_mapping_data.html">select_mapping_data()</a></code>
 
         </dt>
-        <dd>Filter Mapping Data for Specific Indicator and Denominator</dd>
+        <dd>Select one indicator's mapping data</dd>
 
         <dt>
 
           <code><a href="get_country_shapefile.html">get_country_shapefile()</a></code>
 
         </dt>
-        <dd>Load Country Shapefile for Mapping</dd>
+        <dd>Load country shapefile for mapping</dd>
 
         <dt>
 
           <code><a href="plot.cd_mapping_filtered.html">plot(<i>&lt;cd_mapping_filtered&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot Subnational Coverage Maps by Indicator</dd>
+        <dd>Plot subnational coverage maps by indicator</dd>
       </dl></div><div class="section level2">
       <h2 id="mortality-analysis">Mortality Analysis<a class="anchor" aria-label="anchor" href="#mortality-analysis"></a></h2>
 
@@ -1045,56 +1073,56 @@
           <code><a href="create_mortality_summary.html">create_mortality_summary()</a></code>
 
         </dt>
-        <dd>Create Mortality Summary Object</dd>
+        <dd>Create mortality summary object</dd>
 
         <dt>
 
           <code><a href="create_mortality_ratios.html">create_mortality_ratios()</a></code>
 
         </dt>
-        <dd>Extract Latest Mortality Ratios for UN Comparison</dd>
+        <dd>Extract latest mortality ratios for UN comparison</dd>
 
         <dt>
 
-          <code><a href="filter_mortality_summary.html">filter_mortality_summary()</a></code>
+          <code><a href="select_mortality_summary.html">select_mortality_summary()</a></code>
 
         </dt>
-        <dd>Filter and Prepare Mortality Rate Data for Mapping</dd>
+        <dd>Select one mortality rate, ready to map</dd>
 
         <dt>
 
           <code><a href="summarise_completeness_ratio.html">summarise_completeness_ratio()</a></code>
 
         </dt>
-        <dd>Summarize Completeness-Adjusted Mortality Ratio</dd>
+        <dd>Summarize completeness-adjusted mortality ratio</dd>
 
         <dt>
 
           <code><a href="plot.cd_mortality_summary.html">plot(<i>&lt;cd_mortality_summary&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot Mortality Rate Indicators</dd>
+        <dd>Plot mortality rate indicators</dd>
 
         <dt>
 
           <code><a href="plot.cd_mortality_summary_filtered.html">plot(<i>&lt;cd_mortality_summary_filtered&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot Filtered Institutional Mortality Rates</dd>
+        <dd>Plot filtered institutional mortality rates</dd>
 
         <dt>
 
           <code><a href="plot.cd_mortality_ratio_summarised.html">plot(<i>&lt;cd_mortality_ratio_summarised&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot Completeness of Facility Reporting Ratios</dd>
+        <dd>Plot completeness of facility reporting ratios</dd>
 
         <dt>
 
           <code><a href="plot_mortality_plausibility.html">plot_mortality_plausibility()</a></code>
 
         </dt>
-        <dd>Plot Subnational Mortality Plausibility</dd>
+        <dd>Plot subnational mortality plausibility</dd>
       </dl></div><div class="section level2">
       <h2 id="health-service-utilization">Health Service Utilization<a class="anchor" aria-label="anchor" href="#health-service-utilization"></a></h2>
 
@@ -1110,98 +1138,98 @@
           <code><a href="compute_service_utilization.html">compute_service_utilization()</a></code>
 
         </dt>
-        <dd>Compute Service Utilization Metrics</dd>
+        <dd>Compute service utilization metrics</dd>
 
         <dt>
 
-          <code><a href="filter_service_utilization.html">filter_service_utilization()</a></code>
+          <code><a href="select_service_utilization.html">select_service_utilization()</a></code>
 
         </dt>
-        <dd>Filter Service Utilization Data for a Specific Region and Indicator</dd>
+        <dd>Select one service utilization indicator</dd>
 
         <dt>
 
           <code><a href="prepare_private_sector_plot_data.html">prepare_private_sector_plot_data()</a></code>
 
         </dt>
-        <dd>Prepare Private Sector Plot Data</dd>
+        <dd>Prepare private sector plot data</dd>
 
         <dt>
 
           <code><a href="get_excel_version.html">get_excel_version()</a></code>
 
         </dt>
-        <dd>Format Service Utilization Data for Excel Export</dd>
+        <dd>Format service utilization data for Excel export</dd>
 
         <dt>
 
           <code><a href="plot.cd_service_utilization_filtered.html">plot(<i>&lt;cd_service_utilization_filtered&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot Service Utilization Indicators</dd>
+        <dd>Plot service utilization indicators</dd>
 
         <dt>
 
           <code><a href="plot.cd_private_sector_plot_data.html">plot(<i>&lt;cd_private_sector_plot_data&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot Private Sector Prevalence by Sector and Area/National Level</dd>
+        <dd>Plot private sector prevalence by sector and area/national level</dd>
 
         <dt>
 
           <code><a href="prepare_mapping_service_utlization.html">prepare_mapping_service_utlization()</a></code>
 
         </dt>
-        <dd>Filter and Prepare Service Utilization Data for Mapping</dd>
+        <dd>Filter and prepare service utilization data for mapping</dd>
 
         <dt>
 
           <code><a href="plot.cd_service_utilization_prepared.html">plot(<i>&lt;cd_service_utilization_prepared&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot Filtered Service Utilization Indicators</dd>
+        <dd>Plot filtered service utilization indicators</dd>
 
         <dt>
 
           <code><a href="generate_admin1_service_utilization.html">generate_admin1_service_utilization()</a></code>
 
         </dt>
-        <dd>Generate Service Utilization Admin 1 Data</dd>
+        <dd>Generate service utilization admin level 1 data</dd>
 
         <dt>
 
           <code><a href="plot.cd_service_utilization_admin1.html">plot(<i>&lt;cd_service_utilization_admin1&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot S3 method for Service Utilization Admin1</dd>
+        <dd>Plot S3 method for service utilization at admin level 1</dd>
 
         <dt>
 
           <code><a href="generate_admin1_mch_curative_index.html">generate_admin1_mch_curative_index()</a></code>
 
         </dt>
-        <dd>Generate MCH vs Curative Index Data</dd>
+        <dd>Generate MCH vs curative index data</dd>
 
         <dt>
 
           <code><a href="plot.cd_mch_curative_index.html">plot(<i>&lt;cd_mch_curative_index&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot S3 method for MCH vs Curative Index</dd>
+        <dd>Plot S3 method for MCH vs curative index</dd>
 
         <dt>
 
           <code><a href="generate_service_dqa_summary.html">generate_service_dqa_summary()</a></code>
 
         </dt>
-        <dd>Generate Service DQA Summary</dd>
+        <dd>Generate service DQA summary</dd>
 
         <dt>
 
           <code><a href="plot.cd_utilization_dqa.html">plot(<i>&lt;cd_utilization_dqa&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot S3 method for Service DQA Summary</dd>
+        <dd>Plot S3 method for service DQA summary</dd>
       </dl></div><div class="section level2">
       <h2 id="health-system-performance">Health System Performance<a class="anchor" aria-label="anchor" href="#health-system-performance"></a></h2>
 
@@ -1217,77 +1245,77 @@
           <code><a href="calculate_health_system_metrics.html">calculate_health_system_metrics()</a></code>
 
         </dt>
-        <dd>Calculate Health System Metrics</dd>
+        <dd>Calculate health system metrics</dd>
 
         <dt>
 
           <code><a href="calculate_health_system_comparison.html">calculate_health_system_comparison()</a></code>
 
         </dt>
-        <dd>Compare Health System Metrics Across Levels</dd>
+        <dd>Compare health system metrics across levels</dd>
 
         <dt>
 
           <code><a href="plot.cd_health_system_metric.html">plot(<i>&lt;cd_health_system_metric&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot Health Metrics for Admin 1 Units</dd>
+        <dd>Plot health metrics for admin level 1 units</dd>
 
         <dt>
 
           <code><a href="plot.cd_health_system_comparison.html">plot(<i>&lt;cd_health_system_comparison&gt;</i>)</a></code>
 
         </dt>
-        <dd>Compare District vs Admin 1 Health Metrics</dd>
+        <dd>Compare district vs admin level 1 health metrics</dd>
 
         <dt>
 
           <code><a href="plot_national_health_metric.html">plot_national_health_metric()</a></code>
 
         </dt>
-        <dd>Plot National Health System Metrics</dd>
+        <dd>Plot national health system metrics</dd>
 
         <dt>
 
           <code><a href="generate_health_system_table.html">generate_health_system_table()</a></code>
 
         </dt>
-        <dd>Generate Health System Metrics Data</dd>
+        <dd>Generate health system metrics data</dd>
 
         <dt>
 
           <code><a href="plot.cd_health_system_table.html">plot(<i>&lt;cd_health_system_table&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot S3 method for Health System Metrics</dd>
+        <dd>Plot S3 method for health system metrics</dd>
 
         <dt>
 
           <code><a href="generate_phc_scatter_data.html">generate_phc_scatter_data()</a></code>
 
         </dt>
-        <dd>Generate PHC Performance Scatter Data</dd>
+        <dd>Generate PHC performance scatter data</dd>
 
         <dt>
 
           <code><a href="plot.cd_phc_scatter.html">plot(<i>&lt;cd_phc_scatter&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot S3 method for PHC Performance Scatter</dd>
+        <dd>Plot S3 method for PHC performance scatter</dd>
 
         <dt>
 
           <code><a href="generate_private_sector_data.html">generate_private_sector_data()</a></code>
 
         </dt>
-        <dd>Generate Private Sector Ownership Data</dd>
+        <dd>Generate private sector ownership data</dd>
 
         <dt>
 
           <code><a href="plot.cd_private_sector.html">plot(<i>&lt;cd_private_sector&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot S3 method for Private Sector Ownership</dd>
+        <dd>Plot S3 method for private sector ownership</dd>
       </dl></div><div class="section level2">
       <h2 id="family-planning-fpet-">Family Planning (FPET)<a class="anchor" aria-label="anchor" href="#family-planning-fpet-"></a></h2>
 
@@ -1303,28 +1331,28 @@
           <code><a href="generate_fpet_summary.html">generate_fpet_summary()</a></code>
 
         </dt>
-        <dd>Load and Generate FPET Output</dd>
+        <dd>Load and generate FPET output</dd>
 
         <dt>
 
           <code><a href="interpret.html">interpret()</a></code>
 
         </dt>
-        <dd>Generic Interpretation Method</dd>
+        <dd>Generic interpretation method</dd>
 
         <dt>
 
           <code><a href="plot.cd_fpet_data.html">plot(<i>&lt;cd_fpet_data&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot Family Planning Estimation Tool (FPET) Data</dd>
+        <dd>Plot family planning estimation tool (FPET) data</dd>
 
         <dt>
 
           <code><a href="interpret.cd_fpet_data.html">interpret(<i>&lt;cd_fpet_data&gt;</i>)</a></code>
 
         </dt>
-        <dd>Interpret FPET Results with Emphasis on Current Estimates</dd>
+        <dd>Interpret FPET results with emphasis on current estimates</dd>
       </dl></div><div class="section level2">
       <h2 id="bayesian-coverage-model">Bayesian Coverage Model<a class="anchor" aria-label="anchor" href="#bayesian-coverage-model"></a></h2>
 
@@ -1340,14 +1368,14 @@
           <code><a href="generate_bayes_model.html">generate_bayes_model()</a></code>
 
         </dt>
-        <dd>Generate Bayesian Coverage Model Object</dd>
+        <dd>Generate Bayesian coverage model object</dd>
 
         <dt>
 
           <code><a href="plot.cd_bayes_model.html">plot(<i>&lt;cd_bayes_model&gt;</i>)</a></code>
 
         </dt>
-        <dd>Plot S3 method for Bayesian Coverage Model</dd>
+        <dd>Plot S3 method for Bayesian coverage model</dd>
 
         <dt>
 
@@ -1395,6 +1423,13 @@
 
       <dl><dt>
 
+          <code><a href="cd_plot_arguments.html">cd_plot_arguments</a></code> <code><a href="cd_plot_arguments.html">cd-plot-arguments</a></code>
+
+        </dt>
+        <dd>Arguments every chart shares</dd>
+
+        <dt>
+
           <code><a href="report_presets.html">report_presets()</a></code>
 
         </dt>
@@ -1441,29 +1476,6 @@
 
         </dt>
         <dd>A minimal chart theme</dd>
-      </dl></div><div class="section level2">
-      <h2 id="shiny-apps">Shiny Apps<a class="anchor" aria-label="anchor" href="#shiny-apps"></a></h2>
-
-      <div class="section-desc"><p>The Countdown pages, Load Data wizard, filters and app frame (cd_app()) the apps are built from.</p></div>
-
-      <dl></dl></div><div class="section level2">
-
-
-
-
-      <dl><dt>
-
-          <code><a href="countdown-pages.html">countdown-pages</a></code> <code><a href="countdown-pages.html">adjustment_changes_server</a></code> <code><a href="countdown-pages.html">adjustment_changes_ui</a></code> <code><a href="countdown-pages.html">calculate_ratios_server</a></code> <code><a href="countdown-pages.html">calculate_ratios_ui</a></code> <code><a href="countdown-pages.html">cd_admin_level_choices</a></code> <code><a href="countdown-pages.html">cd_admin_level_server</a></code> <code><a href="countdown-pages.html">cd_admin_level_ui</a></code> <code><a href="countdown-pages.html">cd_admin_parts</a></code> <code><a href="countdown-pages.html">cd_app</a></code> <code><a href="countdown-pages.html">cd_cfg</a></code> <code><a href="countdown-pages.html">cd_coverage_plot_server</a></code> <code><a href="countdown-pages.html">cd_coverage_plot_toolbar_ui</a></code> <code><a href="countdown-pages.html">cd_coverage_plot_ui</a></code> <code><a href="countdown-pages.html">cd_default_indicator_set</a></code> <code><a href="countdown-pages.html">cd_default_indicators</a></code> <code><a href="countdown-pages.html">cd_denominator_chip_keys</a></code> <code><a href="countdown-pages.html">cd_denominator_choices</a></code> <code><a href="countdown-pages.html">cd_denominator_header</a></code> <code><a href="countdown-pages.html">cd_denominator_options</a></code> <code><a href="countdown-pages.html">cd_denominator_row</a></code> <code><a href="countdown-pages.html">cd_denominator_server</a></code> <code><a href="countdown-pages.html">cd_denominator_ui</a></code> <code><a href="countdown-pages.html">cd_has_maternal</a></code> <code><a href="countdown-pages.html">cd_indicator_server</a></code> <code><a href="countdown-pages.html">cd_indicator_ui</a></code> <code><a href="countdown-pages.html">cd_nav_denominators</a></code> <code><a href="countdown-pages.html">cd_nav_national</a></code> <code><a href="countdown-pages.html">cd_nav_quality</a></code> <code><a href="countdown-pages.html">cd_nav_start</a></code> <code><a href="countdown-pages.html">cd_nav_subnational</a></code> <code><a href="countdown-pages.html">cd_only_denominators</a></code> <code><a href="countdown-pages.html">cd_palette_chip</a></code> <code><a href="countdown-pages.html">cd_population_server</a></code> <code><a href="countdown-pages.html">cd_population_ui</a></code> <code><a href="countdown-pages.html">cd_rate_status_cell</a></code> <code><a href="countdown-pages.html">cd_saved_copy_name</a></code> <code><a href="countdown-pages.html">cd_scope_filters</a></code> <code><a href="countdown-pages.html">cd_scope_server</a></code> <code><a href="countdown-pages.html">cd_scoped_page_server</a></code> <code><a href="countdown-pages.html">cd_scoped_page_ui</a></code> <code><a href="countdown-pages.html">cd_tabbed_charts_server</a></code> <code><a href="countdown-pages.html">cd_tabbed_charts_ui</a></code> <code><a href="countdown-pages.html">cd_table_server</a></code> <code><a href="countdown-pages.html">cd_table_ui</a></code> <code><a href="countdown-pages.html">cd_wizard_check_group</a></code> <code><a href="countdown-pages.html">cd_wizard_config</a></code> <code><a href="countdown-pages.html">cd_wizard_field_group</a></code> <code><a href="countdown-pages.html">cd_wizard_indicator_group</a></code> <code><a href="countdown-pages.html">cd_table_card_server</a></code> <code><a href="countdown-pages.html">cd_table_card_ui</a></code> <code><a href="countdown-pages.html">cd_upload_data_server</a></code> <code><a href="countdown-pages.html">cd_upload_data_ui</a></code> <code><a href="countdown-pages.html">bayesian_page_server</a></code> <code><a href="countdown-pages.html">bayesian_server</a></code> <code><a href="countdown-pages.html">bayesian_ui</a></code> <code><a href="countdown-pages.html">cd_bayes_indicators</a></code> <code><a href="countdown-pages.html">cd_start_bayes_workers</a></code> <code><a href="countdown-pages.html">cd_wizard_national_rate_fields</a></code> <code><a href="countdown-pages.html">cd_wizard_rate_field</a></code> <code><a href="countdown-pages.html">cd_wizard_survey_field</a></code> <code><a href="countdown-pages.html">cd_years_input</a></code> <code><a href="countdown-pages.html">cd_years_sync</a></code> <code><a href="countdown-pages.html">compute_step_states</a></code> <code><a href="countdown-pages.html">consistency_check_server</a></code> <code><a href="countdown-pages.html">consistency_check_ui</a></code> <code><a href="countdown-pages.html">consistency_pair_keys</a></code> <code><a href="countdown-pages.html">consistency_pair_label</a></code> <code><a href="countdown-pages.html">coverage_server</a></code> <code><a href="countdown-pages.html">coverage_trends_server</a></code> <code><a href="countdown-pages.html">coverage_trends_ui</a></code> <code><a href="countdown-pages.html">coverage_ui</a></code> <code><a href="countdown-pages.html">data_adjustment_server</a></code> <code><a href="countdown-pages.html">data_adjustment_ui</a></code> <code><a href="countdown-pages.html">data_completeness_server</a></code> <code><a href="countdown-pages.html">data_completeness_ui</a></code> <code><a href="countdown-pages.html">data_quality_server</a></code> <code><a href="countdown-pages.html">data_quality_ui</a></code> <code><a href="countdown-pages.html">den_indicators</a></code> <code><a href="countdown-pages.html">denominator_assessment_server</a></code> <code><a href="countdown-pages.html">denominator_assessment_ui</a></code> <code><a href="countdown-pages.html">denominator_selection_server</a></code> <code><a href="countdown-pages.html">denominator_selection_ui</a></code> <code><a href="countdown-pages.html">equity_server</a></code> <code><a href="countdown-pages.html">equity_ui</a></code> <code><a href="countdown-pages.html">get_national_rates</a></code> <code><a href="countdown-pages.html">inequality_server</a></code> <code><a href="countdown-pages.html">inequality_ui</a></code> <code><a href="countdown-pages.html">internal_consistency_server</a></code> <code><a href="countdown-pages.html">internal_consistency_ui</a></code> <code><a href="countdown-pages.html">introduction_server</a></code> <code><a href="countdown-pages.html">introduction_ui</a></code> <code><a href="countdown-pages.html">list_missing_units</a></code> <code><a href="countdown-pages.html">map_shapefile_server</a></code> <code><a href="countdown-pages.html">map_shapefile_ui</a></code> <code><a href="countdown-pages.html">map_survey_server</a></code> <code><a href="countdown-pages.html">map_survey_ui</a></code> <code><a href="countdown-pages.html">mapping_modal_server</a></code> <code><a href="countdown-pages.html">mapping_modal_ui</a></code> <code><a href="countdown-pages.html">mapping_provenance_banner</a></code> <code><a href="countdown-pages.html">national_coverage_server</a></code> <code><a href="countdown-pages.html">national_coverage_ui</a></code> <code><a href="countdown-pages.html">national_inequality_server</a></code> <code><a href="countdown-pages.html">national_inequality_ui</a></code> <code><a href="countdown-pages.html">national_rates_required_fields</a></code> <code><a href="countdown-pages.html">national_rates_server</a></code> <code><a href="countdown-pages.html">national_rates_ui</a></code> <code><a href="countdown-pages.html">national_target_server</a></code> <code><a href="countdown-pages.html">national_target_ui</a></code> <code><a href="countdown-pages.html">nr_field</a></code> <code><a href="countdown-pages.html">nr_group</a></code> <code><a href="countdown-pages.html">outlier_detection_server</a></code> <code><a href="countdown-pages.html">outlier_detection_ui</a></code> <code><a href="countdown-pages.html">overall_score_server</a></code> <code><a href="countdown-pages.html">overall_score_ui</a></code> <code><a href="countdown-pages.html">push_upload_on_remount</a></code> <code><a href="countdown-pages.html">reference_estimates_server</a></code> <code><a href="countdown-pages.html">reference_estimates_ui</a></code> <code><a href="countdown-pages.html">reporting_rate_server</a></code> <code><a href="countdown-pages.html">reporting_rate_ui</a></code> <code><a href="countdown-pages.html">restore_default_control</a></code> <code><a href="countdown-pages.html">rr_indicators</a></code> <code><a href="countdown-pages.html">shapefile_step_server</a></code> <code><a href="countdown-pages.html">shapefile_step_ui</a></code> <code><a href="countdown-pages.html">step_map_mapping_complete</a></code> <code><a href="countdown-pages.html">step_national_rates_complete</a></code> <code><a href="countdown-pages.html">step_quality_complete</a></code> <code><a href="countdown-pages.html">step_shapefile_complete</a></code> <code><a href="countdown-pages.html">step_shapefile_touched</a></code> <code><a href="countdown-pages.html">step_survey_files_complete</a></code> <code><a href="countdown-pages.html">step_survey_mapping_complete</a></code> <code><a href="countdown-pages.html">step_upload_complete</a></code> <code><a href="countdown-pages.html">subnational_coverage_server</a></code> <code><a href="countdown-pages.html">subnational_coverage_ui</a></code> <code><a href="countdown-pages.html">subnational_denominator_server</a></code> <code><a href="countdown-pages.html">subnational_denominator_ui</a></code> <code><a href="countdown-pages.html">subnational_inequality_server</a></code> <code><a href="countdown-pages.html">subnational_inequality_ui</a></code> <code><a href="countdown-pages.html">subnational_mapping_server</a></code> <code><a href="countdown-pages.html">subnational_mapping_ui</a></code> <code><a href="countdown-pages.html">subnational_target_server</a></code> <code><a href="countdown-pages.html">subnational_target_ui</a></code> <code><a href="countdown-pages.html">survey_comparison_server</a></code> <code><a href="countdown-pages.html">survey_comparison_ui</a></code> <code><a href="countdown-pages.html">survey_estimates_required_fields</a></code> <code><a href="countdown-pages.html">survey_fields</a></code> <code><a href="countdown-pages.html">survey_upload_server</a></code> <code><a href="countdown-pages.html">survey_upload_ui</a></code> <code><a href="countdown-pages.html">target_server</a></code> <code><a href="countdown-pages.html">target_ui</a></code> <code><a href="countdown-pages.html">upload_box_server</a></code> <code><a href="countdown-pages.html">upload_box_ui</a></code> <code><a href="countdown-pages.html">wizard_fields</a></code> <code><a href="countdown-pages.html">wizard_landing_server</a></code> <code><a href="countdown-pages.html">wizard_landing_ui</a></code> <code><a href="countdown-pages.html">wizard_step_defs</a></code> <code><a href="countdown-pages.html">wizard_steps_server</a></code> <code><a href="countdown-pages.html">wizard_steps_ui</a></code>
-
-        </dt>
-        <dd>The Countdown pages, wizard, filters and app frame</dd>
-
-        <dt>
-
-          <code><a href="cd_scope.html">cd_scope()</a></code>
-
-        </dt>
-        <dd>Define the Scope of a Scoped Page</dd>
       </dl></div><div class="section level2">
       <h2 id="the-countdown-ai">The Countdown AI<a class="anchor" aria-label="anchor" href="#the-countdown-ai"></a></h2>
 
@@ -1537,7 +1549,7 @@
           <code><a href="notebook_data.html">notebook_data()</a></code>
 
         </dt>
-        <dd>Notebook data: a folder's Countdown datasets for DataSuite's notebooks</dd>
+        <dd>Give DataSuite's notebooks a folder's Countdown datasets</dd>
 
         <dt>
 
@@ -1548,10 +1560,750 @@
 
         <dt>
 
+          <code><a href="cd_indicator_labels.html">cd_indicator_labels()</a></code>
+
+        </dt>
+        <dd>The indicators' labels</dd>
+
+        <dt>
+
           <code><a href="cd_methodology_defaults.html">cd_methodology_defaults()</a></code>
 
         </dt>
-        <dd>The Constants of the Countdown Methodology</dd>
+        <dd>The constants of the Countdown methodology</dd>
+      </dl></div><div class="section level2">
+      <h2 id="app-building-an-app">App: building an app<a class="anchor" aria-label="anchor" href="#app-building-an-app"></a></h2>
+
+      <div class="section-desc"><p>The app itself and its per-app settings, with the guide to the interface (countdown-pages).</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="cd_app.html">cd_app()</a></code>
+
+        </dt>
+        <dd>Build a Countdown app</dd>
+
+        <dt>
+
+          <code><a href="cd_cfg.html">cd_cfg()</a></code>
+
+        </dt>
+        <dd>Read one of the app's settings</dd>
+
+        <dt>
+
+          <code><a href="countdown-pages.html">countdown-pages</a></code>
+
+        </dt>
+        <dd>The Countdown pages, wizard, filters and app frame</dd>
+      </dl></div><div class="section level2">
+      <h2 id="app-pages">App: pages<a class="anchor" aria-label="anchor" href="#app-pages"></a></h2>
+
+      <div class="section-desc"><p>The analysis pages every Countdown app shares, each a ui/server pair.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="adjustment_changes_ui.html">adjustment_changes_ui()</a></code> <code><a href="adjustment_changes_ui.html">adjustment_changes_server()</a></code>
+
+        </dt>
+        <dd>Data adjustment changes page</dd>
+
+        <dt>
+
+          <code><a href="bayesian_page_server.html">bayesian_page_server()</a></code>
+
+        </dt>
+        <dd>Bayesian page server for the page registry</dd>
+
+        <dt>
+
+          <code><a href="bayesian_ui.html">bayesian_ui()</a></code> <code><a href="bayesian_ui.html">bayesian_server()</a></code>
+
+        </dt>
+        <dd>Bayesian coverage model page</dd>
+
+        <dt>
+
+          <code><a href="calculate_ratios_ui.html">calculate_ratios_ui()</a></code> <code><a href="calculate_ratios_ui.html">calculate_ratios_server()</a></code>
+
+        </dt>
+        <dd>Indicator ratios card</dd>
+
+        <dt>
+
+          <code><a href="cd_bayes_fit_task.html">cd_bayes_fit_task()</a></code>
+
+        </dt>
+        <dd>Fit one Bayesian coverage model in a background worker</dd>
+
+        <dt>
+
+          <code><a href="cd_bayes_indicators.html">cd_bayes_indicators</a></code>
+
+        </dt>
+        <dd>Indicators the Bayesian coverage model can be fitted for</dd>
+
+        <dt>
+
+          <code><a href="cd_start_bayes_workers.html">cd_start_bayes_workers()</a></code>
+
+        </dt>
+        <dd>Start the background workers that fit the Bayesian models</dd>
+
+        <dt>
+
+          <code><a href="consistency_check_ui.html">consistency_check_ui()</a></code> <code><a href="consistency_check_ui.html">consistency_check_server()</a></code>
+
+        </dt>
+        <dd>Consistency checks card</dd>
+
+        <dt>
+
+          <code><a href="consistency_pair_keys.html">consistency_pair_keys()</a></code>
+
+        </dt>
+        <dd>Tab keys of the consistency check pairs</dd>
+
+        <dt>
+
+          <code><a href="consistency_pair_label.html">consistency_pair_label()</a></code>
+
+        </dt>
+        <dd>Tab label of a consistency check pair</dd>
+
+        <dt>
+
+          <code><a href="coverage_trends_ui.html">coverage_trends_ui()</a></code> <code><a href="coverage_trends_ui.html">coverage_trends_server()</a></code>
+
+        </dt>
+        <dd>Coverage trends by denominator card</dd>
+
+        <dt>
+
+          <code><a href="coverage_ui.html">coverage_ui()</a></code> <code><a href="coverage_ui.html">coverage_server()</a></code>
+
+        </dt>
+        <dd>Coverage charts for one geography</dd>
+
+        <dt>
+
+          <code><a href="data_adjustment_ui.html">data_adjustment_ui()</a></code> <code><a href="data_adjustment_ui.html">data_adjustment_server()</a></code>
+
+        </dt>
+        <dd>Data adjustment page</dd>
+
+        <dt>
+
+          <code><a href="data_completeness_ui.html">data_completeness_ui()</a></code> <code><a href="data_completeness_ui.html">data_completeness_server()</a></code>
+
+        </dt>
+        <dd>Data completeness page</dd>
+
+        <dt>
+
+          <code><a href="den_indicators.html">den_indicators</a></code>
+
+        </dt>
+        <dd>Tabs of the denominator assessment chart</dd>
+
+        <dt>
+
+          <code><a href="denominator_assessment_ui.html">denominator_assessment_ui()</a></code> <code><a href="denominator_assessment_ui.html">denominator_assessment_server()</a></code>
+
+        </dt>
+        <dd>Denominator assessment page</dd>
+
+        <dt>
+
+          <code><a href="denominator_selection_ui.html">denominator_selection_ui()</a></code> <code><a href="denominator_selection_ui.html">denominator_selection_server()</a></code>
+
+        </dt>
+        <dd>Denominator selection page</dd>
+
+        <dt>
+
+          <code><a href="equity_ui.html">equity_ui()</a></code> <code><a href="equity_ui.html">equity_server()</a></code>
+
+        </dt>
+        <dd>Equity assessment page</dd>
+
+        <dt>
+
+          <code><a href="inequality_ui.html">inequality_ui()</a></code> <code><a href="inequality_ui.html">inequality_server()</a></code>
+
+        </dt>
+        <dd>Sub-national inequality charts</dd>
+
+        <dt>
+
+          <code><a href="internal_consistency_ui.html">internal_consistency_ui()</a></code> <code><a href="internal_consistency_ui.html">internal_consistency_server()</a></code>
+
+        </dt>
+        <dd>Internal consistency page</dd>
+
+        <dt>
+
+          <code><a href="introduction_ui.html">introduction_ui()</a></code> <code><a href="introduction_ui.html">introduction_server()</a></code>
+
+        </dt>
+        <dd>Introduction page</dd>
+
+        <dt>
+
+          <code><a href="national_coverage_ui.html">national_coverage_ui()</a></code> <code><a href="national_coverage_ui.html">national_coverage_server()</a></code>
+
+        </dt>
+        <dd>National coverage page</dd>
+
+        <dt>
+
+          <code><a href="national_inequality_ui.html">national_inequality_ui()</a></code> <code><a href="national_inequality_ui.html">national_inequality_server()</a></code>
+
+        </dt>
+        <dd>National inequality page</dd>
+
+        <dt>
+
+          <code><a href="national_target_ui.html">national_target_ui()</a></code> <code><a href="national_target_ui.html">national_target_server()</a></code>
+
+        </dt>
+        <dd>National coverage target page</dd>
+
+        <dt>
+
+          <code><a href="outlier_detection_ui.html">outlier_detection_ui()</a></code> <code><a href="outlier_detection_ui.html">outlier_detection_server()</a></code>
+
+        </dt>
+        <dd>Outlier detection page</dd>
+
+        <dt>
+
+          <code><a href="overall_score_ui.html">overall_score_ui()</a></code> <code><a href="overall_score_ui.html">overall_score_server()</a></code>
+
+        </dt>
+        <dd>Overall score page</dd>
+
+        <dt>
+
+          <code><a href="reporting_rate_ui.html">reporting_rate_ui()</a></code> <code><a href="reporting_rate_ui.html">reporting_rate_server()</a></code>
+
+        </dt>
+        <dd>Reporting rate page</dd>
+
+        <dt>
+
+          <code><a href="rr_indicators.html">rr_indicators</a></code>
+
+        </dt>
+        <dd>Tabs of the reporting rate chart</dd>
+
+        <dt>
+
+          <code><a href="subnational_coverage_ui.html">subnational_coverage_ui()</a></code> <code><a href="subnational_coverage_ui.html">subnational_coverage_server()</a></code>
+
+        </dt>
+        <dd>Sub-national coverage page</dd>
+
+        <dt>
+
+          <code><a href="subnational_denominator_ui.html">subnational_denominator_ui()</a></code> <code><a href="subnational_denominator_ui.html">subnational_denominator_server()</a></code>
+
+        </dt>
+        <dd>Sub-national coverage by denominator card</dd>
+
+        <dt>
+
+          <code><a href="subnational_inequality_ui.html">subnational_inequality_ui()</a></code> <code><a href="subnational_inequality_ui.html">subnational_inequality_server()</a></code>
+
+        </dt>
+        <dd>Sub-national inequality page</dd>
+
+        <dt>
+
+          <code><a href="subnational_mapping_ui.html">subnational_mapping_ui()</a></code> <code><a href="subnational_mapping_ui.html">subnational_mapping_server()</a></code>
+
+        </dt>
+        <dd>Sub-national coverage maps</dd>
+
+        <dt>
+
+          <code><a href="subnational_target_ui.html">subnational_target_ui()</a></code> <code><a href="subnational_target_ui.html">subnational_target_server()</a></code>
+
+        </dt>
+        <dd>Sub-national coverage target page</dd>
+
+        <dt>
+
+          <code><a href="survey_comparison_ui.html">survey_comparison_ui()</a></code> <code><a href="survey_comparison_ui.html">survey_comparison_server()</a></code>
+
+        </dt>
+        <dd>Coverage against the survey card</dd>
+
+        <dt>
+
+          <code><a href="target_ui.html">target_ui()</a></code> <code><a href="target_ui.html">target_server()</a></code>
+
+        </dt>
+        <dd>Coverage target charts and table</dd>
+      </dl></div><div class="section level2">
+      <h2 id="app-load-data-wizard">App: Load Data wizard<a class="anchor" aria-label="anchor" href="#app-load-data-wizard"></a></h2>
+
+      <div class="section-desc"><p>The Load Data screen: its steps, the tests of what is complete and the builders of an app’s own fields.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="cd_saved_copy_name.html">cd_saved_copy_name()</a></code>
+
+        </dt>
+        <dd>File name of a dataset's saved copy</dd>
+
+        <dt>
+
+          <code><a href="cd_upload_data_ui.html">cd_upload_data_ui()</a></code> <code><a href="cd_upload_data_ui.html">cd_upload_data_server()</a></code>
+
+        </dt>
+        <dd>The Load Data screen</dd>
+
+        <dt>
+
+          <code><a href="cd_wizard_check_group.html">cd_wizard_check_group()</a></code>
+
+        </dt>
+        <dd>Check that a loaded dataset belongs to the app's indicator group</dd>
+
+        <dt>
+
+          <code><a href="cd_wizard_config.html">cd_wizard_config()</a></code>
+
+        </dt>
+        <dd>The app's Load Data wizard configuration</dd>
+
+        <dt>
+
+          <code><a href="cd_wizard_field_group.html">cd_wizard_field_group()</a></code>
+
+        </dt>
+        <dd>Describe one group of fields of the National Rates step</dd>
+
+        <dt>
+
+          <code><a href="cd_wizard_indicator_group.html">cd_wizard_indicator_group()</a></code>
+
+        </dt>
+        <dd>The indicator group the running app is for</dd>
+
+        <dt>
+
+          <code><a href="cd_wizard_national_rate_fields.html">cd_wizard_national_rate_fields()</a></code>
+
+        </dt>
+        <dd>The five national rate fields every indicator group needs</dd>
+
+        <dt>
+
+          <code><a href="cd_wizard_survey_field.html">cd_wizard_survey_field()</a></code> <code><a href="cd_wizard_survey_field.html">cd_wizard_rate_field()</a></code>
+
+        </dt>
+        <dd>Describe one field of the National Rates step</dd>
+
+        <dt>
+
+          <code><a href="compute_step_states.html">compute_step_states()</a></code>
+
+        </dt>
+        <dd>Work out the state of every Load Data wizard step</dd>
+
+        <dt>
+
+          <code><a href="data_quality_ui.html">data_quality_ui()</a></code> <code><a href="data_quality_ui.html">data_quality_server()</a></code>
+
+        </dt>
+        <dd>Data quality step of the Load Data wizard</dd>
+
+        <dt>
+
+          <code><a href="map_shapefile_ui.html">map_shapefile_ui()</a></code> <code><a href="map_shapefile_ui.html">map_shapefile_server()</a></code>
+
+        </dt>
+        <dd>Map Shapefile Names step of the Load Data wizard</dd>
+
+        <dt>
+
+          <code><a href="map_survey_ui.html">map_survey_ui()</a></code> <code><a href="map_survey_ui.html">map_survey_server()</a></code>
+
+        </dt>
+        <dd>Map Survey Files step of the Load Data wizard</dd>
+
+        <dt>
+
+          <code><a href="mapping_modal_ui.html">mapping_modal_ui()</a></code> <code><a href="mapping_modal_ui.html">mapping_modal_server()</a></code>
+
+        </dt>
+        <dd>Dialog that matches the dataset's region names to another source</dd>
+
+        <dt>
+
+          <code><a href="mapping_provenance_banner.html">mapping_provenance_banner()</a></code>
+
+        </dt>
+        <dd>Banner that says how a saved name mapping was matched</dd>
+
+        <dt>
+
+          <code><a href="national_rates_required_fields.html">national_rates_required_fields()</a></code> <code><a href="national_rates_required_fields.html">survey_estimates_required_fields()</a></code>
+
+        </dt>
+        <dd>The values the National Rates step requires</dd>
+
+        <dt>
+
+          <code><a href="national_rates_ui.html">national_rates_ui()</a></code> <code><a href="national_rates_ui.html">national_rates_server()</a></code>
+
+        </dt>
+        <dd>National rates step of the Load Data wizard</dd>
+
+        <dt>
+
+          <code><a href="nr_field.html">nr_field()</a></code>
+
+        </dt>
+        <dd>One number field of the wizard's forms</dd>
+
+        <dt>
+
+          <code><a href="nr_group.html">nr_group()</a></code>
+
+        </dt>
+        <dd>A titled group of fields in the wizard's forms</dd>
+
+        <dt>
+
+          <code><a href="push_upload_on_remount.html">push_upload_on_remount()</a></code>
+
+        </dt>
+        <dd>Keep an upload zone showing the file the dataset already holds</dd>
+
+        <dt>
+
+          <code><a href="reference_estimates_ui.html">reference_estimates_ui()</a></code> <code><a href="reference_estimates_ui.html">reference_estimates_server()</a></code>
+
+        </dt>
+        <dd>Reference-data uploads of the wizard's Upload Data step</dd>
+
+        <dt>
+
+          <code><a href="restore_default_control.html">restore_default_control()</a></code>
+
+        </dt>
+        <dd>A link that clears something the user set in the dataset</dd>
+
+        <dt>
+
+          <code><a href="shapefile_step_ui.html">shapefile_step_ui()</a></code> <code><a href="shapefile_step_ui.html">shapefile_step_server()</a></code>
+
+        </dt>
+        <dd>Shapefile step of the Load Data wizard</dd>
+
+        <dt>
+
+          <code><a href="step_upload_complete.html">step_upload_complete()</a></code> <code><a href="step_upload_complete.html">step_quality_complete()</a></code> <code><a href="step_upload_complete.html">step_national_rates_complete()</a></code> <code><a href="step_upload_complete.html">step_survey_files_complete()</a></code> <code><a href="step_upload_complete.html">step_shapefile_complete()</a></code> <code><a href="step_upload_complete.html">step_shapefile_touched()</a></code> <code><a href="step_upload_complete.html">step_survey_mapping_complete()</a></code> <code><a href="step_upload_complete.html">step_map_mapping_complete()</a></code>
+
+        </dt>
+        <dd>Tests of whether a Load Data wizard step is complete</dd>
+
+        <dt>
+
+          <code><a href="survey_fields.html">survey_fields</a></code>
+
+        </dt>
+        <dd>The dataset fields of the five survey files</dd>
+
+        <dt>
+
+          <code><a href="survey_upload_ui.html">survey_upload_ui()</a></code> <code><a href="survey_upload_ui.html">survey_upload_server()</a></code>
+
+        </dt>
+        <dd>Survey files step of the Load Data wizard</dd>
+
+        <dt>
+
+          <code><a href="upload_box_ui.html">upload_box_ui()</a></code> <code><a href="upload_box_ui.html">upload_box_server()</a></code>
+
+        </dt>
+        <dd>Main dataset upload of the Load Data wizard</dd>
+
+        <dt>
+
+          <code><a href="wizard_fields.html">wizard_fields()</a></code>
+
+        </dt>
+        <dd>The National Rates fields of one kind</dd>
+
+        <dt>
+
+          <code><a href="wizard_landing_ui.html">wizard_landing_ui()</a></code> <code><a href="wizard_landing_ui.html">wizard_landing_server()</a></code>
+
+        </dt>
+        <dd>Summary page of the Load Data wizard</dd>
+
+        <dt>
+
+          <code><a href="wizard_step_defs.html">wizard_step_defs</a></code>
+
+        </dt>
+        <dd>The steps of the Load Data wizard</dd>
+
+        <dt>
+
+          <code><a href="wizard_steps_ui.html">wizard_steps_ui()</a></code> <code><a href="wizard_steps_ui.html">wizard_steps_server()</a></code>
+
+        </dt>
+        <dd>The Load Data wizard: its steps, navigation and Finish</dd>
+      </dl></div><div class="section level2">
+      <h2 id="app-filters">App: filters<a class="anchor" aria-label="anchor" href="#app-filters"></a></h2>
+
+      <div class="section-desc"><p>The filter chips pages share: indicator, admin level, denominator, population, years, palette.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="cd_admin_level_choices.html">cd_admin_level_choices()</a></code>
+
+        </dt>
+        <dd>Choices of the admin level chip</dd>
+
+        <dt>
+
+          <code><a href="cd_admin_level_ui.html">cd_admin_level_ui()</a></code> <code><a href="cd_admin_level_ui.html">cd_admin_level_server()</a></code>
+
+        </dt>
+        <dd>Admin level and region filter chips</dd>
+
+        <dt>
+
+          <code><a href="cd_admin_parts.html">cd_admin_parts()</a></code>
+
+        </dt>
+        <dd>Split the admin level filter's value into two reactives</dd>
+
+        <dt>
+
+          <code><a href="cd_denominator_chip_keys.html">cd_denominator_chip_keys()</a></code>
+
+        </dt>
+        <dd>Label and hint of a denominator chip</dd>
+
+        <dt>
+
+          <code><a href="cd_denominator_choices.html">cd_denominator_choices</a></code>
+
+        </dt>
+        <dd>The standard denominator choices</dd>
+
+        <dt>
+
+          <code><a href="cd_denominator_options.html">cd_denominator_options()</a></code>
+
+        </dt>
+        <dd>The denominators this app offers</dd>
+
+        <dt>
+
+          <code><a href="cd_denominator_ui.html">cd_denominator_ui()</a></code> <code><a href="cd_denominator_ui.html">cd_denominator_server()</a></code>
+
+        </dt>
+        <dd>Denominator filter chip</dd>
+
+        <dt>
+
+          <code><a href="cd_has_maternal.html">cd_has_maternal()</a></code>
+
+        </dt>
+        <dd>Whether this app has a maternal denominator</dd>
+
+        <dt>
+
+          <code><a href="cd_indicator_ui.html">cd_indicator_ui()</a></code> <code><a href="cd_indicator_ui.html">cd_indicator_server()</a></code>
+
+        </dt>
+        <dd>Indicator filter chip</dd>
+
+        <dt>
+
+          <code><a href="cd_only_denominators.html">cd_only_denominators()</a></code>
+
+        </dt>
+        <dd>Keep only the denominators this app offers</dd>
+
+        <dt>
+
+          <code><a href="cd_palette_chip.html">cd_palette_chip()</a></code>
+
+        </dt>
+        <dd>Colour palette chip for a page's maps</dd>
+
+        <dt>
+
+          <code><a href="cd_population_ui.html">cd_population_ui()</a></code> <code><a href="cd_population_ui.html">cd_population_server()</a></code>
+
+        </dt>
+        <dd>Population filter chip</dd>
+
+        <dt>
+
+          <code><a href="cd_years_input.html">cd_years_input()</a></code>
+
+        </dt>
+        <dd>The years a years chip means</dd>
+
+        <dt>
+
+          <code><a href="cd_years_sync.html">cd_years_sync()</a></code>
+
+        </dt>
+        <dd>Keep a years chip in step with the dataset</dd>
+      </dl></div><div class="section level2">
+      <h2 id="app-layout">App: layout<a class="anchor" aria-label="anchor" href="#app-layout"></a></h2>
+
+      <div class="section-desc"><p>The dataset header, sidebar sections, scoped pages and tabbed charts.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="cd_default_indicator_set.html">cd_default_indicator_set()</a></code>
+
+        </dt>
+        <dd>The indicators this app's tabbed chart cards show</dd>
+
+        <dt>
+
+          <code><a href="cd_default_indicators.html">cd_default_indicators</a></code>
+
+        </dt>
+        <dd>The standard indicators of a tabbed chart card</dd>
+
+        <dt>
+
+          <code><a href="cd_denominator_header.html">cd_denominator_header()</a></code>
+
+        </dt>
+        <dd>Draw the denominator row in a page header</dd>
+
+        <dt>
+
+          <code><a href="cd_denominator_row.html">cd_denominator_row()</a></code>
+
+        </dt>
+        <dd>Row naming the denominators in use</dd>
+
+        <dt>
+
+          <code><a href="cd_nav_start.html">cd_nav_start()</a></code> <code><a href="cd_nav_start.html">cd_nav_quality()</a></code> <code><a href="cd_nav_start.html">cd_nav_denominators()</a></code> <code><a href="cd_nav_start.html">cd_nav_national()</a></code> <code><a href="cd_nav_start.html">cd_nav_subnational()</a></code>
+
+        </dt>
+        <dd>The standard sidebar sections of a Countdown app</dd>
+
+        <dt>
+
+          <code><a href="cd_scope.html">cd_scope()</a></code>
+
+        </dt>
+        <dd>Define the scope of a scoped page</dd>
+
+        <dt>
+
+          <code><a href="cd_scope_filters.html">cd_scope_filters()</a></code>
+
+        </dt>
+        <dd>Filter bar of a scope</dd>
+
+        <dt>
+
+          <code><a href="cd_scope_server.html">cd_scope_server()</a></code>
+
+        </dt>
+        <dd>Admin level and region of a scope</dd>
+
+        <dt>
+
+          <code><a href="cd_scoped_page_ui.html">cd_scoped_page_ui()</a></code> <code><a href="cd_scoped_page_ui.html">cd_scoped_page_server()</a></code>
+
+        </dt>
+        <dd>A whole page that runs an analysis at a scope</dd>
+
+        <dt>
+
+          <code><a href="cd_tab_indicator.html">cd_tab_indicator()</a></code>
+
+        </dt>
+        <dd>The indicator of a tab of charts</dd>
+
+        <dt>
+
+          <code><a href="cd_tabbed_charts_ui.html">cd_tabbed_charts_ui()</a></code> <code><a href="cd_tabbed_charts_ui.html">cd_tabbed_charts_server()</a></code>
+
+        </dt>
+        <dd>Chart card with one tab for each indicator</dd>
+      </dl></div><div class="section level2">
+      <h2 id="app-charts-and-tables">App: charts and tables<a class="anchor" aria-label="anchor" href="#app-charts-and-tables"></a></h2>
+
+      <div class="section-desc"><p>Chart and table cards with their downloads.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="cd_coverage_plot_ui.html">cd_coverage_plot_ui()</a></code> <code><a href="cd_coverage_plot_ui.html">cd_coverage_plot_toolbar_ui()</a></code> <code><a href="cd_coverage_plot_ui.html">cd_coverage_plot_server()</a></code>
+
+        </dt>
+        <dd>Chart with its tools and downloads</dd>
+
+        <dt>
+
+          <code><a href="cd_rate_status_cell.html">cd_rate_status_cell()</a></code>
+
+        </dt>
+        <dd>Table cell showing a rate with its status</dd>
+
+        <dt>
+
+          <code><a href="cd_table_card_ui.html">cd_table_card_ui()</a></code> <code><a href="cd_table_card_ui.html">cd_table_card_server()</a></code>
+
+        </dt>
+        <dd>Flextable in a card with picture and Excel downloads</dd>
+
+        <dt>
+
+          <code><a href="cd_table_ui.html">cd_table_ui()</a></code> <code><a href="cd_table_ui.html">cd_table_server()</a></code>
+
+        </dt>
+        <dd>Table card with a year or indicator control</dd>
       </dl></div><div class="section level2">
       <h2 id="utility-functions">Utility Functions<a class="anchor" aria-label="anchor" href="#utility-functions"></a></h2>
 
@@ -1567,21 +2319,21 @@
           <code><a href="add_outlier5std_column.html">add_outlier5std_column()</a></code>
 
         </dt>
-        <dd>Add Outlier Flags Based on 5-MAD Bounds</dd>
+        <dd>Add outlier flags based on 5-MAD bounds</dd>
 
         <dt>
 
           <code><a href="add_mad_med_columns.html">add_mad_med_columns()</a></code>
 
         </dt>
-        <dd>Add Median and MAD Columns for Indicators</dd>
+        <dd>Add median and MAD columns for indicators</dd>
 
         <dt>
 
           <code><a href="add_missing_column.html">add_missing_column()</a></code>
 
         </dt>
-        <dd>Add Missing Value Flags to Health Indicators</dd>
+        <dd>Add missing value flags to health indicators</dd>
 
         <dt>
 
@@ -1595,14 +2347,14 @@
           <code><a href="get_country_iso3.html">get_country_iso3()</a></code>
 
         </dt>
-        <dd>Get Country ISO3 Code</dd>
+        <dd>Get country ISO3 code</dd>
 
         <dt>
 
           <code><a href="get_country_name.html">get_country_name()</a></code>
 
         </dt>
-        <dd>Get Country Name</dd>
+        <dd>Get country name</dd>
 
         <dt>
 
@@ -1616,7 +2368,7 @@
           <code><a href="get_population_column.html">get_population_column()</a></code>
 
         </dt>
-        <dd>Get Population Denominator Column Based on Indicator Only</dd>
+        <dd>Get the population column for an indicator and denominator</dd>
 
         <dt>
 
@@ -1630,28 +2382,28 @@
           <code><a href="list_tracer_vaccines.html">list_tracer_vaccines()</a></code>
 
         </dt>
-        <dd>List Tracer Vaccines</dd>
+        <dd>List tracer vaccines</dd>
 
         <dt>
 
           <code><a href="list_vaccine_indicators.html">list_vaccine_indicators()</a></code>
 
         </dt>
-        <dd>List All Vaccine and Related Coverage Indicators</dd>
+        <dd>List all vaccine and related coverage indicators</dd>
 
         <dt>
 
           <code><a href="get_admin_columns.html">get_admin_columns()</a></code>
 
         </dt>
-        <dd>Determine Grouping Columns for Administrative Levels</dd>
+        <dd>Determine grouping columns for administrative levels</dd>
 
         <dt>
 
           <code><a href="get_plot_admin_column.html">get_plot_admin_column()</a></code>
 
         </dt>
-        <dd>Determine the Administrative Column to Use for Plotting</dd>
+        <dd>Determine the administrative column to use for plotting</dd>
 
         <dt>
 
@@ -1665,28 +2417,28 @@
           <code><a href="robust_max.html">robust_max()</a></code>
 
         </dt>
-        <dd>Robust Maximum Value Calculation</dd>
+        <dd>Robust maximum value calculation</dd>
 
         <dt>
 
           <code><a href="print.cd_data.html">print(<i>&lt;cd_data&gt;</i>)</a></code>
 
         </dt>
-        <dd>Print Method for <code>cd_data</code> Class</dd>
+        <dd>Print method for <code>cd_data</code> class</dd>
 
         <dt>
 
           <code><a href="cd2030-configuration.html">with_cd_quiet()</a></code> <code><a href="cd2030-configuration.html">local_cd_quiet()</a></code>
 
         </dt>
-        <dd>Execute Code in Quiet Mode</dd>
+        <dd>Execute code in quiet mode</dd>
 
         <dt>
 
           <code><a href="clean_error_message.html">clean_error_message()</a></code>
 
         </dt>
-        <dd>Clean and Validate Error Messages</dd>
+        <dd>Clean and validate error messages</dd>
       </dl></div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

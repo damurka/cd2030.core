@@ -1,4 +1,4 @@
-# Combine Immunization Coverage Data
+# Combine immunization coverage data
 
 `calculate_coverage` integrates immunization coverage data from three
 sources: DHIS2 (District Health Information Software), survey-based

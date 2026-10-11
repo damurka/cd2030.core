@@ -82,16 +82,15 @@ load_data(
 
 - validate:
 
-  Logical. Whether to run Tier B quality checks (district-name
-  consistency, missing months, unrecognized months – see
-  `R/0_data_quality_checks.R`) as part of loading. Default `TRUE`,
-  matching the pipeline's long-standing behavior. `FALSE` lets a file
-  with data-quality problems (as opposed to *structural* ones – Tier A,
-  e.g. a missing admin column – which always run regardless) load
-  anyway, for a caller that wants to run those checks itself later,
-  progressively, against the already-loaded data (see
-  [`run_all_quality_checks()`](run_all_quality_checks.md)) rather than
-  as an upfront hard stop.
+  Logical. Whether to stop with an error when the merged data fails a
+  data quality check:
+  [`check_district_consistency()`](check_district_consistency.md),
+  [`check_month_presence()`](check_month_presence.md) or
+  [`check_month_validity()`](check_month_validity.md). Default is
+  `TRUE`. With `FALSE` a file that has such problems still loads, so the
+  caller can run the checks later with
+  [`run_all_quality_checks()`](run_all_quality_checks.md). Structural
+  checks, such as a missing Admin sheet column, always run.
 
 ## Value
 

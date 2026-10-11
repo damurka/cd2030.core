@@ -1,4 +1,4 @@
-# Format Service Utilization Data for Excel Export
+# Format service utilization data for Excel export
 
 Transforms a `cd_service_utilization` object into a wide-format table
 with labeled indicators, suitable for export to Excel.

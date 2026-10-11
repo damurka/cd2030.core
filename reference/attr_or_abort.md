@@ -1,4 +1,4 @@
-# Retrieve an Attribute or Abort with Error
+# Retrieve an attribute or abort with error
 
 Safely retrieves a named attribute from an object. If the attribute is
 missing, raises an error with a clear message. Intended for internal use

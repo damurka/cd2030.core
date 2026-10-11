@@ -18,3 +18,12 @@ is_maternal_indicator(indicator)
 ## Value
 
 TRUE if and indicator is maternal
+
+## Examples
+
+``` r
+is_maternal_indicator("anc4")
+#> [1] TRUE
+is_maternal_indicator(c("anc4", "ideliv", "penta3"))
+#> [1]  TRUE  TRUE FALSE
+```

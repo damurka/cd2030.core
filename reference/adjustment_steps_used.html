@@ -9,7 +9,7 @@ least one district of the data (or of one area), with the settings: a step no di
 
     <a class="navbar-brand me-2" href="../index.html">cd2030.core</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.10</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -17,7 +17,14 @@ least one district of the data (or of one area), with the settings: a step no di
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/preparing-data.html">Preparing your data</a></li>
+    <li><a class="dropdown-item" href="../articles/data-quality.html">Checking data quality</a></li>
+    <li><a class="dropdown-item" href="../articles/coverage.html">From adjustment to coverage</a></li>
+    <li><a class="dropdown-item" href="../articles/building-an-app.html">Building an app on cd2030.core</a></li>
+  </ul></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -76,6 +83,32 @@ least one district of the data (or of one area), with the settings: a step no di
     <p>A named logical: <code>completeness</code>, <code>outliers</code>, <code>missing</code>.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"kenya.xlsx"</span>, package <span class="op">=</span> <span class="st">"cd2030.core"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="load_data.html">load_data</a></span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Loading Excel <span style="color: #FFAF00;">"kenya.xlsx"</span> for parts</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> The following columns are empty: <span style="color: #0000BB;">anc_1trimester, under5_deaths, total_deaths,</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   <span style="color: #0000BB;">ipv2, measles_cases</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Successfully loaded and cleaned data</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Auto-detect candidates (|group|): vaccine=19, rmncah=28 -&gt; selected rmncah</span>
+<span class="r-in"><span><span class="va">settings</span> <span class="op">&lt;-</span> <span class="fu"><a href="adjustment_settings_default.html">adjustment_settings_default</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">adjustment_steps_used</span><span class="op">(</span><span class="va">settings</span>, <span class="va">data</span>, <span class="st">"penta3"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> completeness     outliers      missing </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         TRUE         TRUE         TRUE </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># A region with its own settings: no completeness adjustment, outliers left as they are</span></span></span>
+<span class="r-in"><span><span class="va">settings</span><span class="op">$</span><span class="va">areas</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>area <span class="op">=</span> <span class="st">"Coast"</span>, level <span class="op">=</span> <span class="st">"adminlevel_1"</span>, group_k <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>vacc <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>, all_outliers <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">adjustment_steps_used</span><span class="op">(</span><span class="va">settings</span>, <span class="va">data</span>, <span class="st">"penta3"</span>, area <span class="op">=</span> <span class="st">"Coast"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> completeness     outliers      missing </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        FALSE        FALSE         TRUE </span>
+<span class="r-in"><span><span class="fu">adjustment_steps_used</span><span class="op">(</span><span class="va">settings</span>, <span class="va">data</span>, <span class="st">"penta3"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> completeness     outliers      missing </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         TRUE         TRUE         TRUE </span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

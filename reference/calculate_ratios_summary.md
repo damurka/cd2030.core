@@ -1,10 +1,10 @@
-# Calculate Yearly Indicator Ratios Summary with Expected Ratios
+# Calculate yearly indicator ratios summary with expected ratios
 
-This function computes yearly summaries for specified indicator ratios,
-assessing trends across years and providing both actual and expected
-ratios for each indicator. It evaluates specified indicator pairs to
-calculate ratios and compares actual values with expected ratios, based
-on predefined survey coverage values. The summary facilitates monitoring
+Computes yearly summaries for specified indicator ratios, assessing
+trends across years and providing both actual and expected ratios for
+each indicator. It evaluates specified indicator pairs to calculate
+ratios and compares actual values with expected ratios, based on
+predefined survey coverage values. The summary facilitates monitoring
 consistency of key health indicators over time.
 
 ## Usage

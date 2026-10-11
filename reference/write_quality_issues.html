@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">cd2030.core</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.10</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -15,7 +15,14 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/preparing-data.html">Preparing your data</a></li>
+    <li><a class="dropdown-item" href="../articles/data-quality.html">Checking data quality</a></li>
+    <li><a class="dropdown-item" href="../articles/coverage.html">From adjustment to coverage</a></li>
+    <li><a class="dropdown-item" href="../articles/building-an-app.html">Building an app on cd2030.core</a></li>
+  </ul></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -47,7 +54,7 @@
 
 
 <dl><dt id="arg-results">results<a class="anchor" aria-label="anchor" href="#arg-results"></a></dt>
-<dd><p>What <code><a href="run_all_quality_checks.html">run_all_quality_checks()</a></code> returns.</p></dd>
+<dd><p>A named list. What <code><a href="run_all_quality_checks.html">run_all_quality_checks()</a></code> returns.</p></dd>
 
 
 <dt id="arg-path">path<a class="anchor" aria-label="anchor" href="#arg-path"></a></dt>
@@ -55,8 +62,9 @@
 
 
 <dt id="arg-labels">labels<a class="anchor" aria-label="anchor" href="#arg-labels"></a></dt>
-<dd><p>Optional named character vector: a check's key (<code>names(results)</code>) to the name to show for
-it (the wizard passes its translated ones). A check without one gets a plain English name.</p></dd>
+<dd><p>An optional named character vector that maps a check's key (<code>names(results)</code>)
+to the name to show for it, for example a translated name. A check without a label gets a
+plain English name.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -64,6 +72,36 @@ it (the wizard passes its translated ones). A check without one gets a plain Eng
     <p><code>path</code>, invisibly.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"kenya.xlsx"</span>, package <span class="op">=</span> <span class="st">"cd2030.core"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">cache</span> <span class="op">&lt;-</span> <span class="fu"><a href="load_cache_data.html">load_cache_data</a></span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Loading Excel <span style="color: #FFAF00;">"kenya.xlsx"</span> for parts</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> The following columns are empty: <span style="color: #0000BB;">anc_1trimester, under5_deaths, total_deaths,</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   <span style="color: #0000BB;">ipv2, measles_cases</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Successfully loaded and cleaned data</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Auto-detect candidates (|group|): vaccine=19, rmncah=28 -&gt; selected rmncah</span>
+<span class="r-in"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="run_all_quality_checks.html">run_all_quality_checks</a></span><span class="op">(</span><span class="va">cache</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">file</span> <span class="op">&lt;-</span> <span class="fu">write_quality_issues</span><span class="op">(</span><span class="va">results</span>, <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span>fileext <span class="op">=</span> <span class="st">".xlsx"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">openxlsx</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/openxlsx/man/read.xlsx.html" class="external-link">read.xlsx</a></span><span class="op">(</span><span class="va">file</span>, sheet <span class="op">=</span> <span class="st">"Issues"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                   check      severity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      Empty indicators informational</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 Shapefile admin names       mapping</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 Shapefile admin names       mapping</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 Shapefile admin names       mapping</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 Shapefile admin names       mapping</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 Shapefile admin names       mapping</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7 Shapefile admin names       mapping</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                                              issue</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                   anc_1trimester</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 name: Central      ; suggestion: Mandera   ; distance: 0.3809524</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 name: Coast        ; suggestion: Mombasa   ; distance: 0.3238095</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 name: Eastern      ; suggestion: Makueni   ; distance: 0.3809524</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 name: North Eastern; suggestion: Tana River; distance: 0.3728938</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 name: Rift Valley  ; suggestion: Garissa   ; distance: 0.4329004</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7 name: Western      ; suggestion: West Pokot; distance: 0.3428571</span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

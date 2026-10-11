@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">cd2030.core</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.10</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -15,7 +15,14 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/preparing-data.html">Preparing your data</a></li>
+    <li><a class="dropdown-item" href="../articles/data-quality.html">Checking data quality</a></li>
+    <li><a class="dropdown-item" href="../articles/coverage.html">From adjustment to coverage</a></li>
+    <li><a class="dropdown-item" href="../articles/building-an-app.html">Building an app on cd2030.core</a></li>
+  </ul></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -64,6 +71,41 @@ sub-national, region, mortality, service utilization, health system). The standa
 (see the top of the standard reports section).</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">kinds</span> <span class="op">&lt;-</span> <span class="fu">report_block_kinds</span><span class="op">(</span><span class="st">"rmncah"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">kinds</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "reporting_rate"        "overall_score"         "consistency"          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [4] "dq_ratios"             "dq_reporting_units"    "dq_completeness_units"</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">kinds</span><span class="op">$</span><span class="va">reporting_rate</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> List of 10</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ type      : chr "chart"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ group     : chr "quality"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ label     : chr "Reporting rate by district"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ indicators: NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ levels    : NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ variants  : NULL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ year      : logi FALSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ regional  : logi TRUE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ groups    : chr [1:2] "rmncah" "vaccine"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ tall      : logi TRUE</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># the kinds the vaccine group does not have</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">kinds</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu">report_block_kinds</span><span class="op">(</span><span class="st">"vaccine"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "continuum"               "continuum_gap"          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "bayes_coverage"          "natcov_fpet"            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "natcov_continuum_region" "continuum_units"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "mortality_trend"         "mortality_region"       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "mortality_plausibility"  "mortality_ratio"        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "mort_nn_trend"           "service_utilization"    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "mch_index"               "su_region"              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [15] "su_dqa"                  "su_map"                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [17] "health_system_table"     "health_system_region"   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [19] "phc_scatter"             "hs_comparison"          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [21] "hs_national"             "private_share"          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [23] "ps_ownership"           </span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

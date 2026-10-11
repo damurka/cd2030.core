@@ -1,4 +1,4 @@
-# Generate Adjusted and Unadjusted Service Counts by Year
+# Generate adjusted and unadjusted service counts by year
 
 `generate_adjustment_values` calculates yearly unadjusted and adjusted
 service counts for each indicator within a `cd_data` dataset, applying
@@ -67,7 +67,7 @@ A `cd_adjustment_values` tibble containing:
 
 ## Details
 
-This function performs the following steps:
+Performs the following steps:
 
 1.  **Data Validation**: Ensures `.data` is of the `cd_data` class and
     `adjustment` is correctly specified.

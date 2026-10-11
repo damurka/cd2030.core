@@ -25,3 +25,38 @@ adjustment_settings_default(k = .cd_method$adjustment$k, groups = NULL)
 
 The settings list (see
 [`adjust_service_data()`](adjust_service_data.md)).
+
+## Examples
+
+``` r
+settings <- adjustment_settings_default()
+str(settings)
+#> List of 4
+#>  $ removed_years: num(0) 
+#>  $ removals     : list()
+#>  $ everywhere   :List of 4
+#>   ..$ group_k    :List of 4
+#>   .. ..$ anc  : num 0.25
+#>   .. ..$ idelv: num 0.25
+#>   .. ..$ vacc : num 0.25
+#>   .. ..$ opd  : num 0.25
+#>   ..$ indicator_k: list()
+#>   ..$ outliers   : list()
+#>   ..$ missing    : list()
+#>  $ areas        : list()
+
+# No completeness adjustment for any group
+adjustment_settings_default(k = 0)$everywhere$group_k
+#> $anc
+#> [1] 0
+#> 
+#> $idelv
+#> [1] 0
+#> 
+#> $vacc
+#> [1] 0
+#> 
+#> $opd
+#> [1] 0
+#> 
+```

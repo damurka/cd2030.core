@@ -1,4 +1,4 @@
-# Load and Process Survey Data
+# Load and process survey data
 
 Loads national or subnational survey data, cleans labels and codes, and
 applies country-specific adjustments for admin-level naming.
@@ -35,3 +35,18 @@ load_survey_data(
 ## Value
 
 A tibble of class `cd_survey_data`.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+national <- load_survey_data(path = "all_data.dta", country_iso = "KEN")
+cache$set_national_survey(national)
+
+# The survey by region
+regional <- load_survey_data(
+  path = "gregion_data.dta", country_iso = "KEN", admin_level = "adminlevel_1"
+)
+cache$set_regional_survey(regional)
+} # }
+```

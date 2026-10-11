@@ -1,9 +1,9 @@
-# Get Mapping Data for Subnational Coverage Analysis
+# Get mapping data for subnational coverage analysis
 
 Merges coverage data with a country's shapefile to enable spatial
-visualization of health indicators. It computes subnational indicator
-coverage using UN estimates and survey rates, and joins results with
-geographic features.
+visualization of health indicators. It joins subnational (admin level 1)
+indicator coverage that has already been calculated with the geographic
+features of each unit.
 
 ## Usage
 

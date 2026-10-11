@@ -1,15 +1,9 @@
-# Check the Admin sheet's single country value is actually a recognized country name, pre-merge
+# Check that the country in the Admin sheet is recognized
 
-[`check_single_country()`](check_single_country.md) (Tier A, above) only
-catches more than one distinct value – the
-genuinely-one-value-but-unrecognized case is `match_country()`'s job,
-which normally only runs at Finish
-([`merge_and_standardize()`](merge_and_standardize.md)'s
-[`new_countdown()`](new_countdown.md) call) under the deferred-merge
-design. Left uncaught pre-merge, a user could walk the entire wizard
-only to hit a hard abort on the very last step – this surfaces the same
-problem at Data Quality instead, non-abortingly, same as every other
-check here.
+Checks that the country named in the Admin sheet is one the package
+supports. Run it before the sheets are merged to report an unrecognized
+country early. [`new_countdown()`](new_countdown.md) stops with an error
+on the same problem.
 
 ## Usage
 
@@ -21,13 +15,45 @@ check_country_recognized(parts, admin_sheet_name)
 
 - parts:
 
-  Named list of cleaned per-sheet tibbles.
+  A named list of cleaned per-sheet tibbles
+  (`load_excel_parts()$parts`).
 
 - admin_sheet_name:
 
-  Name of the admin sheet within `parts`.
+  A string. The name of the Admin sheet within `parts`.
+
+## Value
+
+`NULL` if the country is recognized, if the Admin sheet has no `country`
+column, or if the column does not hold exactly one value. Otherwise a
+character vector of length one, named `"x"`, with a message that gives
+the unrecognized name.
 
 ## Details
 
-Its counterpart, "every column the selected group needs is present", is
-[`check_required_columns_presheet()`](check_required_columns_presheet.md).
+The check applies only when the `country` column holds exactly one
+distinct value, ignoring missing values. More than one value is reported
+by [`check_single_country()`](check_single_country.md). The name is
+recognized when it is close to a name in the package's list of
+countries.
+
+## See also
+
+[`check_required_columns_presheet()`](check_required_columns_presheet.md)
+
+## Examples
+
+``` r
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+sheets <- load_excel_parts(path)
+#> ℹ Loading Excel "kenya.xlsx" for parts
+check_country_recognized(sheets$parts, sheets$admin_sheet_name)
+#> NULL
+
+# A country the package has no reference data for
+parts <- sheets$parts
+parts[[sheets$admin_sheet_name]]$country <- "Atlantis"
+check_country_recognized(parts, sheets$admin_sheet_name)
+#>                                                                x 
+#> "The country name \"Atlantis\" in Admin_data is not recognized." 
+```

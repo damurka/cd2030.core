@@ -20,3 +20,21 @@ slim_bayes_model(model)
 ## Value
 
 The model without them, its class and attributes kept.
+
+## Examples
+
+``` r
+# a stand-in for a model fitted with keep_samples = TRUE
+model <- structure(
+  list(posteriors = list(), samples = matrix(0, 1000, 50), stan_model = "the compiled model"),
+  class = c("cd_bayes_model", "list"),
+  indicator = "penta3"
+)
+slim <- slim_bayes_model(model)
+names(slim)
+#> [1] "posteriors"
+attr(slim, "indicator")
+#> [1] "penta3"
+object.size(slim) < object.size(model)
+#> [1] TRUE
+```

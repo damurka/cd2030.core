@@ -1,4 +1,4 @@
-# Determine Grouping Columns for Administrative Levels
+# Determine grouping columns for administrative levels
 
 Returns the appropriate grouping column(s) based on the specified
 administrative level. If a region is specified and

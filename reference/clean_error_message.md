@@ -1,4 +1,4 @@
-# Clean and Validate Error Messages
+# Clean and validate error messages
 
 `clean_error_message` processes and cleans error messages to remove
 unnecessary details such as ANSI escape codes, CLI-specific bullets,

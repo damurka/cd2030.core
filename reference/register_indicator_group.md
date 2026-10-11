@@ -60,4 +60,7 @@ register_indicator_group(
   list(hiv = c("hiv_test","pmtct1")),
   on_conflict = "merge"
 )
+
+# Back to the built-in group
+reset_indicator_group("rmncah")
 ```

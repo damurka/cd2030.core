@@ -1,4 +1,4 @@
-# Create Dot Plots for Equity Analysis
+# Create dot plots for equity analysis
 
 `equiplot` generates a dot plot to visualize the distribution of
 variables across different groups (e.g., countries, regions, or
@@ -77,3 +77,20 @@ equiplot(
 ## Value
 
 A `ggplot` object.
+
+## Examples
+
+``` r
+coverage <- data.frame(
+  region = c("North", "Centre", "South"),
+  poorest = c(42, 55, 61),
+  richest = c(78, 83, 90)
+)
+equiplot(coverage, variables = c("poorest", "richest"), group_by = region)
+
+
+equiplot(coverage, c("poorest", "richest"), group_by = region,
+         title = "Skilled birth attendance by wealth", legend_title = "Wealth quintile",
+         legend_labels = c(poorest = "Poorest", richest = "Richest"), connect_dots = FALSE)
+
+```

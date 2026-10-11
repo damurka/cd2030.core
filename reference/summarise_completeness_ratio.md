@@ -1,4 +1,4 @@
-# Summarize Completeness-Adjusted Mortality Ratio
+# Summarize completeness-adjusted mortality ratio
 
 Computes and summarizes adjusted mortality ratio estimates based on
 completeness correction factors for different

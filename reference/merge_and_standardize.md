@@ -1,14 +1,9 @@
-# Merge and standardize an already-`load_excel_parts()`-ed set of sheets
+# Merge and standardize sheets read by `load_excel_parts()`
 
-The back half of what used to be `.load_excel_data()`: the Tier A
-structural checks (admin columns present, exactly one country),
-`merge_data()` + `standardize_data()`, then
-[`new_countdown()`](new_countdown.md) for group resolution and the Tier
-B quality gate. Kept as a fail-fast backstop even for a caller (the Load
-Data wizard) that already ran these same Tier A checks non-abortingly,
-earlier, against the same `parts` – the same defense-in-depth every
-other blocking check in this pipeline already has between its
-wizard-facing non-aborting form and its abort-on-call one.
+Merges the separate sheets returned by
+[`load_excel_parts()`](load_excel_parts.md) into one dataset,
+standardizes its columns and returns it as a `cd_data` tibble. This is
+the second half of loading an Excel workbook.
 
 ## Usage
 
@@ -26,13 +21,7 @@ merge_and_standardize(
 
 - parts_result:
 
-  The list returned by [`load_excel_parts()`](load_excel_parts.md).
-  Exported (not `@noRd`) because the Load Data wizard's own Finish
-  action (`apps/rmncah/ui/wizard_panels.R`) calls this directly, across
-  the package boundary, once
-  [`step_quality_complete()`](countdown-pages.md) is satisfied – it's
-  not purely an internal implementation detail of `.load_excel_data()`
-  any more.
+  A list. What [`load_excel_parts()`](load_excel_parts.md) returns.
 
 - indicator_group:
 
@@ -60,17 +49,103 @@ merge_and_standardize(
 
 - validate:
 
-  Logical. Whether to run Tier B quality checks (district-name
-  consistency, missing months, unrecognized months – see
-  `R/0_data_quality_checks.R`) as part of loading. Default `TRUE`,
-  matching the pipeline's long-standing behavior. `FALSE` lets a file
-  with data-quality problems (as opposed to *structural* ones – Tier A,
-  e.g. a missing admin column – which always run regardless) load
-  anyway, for a caller that wants to run those checks itself later,
-  progressively, against the already-loaded data (see
-  [`run_all_quality_checks()`](run_all_quality_checks.md)) rather than
-  as an upfront hard stop.
+  Logical. Whether to stop with an error when the merged data fails a
+  data quality check:
+  [`check_district_consistency()`](check_district_consistency.md),
+  [`check_month_presence()`](check_month_presence.md) or
+  [`check_month_validity()`](check_month_validity.md). Default is
+  `TRUE`. With `FALSE` a file that has such problems still loads, so the
+  caller can run the checks later with
+  [`run_all_quality_checks()`](run_all_quality_checks.md). Structural
+  checks, such as a missing Admin sheet column, always run.
 
 ## Value
 
 A tibble of class `cd_data`.
+
+## Details
+
+Before merging, the function stops with an error if the Admin sheet
+fails [`check_admin_columns()`](check_admin_columns.md) or
+[`check_single_country()`](check_single_country.md). The merged data
+then goes to [`new_countdown()`](new_countdown.md), which resolves the
+indicator group and, when `validate` is `TRUE`, stops on a data quality
+problem.
+
+## Examples
+
+``` r
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+sheets <- load_excel_parts(path)
+#> ℹ Loading Excel "kenya.xlsx" for parts
+data <- merge_and_standardize(sheets)
+#> ! The following columns are empty: anc_1trimester, under5_deaths, total_deaths,
+#>   ipv2, measles_cases
+#> ℹ Successfully loaded and cleaned data
+#> ℹ Auto-detect candidates (|group|): vaccine=19, rmncah=28 -> selected rmncah
+data
+#> ─────────────────────────── Countdown Object Summary ───────────────────────────
+#> 
+#> ── Data Summary ──
+#> 
+#> • Number of observations: 2820
+#> • Number of variables: 73
+#> • Number of years: 5
+#> • Number of regions: 8
+#> 
+#> ── Years Available ──
+#> 
+#> • 2019
+#> • 2020
+#> • 2021
+#> • 2022
+#> • 2023
+#> 
+#> ── Regions Available ──
+#> 
+#> • Rift Valley
+#> • Western
+#> • Eastern
+#> • North Eastern
+#> • Nyanza
+#> • Central
+#> • Coast
+#> • Nairobi
+#> 
+#> ── Variable Groups Available ──
+#> 
+#> * anc: anc1, anc_1trimester, anc4, ipt2, ipt3, syphilis_test, ifa90, hiv_test
+#> * idelv: sba, ideliv, instlivebirths, csection, low_bweight, pnc48h,
+#> total_stillbirth, stillbirth_f, stillbirth_m, maternal_deaths, neonatal_deaths
+#> * vacc: penta1, penta3, measles1, measles2, bcg
+#> * opd: opd_total, opd_under5
+#> * ipd: ipd_total, ipd_under5
+#> ────────────────────────────────────────────────────────────────────────────────
+#> # A tibble: 2,820 × 73
+#>    country adminlevel_1 district  year month     anc1 anc_1trimester  anc4  ipt2
+#>    <chr>   <chr>        <chr>    <int> <ord>    <dbl>          <dbl> <dbl> <dbl>
+#>  1 Kenya   Rift Valley  Baringo   2019 January   2006             NA   750    11
+#>  2 Kenya   Rift Valley  Baringo   2019 February  1237             NA   676    NA
+#>  3 Kenya   Rift Valley  Baringo   2019 March     1511             NA   796    NA
+#>  4 Kenya   Rift Valley  Baringo   2019 April     1575             NA   889    NA
+#>  5 Kenya   Rift Valley  Baringo   2019 May       1768             NA   878    NA
+#>  6 Kenya   Rift Valley  Baringo   2019 June      1559             NA   770    NA
+#>  7 Kenya   Rift Valley  Baringo   2019 July      1609             NA   847    13
+#>  8 Kenya   Rift Valley  Baringo   2019 August    1525             NA  1003     7
+#>  9 Kenya   Rift Valley  Baringo   2019 Septemb…  1550             NA   870    22
+#> 10 Kenya   Rift Valley  Baringo   2019 October   1584             NA   852     9
+#> # ℹ 2,810 more rows
+#> # ℹ 64 more variables: ipt3 <dbl>, ifa90 <dbl>, syphilis_test <dbl>,
+#> #   hiv_test <dbl>, sba <dbl>, ideliv <dbl>, instlivebirths <dbl>,
+#> #   csection <dbl>, low_bweight <dbl>, pnc48h <dbl>, total_stillbirth <dbl>,
+#> #   stillbirth_f <dbl>, stillbirth_m <dbl>, maternal_deaths <dbl>,
+#> #   neonatal_deaths <dbl>, bcg <dbl>, penta1 <dbl>, penta3 <dbl>,
+#> #   measles1 <dbl>, measles2 <dbl>, opd_total <dbl>, opd_under5 <dbl>, …
+
+# Load even if a data quality check fails, to run the checks afterwards
+data <- merge_and_standardize(sheets, validate = FALSE)
+#> ! The following columns are empty: anc_1trimester, under5_deaths, total_deaths,
+#>   ipv2, measles_cases
+#> ℹ Successfully loaded and cleaned data
+#> ℹ Auto-detect candidates (|group|): vaccine=19, rmncah=28 -> selected rmncah
+```

@@ -1,8 +1,8 @@
-# Filter and Prepare Service Utilization Data for Mapping
+# Filter and prepare service utilization data for mapping
 
-Filters a `cd_service_utilization` object by country, indicator, and
-year. Joins spatial data for subnational mapping and renames geometry
-for use with
+Selects one under-five indicator from a `cd_service_utilization` object,
+optionally for given years. Joins spatial data for subnational mapping
+and renames geometry for use with
 [`ggplot2::geom_sf()`](https://ggplot2.tidyverse.org/reference/ggsf.html).
 
 ## Usage
@@ -51,18 +51,11 @@ spatial plotting.
 
 ## Details
 
-This function:
-
-- Selects the under-five service indicator (`ratio_ipd_u5_pop` or
-  `ratio_opd_u5_pop`)
-
-- Joins the appropriate admin level 1 shapefile using the specified
-  country ISO
-
-- Filters to specified `plot_years` if provided
-
-- Renames the geometry column for compatibility with
-  [`geom_sf()`](https://ggplot2.tidyverse.org/reference/ggsf.html)
+Selects the under-five service indicator (`ratio_ipd_u5_pop` or
+`ratio_opd_u5_pop`) and joins the admin level 1 shapefile of the country
+whose ISO3 code is stored on `.data`. Keeps only `plot_years` when they
+are given, and renames the geometry column to `geometry` for
+[`geom_sf()`](https://ggplot2.tidyverse.org/reference/ggsf.html).
 
 Only `adminlevel_1` data is currently supported for mapping.
 
@@ -70,6 +63,6 @@ Only `adminlevel_1` data is currently supported for mapping.
 
 ``` r
 if (FALSE) { # \dontrun{
-prepare_service_utlization_mapping(service_data, "UGA", indicator = "opd", plot_years = 2019:2022)
+prepare_mapping_service_utlization(service_data, indicator = "opd", plot_years = 2019:2022)
 } # }
 ```

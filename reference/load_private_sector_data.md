@@ -1,4 +1,4 @@
-# Load and Prepare Private Sector Data
+# Load and prepare private sector data
 
 Loads raw prevalence data for public/private sector analysis and applies
 internal preprocessing for c-section share calculation.
@@ -27,7 +27,9 @@ load_private_sector_data(
 
 - country_iso:
 
-  Required. ISO3 country code to filter the data.
+  ISO3 country code. When the data holds several countries (an `iso`
+  column with more than one code), the rows of this one are kept; data
+  for one country is used as it is.
 
 - level:
 
@@ -39,9 +41,9 @@ A tibble of class `"cd_private_sector_data"` with a `"level"` attribute.
 
 ## Details
 
-This function:
-
-- Loads and filters data for the specified `country_iso`.
+Loads the data from `path`, or uses `.data`, and checks that it matches
+`level`: area data has a `level` column and national data does not.
+Then:
 
 - Assigns `"Public"` or `"Private"` to the `sector` column based on
   `indic` suffix.
@@ -49,8 +51,8 @@ This function:
 - Removes sector suffix from `indic`.
 
 - Computes number of c-sections (`num_csection`) and sector share of
-  c-sections (`share_csection`) within groupings defined by `iso` or
-  `iso + area`.
+  c-sections (`share_csection`) over the whole dataset, or within each
+  value of the `level` column for area data.
 
 - If level is `"area"`, parses `level` string into `area = "Urban"` or
   `"Rural"`.

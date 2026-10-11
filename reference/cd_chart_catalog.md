@@ -23,3 +23,26 @@ cd_chart_catalog(cache)
 
 A tibble with `id`, `target` (`"screen"`, `"report"` or `"dataset"`),
 `group`, `n_options` and `options` (a one-line summary).
+
+## Examples
+
+``` r
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#> ℹ Loading Excel "kenya.xlsx" for parts
+#> ! The following columns are empty: anc_1trimester, under5_deaths, total_deaths,
+#>   ipv2, measles_cases
+#> ℹ Successfully loaded and cleaned data
+#> ℹ Auto-detect candidates (|group|): vaccine=19, rmncah=28 -> selected rmncah
+cache$set_chart_options("default", cd_chart_options(legend_position = "bottom"))
+cache$set_chart_options(
+  "report/coverage_filtered.national.penta3",
+  cd_chart_options(title = "Penta3 coverage")
+)
+
+cd_chart_catalog(cache)
+#> # A tibble: 2 × 5
+#>   id                                target  group              n_options options
+#>   <chr>                             <chr>   <chr>                  <int> <chr>  
+#> 1 default                           dataset default                    1 legend…
+#> 2 coverage_filtered.national.penta3 report  coverage_filtered…         1 title  
+```

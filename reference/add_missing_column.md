@@ -1,4 +1,4 @@
-# Add Missing Value Flags to Health Indicators
+# Add missing value flags to health indicators
 
 `add_missing_column` assesses data quality by identifying missing values
 for specified health indicators. It generates new columns for each

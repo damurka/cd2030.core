@@ -1,4 +1,4 @@
-# Internal Consistency Plot Functions for Indicator Comparisons
+# Internal consistency plot functions for indicator comparisons
 
 These functions generate scatter plots that compare two health
 indicators across years, assessing internal consistency through
@@ -7,12 +7,14 @@ Each function is designed to compare a specific pair of indicators, with
 options for customizing plot titles, axis labels, and the inclusion of
 trend information.
 
-`plot_comparison_penta1_anc1` compares Penta1 and ANC1 indicators
-across.
+`plot_comparison_anc1_penta1()` compares ANC1 and Penta1. Its title is
+"Comparison of numbers of ANC1 and Penta1 by year" and its axes are
+titled "ANC1" and "Penta1" unless others are given; the two functions
+below are the same for their pairs.
 
-`plot_comparison_penta1_penta3` compares Penta1 and Penta23 indicators.
+`plot_comparison_penta1_penta3()` compares Penta1 and Penta3.
 
-`plot_comparison_opv1_opv3` compares OPV1 and OPV3 indicators.
+`plot_comparison_opv1_opv3()` compares OPV1 and OPV3.
 
 ## Usage
 
@@ -22,40 +24,52 @@ plot_comparison(
   x_var,
   y_var,
   title = NULL,
-  x_label = NULL,
-  y_label = NULL,
-  legend = NULL,
-  call = caller_env(),
-  ...
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
+  ...,
+  legend_labels = NULL,
+  call = caller_env()
 )
 
 plot_comparison_anc1_penta1(
   .data,
-  title = "Comparison of numbers of ANC1 and Penta1 by year",
-  x_label = "ANC1",
-  y_label = "Penta1",
-  legend = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
+  legend_labels = NULL,
   options = NULL
 )
 
 plot_comparison_penta1_penta3(
   .data,
-  title = "Comparison of numbers of Penta1 and Penta3 by year",
-  x_label = "Penta1",
-  y_label = "Penta3",
-  legend = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
+  legend_labels = NULL,
   options = NULL
 )
 
 plot_comparison_opv1_opv3(
   .data,
-  title = "Comparison of numbers of Penta1 and Penta3 by year",
-  x_label = "Penta1",
-  y_label = "Penta3",
-  legend = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
+  legend_labels = NULL,
   options = NULL
 )
 ```
@@ -77,18 +91,36 @@ plot_comparison_opv1_opv3(
 
 - title:
 
-  Character. The title for the plot. Defaults to a title based on
-  `x_var` and `y_var`.
+  The chart's title.
 
-- x_label:
+- subtitle:
 
-  Character. Label for the x-axis. Defaults to `x_var`.
+  The line under the title.
 
-- y_label:
+- caption:
 
-  Character. Label for the y-axis. Defaults to `y_var`.
+  The note under the chart.
 
-- legend:
+- x_title:
+
+  The title of the horizontal axis.
+
+- y_title:
+
+  The title of the vertical axis.
+
+- legend_title:
+
+  The title of the legend.
+
+- ...:
+
+  Chart options by name (see
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)):
+  background, fonts, sizes, axes, grid, legend, colours. Other arguments
+  are ignored.
+
+- legend_labels:
 
   Optional named list or vector overriding the legend labels. Recognised
   names are `district`, `linear_fit` and `diagonale`. Default is `NULL`.
@@ -98,16 +130,11 @@ plot_comparison_opv1_opv3(
   The calling environment, used for error handling. Default is
   `caller_env()`.
 
-- ...:
-
-  Additional parameters for further customization, such as point size,
-  line type, or color.
-
 - options:
 
   A
   [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
-  object; see `plot_comparison()`.
+  object; see [cd_plot_arguments](cd_plot_arguments.md).
 
 ## Value
 

@@ -1,4 +1,4 @@
-# Calculate Health Coverage Indicators
+# Calculate health coverage indicators
 
 `calculate_indicator_coverage` computes key health coverage indicators
 across specified administrative levels (national, adminlevel_1, and

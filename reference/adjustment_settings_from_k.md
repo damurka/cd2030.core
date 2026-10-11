@@ -23,3 +23,24 @@ adjustment_settings_from_k(k_factors = NULL, excluded_years = numeric())
 ## Value
 
 The settings list.
+
+## Examples
+
+``` r
+settings <- adjustment_settings_from_k(c(anc = 0.1, vacc = 0), excluded_years = 2020)
+settings$everywhere$group_k
+#> $anc
+#> [1] 0.1
+#> 
+#> $idelv
+#> [1] 0.25
+#> 
+#> $vacc
+#> [1] 0
+#> 
+#> $opd
+#> [1] 0.25
+#> 
+settings$removed_years
+#> [1] 2020
+```

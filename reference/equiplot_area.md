@@ -1,4 +1,4 @@
-# A Specialized Dot Plot for Area of Residence Analysis
+# A specialized dot plot for area of residence analysis
 
 Plots rural and urban survey estimates of an indicator by year.
 
@@ -8,14 +8,15 @@ Plots rural and urban survey estimates of an indicator by year.
 equiplot_area(
   .data,
   indicator,
+  dot_size = NULL,
   title = NULL,
   subtitle = NULL,
   caption = NULL,
   x_title = NULL,
+  y_title = NULL,
   legend_title = NULL,
-  legend_labels = NULL,
-  dot_size = NULL,
   ...,
+  legend_labels = NULL,
   options = NULL
 )
 ```
@@ -30,39 +31,74 @@ equiplot_area(
 
   Character. The indicator to plot; its `r_<indicator>` column is used.
 
-- title, subtitle, caption:
+- dot_size:
 
-  Optional plot title, subtitle and caption.
+  Optional dot size, clamped to 1-5. Defaults to 4.
+
+- title:
+
+  The chart's title.
+
+- subtitle:
+
+  The line under the title.
+
+- caption:
+
+  The note under the chart.
 
 - x_title:
 
-  Optional x-axis title. Defaults to the indicator name followed by
-  "Coverage".
+  The title of the horizontal axis.
+
+- y_title:
+
+  The title of the vertical axis.
 
 - legend_title:
 
-  Optional legend title. Defaults to a title describing the grouping
-  (for example `"Area of residence"`).
+  The title of the legend.
+
+- ...:
+
+  Chart options by name (see
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)):
+  background, fonts, sizes, axes, grid, legend, colours. Other arguments
+  are ignored.
 
 - legend_labels:
 
   Optional named vector or list mapping group names to display labels.
 
-- dot_size:
-
-  Optional dot size, clamped to 1-5. Defaults to 4.
-
-- ...:
-
-  Chart options (see
-  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html))
-  given by name, applied as with `options`.
-
 - options:
 
-  (Optional) A
+  A
   [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
-  object: text, legend, fonts and sizes a user changed. Applied last, so
-  it wins over the arguments above; the plot's own defaults are used for
-  whatever it does not set. Any chart option can also be given by name
-  in `...`.
+  object or a list of chart options: a look made once, to give to
+  several charts. Applied after the text arguments, so a text it holds
+  wins over them.
+
+## Value
+
+A `ggplot` object: the dot plot drawn by [`equiplot()`](equiplot.md),
+with one row per survey year and one dot each for rural and urban, and
+the chart options applied.
+
+## Examples
+
+``` r
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#> ℹ Loading Excel "kenya.xlsx" for parts
+#> ! The following columns are empty: anc_1trimester, under5_deaths, total_deaths,
+#>   ipv2, measles_cases
+#> ℹ Successfully loaded and cleaned data
+#> ℹ Auto-detect candidates (|group|): vaccine=19, rmncah=28 -> selected rmncah
+
+# the dataset object gives the package's survey estimates for the country, by residence
+equiplot_area(cache$area_survey, "anc4")
+
+
+equiplot_area(cache$area_survey, "anc4", title = "Four antenatal visits by residence",
+              legend_title = "Residence", legend_labels = list(Rural = "Rural areas", Urban = "Towns"))
+
+```

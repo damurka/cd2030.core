@@ -1,4 +1,4 @@
-# District-Level Outlier Summary by Year
+# District-level outlier summary by year
 
 Calculates the yearly percentage of districts without extreme outliers
 for each health indicator. Flags are based on the Hampel X84 method

@@ -1,4 +1,4 @@
-# Plot Percent of Districts with Complete Data
+# Plot percent of districts with complete data
 
 Visualizes the percentage of districts with complete data for a selected
 indicator over time.
@@ -11,8 +11,11 @@ plot(
   x,
   indicator = NULL,
   title = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
   options = NULL
 )
@@ -34,28 +37,42 @@ plot(
 
 - title:
 
-  Optional character string to override the default plot title.
+  The chart's title.
 
-- x_axis:
+- subtitle:
 
-  Optional character string to override the x-axis label.
+  The line under the title.
 
-- y_axis:
+- caption:
 
-  Optional character string to override the y-axis label.
+  The note under the chart.
+
+- x_title:
+
+  The title of the horizontal axis.
+
+- y_title:
+
+  The title of the vertical axis.
+
+- legend_title:
+
+  The title of the legend.
 
 - ...:
 
-  Additional arguments reserved for future use.
+  Chart options by name (see
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)):
+  background, fonts, sizes, axes, grid, legend, colours. Other arguments
+  are ignored.
 
 - options:
 
-  (Optional) A
+  A
   [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
-  object: text, legend, fonts and sizes a user changed. Applied last, so
-  it wins over the arguments above; the plot's own defaults are used for
-  whatever it does not set. Any chart option can also be given by name
-  in `...`.
+  object or a list of chart options: a look made once, to give to
+  several charts. Applied after the text arguments, so a text it holds
+  wins over them.
 
 ## Value
 

@@ -18,7 +18,7 @@ line numbers refer to the do-files as reviewed.
 | Rounding | Outlier bounds and adjusted counts to integers | One decimal | Small, at the boundaries |
 | Outlier bounds with no earlier year | Missing, so every value is flagged | Median and MAD fall back to the maximum, so nothing is flagged | Edge case: one year of data |
 | Coverage thresholds (4a) | `> 80`, `> 90` | `>= 80`, `>= 90` | Small |
-| Subnational ANC1/Penta1 denominators | National survey rates everywhere (`2_denominators.do` 668, 1173) | Each region’s own survey rates ([`get_national_rates()`](reference/countdown-pages.md)); needs regional survey data | Admin-1 and district ANC1/Penta1-based coverage, inequality and maps differ by design |
+| Subnational ANC1/Penta1 denominators | National survey rates everywhere (`2_denominators.do` 668, 1173) | Each region’s own survey rates ([`get_national_rates()`](reference/get_national_rates.md)); needs regional survey data | Admin-1 and district ANC1/Penta1-based coverage, inequality and maps differ by design |
 | Admin-1 maps (5) | Fixed classes (0/30/50/90, 0/5/10/15) | A continuous colour scale | Looks different, same values |
 | Years and countries | Hard-coded (from 2019; 2023 as the last year; Tanzania and Ethiopia specifics) | `start_year` / `end_year` and the data’s own years | None when the same years are used |
 

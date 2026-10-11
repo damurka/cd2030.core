@@ -1,8 +1,8 @@
-# Compute Service Utilization Metrics
+# Compute service utilization metrics
 
 Calculates annualized service utilization statistics including
 outpatient (OPD), inpatient (IPD), case fatality rates, and under-5
-service use, aggregated either at national or admin level 1.
+service use, aggregated at national, admin level 1 or district level.
 
 ## Usage
 
@@ -21,8 +21,8 @@ compute_service_utilization(
 
 - admin_level:
 
-  Either `"national"` or `"adminlevel_1"` to define the aggregation
-  level.
+  One of `"national"`, `"adminlevel_1"` or `"district"` to define the
+  aggregation level.
 
 ## Value
 

@@ -1,8 +1,8 @@
-# Load Country Shapefile for Mapping
+# Load country shapefile for mapping
 
-Loads the shapefile of administrative boundaries for a given country and
-level. Ensures geometries are valid and standardized to WGS84
-(EPSG:4326).
+Loads the admin level 1 boundaries of a country from the shapefiles that
+come with the package. Ensures geometries are valid and standardized to
+WGS84 (EPSG:4326).
 
 ## Usage
 
@@ -18,16 +18,14 @@ get_country_shapefile(country_iso, level = c("admin_level_1", "district"))
 
 - level:
 
-  A character string specifying the admin level. One of:
-
-  - `"admin_level_1"` (default): First-level admin areas
-
-  - `"district"`: District-level admin areas
+  A character string specifying the admin level: `"admin_level_1"`
+  (default) or `"district"`. The package has admin level 1 boundaries
+  only, so both values give the admin level 1 areas.
 
 ## Value
 
-An `sf` object containing valid geometries for the specified country and
-level.
+An `sf` object containing valid geometries of the country's admin level
+1 areas.
 
 ## Examples
 

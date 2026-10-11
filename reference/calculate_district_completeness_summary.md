@@ -1,4 +1,4 @@
-# District-Level Completeness Summary
+# District-level completeness summary
 
 Calculates yearly % of districts with complete data for each indicator.
 
@@ -21,7 +21,7 @@ calculate_district_completeness_summary(.data, region = NULL)
 
 ## Value
 
-A `cd_district_completeness_summary` tibble:
+A `cd_missing_district` tibble:
 
 - One row per year
 

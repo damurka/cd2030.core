@@ -1,4 +1,4 @@
-# Load and Filter Equity Data
+# Load and filter equity data
 
 Loads survey equity data, removes unnecessary variables, and filters by
 country.
@@ -26,3 +26,16 @@ load_equity_data(path = NULL, .data = NULL, country_iso)
 ## Value
 
 A tibble of class `cd_equity_data`.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+wealth <- load_equity_data(path = "wiq_data.dta", country_iso = "KEN")
+cache$set_wiq_survey(wealth)
+
+# The same for the survey by area of residence and by mother's education
+cache$set_area_survey(load_equity_data(path = "area_data.dta", country_iso = "KEN"))
+cache$set_education_survey(load_equity_data(path = "meduc_data.dta", country_iso = "KEN"))
+} # }
+```

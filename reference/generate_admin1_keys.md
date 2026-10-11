@@ -1,15 +1,9 @@
-# Generate a simple, stable-within-one-load synthetic key per admin-1 region
+# Generate a key for each admin level 1 unit
 
-The Load Data wizard's own Finish step (Phase 3 of the wizard redesign,
-apps/rmncah) needs a key that consistently identifies the same admin-1
-region across three separately-built tables (`countdown_data`,
-`survey_mapping`, `map_mapping`) – there's no real ISO-3166-2 code
-available for sub-national regions in general, so this is intentionally
-arbitrary, not a real-world identifier: `sort(unique(...))` the
-dataset's own admin-1 names and number them off. Applied once, from one
-canonical source (the dataset's own `adminlevel_1` values), then joined
-onto the other two tables by name – consistency across all three is
-structural (the same join key everywhere), not something that can drift.
+Gives each distinct admin level 1 name a short key, so that the same
+unit can be identified in several tables (for example the dataset, the
+survey mapping and the map mapping). Generate the keys once from the
+dataset's names, then join them to the other tables by name.
 
 ## Usage
 
@@ -21,19 +15,50 @@ generate_admin1_keys(admin1_names)
 
 - admin1_names:
 
-  Character vector of admin-1 names (typically
-  `countdown_data$adminlevel_1`).
+  A character vector of admin level 1 names, usually the `adminlevel_1`
+  column of the dataset.
 
 ## Value
 
-A tibble with one row per distinct name: `adminlevel_1`, `admin1_key`
-(`"A1-001"`, ...).
+A tibble with one row per distinct name, sorted by name, and columns
+`adminlevel_1` (the name) and `admin1_key` (the key: `"A1-001"`,
+`"A1-002"` and so on).
 
 ## Details
 
-Deliberately NOT stable across separate future re-uploads of the same
-country's data (e.g. next month's file) – purely alphabetical,
-regenerated fresh every time this is called. Nothing downstream needs
-cross-session stability for this key today; if that's ever needed, it's
-a materially different feature (a persisted, append-only name-to-key
-lookup table), not this.
+The keys are arbitrary: the distinct names are sorted and numbered in
+that order. They are not standard codes, and they are not stable between
+datasets. A dataset with a different set of names can give a different
+key to the same unit. Missing names get no key.
+
+## Examples
+
+``` r
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+#> ℹ Loading Excel "kenya.xlsx" for parts
+#> ! The following columns are empty: anc_1trimester, under5_deaths, total_deaths,
+#>   ipv2, measles_cases
+#> ℹ Successfully loaded and cleaned data
+#> ℹ Auto-detect candidates (|group|): vaccine=19, rmncah=28 -> selected rmncah
+generate_admin1_keys(data$adminlevel_1)
+#> # A tibble: 8 × 2
+#>   adminlevel_1  admin1_key
+#>   <chr>         <chr>     
+#> 1 Central       A1-001    
+#> 2 Coast         A1-002    
+#> 3 Eastern       A1-003    
+#> 4 Nairobi       A1-004    
+#> 5 North Eastern A1-005    
+#> 6 Nyanza        A1-006    
+#> 7 Rift Valley   A1-007    
+#> 8 Western       A1-008    
+
+# Repeated and missing names get no key of their own
+generate_admin1_keys(c("Western", "Coast", "Western", NA))
+#> # A tibble: 2 × 2
+#>   adminlevel_1 admin1_key
+#>   <chr>        <chr>     
+#> 1 Coast        A1-001    
+#> 2 Western      A1-002    
+```

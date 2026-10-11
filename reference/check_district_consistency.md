@@ -1,12 +1,9 @@
-# Check a district's admin-1 pairing and spelling are stable across years
+# Check that districts are consistent across the dataset
 
-Flags a district that maps to more than one `adminlevel_1` value
-(case/whitespace-insensitive first, so a genuine typo isn't hidden by
-two spellings happening to normalize the same way), and separately flags
-a district that isn't present in every year the dataset otherwise covers
-(service-data districts are expected to be stable across years; a
-district appearing in some years but not others is much more often a
-rename/typo than a legitimate gap).
+Checks two things in the merged data: that each district belongs to one
+admin level 1 unit, and that each district appears in every year of the
+data. A district that fails either test has usually been renamed or
+misspelled in part of the workbook.
 
 ## Usage
 
@@ -18,5 +15,39 @@ check_district_consistency(.data)
 
 - .data:
 
-  The merged, standardized dataset (`countdown_data`-shaped: `district`,
-  `adminlevel_1`, `year` columns).
+  A data frame. The merged and standardized dataset, with `district`,
+  `adminlevel_1` and `year` columns.
+
+## Value
+
+`NULL` if no problem is found. Otherwise a character vector with one or
+two messages, each named `"x"`: one that lists the districts with more
+than one admin level 1 name, and one that lists the districts missing
+from at least one year.
+
+## Details
+
+Admin level 1 names are compared without regard to case or extra spaces,
+so `"North East"` and `"north east"` count as the same unit. The years a
+district must appear in are all the distinct years in `.data`.
+
+## Examples
+
+``` r
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+#> ℹ Loading Excel "kenya.xlsx" for parts
+#> ! The following columns are empty: anc_1trimester, under5_deaths, total_deaths,
+#>   ipv2, measles_cases
+#> ℹ Successfully loaded and cleaned data
+#> ℹ Auto-detect candidates (|group|): vaccine=19, rmncah=28 -> selected rmncah
+check_district_consistency(data)
+#> NULL
+
+# A district spelled differently in one year
+renamed <- data
+renamed$district[renamed$district == "Baringo" & renamed$year == 2023] <- "Baringo County"
+check_district_consistency(renamed)
+#>                                                                                                    x 
+#> "District(s) missing from at least one year present elsewhere in the data: Baringo, Baringo County." 
+```

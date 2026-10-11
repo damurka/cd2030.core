@@ -1,9 +1,9 @@
-# Plot Ratios Summary for Indicator Ratios Summary Object
+# Plot ratios summary for indicator ratios summary object
 
-This function generates a bar plot for a `cd_ratios_summary` object,
-displaying the calculated indicator ratios for each year. It allows for
-visual comparison across years, showing how each indicator ratio changes
-over time.
+Generates a bar plot for a `cd_ratios_summary` object, displaying the
+calculated indicator ratios for each year. It allows for visual
+comparison across years, showing how each indicator ratio changes over
+time.
 
 ## Usage
 
@@ -11,10 +11,13 @@ over time.
 # S3 method for class 'cd_ratios_summary'
 plot(
   x,
-  title = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
   x_labels = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
   options = NULL
 )
@@ -29,33 +32,50 @@ plot(
   with names starting with `"Ratio"`, representing the calculated
   indicator ratios.
 
-- title:
-
-  Optional plot title. Defaults to a title describing the ANC1 to Penta1
-  and Penta1 to Penta3 ratios.
-
-- x_axis, y_axis:
-
-  Optional x- and y-axis titles. Default is `NULL`.
-
 - x_labels:
 
   Optional named list or vector of x-axis category labels, keyed by
   ratio name (`anc1_penta1`, `opv1_opv3`, `penta1_penta3`). Supplied
   entries replace the defaults.
 
+- title:
+
+  The chart's title.
+
+- subtitle:
+
+  The line under the title.
+
+- caption:
+
+  The note under the chart.
+
+- x_title:
+
+  The title of the horizontal axis.
+
+- y_title:
+
+  The title of the vertical axis.
+
+- legend_title:
+
+  The title of the legend.
+
 - ...:
 
-  Additional arguments passed to other methods (currently unused).
+  Chart options by name (see
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)):
+  background, fonts, sizes, axes, grid, legend, colours. Other arguments
+  are ignored.
 
 - options:
 
-  (Optional) A
+  A
   [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
-  object: text, legend, fonts and sizes a user changed. Applied last, so
-  it wins over the arguments above; the plot's own defaults are used for
-  whatever it does not set. Any chart option can also be given by name
-  in `...`.
+  object or a list of chart options: a look made once, to give to
+  several charts. Applied after the text arguments, so a text it holds
+  wins over them.
 
 ## Value
 

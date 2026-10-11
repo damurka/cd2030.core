@@ -1,4 +1,4 @@
-# Plot Subnational Coverage Maps by Indicator
+# Plot subnational coverage maps by indicator
 
 Creates a faceted `ggplot2` map showing subnational coverage levels of a
 health indicator, colored using a gradient palette. Coverage values are
@@ -9,7 +9,17 @@ specific indicator and denominator.
 
 ``` r
 # S3 method for class 'cd_mapping_filtered'
-plot(x, title = NULL, caption = NULL, legend = NULL, ..., options = NULL)
+plot(
+  x,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
+  ...,
+  options = NULL
+)
 ```
 
 ## Arguments
@@ -17,38 +27,48 @@ plot(x, title = NULL, caption = NULL, legend = NULL, ..., options = NULL)
 - x:
 
   A `cd_mapping_filtered` object. Created using
-  [`filter_mapping_data()`](filter_mapping_data.md), and must include
+  [`select_mapping_data()`](select_mapping_data.md), and must include
   spatial geometry and metadata attributes (`indicator`, `palette`,
   `column`).
 
 - title:
 
-  (Optional) A scalar character string to override the default plot
-  title. Defaults to `NULL`.
+  The chart's title.
+
+- subtitle:
+
+  The line under the title.
 
 - caption:
 
-  (Optional) A scalar character string to override the default plot
-  caption. Defaults to `NULL`.
+  The note under the chart.
 
-- legend:
+- x_title:
 
-  (Optional) A scalar character string to override the default legend
-  title. Defaults to `NULL`.
+  The title of the horizontal axis.
+
+- y_title:
+
+  The title of the vertical axis.
+
+- legend_title:
+
+  The title of the legend.
 
 - ...:
 
   Chart options by name (see
-  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html));
-  other arguments are ignored.
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)):
+  background, fonts, sizes, axes, grid, legend, colours. Other arguments
+  are ignored.
 
 - options:
 
-  (Optional) A
+  A
   [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
-  object: text, legend, fonts and sizes the user changed. Applied last,
-  so it wins over `title` and the other arguments above. Any chart
-  option can also be given by name in `...`.
+  object or a list of chart options: a look made once, to give to
+  several charts. Applied after the text arguments, so a text it holds
+  wins over them.
 
 ## Value
 
@@ -57,14 +77,14 @@ indicator by region and year.
 
 ## See also
 
-[`filter_mapping_data()`](filter_mapping_data.md),
+[`select_mapping_data()`](select_mapping_data.md),
 [`get_mapping_data()`](get_mapping_data.md)
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
-# Assuming `map_data` is filtered with filter_mapping_data()
+# Assuming `map_data` is filtered with select_mapping_data()
 plot(
   map_data,
   title = "Penta 1 Coverage by Region",

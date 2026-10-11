@@ -1,4 +1,4 @@
-# Retrieve Attribute or Return NULL if Missing
+# Retrieve attribute or return NULL if missing
 
 A safe variant of [`attr_or_abort()`](attr_or_abort.md) that returns
 `NULL` instead of throwing an error when the specified attribute does

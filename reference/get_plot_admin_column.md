@@ -1,4 +1,4 @@
-# Determine the Administrative Column to Use for Plotting
+# Determine the administrative column to use for plotting
 
 Returns the appropriate administrative unit column to use on plots based
 on the selected administrative level and whether a region is specified.

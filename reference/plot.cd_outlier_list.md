@@ -1,4 +1,4 @@
-# Plot Outlier Time Series for a Region
+# Plot outlier time series for a region
 
 Displays a time-series plot of one indicator for a single region or
 district, with outlier highlights.
@@ -12,11 +12,13 @@ plot(
   indicator = NULL,
   year = NULL,
   region = NULL,
-  title = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
-  legend = NULL,
   label = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
   options = NULL
 )
@@ -42,37 +44,49 @@ plot(
 
   The name of the unit to plot.
 
-- title:
-
-  Optional plot title. Defaults to a title naming the indicator, unit
-  and year.
-
-- x_axis, y_axis:
-
-  Optional x- and y-axis titles. Default to `"Month"` and the indicator
-  name.
-
-- legend:
-
-  Optional legend title. Default is `NULL` (no title).
-
 - label:
 
   Optional named character vector overriding the legend labels.
   Recognised names are `reported`, `median`, `bounds` and `outliers`.
 
+- title:
+
+  The chart's title.
+
+- subtitle:
+
+  The line under the title.
+
+- caption:
+
+  The note under the chart.
+
+- x_title:
+
+  The title of the horizontal axis.
+
+- y_title:
+
+  The title of the vertical axis.
+
+- legend_title:
+
+  The title of the legend.
+
 - ...:
 
-  Not used.
+  Chart options by name (see
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)):
+  background, fonts, sizes, axes, grid, legend, colours. Other arguments
+  are ignored.
 
 - options:
 
-  (Optional) A
+  A
   [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
-  object: text, legend, fonts and sizes a user changed. Applied last, so
-  it wins over the arguments above; the plot's own defaults are used for
-  whatever it does not set. Any chart option can also be given by name
-  in `...`.
+  object or a list of chart options: a look made once, to give to
+  several charts. Applied after the text arguments, so a text it holds
+  wins over them.
 
 ## Value
 

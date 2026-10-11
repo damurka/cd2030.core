@@ -1,6 +1,9 @@
-# Plot Missing Summary
+# Plot missing summary
 
-This method visualizes missing results for immunization indicators
+Draws the share of missing values in a completeness summary as a heat
+map by unit, for one indicator by year or for all indicators averaged
+over the years. With `plot_type = "trend"` it draws the completeness of
+one indicator over time, one panel per unit.
 
 ## Usage
 
@@ -11,10 +14,13 @@ plot(
   plot_type = c("heat_map", "trend"),
   indicator = NULL,
   title = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
-  legend = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
+  indicator_labels = NULL,
   options = NULL
 )
 ```
@@ -39,33 +45,54 @@ plot(
 
 - title:
 
-  Optional plot title. Defaults to a title based on `plot_type`,
-  `indicator` and region.
+  The chart's title.
 
-- x_axis, y_axis:
+- subtitle:
 
-  Optional x- and y-axis titles. Default is `NULL`.
+  The line under the title.
 
-- legend:
+- caption:
 
-  Optional legend title. Default is `NULL`.
+  The note under the chart.
+
+- x_title:
+
+  The title of the horizontal axis.
+
+- y_title:
+
+  The title of the vertical axis.
+
+- legend_title:
+
+  The title of the legend.
 
 - ...:
 
-  Reserved for future use.
+  Chart options by name (see
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)):
+  background, fonts, sizes, axes, grid, legend, colours. Other arguments
+  are ignored.
+
+- indicator_labels:
+
+  (Optional) A named vector or list, indicator code -\> label, for the
+  axis that names indicators (see
+  [`cd_indicator_labels()`](cd_indicator_labels.md), which gives them
+  translated). By default the English labels.
 
 - options:
 
-  (Optional) A
+  A
   [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
-  object: text, legend, fonts and sizes a user changed. Applied last, so
-  it wins over the arguments above; the plot's own defaults are used for
-  whatever it does not set. Any chart option can also be given by name
-  in `...`.
+  object or a list of chart options: a look made once, to give to
+  several charts. Applied after the text arguments, so a text it holds
+  wins over them.
 
 ## Value
 
-A `ggplot` or `plotly` object depending on the selection type.
+A `ggplot` object: a heat map or a faceted line chart, depending on
+`plot_type`.
 
 ## Examples
 

@@ -1,4 +1,4 @@
-# Load C-section Share Estimates
+# Load C-section share estimates
 
 Loads c-section correction estimates for national or area-level
 adjustment.
@@ -27,7 +27,9 @@ load_csection_estimates(
 
 - country_iso:
 
-  Required. ISO3 country code to filter the data.
+  ISO3 country code. When the data holds several countries (an `iso`
+  column with more than one code), the rows of this one are kept; data
+  for one country is used as it is.
 
 - level:
 

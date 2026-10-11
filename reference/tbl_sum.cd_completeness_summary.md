@@ -1,11 +1,8 @@
 # Summary for `cd_completeness_summary`
 
-This function provides a custom summary for `cd_completeness_summary`
-objects, offering an overview of the percentage of data completeness
-(non-missing values) for each indicator, aggregated by year. The summary
-output helps users quickly identify data completeness trends across
-indicators and time points, giving insight into potential gaps in data
-collection.
+Provides the header shown when a `cd_completeness_summary` object is
+printed. It labels the table as the percentage of monthly values with
+complete (non-missing) data, by year, ahead of the usual tibble header.
 
 ## Usage
 

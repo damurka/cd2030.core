@@ -1,4 +1,4 @@
-# Robust Maximum Value Calculation
+# Robust maximum value calculation
 
 `robust_max` calculates the maximum value of a numeric vector while
 handling missing values. If all values in the vector are `NA`, the

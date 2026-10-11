@@ -1,4 +1,4 @@
-# Load and Filter UN Mortality Estimates
+# Load and filter UN mortality estimates
 
 Loads UN mortality data from a file path or existing data frame, filters
 it by the given country ISO3 code, and returns cleaned mortality data

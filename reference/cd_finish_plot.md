@@ -38,3 +38,14 @@ cd_finish_plot(p, options = NULL, ..., .source = NULL)
 ## Value
 
 The ggplot with the options applied.
+
+## Examples
+
+``` r
+p <- ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) + ggplot2::geom_point()
+cd_finish_plot(p, title = "Weight and fuel use", x_title = "Weight", y_title = "Miles per gallon")
+
+
+# the same as one options object, the way a plot method receives it
+cd_finish_plot(p, cd_chart_options(title = "Weight and fuel use", legend_position = "bottom"))
+```

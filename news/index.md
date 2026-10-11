@@ -1,5 +1,442 @@
 # Changelog
 
+## cd2030.core 1.4.0
+
+- A change of setting writes the dataset’s file once. Each table a
+  change cleared was a write of the whole file, so a new performance
+  threshold (14 tables) took 1.7 seconds before the page could answer, a
+  new denominator 0.7. In a running app the writes of one change are now
+  gathered into one, made a moment after the page has its answer: the
+  change itself takes no measurable time, the write about 0.1 second. An
+  app that closes with a write waiting makes it; outside an app (a
+  script, a test) the file is written at once, as before.
+
+- A setting clears the tables it enters, and only those. A new
+  performance threshold cleared all 16 data-quality tables, 11 of which
+  (reporting rates, outliers, ratios) are computed without it and came
+  out the same: it now clears five. Choosing a denominator or a maternal
+  denominator cleared the coverage, inequality and health-system tables
+  and the Bayesian models, though the choice is only applied when a
+  table is read: it now clears nothing, and a model fitted for one
+  denominator is still there when you come back to it. Rebuilding
+  afterwards: threshold 0.9 seconds where it took 3 to 7, denominator
+  none where it took 2.2.
+
+- A new survey year now clears the coverage and inequality tables. They
+  are computed from it, and were left as they were for the year before
+  until something else cleared them.
+
+- What a dataset keeps is described once (`R/cache-tables.R`): for each
+  kept table, what it is computed from and how. Its binding, the
+  reactive dependencies it takes and what every setter clears come from
+  that list; the 29 bindings, the clearing cascades and the definitions’
+  `depends_on` were three hand-kept copies that disagreed.
+  `CacheConnection` is 400 lines shorter. What changes for a user:
+
+  - a new first survey year clears the coverage, inequality and Bayesian
+    results (the surveys they are computed from are read from that year
+    on; the results stayed as they were);
+  - a new performance threshold, national survey or WUENIC file clears
+    the Bayesian models, which are fitted on the overall score and on
+    the coverage with its surveys;
+  - new WUENIC estimates no longer clear the coverage and inequality
+    tables, and new UN mortality estimates no longer clear the mortality
+    summary: neither is computed from them.
+
+- `get_regional_estimates()` gives a region’s own rates from the survey
+  files (its latest survey value of each mortality rate and coverage,
+  read through the survey mapping), a district its region’s. A rate the
+  region’s surveys do not give keeps the national value; the national
+  rates are returned whole only when the region is not in the survey
+  files. It read a variable that did not exist.
+
+- The print headers of the district completeness and outlier tables are
+  shown (their methods were written for classes nothing makes).
+  Documentation regenerated with roxygen2 8.1.0.
+
+- Fixes from a review of the package:
+
+  - Measles 2 is in the child continuum of care (its column was named
+    `measle2`).
+  - Data Missingness: with a region chosen, the district table showed
+    the whole country.
+  - Service utilization: the OPD chart’s “Under-5” and “All ages” lines
+    were labelled the wrong way round.
+  - Coverage Target: a dropout indicator is described as a rate below
+    its target, not a coverage above it.
+  - [`plot_comparison_opv1_opv3()`](../reference/internal_consistency.md)
+    is titled and labelled OPV1 and OPV3 (it said Penta1 and Penta3).
+  - Twenty error messages are shown. Written `cd_abort("x" = ...)`, they
+    failed with “argument”message” is missing” (a chart’s title, axis or
+    caption that is not one string, a region given for national data, a
+    file that is not a .dta). Three more named a variable where they
+    meant its value.
+  - [`save_dhis2_excel()`](../reference/save_dhis2_excel.md)’s admin
+    sheet, the mortality summary helpers and a district-level
+    [`filter_service_utilization()`](../reference/cd2030-deprecated.md)
+    used variables that did not exist.
+  - The survey estimates leave OPV1 and OPV3 out outside the vaccine
+    group (the test compared values, not names), and the education
+    survey’s levels are ordered.
+  - New survey estimates clear the ratios summary, whose expected-ratio
+    row is made from them.
+
+- One Bayesian fit runs at a time. A fit uses four more R processes for
+  its chains; two fits together took longer than one after the other
+  (about 135 seconds for the pair against 47 each, on 24 cores) and
+  twice the memory. A second fit now waits for the first
+  (`options(cd2030.bayes_workers = )` for more).
+
+- Requires datasuite.ui 0.5.0, where an app starts a page when it is
+  opened.
+
+- Bayesian Analysis no longer stops the other pages while a fit starts.
+  Handing a fit to its worker sent the worker the environment the
+  request was written in as well as the fit’s inputs: the page’s server,
+  so the dataset, the Shiny session and all they reach. Packing that
+  took the app’s own process minutes (211 seconds, profiled, where the
+  inputs are 0.3 MB), during which the session was busy: no page
+  answered and no chart was sent. The worker is now sent the inputs
+  alone ([`cd_bayes_fit_task()`](../reference/cd_bayes_fit_task.md)),
+  which takes no measurable time.
+
+- Each coverage is defined once (`.cd_coverage_defs`: what it counts,
+  over which population) and computed on every denominator. It was
+  written out for each of the four (UN, DHIS2, ANC1, Penta1) and each
+  indicator group: 156 lines, now a table. The results are the same to
+  the last digit, at every level, for both groups.
+
+- A computation uses the indicator group of the dataset it is given, not
+  the one the session last selected
+  ([`set_selected_group()`](../reference/set_selected_group.md)): with
+  two datasets of different groups open in one session, each is computed
+  with its own indicators. Data that does not say its group is computed
+  with the session’s, as before.
+
+- New data (`set_countdown_data()`) clears the adjusted data made from
+  the data before; it is made again from the new data when next read. It
+  was kept, so the coverage that followed was computed from the old
+  data.
+
+- The dataset’s file is written beside itself and moved into place, so a
+  write cut short (the app closed, the disk full) leaves the file as it
+  was, not half of a new one that cannot be opened.
+
+- `adjustment_values`: the yearly numbers as reported and after each
+  step of the dataset’s adjustment are computed once and kept. A report
+  comparing seven indicators ran the whole adjustment seven times (0.8
+  second each).
+
+- The table of district outliers can be downloaded. Its button was on
+  the page with nothing behind it and showed as busy for as long as the
+  page was open; a table given no Excel writer now downloads what it
+  shows.
+
+- The population table
+  ([`prepare_population_metrics()`](../reference/prepare_population_metrics.md))
+  prints its header: the method was written for a class nothing makes.
+  Documentation: “admin level 1” has one spelling in words (the column
+  is `adminlevel_1`), the performance threshold one name, and
+  [`calculate_overall_score()`](../reference/calculate_overall_score.md)’s
+  `ratio_pairs` is described.
+
+- The check of a class is named after the class: `check_cd_data()`
+  checks for `cd_data`, `check_cd_equity_data()` for `cd_equity_data`,
+  and so on, one for each class checked in more than one place, all made
+  the same way (`.cd_class_check()`, in `R/utils.R`). Five had other
+  names (`check_cd_fpet()` and `check_fpet_data()` for the same class,
+  `check_equity_data()`, `check_un_mortality()` and
+  `check_un_mortality_data()`, `check_service_utilization()`) and 14
+  places checked such a class by hand. Internal: nothing exported
+  changes.
+
+- Removed, as nothing called them: `check_cd_population_metrics()`,
+  `check_cd_reporting_rate()`, `check_scalar_character()`,
+  `coalesce_join()`, `extract_un_summary()`, `calculate_summary()` (with
+  `aggregate_indicator()`, `derive_ratio()` and `threshold_metric()`,
+  which only they used), `load_public_private()`, `local_cd_loud()` and
+  `.rb_note()`. None was exported.
+
+- The functions that take one indicator out of a computed table, ready
+  to plot, are `select_*()`:
+  [`select_coverage()`](../reference/select_coverage.md),
+  [`select_inequality()`](../reference/select_inequality.md),
+  [`select_mapping_data()`](../reference/select_mapping_data.md),
+  [`select_mortality_summary()`](../reference/select_mortality_summary.md),
+  [`select_service_utilization()`](../reference/select_service_utilization.md)
+  and
+  [`select_adjustment_value()`](../reference/select_adjustment_value.md).
+  They were `filter_*()`, which read as filtering rows; they choose an
+  indicator and reshape. The former names still work and say once per
+  session what to call instead
+  ([`?"cd2030-deprecated"`](../reference/cd2030-deprecated.md)).
+  [`filter_out_years()`](../reference/filter_out_years.md) and
+  [`filter_high_performers()`](../reference/filter_high_performers.md),
+  which do filter rows, keep their names, as do the dataset’s methods
+  (`cache$filter_mortality_summary()`,
+  `cache$filter_service_utilization()`).
+
+- The files of the app’s interface are named by what they hold:
+  `page-<page id>.R` (a page’s part as `page-<page id>--<part>.R`),
+  `filter-`, `chart-`, `layout-`, `wizard-` and `app-`. They were 58
+  files starting `ui-`, with two separator styles, the analysis step’s
+  number in the page files and `ui-wizard-wizard-*`. Nothing in them
+  changed.
+
+- A dataset’s country is no longer taken for one that only looks like
+  it. The country was the closest name by string distance, so “Sudan”
+  loaded as South Sudan, “Libya” as Liberia, “Mauritius” as Mauritania,
+  “Guyana” as Ghana, “Tonga” as Togo and “Congo Brazzaville” as the
+  Democratic Republic of the Congo, with their UN estimates and surveys,
+  and nothing said so. A name is now matched to a country it names (any
+  of its names in the table, whatever the case, accents or punctuation,
+  or its ISO3 code), to the one country whose name starts with it, or to
+  the one country it is a misspelling of (a letter in a name of five or
+  more, two in nine or more). A misspelling that fits two countries
+  (Nigeria, Niger) is asked about, not guessed. Also found now: “RDC”,
+  “RCA”, “Ivory Coast”, “Republic of Kenya”. A name far from every
+  country gets no suggestion (it got an unrelated one). “Congo” on its
+  own is still the Democratic Republic. Needs stringi.
+
+- The help pages follow the usual form: a short title in sentence case
+  (147 were in Title Case or were whole sentences), a description of
+  what the function does for its caller, every argument, and what is
+  returned (37 exported functions did not say). Notes on the code’s
+  history that were in the help text are comments in the code. Where the
+  help contradicted the code, the help is corrected: among them the
+  class
+  [`generate_admin1_service_utilization()`](../reference/generate_admin1_service_utilization.md)
+  returns,
+  [`plot.cd_overall_score()`](../reference/plot.cd_overall_score.md) and
+  two others returning a table, not a plot,
+  [`compute_service_utilization()`](../reference/compute_service_utilization.md)
+  taking districts, and
+  [`get_mapping_data()`](../reference/get_mapping_data.md), which joins
+  coverage to the map and computes none. Four examples called functions
+  that do not exist.
+
+- [`save_dhis2_master_data()`](../reference/save_dhis2_master_data.md)
+  joined a table that was not defined, so it always failed; it joins the
+  admin sheet.
+  [`generate_health_system_table()`](../reference/generate_health_system_table.md)’s
+  error for data that is not national was cut off mid-word.
+
+- The app’s interface is documented like the rest of the package. Every
+  page, wizard step, filter, chart and table card, layout piece and
+  [`cd_app()`](../reference/cd_app.md) has a help page with what it
+  shows or does, each argument and what it returns, written next to its
+  code and exported there (a `_ui` / `_server` pair shares a page); the
+  helpers that are not exported are described the same way in the code.
+  They were 158 names on one page that said to read the source, where 98
+  of 177 functions had no comment.
+  [`?"countdown-pages"`](../reference/countdown-pages.md) stays as the
+  guide, and the site lists them by kind. The same names are exported as
+  before.
+
+- The table of districts with missing values downloads its rows (its
+  Excel writer wrote a function in their place). A file named with a
+  capital extension (`DATA.XLSX`) is accepted by the upload box.
+
+- Guides to get started, as vignettes and on the site:
+  [`vignette("cd2030.core")`](../articles/cd2030.core.md) (load a
+  dataset, look at its quality, compute coverage, save),
+  [`vignette("preparing-data")`](../articles/preparing-data.md) (the
+  workbook, what loading does, why a file does not load),
+  [`vignette("data-quality")`](../articles/data-quality.md),
+  [`vignette("coverage")`](../articles/coverage.md) (adjustment,
+  denominators, coverage, reports) and
+  [`vignette("building-an-app")`](../articles/building-an-app.md). Their
+  code runs on the example dataset when the package is built. Needs
+  knitr and rmarkdown to build (Suggests).
+
+- [`plot()`](https://rdrr.io/r/graphics/plot.default.html) of an
+  indicator coverage table
+  ([`calculate_indicator_coverage()`](../reference/calculate_indicator_coverage.md))
+  draws again: it failed for every chart type, with “`y_vars` and
+  `legend_labels` must have the same length”. The site’s reference index
+  lists [`get_national_rates()`](../reference/get_national_rates.md) and
+  [`list_missing_units()`](../reference/list_missing_units.md), which it
+  left out.
+
+- Every chart changes its text and its look the same way
+  ([`?cd_plot_arguments`](../reference/cd_plot_arguments.md)). Each
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) method, the
+  equiplots and
+  [`plot_comparison()`](../reference/internal_consistency.md) take
+  `title`, `subtitle`, `caption`, `x_title`, `y_title` and
+  `legend_title`, in that order, after the arguments that say what to
+  draw, then chart options by name (`background_color`, `font_family`,
+  `text_scale`, `legend_position`, …) and `options`. They had `x_axis`,
+  `x_label` or neither for the same thing, `legend` or `legend_title`,
+  and many had no subtitle or caption.
+
+- **Breaking:** the older names are gone. `x_axis` and `x_label` are
+  `x_title`, `y_axis` and `y_label` are `y_title`, `legend` and
+  `fill_label` are `legend_title`; a chart given an older name stops and
+  names the one to use. The pages, the reports and the apps use the new
+  names. Also renamed, so that one thing has one name:
+
+  - a list of legend entries is `legend_labels` everywhere, by name,
+    after `...`: it was `labels` on
+    [`plot()`](https://rdrr.io/r/graphics/plot.default.html) of a
+    coverage table, of a regional coverage table, of the mortality
+    summary, of the completeness of death reporting and of national
+    service utilization, and `legend` on
+    [`plot_comparison()`](../reference/internal_consistency.md);
+  - the quadrant texts of the preventive against curative chart are
+    `quad_labels` (was `labels`), as on the primary health care chart;
+  - titles are no longer read from those lists (`labels$title`,
+    `labels$x_axis`, `labels$y_axis`, `labels$legend`): give `title`,
+    `x_title`, `y_title`, `legend_title`. The two maps (mortality,
+    service utilization) have no `labels` argument any more;
+  - [`plot_mortality_plausibility()`](../reference/plot_mortality_plausibility.md)’s
+    footnote is `caption` (was `note`);
+  - [`plot_line_graph()`](../reference/plot_line_graph.md) takes
+    `x_title` and `y_title`. The three `plot_comparison_*()` functions
+    write their title and axis titles when none is given (they were
+    default values in the signature). A text held in `options` wins over
+    the text argument on every chart (it did only on charts with an
+    argument of their own for that text). The three tables drawn by
+    [`plot()`](https://rdrr.io/r/graphics/plot.default.html) (overall
+    score, utilization data quality, health system) are not charts and
+    are as they were.
+
+- Charts that did not draw, or drew the wrong text:
+
+  - the trend of completeness for an indicator with every value reported
+    failed (“Faceting variables must have at least one value”): complete
+    indicators were dropped before the one asked for was chosen;
+  - a coverage chart
+    ([`plot()`](https://rdrr.io/r/graphics/plot.default.html) of
+    [`calculate_indicator_coverage()`](../reference/calculate_indicator_coverage.md))
+    draws the indicators the dataset has: the immunization and zero-dose
+    charts failed on an RMNCAH dataset, which has no OPV or IPV;
+  - the outlier heat map titled its axes “Year” (under the regions) and
+    “Percent non-outliers” (beside the years), from R and on the Outlier
+    page;
+  - the chart of districts with missing values used its vertical title
+    only when a horizontal one was also given, and the other way round.
+
+- [`save_data()`](../reference/save_data.md) writes a Stata file for a
+  dataset loaded from a workbook. It failed on `raw_month.x`, a column
+  the merge of the sheets left behind (with `raw_month.y`); a loaded
+  dataset no longer has them.
+
+- [`calculate_ratios_and_adequacy()`](../reference/calculate_ratios_and_adequacy.md)
+  is exported:
+  [`calculate_ratios_summary()`](../reference/calculate_ratios_summary.md)
+  takes its result, and could only be used through the dataset object.
+
+- In the apps:
+
+  - a Stata master file is saved when the wizard is finished. Nothing
+    set in the wizard or after it was ever written for one, and the
+    wizard did not go to edit mode;
+  - the Bayesian page has no Custom tab. It offered every indicator, and
+    the model takes only its own, so any other choice was an error;
+  - the Custom tab of the coverage, inequality, map and equity cards
+    starts its chart once and follows the choice (`serverInput` gets a
+    reactive for it;
+    [`cd_tab_indicator()`](../reference/cd_tab_indicator.md) reads it).
+    It started another chart on the same ids for each choice, and a
+    change to one chart’s options was also written for the indicators
+    chosen before;
+  - a table card with a year control downloads the year shown, as its
+    file’s name and its sheet’s title say. It held every year;
+  - the Sub-National Inequality card has its own title (it read
+    “National Inequality”);
+  - the consistency check no longer starts a second ratios chart that is
+    on no page (the AI was told of it).
+
+- [`filter_high_performers()`](../reference/filter_high_performers.md)
+  (the table of units meeting a target) keeps units below the threshold
+  for a dropout indicator, as the chart counts them. It kept those at or
+  above it.
+
+- Every help page has examples (187 had none). Those that can run from
+  the example dataset do, and are run when the package is checked; the
+  Shiny pieces show how they are used in a page.
+
+- The private sector chart
+  ([`plot()`](https://rdrr.io/r/graphics/plot.default.html) of
+  [`prepare_private_sector_plot_data()`](../reference/prepare_private_sector_plot_data.md))
+  takes its texts as the other charts do: `legend_labels` (`public`,
+  `private`), `indicator_labels`, `area_labels` and `share_label` in
+  place of one `labels` list.
+
+- Loading:
+
+  - [`load_data()`](../reference/load_data.md) and
+    [`load_excel_parts()`](../reference/load_excel_parts.md) with a
+    `start_year` load the data from that year on. Any `start_year`
+    stopped the load (“‘length = …’ in coercion to ‘logical(1)’”);
+  - a Stata file is read with its months as an ordered factor of the
+    month names, as a workbook is. A file written by
+    [`save_data()`](../reference/save_data.md) could not be read back
+    (“Can’t join `x$month` with `y$month`”), nor one with months as
+    labelled values;
+  - [`load_private_sector_data()`](../reference/load_private_sector_data.md)
+    and
+    [`load_csection_estimates()`](../reference/load_csection_estimates.md)
+    keep the rows of `country_iso` when the data holds several countries
+    (the argument was not read).
+
+- The Bayesian model fits institutional deliveries (`"ideliv"`) on data
+  that names them `instdeliveries` or `instlivebirths`, as the built-in
+  surveys and the coverage tables do. That tab stopped with “object
+  ‘r_ideliv’ not found”.
+
+- [`plot()`](https://rdrr.io/r/graphics/plot.default.html) of the health
+  system comparison draws its default chart, delivery coverage against
+  workforce density (the comparison did not carry
+  `cov_instdeliveries_*`).
+
+- [`plot()`](https://rdrr.io/r/graphics/plot.default.html) of the
+  overall score table and of the utilization data quality table shows
+  every year when `years` is not given (it stopped with “`years` cannot
+  be null”).
+
+- Smaller:
+  [`adjustment_settings_footnote()`](../reference/adjustment_settings_footnote.md)
+  takes labels for some of the groups or indicators (a partial named
+  vector stopped it);
+  [`get_national_rates()`](../reference/get_national_rates.md) returns
+  its table visibly;
+  [`cd_bayes_install_command()`](../reference/cd_bayes_install_command.md)
+  returns nothing when nothing is missing (it gave
+  `install.packages(c(""), ...)`); the FPET text says “decreased by
+  0.005”, not “decreased by -0.005 points”; a report’s list of regions
+  has each region once.
+
+- Institutional deliveries have a coverage: `cov_ideliv_*`, the
+  deliveries in facilities over the deliveries. There was none, so every
+  chart, map and report asking for the coverage of `ideliv` was drawn
+  empty (“Column cov_ideliv_anc1 not found”): the column that existed is
+  `cov_instdeliveries_*`, which is the live births in facilities over
+  the deliveries (Stata’s column). It is kept, and labelled for what it
+  is (“Institutional Live Births per Delivery”).
+
+- Charts name indicators by their labels, not their codes. The heat maps
+  of missing values and of outliers showed `anc_1trimester`, `bcg`,
+  `instlivebirths`…; the continuum heat map showed `anc1` for an
+  indicator its caller had not listed.
+  [`cd_indicator_labels()`](../reference/cd_indicator_labels.md) gives
+  the labels (translated with a translator), the two heat maps take
+  `indicator_labels`, and the pages and reports give them the app’s
+  language.
+
+- The heat maps read better: softer red, amber and green, numbers that
+  stay readable on each colour and get smaller as the columns get many,
+  axes titled for what they hold (“Indicator”, “Admin level 1”), and on
+  the continuum heat map each tile’s value and the indicators’ names
+  level and wrapped.
+
+- The PHC performance chart draws its quadrants as the preventive
+  against curative chart does: a text in each corner (it was placed at
+  half and one and a half times the median, over the points), dashed
+  median lines, and a faint tint on the quadrant high on both axes and
+  on the one low on both.
+
 ## cd2030.core 1.3.10
 
 - Bayesian Analysis no longer holds the app up. The fit already ran in
@@ -25,7 +462,7 @@
   redrawing without end. Each choice was sent back to the years chip,
   and arrived after the next click, undoing it; the two selections then
   replaced each other for good
-  ([`cd_years_sync()`](../reference/countdown-pages.md), on every page
+  ([`cd_years_sync()`](../reference/cd_years_sync.md), on every page
   with a years chip).
 
 - Charts in reports are drawn without tick marks on their axes, as the
@@ -76,9 +513,9 @@
   `$bayes_estimates(admin_level)`, every model already fitted at a level
   in one table.
 - The Bayesian Analysis pages are here
-  ([`bayesian_ui()`](../reference/countdown-pages.md),
-  [`bayesian_page_server()`](../reference/countdown-pages.md), moved
-  from cd2030.rmncah), for every app: their tabs are
+  ([`bayesian_ui()`](../reference/bayesian_ui.md),
+  [`bayesian_page_server()`](../reference/bayesian_page_server.md),
+  moved from cd2030.rmncah), for every app: their tabs are
   `cd_cfg("bayes_indicators")` (default `cd_bayes_indicators`). future
   and promises are imported for them.
 
@@ -121,18 +558,18 @@
 
 ## cd2030.core 1.3.7
 
-- [`cd_table_card_ui()`](../reference/countdown-pages.md) /
-  [`cd_table_card_server()`](../reference/countdown-pages.md): a
+- [`cd_table_card_ui()`](../reference/cd_table_card_ui.md) /
+  [`cd_table_card_server()`](../reference/cd_table_card_ui.md): a
   flextable in a chart card, with its picture and its data (Excel) in
   the card’s header; the screen and the picture are drawn by the same
   function. The Overall Score page uses it (and rmncah’s Service
   Utilization data quality and national Health System pages).
   DataSuite’s AI can read the table.
-- [`cd_upload_data_ui()`](../reference/countdown-pages.md) /
-  [`cd_upload_data_server()`](../reference/countdown-pages.md): the Load
-  Data screen the apps had each kept a copy of;
-  [`cd_app()`](../reference/countdown-pages.md) uses it unless the app
-  passes its own. An app describes its part of the wizard with
+- [`cd_upload_data_ui()`](../reference/cd_upload_data_ui.md) /
+  [`cd_upload_data_server()`](../reference/cd_upload_data_ui.md): the
+  Load Data screen the apps had each kept a copy of;
+  [`cd_app()`](../reference/cd_app.md) uses it unless the app passes its
+  own. An app describes its part of the wizard with
   `options(cd2030.wizard = ...)` as before.
 - [`cd_minimal_theme()`](../reference/cd_minimal_theme.md):
   [`ggplot2::theme_minimal()`](https://ggplot2.tidyverse.org/reference/ggtheme.html)
@@ -378,8 +815,7 @@ Documentation only; no change to the code.
   Countdown apps, datasuite.ui), installing from r-universe, a
   walkthrough on the bundled Kenya data, `CacheConnection`, indicator
   groups, reports, building an app with
-  [`cd_app()`](../reference/countdown-pages.md), developing and
-  releasing.
+  [`cd_app()`](../reference/cd_app.md), developing and releasing.
 - [`?cd2030.core`](../reference/cd2030.core-package.md) and
   `?countdown-pages` give overviews of the entry points and the
   Countdown pages.
@@ -397,8 +833,8 @@ Documentation only; no change to the code.
   dataset’s report context.
 - The Countdown pages every Countdown app shares (data quality,
   denominators, coverage, equity, the Load Data wizard, filters, nav
-  sections and [`cd_app()`](../reference/countdown-pages.md)) moved here
-  from the apps, built on datasuite.ui.
+  sections and [`cd_app()`](../reference/cd_app.md)) moved here from the
+  apps, built on datasuite.ui.
 - Chart options
   ([`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
   and friends) and the report engine now live in datasuite.ui; they are

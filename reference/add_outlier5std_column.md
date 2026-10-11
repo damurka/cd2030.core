@@ -1,4 +1,4 @@
-# Add Outlier Flags Based on 5-MAD Bounds
+# Add outlier flags based on 5-MAD bounds
 
 `add_outlier5std_column` calculates and appends outlier flags for
 specified indicators in a dataset. An outlier is defined as a value

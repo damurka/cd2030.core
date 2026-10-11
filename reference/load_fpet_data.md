@@ -1,4 +1,4 @@
-# Load FPET Data from CSV File or Use Provided Data
+# Load FPET data from CSV file or use provided data
 
 `load_fpet_data` loads Family Planning Estimation Tool (FPET) data from
 a `.csv` file, or uses a pre-supplied dataset. It assigns a country ISO

@@ -1,4 +1,4 @@
-# District-Level Reporting Rates by Year
+# District-level reporting rates by year
 
 `calculate_district_reporting_rate` Calculates the percentage of
 districts that meet or exceed a specified reporting rate threshold for
@@ -23,8 +23,8 @@ calculate_district_reporting_rate(
 
 - threshold:
 
-  Minimum reporting rate (%) for a district to be considered compliant.
-  Default is 90.
+  Numeric. The performance threshold: the minimum reporting rate (in
+  percent) for a district to be considered compliant. Default is 90.
 
 - region:
 

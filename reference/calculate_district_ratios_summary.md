@@ -1,10 +1,9 @@
-# Calculate District Adequacy Summary
+# Calculate district adequacy summary
 
-This function calculates and summarizes the adequacy of specified
-indicator ratios by year, evaluating the consistency of key health
-indicators across districts. It computes the percentage of districts
-meeting the adequacy criteria for each indicator ratio, based on the
-specified range.
+Calculates and summarizes the adequacy of specified indicator ratios by
+year, evaluating the consistency of key health indicators across
+districts. It computes the percentage of districts meeting the adequacy
+criteria for each indicator ratio, based on the specified range.
 
 ## Usage
 
@@ -44,6 +43,6 @@ overall metrics included for data interpretation and quality monitoring.
 ``` r
 if (FALSE) { # \dontrun{
 # Calculate adequacy summary for ANC1/Penta1 and other indicator ratios
-calculate_district_ratio_summary(cd_data)
+calculate_district_ratios_summary(cd_data)
 } # }
 ```

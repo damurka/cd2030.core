@@ -7,9 +7,9 @@ coverage, inequality, mortality, service utilization, health system and
 family planning indicators, each with a chart. It also holds everything
 the Countdown Shiny apps share: the analysis pages, the Load Data
 wizard, the filters and the app frame
-([`cd_app()`](reference/countdown-pages.md)), and Countdown’s content
-for the report builder (standard reports, the charts and tables a report
-can hold).
+([`cd_app()`](reference/cd_app.md)), and Countdown’s content for the
+report builder (standard reports, the charts and tables a report can
+hold).
 
 It is used in two ways:
 
@@ -36,7 +36,7 @@ DataSuite (VS Code based)
   datasuite.ui never calls cd2030.core.
 - **The apps** (<https://github.com/damurka/cd2030.rmncah>, `.vaxx`,
   `.pooled`) each set their options, list their pages and call
-  [`cd_app()`](reference/countdown-pages.md).
+  [`cd_app()`](reference/cd_app.md).
 - **countdown-analytics**
   (<https://github.com/damurka/countdown-analytics>) is the DataSuite
   extension. Its `shinyApps` entries name each app’s package; DataSuite
@@ -94,6 +94,15 @@ export_report(cache, reports[["data_quality"]], "data_quality.docx", format = "d
 cache$set_cache_path("kenya.rds")
 ```
 
+The guides go through this step by step, with the output and charts each
+step gives: [`vignette("cd2030.core")`](articles/cd2030.core.md) to get
+started, then
+[`vignette("preparing-data")`](articles/preparing-data.md),
+[`vignette("data-quality")`](articles/data-quality.md) and
+[`vignette("coverage")`](articles/coverage.md).
+[`vignette("building-an-app")`](articles/building-an-app.md) describes
+how the apps are built.
+
 The functions are grouped by analysis step in the reference
 ([`help(package = "cd2030.core")`](https://rdrr.io/pkg/cd2030.core/man),
 and the package overview
@@ -129,7 +138,7 @@ knowing:
 ## Building an app on it
 
 An app is a small package whose `run_app()` says what is particular to
-it and calls [`cd_app()`](reference/countdown-pages.md).
+it and calls [`cd_app()`](reference/cd_app.md).
 `cd2030.rmncah::run_app()` is the complete example; in outline:
 
 ``` r

@@ -9,7 +9,7 @@ result as a plain data frame (a map's geometry dropped)."><meta name="descriptio
 
     <a class="navbar-brand me-2" href="../index.html">cd2030.core</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.10</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -17,7 +17,14 @@ result as a plain data frame (a map's geometry dropped)."><meta name="descriptio
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/preparing-data.html">Preparing your data</a></li>
+    <li><a class="dropdown-item" href="../articles/data-quality.html">Checking data quality</a></li>
+    <li><a class="dropdown-item" href="../articles/coverage.html">From adjustment to coverage</a></li>
+    <li><a class="dropdown-item" href="../articles/building-an-app.html">Building an app on cd2030.core</a></li>
+  </ul></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -66,6 +73,37 @@ result as a plain data frame (a map's geometry dropped).</p>
     <p>A data frame.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"kenya.xlsx"</span>, package <span class="op">=</span> <span class="st">"cd2030.core"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">cache</span> <span class="op">&lt;-</span> <span class="fu"><a href="load_cache_data.html">load_cache_data</a></span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Loading Excel <span style="color: #FFAF00;">"kenya.xlsx"</span> for parts</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #BBBB00;">!</span> The following columns are empty: <span style="color: #0000BB;">anc_1trimester, under5_deaths, total_deaths,</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span>   <span style="color: #0000BB;">ipv2, measles_cases</span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Successfully loaded and cleaned data</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">ℹ</span> Auto-detect candidates (|group|): vaccine=19, rmncah=28 -&gt; selected rmncah</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># a precomputed result</span></span></span>
+<span class="r-in"><span><span class="fu">cd_member_data</span><span class="op">(</span><span class="va">cache</span>, <span class="st">"reporting_rate_national"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   year anc_rr idelv_rr vacc_rr opd_rr mean_rr</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 2019     94       94      94     95      94</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 2020     96       96      95     96      96</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 2021     96       96      96     96      96</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 2022     97       97      97     96      97</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 2023     97       97      98     97      97</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># a method, with its arguments</span></span></span>
+<span class="r-in"><span><span class="va">rates</span> <span class="op">&lt;-</span> <span class="fu">cd_member_data</span><span class="op">(</span><span class="va">cache</span>, <span class="st">"calculate_reporting_rate"</span>, args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>admin_level <span class="op">=</span> <span class="st">"adminlevel_1"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">rates</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   adminlevel_1 year anc_rr idelv_rr vacc_rr opd_rr mean_rr</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  Rift Valley 2019     92       92      93     93      93</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  Rift Valley 2020     95       95      95     95      95</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  Rift Valley 2021     95       95      95     95      95</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  Rift Valley 2022     95       95      95     94      95</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5  Rift Valley 2023     96       96      96     97      96</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6      Western 2019     95       95      96     96      96</span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

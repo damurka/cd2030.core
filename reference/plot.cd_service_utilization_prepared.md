@@ -1,4 +1,4 @@
-# Plot Filtered Service Utilization Indicators
+# Plot filtered service utilization indicators
 
 Generates a faceted map of service utilization metrics across
 subnational units (admin level 1) for each available year. Uses spatial
@@ -8,7 +8,17 @@ polygons filled by the selected indicator.
 
 ``` r
 # S3 method for class 'cd_service_utilization_prepared'
-plot(x, labels = NULL, ..., options = NULL)
+plot(
+  x,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
+  ...,
+  options = NULL
+)
 ```
 
 ## Arguments
@@ -18,24 +28,44 @@ plot(x, labels = NULL, ..., options = NULL)
   A `cd_service_utilization_prepared` object returned by
   [`prepare_mapping_service_utlization()`](prepare_mapping_service_utlization.md).
 
-- labels:
+- title:
 
-  (Optional) A named list to override the default English text, e.g.
-  with translations. Valid keys: `title` and `legend` (the legend
-  title). Defaults to `NULL`.
+  The chart's title.
+
+- subtitle:
+
+  The line under the title.
+
+- caption:
+
+  The note under the chart.
+
+- x_title:
+
+  The title of the horizontal axis.
+
+- y_title:
+
+  The title of the vertical axis.
+
+- legend_title:
+
+  The title of the legend.
 
 - ...:
 
-  Additional arguments (currently unused).
+  Chart options by name (see
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)):
+  background, fonts, sizes, axes, grid, legend, colours. Other arguments
+  are ignored.
 
 - options:
 
-  (Optional) A
+  A
   [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
-  object: text, legend, fonts and sizes a user changed. Applied last, so
-  it wins over the arguments above; the plot's own defaults are used for
-  whatever it does not set. Any chart option can also be given by name
-  in `...`.
+  object or a list of chart options: a look made once, to give to
+  several charts. Applied after the text arguments, so a text it holds
+  wins over them.
 
 ## Value
 
@@ -44,18 +74,12 @@ year.
 
 ## Details
 
-This function:
-
-- Extracts the appropriate indicator (`ratio_opd_u5_pop` or
-  `ratio_ipd_u5_pop`)
-
-- Projects the data to WGS84 for map consistency
-
-- Renders the spatial data using
-  [`geom_sf()`](https://ggplot2.tidyverse.org/reference/ggsf.html) with
-  a sequential purple color scale
-
-- Facets by year and applies the package's custom plot theme
+Reads the indicator stored on `x` (`ratio_opd_u5_pop` or
+`ratio_ipd_u5_pop`) and sets the data to WGS84 coordinates. Draws the
+units with
+[`geom_sf()`](https://ggplot2.tidyverse.org/reference/ggsf.html), filled
+on a sequential colour scale from the palette stored on `x` (purple by
+default), with one panel per year and the package's map theme.
 
 ## Examples
 

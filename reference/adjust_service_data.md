@@ -1,4 +1,4 @@
-# Adjust Service Data for Coverage Analysis
+# Adjust service data for coverage analysis
 
 The `adjust_service_data` function processes DHIS-2 health service data,
 correcting for incomplete reporting, applying k-factor adjustments for
@@ -64,8 +64,8 @@ outliers are flagged and managed, and missing values are imputed.
 
 ## Details
 
-This function prepares service data through a series of steps to ensure
-data quality and consistency:
+Prepares service data through a series of steps to ensure data quality
+and consistency:
 
 1.  **Validation**: Checks the structure of `.data` and ensures that the
     `adjustment` argument is valid. For `custom` adjustments,

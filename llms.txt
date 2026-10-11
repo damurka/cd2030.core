@@ -7,9 +7,9 @@ coverage, inequality, mortality, service utilization, health system and
 family planning indicators, each with a chart. It also holds everything
 the Countdown Shiny apps share: the analysis pages, the Load Data
 wizard, the filters and the app frame
-([`cd_app()`](reference/countdown-pages.md)), and Countdown’s content
-for the report builder (standard reports, the charts and tables a report
-can hold).
+([`cd_app()`](reference/cd_app.md)), and Countdown’s content for the
+report builder (standard reports, the charts and tables a report can
+hold).
 
 It is used in two ways:
 
@@ -36,7 +36,7 @@ DataSuite (VS Code based)
   datasuite.ui never calls cd2030.core.
 - **The apps** (<https://github.com/damurka/cd2030.rmncah>, `.vaxx`,
   `.pooled`) each set their options, list their pages and call
-  [`cd_app()`](reference/countdown-pages.md).
+  [`cd_app()`](reference/cd_app.md).
 - **countdown-analytics**
   (<https://github.com/damurka/countdown-analytics>) is the DataSuite
   extension. Its `shinyApps` entries name each app’s package; DataSuite
@@ -94,6 +94,15 @@ export_report(cache, reports[["data_quality"]], "data_quality.docx", format = "d
 cache$set_cache_path("kenya.rds")
 ```
 
+The guides go through this step by step, with the output and charts each
+step gives: [`vignette("cd2030.core")`](articles/cd2030.core.md) to get
+started, then
+[`vignette("preparing-data")`](articles/preparing-data.md),
+[`vignette("data-quality")`](articles/data-quality.md) and
+[`vignette("coverage")`](articles/coverage.md).
+[`vignette("building-an-app")`](articles/building-an-app.md) describes
+how the apps are built.
+
 The functions are grouped by analysis step in the reference
 ([`help(package = "cd2030.core")`](https://rdrr.io/pkg/cd2030.core/man),
 and the package overview
@@ -129,7 +138,7 @@ knowing:
 ## Building an app on it
 
 An app is a small package whose `run_app()` says what is particular to
-it and calls [`cd_app()`](reference/countdown-pages.md).
+it and calls [`cd_app()`](reference/cd_app.md).
 `cd2030.rmncah::run_app()` is the complete example; in outline:
 
 ``` r
@@ -229,29 +238,28 @@ data.
   Create a `cd_data` object from cleaned data and resolve the indicator
   group
 
-- [`save_data()`](save_data.md) : Save Processed Countdown 2030 Data to
-  File
+- [`save_data()`](save_data.md) : Save processed Countdown 2030 data to
+  file
 
-- [`save_dhis2_excel()`](save_dhis2_excel.md) : Save DHIS2 Data to an
-  Excel Workbook
+- [`save_dhis2_excel()`](save_dhis2_excel.md) : Save DHIS2 data to an
+  Excel workbook
 
 - [`save_dhis2_master_data()`](save_dhis2_master_data.md) : Create a
-  Master Dataset from DHIS2 Data
+  master dataset from DHIS2 data
 
-- [`load_excel_parts()`](load_excel_parts.md) : Read & clean every
-  Countdown 2030 Excel sheet, without merging them
+- [`load_excel_parts()`](load_excel_parts.md) : Read and clean the
+  sheets of a Countdown 2030 workbook
 
 - [`merge_and_standardize()`](merge_and_standardize.md) :
 
-  Merge and standardize an
-  already-[`load_excel_parts()`](../reference/load_excel_parts.md)-ed
-  set of sheets
+  Merge and standardize sheets read by
+  [`load_excel_parts()`](../reference/load_excel_parts.md)
 
 - [`resolve_country_best_effort()`](resolve_country_best_effort.md) :
-  Best-effort, non-aborting country resolution from a raw Admin sheet
+  Find the country of an Admin sheet without raising an error
 
-- [`generate_admin1_keys()`](generate_admin1_keys.md) : Generate a
-  simple, stable-within-one-load synthetic key per admin-1 region
+- [`generate_admin1_keys()`](generate_admin1_keys.md) : Generate a key
+  for each admin level 1 unit
 
 - [`read_shapefile_folder()`](read_shapefile_folder.md) : Read a
   user-uploaded shapefile folder
@@ -262,29 +270,29 @@ One dataset and everything chosen about it (adjustments, denominators,
 surveys, mappings, chart options, reports), saved as an .rds cache next
 to the data file. Every page of the apps reads and writes it.
 
-- [`CacheConnection`](CacheConnection.md) : CacheConnection Class
+- [`CacheConnection`](CacheConnection.md) : CacheConnection class
 - [`init_CacheConnection()`](init_CacheConnection.md) : Create a
-  CacheConnection Object
+  CacheConnection object
 
 ## External Data Sources
 
 Import relevant global datasets to complement national data.
 
-- [`load_un_estimates()`](load_un_estimates.md) : Load UN Estimates
+- [`load_un_estimates()`](load_un_estimates.md) : Load UN estimates
 - [`load_un_mortality_data()`](load_un_mortality_data.md) : Load and
-  Filter UN Mortality Estimates
-- [`load_wuenic_data()`](load_wuenic_data.md) : Load WUENIC Immunization
-  Data
-- [`load_survey_data()`](load_survey_data.md) : Load and Process Survey
-  Data
-- [`load_equity_data()`](load_equity_data.md) : Load and Filter Equity
-  Data
-- [`load_fpet_data()`](load_fpet_data.md) : Load FPET Data from CSV File
-  or Use Provided Data
+  filter UN mortality estimates
+- [`load_wuenic_data()`](load_wuenic_data.md) : Load WUENIC immunization
+  data
+- [`load_survey_data()`](load_survey_data.md) : Load and process survey
+  data
+- [`load_equity_data()`](load_equity_data.md) : Load and filter equity
+  data
+- [`load_fpet_data()`](load_fpet_data.md) : Load FPET data from CSV file
+  or use provided data
 - [`load_private_sector_data()`](load_private_sector_data.md) : Load and
-  Prepare Private Sector Data
+  prepare private sector data
 - [`load_csection_estimates()`](load_csection_estimates.md) : Load
-  C-section Share Estimates
+  C-section share estimates
 
 ## Indicator Group Management
 
@@ -302,7 +310,7 @@ profiles.
 - [`register_indicator_group()`](register_indicator_group.md) : Register
   or override an indicator group (profile)
 - [`get_indicator_group_names()`](get_indicator_group_names.md) : Get
-  Indicator Group Names
+  indicator group names
 - [`reset_indicator_group()`](reset_indicator_group.md) : Reset (remove)
   a group override
 - [`detect_indicator_group()`](detect_indicator_group.md) : Auto-detect
@@ -318,102 +326,92 @@ Checks the Load Data wizard runs on the uploaded sheets (before they are
 merged) and on a loaded dataset. Each returns its findings (or NULL) and
 never stops the load.
 
-- [`run_all_quality_checks()`](run_all_quality_checks.md) : Run every
-  non-structural quality check against an already-loaded cache, without
-  aborting
-- [`check_admin_columns()`](check_admin_columns.md) : Check the
-  Admin_data sheet has the columns every later step assumes exist
+- [`run_all_quality_checks()`](run_all_quality_checks.md) : Run all data
+  quality checks and report every result
+- [`check_admin_columns()`](check_admin_columns.md) : Check that the
+  Admin sheet has its required columns
 - [`check_admin_pairing_consistency()`](check_admin_pairing_consistency.md)
-  : Check a district's admin-1 pairing is stable within the Admin sheet
-  itself
-- [`check_country_recognized()`](check_country_recognized.md) : Check
-  the Admin sheet's single country value is actually a recognized
-  country name, pre-merge
-- [`check_district_consistency()`](check_district_consistency.md) :
-  Check a district's admin-1 pairing and spelling are stable across
-  years
-- [`check_district_cross_sheet()`](check_district_cross_sheet.md) :
-  Check districts match between the Admin sheet and every other sheet,
-  both directions
-- [`check_district_year_completeness()`](check_district_year_completeness.md)
-  : Check every district appears in every year present in the Population
+  : Check that each district has one admin level 1 name in the Admin
   sheet
+- [`check_country_recognized()`](check_country_recognized.md) : Check
+  that the country in the Admin sheet is recognized
+- [`check_district_consistency()`](check_district_consistency.md) :
+  Check that districts are consistent across the dataset
+- [`check_district_cross_sheet()`](check_district_cross_sheet.md) :
+  Check that districts match between the Admin sheet and the others
+- [`check_district_year_completeness()`](check_district_year_completeness.md)
+  : Check that every district has every year in the Population sheet
 - [`check_indicator_emptiness()`](check_indicator_emptiness.md) : Flag
-  indicators that are entirely empty across the whole dataset
+  indicators that have no data
 - [`check_indicator_emptiness_presheet()`](check_indicator_emptiness_presheet.md)
-  : Flag indicators entirely empty across every service sheet, pre-merge
+  : Flag indicators that have no data, before merging
 - [`check_month_language_consistency()`](check_month_language_consistency.md)
-  : Flag calendar months that different rows/sheets label with different
-  raw text
-- [`check_month_presence()`](check_month_presence.md) : Check every
-  district-year has all 12 calendar months present
+  : Flag months that are written in more than one way
+- [`check_month_presence()`](check_month_presence.md) : Check that every
+  district-year has all 12 months
 - [`check_month_presence_presheet()`](check_month_presence_presheet.md)
-  : Check every district-year has all 12 calendar months present,
-  pre-merge
-- [`check_month_validity()`](check_month_validity.md) : Check every
-  row's month string parsed to a real calendar month
+  : Check that every district-year has all 12 months, before merging
+- [`check_month_validity()`](check_month_validity.md) : Check that every
+  month value is a recognized month
 - [`check_month_validity_presheet()`](check_month_validity_presheet.md)
-  : Check every row's month string parses to a real calendar month,
-  pre-merge
+  : Check that every month value is a recognized month, before merging
 - [`check_population_service_collision()`](check_population_service_collision.md)
-  : Flag district-years where a service indicator looks like it was
-  mixed up with population data
+  : Flag district-years where service births equal population births
 - [`check_population_service_collision_presheet()`](check_population_service_collision_presheet.md)
-  : Flag district-years where a service indicator looks mixed up with
-  population data, pre-merge
+  : Flag service births that equal population births, before merging
 - [`check_population_vs_births()`](check_population_vs_births.md) :
-  Check that estimated population live births aren't lower than reported
-  institutional counts
+  Check that population live births are not below reported births
 - [`check_required_columns_presheet()`](check_required_columns_presheet.md)
-  : Check the sheets have every column the selected indicator group
-  needs, before they are merged
+  : Check that the sheets have the columns an indicator group needs
 - [`check_shapefile_admin_names()`](check_shapefile_admin_names.md) :
-  Flag dataset admin-1 names that have no matching shapefile region
-- [`check_single_country()`](check_single_country.md) : Check the
-  Admin_data sheet names exactly one country
+  Flag admin level 1 names with no matching shapefile region
+- [`check_single_country()`](check_single_country.md) : Check that the
+  Admin sheet names one country
 - [`check_survey_admin_names()`](check_survey_admin_names.md) : Flag
-  dataset admin-1 names that have no matching survey region
-- [`quality_issues_table()`](quality_issues_table.md) : Every data
-  quality result as tables: a summary of the checks, and one row per
-  issue
+  admin level 1 names with no matching survey region
+- [`quality_issues_table()`](quality_issues_table.md) : Tabulate data
+  quality results
 - [`write_quality_issues()`](write_quality_issues.md) : Write every data
   quality result to an Excel workbook
 
 ### Reporting Rates
 
 - [`calculate_average_reporting_rate()`](calculate_average_reporting_rate.md)
-  : Reporting Rate Summary by Administrative Level
+  : Reporting rate summary by administrative level
 - [`calculate_district_reporting_rate()`](calculate_district_reporting_rate.md)
-  : District-Level Reporting Rates by Year
+  : District-level reporting rates by year
 - [`plot(`*`<cd_average_reporting_rate>`*`)`](plot.cd_average_reporting_rate.md)
-  : Plot Sub-National Reporting Rates by Year and Unit
+  : Plot sub-national reporting rates by year and unit
 - [`plot(`*`<cd_district_reporting_rate>`*`)`](plot.cd_district_reporting_rate.md)
-  : Plot District Reporting Rate Summary
+  : Plot district reporting rate summary
 - [`tbl_sum(`*`<cd_average_reporting_rate>`*`)`](tbl_sum.cd_average_reporting_rate.md)
-  : Summary for Average Reporting Rates by Year
+  : Summary for average reporting rates by year
 - [`tbl_sum(`*`<cd_district_reporting_rate>`*`)`](tbl_sum.cd_district_reporting_rate.md)
-  : Summary for District-Level Reporting Rates by Year
+  : Summary for district-level reporting rates by year
 
 ### Data Completeness
 
 - [`calculate_completeness_summary()`](calculate_completeness_summary.md)
-  : Summarize Data Completeness by Year
+  : Summarize data completeness by year
 
 - [`calculate_district_completeness_summary()`](calculate_district_completeness_summary.md)
-  : District-Level Completeness Summary
+  : District-level completeness summary
 
 - [`plot(`*`<cd_completeness_summary>`*`)`](plot.cd_completeness_summary.md)
-  : Plot Missing Summary
+  : Plot missing summary
 
 - [`tbl_sum(`*`<cd_completeness_summary>`*`)`](tbl_sum.cd_completeness_summary.md)
   :
 
   Summary for `cd_completeness_summary`
 
-- [`tbl_sum(`*`<cd_district_completeness_summary>`*`)`](tbl_sum.cd_district_completeness_summary.md)
+- [`tbl_sum(`*`<cd_missing_district>`*`)`](tbl_sum.cd_missing_district.md)
   :
 
-  Summary for `cd_district_completeness_summary`
+  Summary for `cd_missing_district`
+
+- [`list_missing_units()`](list_missing_units.md) : List the districts
+  and months with a missing value
 
 ### Consistency Checks
 
@@ -421,34 +419,33 @@ never stops the load.
   [`plot_comparison_anc1_penta1()`](internal_consistency.md)
   [`plot_comparison_penta1_penta3()`](internal_consistency.md)
   [`plot_comparison_opv1_opv3()`](internal_consistency.md) : Internal
-  Consistency Plot Functions for Indicator Comparisons
+  consistency plot functions for indicator comparisons
 - [`plot_comparison(`*`<cd_data>`*`)`](plot_comparison.cd_data.md) :
-  Plot Comparison with Linear Fit and R-squared
+  Plot comparison with linear fit and R-squared
 
 ### Outlier Detection
 
 - [`calculate_outliers_summary()`](calculate_outliers_summary.md) :
-  Annual Summary of Outlier-Free Reporting Rates
+  Annual summary of outlier-free reporting rates
 
 - [`calculate_district_outlier_summary()`](calculate_district_outlier_summary.md)
-  : District-Level Outlier Summary by Year
+  : District-level outlier summary by year
 
-- [`filter_adjustment_value()`](filter_adjustment_value.md) : Filter one
-  indicator’s adjustment values
+- [`select_adjustment_value()`](select_adjustment_value.md) : Select one
+  indicator's adjustment values
 
-- [`list_outlier_units()`](list_outlier_units.md) : Identify Monthly
-  Outliers by District
+- [`list_outlier_units()`](list_outlier_units.md) : Identify monthly
+  outliers by district
 
-- [`plot(`*`<cd_outlier>`*`)`](plot.cd_outlier.md) : Visualize Summary
-  of Outlier Detection
+- [`plot(`*`<cd_outlier>`*`)`](plot.cd_outlier.md) : Visualize summary
+  of outlier detection
 
 - [`plot(`*`<cd_outlier_list>`*`)`](plot.cd_outlier_list.md) : Plot
-  Outlier Time Series for a Region
+  outlier time series for a region
 
-- [`tbl_sum(`*`<cd_outliers_summary>`*`)`](tbl_sum.cd_outliers_summary.md)
-  :
+- [`tbl_sum(`*`<cd_outlier>`*`)`](tbl_sum.cd_outlier.md) :
 
-  Summary for `cd_outliers_summary`
+  Summary for `cd_outlier`
 
 - [`tbl_sum(`*`<cd_district_outliers_summary>`*`)`](tbl_sum.cd_district_outliers_summary.md)
   :
@@ -457,14 +454,17 @@ never stops the load.
 
 ### Ratio Analysis
 
+- [`calculate_ratios_and_adequacy()`](calculate_ratios_and_adequacy.md)
+  : Calculate indicator ratios and adequacy flags
+
 - [`calculate_ratios_summary()`](calculate_ratios_summary.md) :
-  Calculate Yearly Indicator Ratios Summary with Expected Ratios
+  Calculate yearly indicator ratios summary with expected ratios
 
 - [`calculate_district_ratios_summary()`](calculate_district_ratios_summary.md)
-  : Calculate District Adequacy Summary
+  : Calculate district adequacy summary
 
 - [`plot(`*`<cd_ratios_summary>`*`)`](plot.cd_ratios_summary.md) : Plot
-  Ratios Summary for Indicator Ratios Summary Object
+  ratios summary for indicator ratios summary object
 
 - [`tbl_sum(`*`<cd_ratios_summary>`*`)`](tbl_sum.cd_ratios_summary.md) :
 
@@ -478,13 +478,13 @@ never stops the load.
 ### Overall Quality Score
 
 - [`calculate_overall_score()`](calculate_overall_score.md) : Calculate
-  Overall Quality Score for Data Quality Metrics
+  overall quality score for data quality metrics
 - [`calculate_overall_score1()`](calculate_overall_score1.md) :
-  Calculate Overall Quality Score from Summaries
+  Calculate overall quality score from summaries
 - [`plot(`*`<cd_overall_score>`*`)`](plot.cd_overall_score.md) : Plot S3
-  method for Overall Score
+  method for overall score
 - [`plot(`*`<cd_missing_district>`*`)`](plot.cd_missing_district.md) :
-  Plot Percent of Districts with Complete Data
+  Plot percent of districts with complete data
 
 ## Data Adjustment
 
@@ -493,14 +493,14 @@ estimates: the settings (the years and areas removed; completeness,
 outliers and missing values everywhere or by region or district) and
 what the checks found beside them.
 
-- [`filter_out_years()`](filter_out_years.md) : Filter Dataset by
-  Removing Specified Years
+- [`filter_out_years()`](filter_out_years.md) : Filter dataset by
+  removing specified years
 
 - [`generate_adjustment_values()`](generate_adjustment_values.md) :
-  Generate Adjusted and Unadjusted Service Counts by Year
+  Generate adjusted and unadjusted service counts by year
 
-- [`adjust_service_data()`](adjust_service_data.md) : Adjust Service
-  Data for Coverage Analysis
+- [`adjust_service_data()`](adjust_service_data.md) : Adjust service
+  data for coverage analysis
 
 - [`adjustment_settings_default()`](adjustment_settings_default.md) :
   The Countdown default adjustment settings
@@ -512,7 +512,7 @@ what the checks found beside them.
   and tidy adjustment settings
 
 - [`adjustment_settings_footnote()`](adjustment_settings_footnote.md) :
-  What the adjustment settings say, as the reports' footnote
+  Describe the adjustment settings as a report footnote
 
 - [`adjustment_steps_used()`](adjustment_steps_used.md) : Which
   adjustment steps an indicator gets
@@ -521,7 +521,7 @@ what the checks found beside them.
   quality checks found, for the Data Adjustment page
 
 - [`plot(`*`<cd_adjustment_values_filtered>`*`)`](plot.cd_adjustment_values_filtered.md)
-  : Plot Adjusted vs. Unadjusted Data for Health Indicators
+  : Plot adjusted vs. unadjusted data for health indicators
 
 - [`tbl_sum(`*`<cd_adjustment_values>`*`)`](tbl_sum.cd_adjustment_values.md)
   :
@@ -533,71 +533,87 @@ what the checks found beside them.
 Compute populations and denominators required for coverage calculations.
 
 - [`compute_indicator_numerator()`](compute_indicator_numerator.md) :
-  Compute Aggregated Numerators for Health Indicators
+  Compute aggregated numerators for health indicators
+
 - [`prepare_population_metrics()`](prepare_population_metrics.md) :
-  Compute Population Metrics for DHIS-2 and UN Data
+  Compute population metrics for DHIS-2 and UN data
+
 - [`calculate_indicator_coverage()`](calculate_indicator_coverage.md) :
-  Calculate Health Coverage Indicators
+  Calculate health coverage indicators
+
+- [`get_national_rates()`](get_national_rates.md) : Get the rates the
+  denominators use from survey data
+
 - [`calculate_threshold()`](calculate_threshold.md) : Calculate
-  Coverage/Dropout Threshold Attainment
+  coverage/dropout threshold attainment
+
 - [`filter_high_performers()`](filter_high_performers.md) : Filter
-  High-Performing Areas by Coverage
+  high-performing areas by coverage
+
 - [`calculate_derived_coverage()`](calculate_derived_coverage.md) :
-  Generate Coverage Data with Derived Denominators
-- [`plot_line_graph()`](plot_line_graph.md) : Plot Line Graph for
-  Multiple Series with Dynamic Y-axis Scaling
+  Generate coverage data with derived denominators
+
+- [`plot_line_graph()`](plot_line_graph.md) : Plot a line graph of
+  several series
+
 - [`plot(`*`<cd_indicator_coverage>`*`)`](plot.cd_indicator_coverage.md)
-  : Plot National Denominators and Coverage Indicators
+  : Plot national denominators and coverage indicators
+
 - [`plot(`*`<cd_population_metrics>`*`)`](plot.cd_population_metrics.md)
-  : Plot National Population or Births Metrics
+  : Plot national population or births metrics
+
 - [`plot(`*`<cd_derived_coverage>`*`)`](plot.cd_derived_coverage.md) :
-  Plot Derived vs Traditional Coverage Over Time
+  Plot derived vs traditional coverage over time
+
 - [`tbl_sum(`*`<cd_indicator_coverage>`*`)`](tbl_sum.cd_indicator_coverage.md)
-  : Table Summary for National Coverage Estimates
-- [`tbl_sum(`*`<cd_national_denominators>`*`)`](tbl_sum.cd_national_denominators.md)
-  : Summarize National Denominators Data
+  : Table summary for national coverage estimates
+
+- [`tbl_sum(`*`<cd_population_metrics>`*`)`](tbl_sum.cd_population_metrics.md)
+  :
+
+  Summary for `cd_population_metrics`
 
 ## Coverage & Inequality
 
 Estimate coverage levels and inequity by geography and subgroup.
 
-- [`filter_coverage()`](filter_coverage.md) : Filter and Reshape
-  Coverage Data
-- [`calculate_coverage()`](calculate_coverage.md) : Combine Immunization
-  Coverage Data
+- [`select_coverage()`](select_coverage.md) : Select one indicator's
+  coverage
+- [`calculate_coverage()`](calculate_coverage.md) : Combine immunization
+  coverage data
 - [`get_coverage_indicators()`](get_coverage_indicators.md) : Get
   Indicators for coverage calculation
 - [`generate_coverage_data()`](generate_coverage_data.md) : Generate
-  Coverage Data for Continuum of Care
-- [`plot(`*`<cd_coverage>`*`)`](plot.cd_coverage.md) : Plot Coverage by
-  Region
+  coverage data for continuum of care
+- [`plot(`*`<cd_coverage>`*`)`](plot.cd_coverage.md) : Plot coverage by
+  region
 - [`plot(`*`<cd_coverage_selected>`*`)`](plot.cd_coverage_selected.md) :
-  Plot S3 method for Coverage Data
-- [`plot(`*`<cd_threshold>`*`)`](plot.cd_threshold.md) : Plot Target
-  Threshold Attainment Over Time
+  Plot S3 method for coverage data
+- [`plot(`*`<cd_threshold>`*`)`](plot.cd_threshold.md) : Plot target
+  threshold attainment over time
 - [`calculate_inequality()`](calculate_inequality.md) : Analyze
-  Subnational Health Coverage Data with Inequality Metrics
-- [`filter_inequality()`](filter_inequality.md) : Filter Subnational
-  Inequality Metrics
-- [`equiplot()`](equiplot.md) : Create Dot Plots for Equity Analysis
-- [`equiplot_area()`](equiplot_area.md) : A Specialized Dot Plot for
-  Area of Residence Analysis
-- [`equiplot_education()`](equiplot_education.md) : A Specialized Dot
-  Plot for Maternal Education Analysis
-- [`equiplot_wealth()`](equiplot_wealth.md) : A Specialized Dot Plot for
-  Wealth Quintile Analysis
+  subnational health coverage data with inequality metrics
+- [`select_inequality()`](select_inequality.md) : Select one indicator's
+  inequality metrics
+- [`equiplot()`](equiplot.md) : Create dot plots for equity analysis
+- [`equiplot_area()`](equiplot_area.md) : A specialized dot plot for
+  area of residence analysis
+- [`equiplot_education()`](equiplot_education.md) : A specialized dot
+  plot for maternal education analysis
+- [`equiplot_wealth()`](equiplot_wealth.md) : A specialized dot plot for
+  wealth quintile analysis
 - [`plot(`*`<cd_coverage_filtered>`*`)`](plot.cd_coverage_filtered.md) :
-  Plot National Coverage Data
+  Plot national coverage data
 - [`plot(`*`<cd_inequality_filtered>`*`)`](plot.cd_inequality_filtered.md)
-  : Plot Subnational Health Coverage Analysis
-- [`get_mapping_data()`](get_mapping_data.md) : Get Mapping Data for
-  Subnational Coverage Analysis
-- [`filter_mapping_data()`](filter_mapping_data.md) : Filter Mapping
-  Data for Specific Indicator and Denominator
-- [`get_country_shapefile()`](get_country_shapefile.md) : Load Country
-  Shapefile for Mapping
+  : Plot subnational health coverage analysis
+- [`get_mapping_data()`](get_mapping_data.md) : Get mapping data for
+  subnational coverage analysis
+- [`select_mapping_data()`](select_mapping_data.md) : Select one
+  indicator's mapping data
+- [`get_country_shapefile()`](get_country_shapefile.md) : Load country
+  shapefile for mapping
 - [`plot(`*`<cd_mapping_filtered>`*`)`](plot.cd_mapping_filtered.md) :
-  Plot Subnational Coverage Maps by Indicator
+  Plot subnational coverage maps by indicator
 
 ## Mortality Analysis
 
@@ -605,93 +621,93 @@ Summarize and explore mortality patterns from administrative and survey
 data.
 
 - [`create_mortality_summary()`](create_mortality_summary.md) : Create
-  Mortality Summary Object
+  mortality summary object
 - [`create_mortality_ratios()`](create_mortality_ratios.md) : Extract
-  Latest Mortality Ratios for UN Comparison
-- [`filter_mortality_summary()`](filter_mortality_summary.md) : Filter
-  and Prepare Mortality Rate Data for Mapping
+  latest mortality ratios for UN comparison
+- [`select_mortality_summary()`](select_mortality_summary.md) : Select
+  one mortality rate, ready to map
 - [`summarise_completeness_ratio()`](summarise_completeness_ratio.md) :
-  Summarize Completeness-Adjusted Mortality Ratio
+  Summarize completeness-adjusted mortality ratio
 - [`plot(`*`<cd_mortality_summary>`*`)`](plot.cd_mortality_summary.md) :
-  Plot Mortality Rate Indicators
+  Plot mortality rate indicators
 - [`plot(`*`<cd_mortality_summary_filtered>`*`)`](plot.cd_mortality_summary_filtered.md)
-  : Plot Filtered Institutional Mortality Rates
+  : Plot filtered institutional mortality rates
 - [`plot(`*`<cd_mortality_ratio_summarised>`*`)`](plot.cd_mortality_ratio_summarised.md)
-  : Plot Completeness of Facility Reporting Ratios
+  : Plot completeness of facility reporting ratios
 - [`plot_mortality_plausibility()`](plot_mortality_plausibility.md) :
-  Plot Subnational Mortality Plausibility
+  Plot subnational mortality plausibility
 
 ## Health Service Utilization
 
 Analyze use of health services and trends over time.
 
 - [`compute_service_utilization()`](compute_service_utilization.md) :
-  Compute Service Utilization Metrics
-- [`filter_service_utilization()`](filter_service_utilization.md) :
-  Filter Service Utilization Data for a Specific Region and Indicator
+  Compute service utilization metrics
+- [`select_service_utilization()`](select_service_utilization.md) :
+  Select one service utilization indicator
 - [`prepare_private_sector_plot_data()`](prepare_private_sector_plot_data.md)
-  : Prepare Private Sector Plot Data
-- [`get_excel_version()`](get_excel_version.md) : Format Service
-  Utilization Data for Excel Export
+  : Prepare private sector plot data
+- [`get_excel_version()`](get_excel_version.md) : Format service
+  utilization data for Excel export
 - [`plot(`*`<cd_service_utilization_filtered>`*`)`](plot.cd_service_utilization_filtered.md)
-  : Plot Service Utilization Indicators
+  : Plot service utilization indicators
 - [`plot(`*`<cd_private_sector_plot_data>`*`)`](plot.cd_private_sector_plot_data.md)
-  : Plot Private Sector Prevalence by Sector and Area/National Level
+  : Plot private sector prevalence by sector and area/national level
 - [`prepare_mapping_service_utlization()`](prepare_mapping_service_utlization.md)
-  : Filter and Prepare Service Utilization Data for Mapping
+  : Filter and prepare service utilization data for mapping
 - [`plot(`*`<cd_service_utilization_prepared>`*`)`](plot.cd_service_utilization_prepared.md)
-  : Plot Filtered Service Utilization Indicators
+  : Plot filtered service utilization indicators
 - [`generate_admin1_service_utilization()`](generate_admin1_service_utilization.md)
-  : Generate Service Utilization Admin 1 Data
+  : Generate service utilization admin level 1 data
 - [`plot(`*`<cd_service_utilization_admin1>`*`)`](plot.cd_service_utilization_admin1.md)
-  : Plot S3 method for Service Utilization Admin1
+  : Plot S3 method for service utilization at admin level 1
 - [`generate_admin1_mch_curative_index()`](generate_admin1_mch_curative_index.md)
-  : Generate MCH vs Curative Index Data
+  : Generate MCH vs curative index data
 - [`plot(`*`<cd_mch_curative_index>`*`)`](plot.cd_mch_curative_index.md)
-  : Plot S3 method for MCH vs Curative Index
+  : Plot S3 method for MCH vs curative index
 - [`generate_service_dqa_summary()`](generate_service_dqa_summary.md) :
-  Generate Service DQA Summary
+  Generate service DQA summary
 - [`plot(`*`<cd_utilization_dqa>`*`)`](plot.cd_utilization_dqa.md) :
-  Plot S3 method for Service DQA Summary
+  Plot S3 method for service DQA summary
 
 ## Health System Performance
 
 Generate national and sub-national service readiness metrics.
 
 - [`calculate_health_system_metrics()`](calculate_health_system_metrics.md)
-  : Calculate Health System Metrics
+  : Calculate health system metrics
 - [`calculate_health_system_comparison()`](calculate_health_system_comparison.md)
-  : Compare Health System Metrics Across Levels
+  : Compare health system metrics across levels
 - [`plot(`*`<cd_health_system_metric>`*`)`](plot.cd_health_system_metric.md)
-  : Plot Health Metrics for Admin 1 Units
+  : Plot health metrics for admin level 1 units
 - [`plot(`*`<cd_health_system_comparison>`*`)`](plot.cd_health_system_comparison.md)
-  : Compare District vs Admin 1 Health Metrics
+  : Compare district vs admin level 1 health metrics
 - [`plot_national_health_metric()`](plot_national_health_metric.md) :
-  Plot National Health System Metrics
+  Plot national health system metrics
 - [`generate_health_system_table()`](generate_health_system_table.md) :
-  Generate Health System Metrics Data
+  Generate health system metrics data
 - [`plot(`*`<cd_health_system_table>`*`)`](plot.cd_health_system_table.md)
-  : Plot S3 method for Health System Metrics
+  : Plot S3 method for health system metrics
 - [`generate_phc_scatter_data()`](generate_phc_scatter_data.md) :
-  Generate PHC Performance Scatter Data
+  Generate PHC performance scatter data
 - [`plot(`*`<cd_phc_scatter>`*`)`](plot.cd_phc_scatter.md) : Plot S3
-  method for PHC Performance Scatter
+  method for PHC performance scatter
 - [`generate_private_sector_data()`](generate_private_sector_data.md) :
-  Generate Private Sector Ownership Data
+  Generate private sector ownership data
 - [`plot(`*`<cd_private_sector>`*`)`](plot.cd_private_sector.md) : Plot
-  S3 method for Private Sector Ownership
+  S3 method for private sector ownership
 
 ## Family Planning (FPET)
 
 Generate and interpret FPET (Family Planning Estimation Tool) estimates.
 
 - [`generate_fpet_summary()`](generate_fpet_summary.md) : Load and
-  Generate FPET Output
-- [`interpret()`](interpret.md) : Generic Interpretation Method
-- [`plot(`*`<cd_fpet_data>`*`)`](plot.cd_fpet_data.md) : Plot Family
-  Planning Estimation Tool (FPET) Data
+  generate FPET output
+- [`interpret()`](interpret.md) : Generic interpretation method
+- [`plot(`*`<cd_fpet_data>`*`)`](plot.cd_fpet_data.md) : Plot family
+  planning estimation tool (FPET) data
 - [`interpret(`*`<cd_fpet_data>`*`)`](interpret.cd_fpet_data.md) :
-  Interpret FPET Results with Emphasis on Current Estimates
+  Interpret FPET results with emphasis on current estimates
 
 ## Bayesian Coverage Model
 
@@ -700,9 +716,9 @@ Coverage modelled with bayescoveragemodel / bayescoveragedeploy
 when the model is first wanted.
 
 - [`generate_bayes_model()`](generate_bayes_model.md) : Generate
-  Bayesian Coverage Model Object
+  Bayesian coverage model object
 - [`plot(`*`<cd_bayes_model>`*`)`](plot.cd_bayes_model.md) : Plot S3
-  method for Bayesian Coverage Model
+  method for Bayesian coverage model
 - [`bayes_model_estimates()`](bayes_model_estimates.md) : A Bayesian
   model's estimates as a table
 - [`slim_bayes_model()`](slim_bayes_model.md) : A Bayesian model without
@@ -720,6 +736,9 @@ Countdown’s content for datasuite.ui’s report builder: the standard
 reports, the charts and tables a report can hold, a dataset’s report
 context; and the saved chart options every chart is finished with.
 
+- [`cd_plot_arguments`](cd_plot_arguments.md)
+  [`cd-plot-arguments`](cd_plot_arguments.md) : Arguments every chart
+  shares
 - [`report_presets()`](report_presets.md) : The standard reports
 - [`report_block_kinds()`](report_block_kinds.md) : The charts and
   tables a report can contain
@@ -731,170 +750,6 @@ context; and the saved chart options every chart is finished with.
 - [`cd_finish_plot()`](cd_finish_plot.md) : Finish a plot: apply the
   chart options
 - [`cd_minimal_theme()`](cd_minimal_theme.md) : A minimal chart theme
-
-## Shiny Apps
-
-The Countdown pages, Load Data wizard, filters and app frame (cd_app())
-the apps are built from.
-
-- [`countdown-pages`](countdown-pages.md)
-  [`adjustment_changes_server`](countdown-pages.md)
-  [`adjustment_changes_ui`](countdown-pages.md)
-  [`calculate_ratios_server`](countdown-pages.md)
-  [`calculate_ratios_ui`](countdown-pages.md)
-  [`cd_admin_level_choices`](countdown-pages.md)
-  [`cd_admin_level_server`](countdown-pages.md)
-  [`cd_admin_level_ui`](countdown-pages.md)
-  [`cd_admin_parts`](countdown-pages.md) [`cd_app`](countdown-pages.md)
-  [`cd_cfg`](countdown-pages.md)
-  [`cd_coverage_plot_server`](countdown-pages.md)
-  [`cd_coverage_plot_toolbar_ui`](countdown-pages.md)
-  [`cd_coverage_plot_ui`](countdown-pages.md)
-  [`cd_default_indicator_set`](countdown-pages.md)
-  [`cd_default_indicators`](countdown-pages.md)
-  [`cd_denominator_chip_keys`](countdown-pages.md)
-  [`cd_denominator_choices`](countdown-pages.md)
-  [`cd_denominator_header`](countdown-pages.md)
-  [`cd_denominator_options`](countdown-pages.md)
-  [`cd_denominator_row`](countdown-pages.md)
-  [`cd_denominator_server`](countdown-pages.md)
-  [`cd_denominator_ui`](countdown-pages.md)
-  [`cd_has_maternal`](countdown-pages.md)
-  [`cd_indicator_server`](countdown-pages.md)
-  [`cd_indicator_ui`](countdown-pages.md)
-  [`cd_nav_denominators`](countdown-pages.md)
-  [`cd_nav_national`](countdown-pages.md)
-  [`cd_nav_quality`](countdown-pages.md)
-  [`cd_nav_start`](countdown-pages.md)
-  [`cd_nav_subnational`](countdown-pages.md)
-  [`cd_only_denominators`](countdown-pages.md)
-  [`cd_palette_chip`](countdown-pages.md)
-  [`cd_population_server`](countdown-pages.md)
-  [`cd_population_ui`](countdown-pages.md)
-  [`cd_rate_status_cell`](countdown-pages.md)
-  [`cd_saved_copy_name`](countdown-pages.md)
-  [`cd_scope_filters`](countdown-pages.md)
-  [`cd_scope_server`](countdown-pages.md)
-  [`cd_scoped_page_server`](countdown-pages.md)
-  [`cd_scoped_page_ui`](countdown-pages.md)
-  [`cd_tabbed_charts_server`](countdown-pages.md)
-  [`cd_tabbed_charts_ui`](countdown-pages.md)
-  [`cd_table_server`](countdown-pages.md)
-  [`cd_table_ui`](countdown-pages.md)
-  [`cd_wizard_check_group`](countdown-pages.md)
-  [`cd_wizard_config`](countdown-pages.md)
-  [`cd_wizard_field_group`](countdown-pages.md)
-  [`cd_wizard_indicator_group`](countdown-pages.md)
-  [`cd_table_card_server`](countdown-pages.md)
-  [`cd_table_card_ui`](countdown-pages.md)
-  [`cd_upload_data_server`](countdown-pages.md)
-  [`cd_upload_data_ui`](countdown-pages.md)
-  [`bayesian_page_server`](countdown-pages.md)
-  [`bayesian_server`](countdown-pages.md)
-  [`bayesian_ui`](countdown-pages.md)
-  [`cd_bayes_indicators`](countdown-pages.md)
-  [`cd_start_bayes_workers`](countdown-pages.md)
-  [`cd_wizard_national_rate_fields`](countdown-pages.md)
-  [`cd_wizard_rate_field`](countdown-pages.md)
-  [`cd_wizard_survey_field`](countdown-pages.md)
-  [`cd_years_input`](countdown-pages.md)
-  [`cd_years_sync`](countdown-pages.md)
-  [`compute_step_states`](countdown-pages.md)
-  [`consistency_check_server`](countdown-pages.md)
-  [`consistency_check_ui`](countdown-pages.md)
-  [`consistency_pair_keys`](countdown-pages.md)
-  [`consistency_pair_label`](countdown-pages.md)
-  [`coverage_server`](countdown-pages.md)
-  [`coverage_trends_server`](countdown-pages.md)
-  [`coverage_trends_ui`](countdown-pages.md)
-  [`coverage_ui`](countdown-pages.md)
-  [`data_adjustment_server`](countdown-pages.md)
-  [`data_adjustment_ui`](countdown-pages.md)
-  [`data_completeness_server`](countdown-pages.md)
-  [`data_completeness_ui`](countdown-pages.md)
-  [`data_quality_server`](countdown-pages.md)
-  [`data_quality_ui`](countdown-pages.md)
-  [`den_indicators`](countdown-pages.md)
-  [`denominator_assessment_server`](countdown-pages.md)
-  [`denominator_assessment_ui`](countdown-pages.md)
-  [`denominator_selection_server`](countdown-pages.md)
-  [`denominator_selection_ui`](countdown-pages.md)
-  [`equity_server`](countdown-pages.md)
-  [`equity_ui`](countdown-pages.md)
-  [`get_national_rates`](countdown-pages.md)
-  [`inequality_server`](countdown-pages.md)
-  [`inequality_ui`](countdown-pages.md)
-  [`internal_consistency_server`](countdown-pages.md)
-  [`internal_consistency_ui`](countdown-pages.md)
-  [`introduction_server`](countdown-pages.md)
-  [`introduction_ui`](countdown-pages.md)
-  [`list_missing_units`](countdown-pages.md)
-  [`map_shapefile_server`](countdown-pages.md)
-  [`map_shapefile_ui`](countdown-pages.md)
-  [`map_survey_server`](countdown-pages.md)
-  [`map_survey_ui`](countdown-pages.md)
-  [`mapping_modal_server`](countdown-pages.md)
-  [`mapping_modal_ui`](countdown-pages.md)
-  [`mapping_provenance_banner`](countdown-pages.md)
-  [`national_coverage_server`](countdown-pages.md)
-  [`national_coverage_ui`](countdown-pages.md)
-  [`national_inequality_server`](countdown-pages.md)
-  [`national_inequality_ui`](countdown-pages.md)
-  [`national_rates_required_fields`](countdown-pages.md)
-  [`national_rates_server`](countdown-pages.md)
-  [`national_rates_ui`](countdown-pages.md)
-  [`national_target_server`](countdown-pages.md)
-  [`national_target_ui`](countdown-pages.md)
-  [`nr_field`](countdown-pages.md) [`nr_group`](countdown-pages.md)
-  [`outlier_detection_server`](countdown-pages.md)
-  [`outlier_detection_ui`](countdown-pages.md)
-  [`overall_score_server`](countdown-pages.md)
-  [`overall_score_ui`](countdown-pages.md)
-  [`push_upload_on_remount`](countdown-pages.md)
-  [`reference_estimates_server`](countdown-pages.md)
-  [`reference_estimates_ui`](countdown-pages.md)
-  [`reporting_rate_server`](countdown-pages.md)
-  [`reporting_rate_ui`](countdown-pages.md)
-  [`restore_default_control`](countdown-pages.md)
-  [`rr_indicators`](countdown-pages.md)
-  [`shapefile_step_server`](countdown-pages.md)
-  [`shapefile_step_ui`](countdown-pages.md)
-  [`step_map_mapping_complete`](countdown-pages.md)
-  [`step_national_rates_complete`](countdown-pages.md)
-  [`step_quality_complete`](countdown-pages.md)
-  [`step_shapefile_complete`](countdown-pages.md)
-  [`step_shapefile_touched`](countdown-pages.md)
-  [`step_survey_files_complete`](countdown-pages.md)
-  [`step_survey_mapping_complete`](countdown-pages.md)
-  [`step_upload_complete`](countdown-pages.md)
-  [`subnational_coverage_server`](countdown-pages.md)
-  [`subnational_coverage_ui`](countdown-pages.md)
-  [`subnational_denominator_server`](countdown-pages.md)
-  [`subnational_denominator_ui`](countdown-pages.md)
-  [`subnational_inequality_server`](countdown-pages.md)
-  [`subnational_inequality_ui`](countdown-pages.md)
-  [`subnational_mapping_server`](countdown-pages.md)
-  [`subnational_mapping_ui`](countdown-pages.md)
-  [`subnational_target_server`](countdown-pages.md)
-  [`subnational_target_ui`](countdown-pages.md)
-  [`survey_comparison_server`](countdown-pages.md)
-  [`survey_comparison_ui`](countdown-pages.md)
-  [`survey_estimates_required_fields`](countdown-pages.md)
-  [`survey_fields`](countdown-pages.md)
-  [`survey_upload_server`](countdown-pages.md)
-  [`survey_upload_ui`](countdown-pages.md)
-  [`target_server`](countdown-pages.md)
-  [`target_ui`](countdown-pages.md)
-  [`upload_box_server`](countdown-pages.md)
-  [`upload_box_ui`](countdown-pages.md)
-  [`wizard_fields`](countdown-pages.md)
-  [`wizard_landing_server`](countdown-pages.md)
-  [`wizard_landing_ui`](countdown-pages.md)
-  [`wizard_step_defs`](countdown-pages.md)
-  [`wizard_steps_server`](countdown-pages.md)
-  [`wizard_steps_ui`](countdown-pages.md) : The Countdown pages, wizard,
-  filters and app frame
-- [`cd_scope()`](cd_scope.md) : Define the Scope of a Scoped Page
 
 ## The Countdown AI
 
@@ -922,66 +777,360 @@ with.
   ids and column names in the package's data mean
 - [`cd_describe_columns()`](cd_describe_columns.md) : Read column names
   with the data dictionary
-- [`notebook_data()`](notebook_data.md) : Notebook data: a folder's
-  Countdown datasets for DataSuite's notebooks
+- [`notebook_data()`](notebook_data.md) : Give DataSuite's notebooks a
+  folder's Countdown datasets
 - [`cd_denominator_labels()`](cd_denominator_labels.md) : The
   denominator options' labels
+- [`cd_indicator_labels()`](cd_indicator_labels.md) : The indicators'
+  labels
 - [`cd_methodology_defaults()`](cd_methodology_defaults.md) : The
-  Constants of the Countdown Methodology
+  constants of the Countdown methodology
+
+## App: building an app
+
+The app itself and its per-app settings, with the guide to the interface
+(countdown-pages).
+
+- [`cd_app()`](cd_app.md) : Build a Countdown app
+- [`cd_cfg()`](cd_cfg.md) : Read one of the app's settings
+- [`countdown-pages`](countdown-pages.md) : The Countdown pages, wizard,
+  filters and app frame
+
+## App: pages
+
+The analysis pages every Countdown app shares, each a ui/server pair.
+
+- [`adjustment_changes_ui()`](adjustment_changes_ui.md)
+  [`adjustment_changes_server()`](adjustment_changes_ui.md) : Data
+  adjustment changes page
+- [`bayesian_page_server()`](bayesian_page_server.md) : Bayesian page
+  server for the page registry
+- [`bayesian_ui()`](bayesian_ui.md)
+  [`bayesian_server()`](bayesian_ui.md) : Bayesian coverage model page
+- [`calculate_ratios_ui()`](calculate_ratios_ui.md)
+  [`calculate_ratios_server()`](calculate_ratios_ui.md) : Indicator
+  ratios card
+- [`cd_bayes_fit_task()`](cd_bayes_fit_task.md) : Fit one Bayesian
+  coverage model in a background worker
+- [`cd_bayes_indicators`](cd_bayes_indicators.md) : Indicators the
+  Bayesian coverage model can be fitted for
+- [`cd_start_bayes_workers()`](cd_start_bayes_workers.md) : Start the
+  background workers that fit the Bayesian models
+- [`consistency_check_ui()`](consistency_check_ui.md)
+  [`consistency_check_server()`](consistency_check_ui.md) : Consistency
+  checks card
+- [`consistency_pair_keys()`](consistency_pair_keys.md) : Tab keys of
+  the consistency check pairs
+- [`consistency_pair_label()`](consistency_pair_label.md) : Tab label of
+  a consistency check pair
+- [`coverage_trends_ui()`](coverage_trends_ui.md)
+  [`coverage_trends_server()`](coverage_trends_ui.md) : Coverage trends
+  by denominator card
+- [`coverage_ui()`](coverage_ui.md)
+  [`coverage_server()`](coverage_ui.md) : Coverage charts for one
+  geography
+- [`data_adjustment_ui()`](data_adjustment_ui.md)
+  [`data_adjustment_server()`](data_adjustment_ui.md) : Data adjustment
+  page
+- [`data_completeness_ui()`](data_completeness_ui.md)
+  [`data_completeness_server()`](data_completeness_ui.md) : Data
+  completeness page
+- [`den_indicators`](den_indicators.md) : Tabs of the denominator
+  assessment chart
+- [`denominator_assessment_ui()`](denominator_assessment_ui.md)
+  [`denominator_assessment_server()`](denominator_assessment_ui.md) :
+  Denominator assessment page
+- [`denominator_selection_ui()`](denominator_selection_ui.md)
+  [`denominator_selection_server()`](denominator_selection_ui.md) :
+  Denominator selection page
+- [`equity_ui()`](equity_ui.md) [`equity_server()`](equity_ui.md) :
+  Equity assessment page
+- [`inequality_ui()`](inequality_ui.md)
+  [`inequality_server()`](inequality_ui.md) : Sub-national inequality
+  charts
+- [`internal_consistency_ui()`](internal_consistency_ui.md)
+  [`internal_consistency_server()`](internal_consistency_ui.md) :
+  Internal consistency page
+- [`introduction_ui()`](introduction_ui.md)
+  [`introduction_server()`](introduction_ui.md) : Introduction page
+- [`national_coverage_ui()`](national_coverage_ui.md)
+  [`national_coverage_server()`](national_coverage_ui.md) : National
+  coverage page
+- [`national_inequality_ui()`](national_inequality_ui.md)
+  [`national_inequality_server()`](national_inequality_ui.md) : National
+  inequality page
+- [`national_target_ui()`](national_target_ui.md)
+  [`national_target_server()`](national_target_ui.md) : National
+  coverage target page
+- [`outlier_detection_ui()`](outlier_detection_ui.md)
+  [`outlier_detection_server()`](outlier_detection_ui.md) : Outlier
+  detection page
+- [`overall_score_ui()`](overall_score_ui.md)
+  [`overall_score_server()`](overall_score_ui.md) : Overall score page
+- [`reporting_rate_ui()`](reporting_rate_ui.md)
+  [`reporting_rate_server()`](reporting_rate_ui.md) : Reporting rate
+  page
+- [`rr_indicators`](rr_indicators.md) : Tabs of the reporting rate chart
+- [`subnational_coverage_ui()`](subnational_coverage_ui.md)
+  [`subnational_coverage_server()`](subnational_coverage_ui.md) :
+  Sub-national coverage page
+- [`subnational_denominator_ui()`](subnational_denominator_ui.md)
+  [`subnational_denominator_server()`](subnational_denominator_ui.md) :
+  Sub-national coverage by denominator card
+- [`subnational_inequality_ui()`](subnational_inequality_ui.md)
+  [`subnational_inequality_server()`](subnational_inequality_ui.md) :
+  Sub-national inequality page
+- [`subnational_mapping_ui()`](subnational_mapping_ui.md)
+  [`subnational_mapping_server()`](subnational_mapping_ui.md) :
+  Sub-national coverage maps
+- [`subnational_target_ui()`](subnational_target_ui.md)
+  [`subnational_target_server()`](subnational_target_ui.md) :
+  Sub-national coverage target page
+- [`survey_comparison_ui()`](survey_comparison_ui.md)
+  [`survey_comparison_server()`](survey_comparison_ui.md) : Coverage
+  against the survey card
+- [`target_ui()`](target_ui.md) [`target_server()`](target_ui.md) :
+  Coverage target charts and table
+
+## App: Load Data wizard
+
+The Load Data screen: its steps, the tests of what is complete and the
+builders of an app’s own fields.
+
+- [`cd_saved_copy_name()`](cd_saved_copy_name.md) : File name of a
+  dataset's saved copy
+- [`cd_upload_data_ui()`](cd_upload_data_ui.md)
+  [`cd_upload_data_server()`](cd_upload_data_ui.md) : The Load Data
+  screen
+- [`cd_wizard_check_group()`](cd_wizard_check_group.md) : Check that a
+  loaded dataset belongs to the app's indicator group
+- [`cd_wizard_config()`](cd_wizard_config.md) : The app's Load Data
+  wizard configuration
+- [`cd_wizard_field_group()`](cd_wizard_field_group.md) : Describe one
+  group of fields of the National Rates step
+- [`cd_wizard_indicator_group()`](cd_wizard_indicator_group.md) : The
+  indicator group the running app is for
+- [`cd_wizard_national_rate_fields()`](cd_wizard_national_rate_fields.md)
+  : The five national rate fields every indicator group needs
+- [`cd_wizard_survey_field()`](cd_wizard_survey_field.md)
+  [`cd_wizard_rate_field()`](cd_wizard_survey_field.md) : Describe one
+  field of the National Rates step
+- [`compute_step_states()`](compute_step_states.md) : Work out the state
+  of every Load Data wizard step
+- [`data_quality_ui()`](data_quality_ui.md)
+  [`data_quality_server()`](data_quality_ui.md) : Data quality step of
+  the Load Data wizard
+- [`map_shapefile_ui()`](map_shapefile_ui.md)
+  [`map_shapefile_server()`](map_shapefile_ui.md) : Map Shapefile Names
+  step of the Load Data wizard
+- [`map_survey_ui()`](map_survey_ui.md)
+  [`map_survey_server()`](map_survey_ui.md) : Map Survey Files step of
+  the Load Data wizard
+- [`mapping_modal_ui()`](mapping_modal_ui.md)
+  [`mapping_modal_server()`](mapping_modal_ui.md) : Dialog that matches
+  the dataset's region names to another source
+- [`mapping_provenance_banner()`](mapping_provenance_banner.md) : Banner
+  that says how a saved name mapping was matched
+- [`national_rates_required_fields()`](national_rates_required_fields.md)
+  [`survey_estimates_required_fields()`](national_rates_required_fields.md)
+  : The values the National Rates step requires
+- [`national_rates_ui()`](national_rates_ui.md)
+  [`national_rates_server()`](national_rates_ui.md) : National rates
+  step of the Load Data wizard
+- [`nr_field()`](nr_field.md) : One number field of the wizard's forms
+- [`nr_group()`](nr_group.md) : A titled group of fields in the wizard's
+  forms
+- [`push_upload_on_remount()`](push_upload_on_remount.md) : Keep an
+  upload zone showing the file the dataset already holds
+- [`reference_estimates_ui()`](reference_estimates_ui.md)
+  [`reference_estimates_server()`](reference_estimates_ui.md) :
+  Reference-data uploads of the wizard's Upload Data step
+- [`restore_default_control()`](restore_default_control.md) : A link
+  that clears something the user set in the dataset
+- [`shapefile_step_ui()`](shapefile_step_ui.md)
+  [`shapefile_step_server()`](shapefile_step_ui.md) : Shapefile step of
+  the Load Data wizard
+- [`step_upload_complete()`](step_upload_complete.md)
+  [`step_quality_complete()`](step_upload_complete.md)
+  [`step_national_rates_complete()`](step_upload_complete.md)
+  [`step_survey_files_complete()`](step_upload_complete.md)
+  [`step_shapefile_complete()`](step_upload_complete.md)
+  [`step_shapefile_touched()`](step_upload_complete.md)
+  [`step_survey_mapping_complete()`](step_upload_complete.md)
+  [`step_map_mapping_complete()`](step_upload_complete.md) : Tests of
+  whether a Load Data wizard step is complete
+- [`survey_fields`](survey_fields.md) : The dataset fields of the five
+  survey files
+- [`survey_upload_ui()`](survey_upload_ui.md)
+  [`survey_upload_server()`](survey_upload_ui.md) : Survey files step of
+  the Load Data wizard
+- [`upload_box_ui()`](upload_box_ui.md)
+  [`upload_box_server()`](upload_box_ui.md) : Main dataset upload of the
+  Load Data wizard
+- [`wizard_fields()`](wizard_fields.md) : The National Rates fields of
+  one kind
+- [`wizard_landing_ui()`](wizard_landing_ui.md)
+  [`wizard_landing_server()`](wizard_landing_ui.md) : Summary page of
+  the Load Data wizard
+- [`wizard_step_defs`](wizard_step_defs.md) : The steps of the Load Data
+  wizard
+- [`wizard_steps_ui()`](wizard_steps_ui.md)
+  [`wizard_steps_server()`](wizard_steps_ui.md) : The Load Data wizard:
+  its steps, navigation and Finish
+
+## App: filters
+
+The filter chips pages share: indicator, admin level, denominator,
+population, years, palette.
+
+- [`cd_admin_level_choices()`](cd_admin_level_choices.md) : Choices of
+  the admin level chip
+- [`cd_admin_level_ui()`](cd_admin_level_ui.md)
+  [`cd_admin_level_server()`](cd_admin_level_ui.md) : Admin level and
+  region filter chips
+- [`cd_admin_parts()`](cd_admin_parts.md) : Split the admin level
+  filter's value into two reactives
+- [`cd_denominator_chip_keys()`](cd_denominator_chip_keys.md) : Label
+  and hint of a denominator chip
+- [`cd_denominator_choices`](cd_denominator_choices.md) : The standard
+  denominator choices
+- [`cd_denominator_options()`](cd_denominator_options.md) : The
+  denominators this app offers
+- [`cd_denominator_ui()`](cd_denominator_ui.md)
+  [`cd_denominator_server()`](cd_denominator_ui.md) : Denominator filter
+  chip
+- [`cd_has_maternal()`](cd_has_maternal.md) : Whether this app has a
+  maternal denominator
+- [`cd_indicator_ui()`](cd_indicator_ui.md)
+  [`cd_indicator_server()`](cd_indicator_ui.md) : Indicator filter chip
+- [`cd_only_denominators()`](cd_only_denominators.md) : Keep only the
+  denominators this app offers
+- [`cd_palette_chip()`](cd_palette_chip.md) : Colour palette chip for a
+  page's maps
+- [`cd_population_ui()`](cd_population_ui.md)
+  [`cd_population_server()`](cd_population_ui.md) : Population filter
+  chip
+- [`cd_years_input()`](cd_years_input.md) : The years a years chip means
+- [`cd_years_sync()`](cd_years_sync.md) : Keep a years chip in step with
+  the dataset
+
+## App: layout
+
+The dataset header, sidebar sections, scoped pages and tabbed charts.
+
+- [`cd_default_indicator_set()`](cd_default_indicator_set.md) : The
+  indicators this app's tabbed chart cards show
+- [`cd_default_indicators`](cd_default_indicators.md) : The standard
+  indicators of a tabbed chart card
+- [`cd_denominator_header()`](cd_denominator_header.md) : Draw the
+  denominator row in a page header
+- [`cd_denominator_row()`](cd_denominator_row.md) : Row naming the
+  denominators in use
+- [`cd_nav_start()`](cd_nav_start.md)
+  [`cd_nav_quality()`](cd_nav_start.md)
+  [`cd_nav_denominators()`](cd_nav_start.md)
+  [`cd_nav_national()`](cd_nav_start.md)
+  [`cd_nav_subnational()`](cd_nav_start.md) : The standard sidebar
+  sections of a Countdown app
+- [`cd_scope()`](cd_scope.md) : Define the scope of a scoped page
+- [`cd_scope_filters()`](cd_scope_filters.md) : Filter bar of a scope
+- [`cd_scope_server()`](cd_scope_server.md) : Admin level and region of
+  a scope
+- [`cd_scoped_page_ui()`](cd_scoped_page_ui.md)
+  [`cd_scoped_page_server()`](cd_scoped_page_ui.md) : A whole page that
+  runs an analysis at a scope
+- [`cd_tab_indicator()`](cd_tab_indicator.md) : The indicator of a tab
+  of charts
+- [`cd_tabbed_charts_ui()`](cd_tabbed_charts_ui.md)
+  [`cd_tabbed_charts_server()`](cd_tabbed_charts_ui.md) : Chart card
+  with one tab for each indicator
+
+## App: charts and tables
+
+Chart and table cards with their downloads.
+
+- [`cd_coverage_plot_ui()`](cd_coverage_plot_ui.md)
+  [`cd_coverage_plot_toolbar_ui()`](cd_coverage_plot_ui.md)
+  [`cd_coverage_plot_server()`](cd_coverage_plot_ui.md) : Chart with its
+  tools and downloads
+- [`cd_rate_status_cell()`](cd_rate_status_cell.md) : Table cell showing
+  a rate with its status
+- [`cd_table_card_ui()`](cd_table_card_ui.md)
+  [`cd_table_card_server()`](cd_table_card_ui.md) : Flextable in a card
+  with picture and Excel downloads
+- [`cd_table_ui()`](cd_table_ui.md)
+  [`cd_table_server()`](cd_table_ui.md) : Table card with a year or
+  indicator control
 
 ## Utility Functions
 
 Utility helpers used internally or across workflows.
 
-- [`add_outlier5std_column()`](add_outlier5std_column.md) : Add Outlier
-  Flags Based on 5-MAD Bounds
+- [`add_outlier5std_column()`](add_outlier5std_column.md) : Add outlier
+  flags based on 5-MAD bounds
 
-- [`add_mad_med_columns()`](add_mad_med_columns.md) : Add Median and MAD
-  Columns for Indicators
+- [`add_mad_med_columns()`](add_mad_med_columns.md) : Add median and MAD
+  columns for indicators
 
-- [`add_missing_column()`](add_missing_column.md) : Add Missing Value
-  Flags to Health Indicators
+- [`add_missing_column()`](add_missing_column.md) : Add missing value
+  flags to health indicators
 
 - [`get_all_indicators()`](get_all_indicators.md) : Get All Indicators
 
-- [`get_country_iso3()`](get_country_iso3.md) : Get Country ISO3 Code
+- [`get_country_iso3()`](get_country_iso3.md) : Get country ISO3 code
 
-- [`get_country_name()`](get_country_name.md) : Get Country Name
+- [`get_country_name()`](get_country_name.md) : Get country name
 
 - [`get_named_indicators()`](get_named_indicators.md) : Get Named
   Indicator Vector
 
-- [`get_population_column()`](get_population_column.md) : Get Population
-  Denominator Column Based on Indicator Only
+- [`get_population_column()`](get_population_column.md) : Get the
+  population column for an indicator and denominator
 
 - [`get_analysis_indicators()`](get_analysis_indicators.md) : Get
   Indicators excluding indicators without denominator
 
-- [`list_tracer_vaccines()`](list_tracer_vaccines.md) : List Tracer
-  Vaccines
+- [`list_tracer_vaccines()`](list_tracer_vaccines.md) : List tracer
+  vaccines
 
-- [`list_vaccine_indicators()`](list_vaccine_indicators.md) : List All
-  Vaccine and Related Coverage Indicators
+- [`list_vaccine_indicators()`](list_vaccine_indicators.md) : List all
+  vaccine and related coverage indicators
 
-- [`get_admin_columns()`](get_admin_columns.md) : Determine Grouping
-  Columns for Administrative Levels
+- [`get_admin_columns()`](get_admin_columns.md) : Determine grouping
+  columns for administrative levels
 
 - [`get_plot_admin_column()`](get_plot_admin_column.md) : Determine the
-  Administrative Column to Use for Plotting
+  administrative column to use for plotting
 
 - [`is_maternal_indicator()`](is_maternal_indicator.md) : Detemine if an
   indicator is maternal indicator
 
-- [`robust_max()`](robust_max.md) : Robust Maximum Value Calculation
+- [`robust_max()`](robust_max.md) : Robust maximum value calculation
 
 - [`print(`*`<cd_data>`*`)`](print.cd_data.md) :
 
-  Print Method for `cd_data` Class
+  Print method for `cd_data` class
 
 - [`with_cd_quiet()`](cd2030-configuration.md)
-  [`local_cd_quiet()`](cd2030-configuration.md) : Execute Code in Quiet
-  Mode
+  [`local_cd_quiet()`](cd2030-configuration.md) : Execute code in quiet
+  mode
 
-- [`clean_error_message()`](clean_error_message.md) : Clean and Validate
-  Error Messages
+- [`clean_error_message()`](clean_error_message.md) : Clean and validate
+  error messages
 
+# Articles
+
+### Analysing a dataset
+
+From a country’s file to coverage, step by step, on the example dataset.
+
+- [Get started with cd2030.core](cd2030.core.md):
+- [Preparing your data](preparing-data.md):
+- [Checking data quality](data-quality.md):
+- [From adjustment to coverage](coverage.md):
+
+### The apps
+
+How the Countdown Shiny apps are built on this package.
+
+- [Building an app on cd2030.core](building-an-app.md):

@@ -1,12 +1,9 @@
-# Check a district's admin-1 pairing is stable within the Admin sheet itself
+# Check that each district has one admin level 1 name in the Admin sheet
 
-Pre-merge half of the old (still-existing, still used post-merge by
-[`new_countdown()`](new_countdown.md)'s Tier B)
-[`check_district_consistency()`](check_district_consistency.md) – this
-half only ever needed the Admin sheet: a district's `adminlevel_1`
-pairing can only vary across the merged data if the Admin sheet itself
-lists that district more than once with different values, so checking
-the raw sheet directly loses no signal.
+Checks that no district is listed in the Admin sheet under more than one
+admin level 1 unit. This is the part of
+[`check_district_consistency()`](check_district_consistency.md) that can
+run before the sheets are merged.
 
 ## Usage
 
@@ -18,5 +15,33 @@ check_admin_pairing_consistency(admin_data)
 
 - admin_data:
 
-  The raw Admin sheet (`parts[[admin_sheet_name]]`, pre-rename – still
-  has `first_admin_level`, not `adminlevel_1`).
+  A data frame. The cleaned Admin sheet, before the sheets are merged,
+  with `district` and `first_admin_level` columns.
+
+## Value
+
+`NULL` if every district has one admin level 1 name, or if the sheet
+lacks either column. Otherwise a character vector of length one, named
+`"x"`, with a message that lists the districts.
+
+## Details
+
+Admin level 1 names are compared without regard to case or extra spaces.
+
+## Examples
+
+``` r
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+sheets <- load_excel_parts(path)
+#> ℹ Loading Excel "kenya.xlsx" for parts
+admin <- sheets$parts[[sheets$admin_sheet_name]]
+check_admin_pairing_consistency(admin)
+#> NULL
+
+# The first district listed a second time, under another region
+again <- admin[1, ]
+again$first_admin_level <- "Western"
+check_admin_pairing_consistency(rbind(admin, again))
+#>                                                                            x 
+#> "District(s) with an inconsistent admin-1 name in the Admin sheet: Baringo." 
+```

@@ -1,9 +1,11 @@
-# Notebook data: a folder's Countdown datasets for DataSuite's notebooks
+# Give DataSuite's notebooks a folder's Countdown datasets
 
-What DataSuite's notebooks call (an app's `notebookData`): the datasets
-of a folder – each app's saved `.rds` next to its Excel file, and its
-workspace – by name, in R, Python and Stata. Never writes to an `.xlsx`
-or an `.rds`; only the workspace's `data/` folder.
+Lists, prepares, attaches or describes the datasets of a folder for
+notebooks in R, Python and Stata. A dataset is the `.rds` file an app
+saved next to a country's Excel file, together with its workspace.
+DataSuite calls this function for the apps that declare it as their
+`notebookData`. It does not write to an `.xlsx` or `.rds` file: it
+writes only to the workspace's `data/` folder.
 
 ## Usage
 
@@ -38,13 +40,13 @@ notebook_data(
 
 - workspace:
 
-  The notebook's workspace (`<stem>.shiny-workspace`): its `.rds` is the
-  notebook's own dataset.
+  The notebook's workspace folder (`<stem>.shiny-workspace`). The `.rds`
+  file with the same stem is the dataset the notebook belongs to.
 
 - datasets:
 
   For `"prepare"`: the datasets (their `.rds` file names without `.rds`,
-  or `"ref"`) to prepare; the workspace's own is always included.
+  or `"ref"`) to prepare. The dataset of `workspace` is always included.
 
 - force:
 
@@ -66,3 +68,32 @@ notebook_data(
 
 For `"list"`, `"prepare"` and `"describe"`, a list (DataSuite reads it
 as JSON); for `"attach"`, invisibly the names attached.
+
+## Examples
+
+``` r
+# a folder with a country's Excel file that no app has opened yet
+folder <- tempfile("countdown_")
+dir.create(folder)
+file.copy(system.file("extdata", "kenya.xlsx", package = "cd2030.core"), folder)
+#> [1] TRUE
+
+listing <- notebook_data("list", folder = folder)
+listing$datasets[[1]]$status
+#> [1] "not-loaded"
+vapply(listing$ref$tables, function(t) t$name, character(1))
+#> [1] "ref_un_estimates" "ref_un_mortality" "ref_wuenic"       "ref_fpet"        
+#> [5] "ref_countries"   
+unlink(folder, recursive = TRUE)
+
+if (FALSE) { # \dontrun{
+# in a notebook of the workspace of kenya_rmncah.rds: its tables by name, and ds_list()
+workspace <- file.path("data", "kenya_rmncah.shiny-workspace")
+notebook_data("attach", folder = "data", workspace = workspace)
+head(adjusted_data)
+
+# for Python and Stata: Stata files of two of its tables in the workspace's data/ folder
+notebook_data("prepare", folder = "data", workspace = workspace,
+              tables = c("adjusted_data", "national_survey"))
+} # }
+```

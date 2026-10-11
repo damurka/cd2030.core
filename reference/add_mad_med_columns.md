@@ -1,4 +1,4 @@
-# Add Median and MAD Columns for Indicators
+# Add median and MAD columns for indicators
 
 `add_mad_med_columns` calculates and appends the median and Median
 Absolute Deviation (MAD) for specified indicators in a dataset. These

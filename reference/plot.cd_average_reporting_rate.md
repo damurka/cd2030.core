@@ -1,4 +1,4 @@
-# Plot Sub-National Reporting Rates by Year and Unit
+# Plot sub-national reporting rates by year and unit
 
 Visualizes reporting rates for selected health service indicators at
 sub-national levels, using heat maps or bar plots. Intended for use with
@@ -16,9 +16,11 @@ plot(
   indicator = c("anc_rr", "idelv_rr", "vacc_rr", "opd_rr", "ipd_rr"),
   threshold = .cd_method$data_quality$reporting_threshold,
   title = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
-  legend = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
   options = NULL
 )
@@ -63,30 +65,42 @@ plot(
 
 - title:
 
-  Optional plot title. Defaults to a title naming the unit and region.
+  The chart's title.
 
-- x_axis, y_axis:
+- subtitle:
 
-  Optional x- and y-axis titles. Default to labels suited to
-  `plot_type`.
+  The line under the title.
 
-- legend:
+- caption:
 
-  Optional legend title. Defaults to a label suited to `plot_type`.
+  The note under the chart.
+
+- x_title:
+
+  The title of the horizontal axis.
+
+- y_title:
+
+  The title of the vertical axis.
+
+- legend_title:
+
+  The title of the legend.
 
 - ...:
 
-  Chart options (see
-  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html))
-  given by name, applied as with `options`.
+  Chart options by name (see
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)):
+  background, fonts, sizes, axes, grid, legend, colours. Other arguments
+  are ignored.
 
 - options:
 
-  (Optional) A
+  A
   [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
-  object: text, legend, fonts and sizes a user changed. Applied last, so
-  it wins over the arguments above; the plot's own defaults are used for
-  whatever it does not set.
+  object or a list of chart options: a look made once, to give to
+  several charts. Applied after the text arguments, so a text it holds
+  wins over them.
 
 ## Value
 

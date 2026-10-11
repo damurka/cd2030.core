@@ -1,4 +1,4 @@
-# Load UN Estimates
+# Load UN estimates
 
 Loads and processes UN estimates from a `.dta` file or in-memory data.
 Filters by country and year, renames columns, and assigns a custom
@@ -31,3 +31,17 @@ load_un_estimates(path = NULL, .data = NULL, country_iso, start_year, end_year)
 ## Value
 
 A tibble of class `cd_un_estimates`.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+un <- load_un_estimates(
+  path = "un_estimates.dta", country_iso = "KEN", start_year = 2019, end_year = 2023
+)
+
+# From data already read, then kept with the dataset
+un <- load_un_estimates(.data = all_un, country_iso = "KEN", start_year = 2019, end_year = 2023)
+cache$set_un_estimates(un)
+} # }
+```

@@ -1,4 +1,4 @@
-# Plot National Population or Births Metrics
+# Plot national population or births metrics
 
 Generates a line graph to visualize national-level demographic data,
 comparing DHIS-2 data/projections against UN estimates. This function is
@@ -12,10 +12,13 @@ plot(
   x,
   metric = c("population", "births", "under1"),
   title = NULL,
-  x_label = NULL,
-  y_label = NULL,
-  legend_labels = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
+  legend_labels = NULL,
   options = NULL
 )
 ```
@@ -40,16 +43,34 @@ plot(
 
 - title:
 
-  Optional. A custom title for the plot. If `NULL`, a default title
-  based on the metric is used.
+  The chart's title.
 
-- x_label:
+- subtitle:
 
-  Optional. Custom label for the x-axis. Defaults to "Year".
+  The line under the title.
 
-- y_label:
+- caption:
 
-  Optional. Custom label for the y-axis. Defaults to "population".
+  The note under the chart.
+
+- x_title:
+
+  The title of the horizontal axis.
+
+- y_title:
+
+  The title of the vertical axis.
+
+- legend_title:
+
+  The title of the legend.
+
+- ...:
+
+  Chart options by name (see
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)):
+  background, fonts, sizes, axes, grid, legend, colours. Other arguments
+  are ignored.
 
 - legend_labels:
 
@@ -62,18 +83,13 @@ plot(
 
   - 'under1': 2 labels
 
-- ...:
-
-  Additional arguments passed to the plotting function.
-
 - options:
 
-  (Optional) A
+  A
   [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
-  object: text, legend, fonts and sizes a user changed. Applied last, so
-  it wins over the arguments above; the plot's own defaults are used for
-  whatever it does not set. Any chart option can also be given by name
-  in `...`.
+  object or a list of chart options: a look made once, to give to
+  several charts. Applied after the text arguments, so a text it holds
+  wins over them.
 
 ## Value
 
@@ -92,3 +108,23 @@ The function compares local Health Management Information System
   `totbirths_dhis2`.
 
 - **Under 1**: Compares `un_under1` vs `totunder1_dhis2`.
+
+## Examples
+
+``` r
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#> ℹ Loading Excel "kenya.xlsx" for parts
+#> ! The following columns are empty: anc_1trimester, under5_deaths, total_deaths,
+#>   ipv2, measles_cases
+#> ℹ Successfully loaded and cleaned data
+#> ℹ Auto-detect candidates (|group|): vaccine=19, rmncah=28 -> selected rmncah
+cache$set_national_estimates(list(sbr = 0.02))
+cache$adjust_data()
+population <- cache$denominator_metrics
+
+plot(population, metric = "population")
+
+plot(population, metric = "births", title = "Births: DHIS2 and the UN", y_title = "Thousands",
+     legend_labels = c("UN live births", "DHIS2 live births", "DHIS2 births"))
+
+```

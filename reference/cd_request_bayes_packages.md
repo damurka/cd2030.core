@@ -20,3 +20,17 @@ cd_request_bayes_packages(packages = cd_bayes_packages_missing())
 ## Value
 
 `TRUE` when DataSuite was asked, invisibly.
+
+## Examples
+
+``` r
+if (FALSE) { # \dontrun{
+# in an app DataSuite started, before the model is first used
+if (length(cd_bayes_packages_missing()) > 0) {
+  cd_request_bayes_packages()
+}
+
+# one package only
+cd_request_bayes_packages("bayescoveragedeploy")
+} # }
+```

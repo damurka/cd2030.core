@@ -1,14 +1,8 @@
-# Check the Admin_data sheet has the columns every later step assumes exist
+# Check that the Admin sheet has its required columns
 
-`first_admin_level`/`country` are only ever consumed via `any_of()`
-downstream (see `read_and_clean_sheet()`'s own `required_columns`, used
-only for `drop_na()`, and `standardize_data()`'s
-`rename(adminlevel_1 = any_of("first_admin_level"))`), so a sheet
-missing either column silently proceeds today with
-`adminlevel_1`/`country` never created, surfacing later as a confusing,
-unrelated error far from the actual cause. `district` isn't checked here
-– it's already covered by `read_and_clean_sheet()`'s own key-column
-check.
+Checks that the Admin sheet has the `country` and `first_admin_level`
+columns. Run it on the sheet before the sheets are merged, so that a
+missing column is reported by name.
 
 ## Usage
 
@@ -20,5 +14,26 @@ check_admin_columns(admin_data)
 
 - admin_data:
 
-  The raw, cleaned Admin_data sheet (one `read_and_clean_sheet()` call's
-  output, before `merge_data()`).
+  A data frame. The cleaned Admin sheet, before the sheets are merged
+  (the admin element of `load_excel_parts()$parts`).
+
+## Value
+
+`NULL` if both columns are present. Otherwise a character vector of
+length one, named `"x"`, with a message that lists the missing columns.
+
+## Examples
+
+``` r
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+sheets <- load_excel_parts(path)
+#> ℹ Loading Excel "kenya.xlsx" for parts
+admin <- sheets$parts[[sheets$admin_sheet_name]]
+check_admin_columns(admin)
+#> NULL
+
+# A sheet without its country column
+check_admin_columns(admin[setdiff(names(admin), "country")])
+#>                                                     x 
+#> "The Admin_data sheet is missing column(s): country." 
+```

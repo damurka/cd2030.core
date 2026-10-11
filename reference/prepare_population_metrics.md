@@ -1,4 +1,4 @@
-# Compute Population Metrics for DHIS-2 and UN Data
+# Compute population metrics for DHIS-2 and UN data
 
 `prepare_population_metrics` calculates demographic metrics such as
 total population, live births, growth rates, and related indicators

@@ -1,6 +1,10 @@
-# Plot S3 method for Coverage Data
+# Plot S3 method for coverage data
 
-Plot S3 method for Coverage Data
+Draws the latest coverage of a set of indicators. National data, or the
+data of one region, is drawn as a profile (bars by indicator and source)
+or as the gap between the facility and the survey estimate. Subnational
+data is drawn as dots by unit, one panel per indicator, or as a heatmap
+of units by indicator.
 
 ## Usage
 
@@ -9,13 +13,14 @@ Plot S3 method for Coverage Data
 plot(
   x,
   type = NULL,
-  title = NULL,
-  subtitle = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
-  fill_label = NULL,
   source_labels = NULL,
   indicator_labels = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
   options = NULL
 )
@@ -32,26 +37,6 @@ plot(
   "profile" or "gap" (for national), "dot" or "heatmap" (for
   subnational).
 
-- title:
-
-  (Optional) Custom translated title.
-
-- subtitle:
-
-  (Optional) Custom translated subtitle.
-
-- x_axis:
-
-  (Optional) Custom translated x-axis label.
-
-- y_axis:
-
-  (Optional) Custom translated y-axis label.
-
-- fill_label:
-
-  (Optional) Custom translated legend title (for Heatmap).
-
 - source_labels:
 
   (Optional) Named list to translate 'facility', 'survey', 'wuenic'.
@@ -60,17 +45,75 @@ plot(
 
   (Optional) Named list to translate indicator names (e.g. 'anc4').
 
+- title:
+
+  The chart's title.
+
+- subtitle:
+
+  The line under the title.
+
+- caption:
+
+  The note under the chart.
+
+- x_title:
+
+  The title of the horizontal axis.
+
+- y_title:
+
+  The title of the vertical axis.
+
+- legend_title:
+
+  The title of the legend.
+
 - ...:
 
-  Chart options (see
-  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html))
-  given by name, applied as with `options`.
+  Chart options by name (see
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)):
+  background, fonts, sizes, axes, grid, legend, colours. Other arguments
+  are ignored.
 
 - options:
 
-  (Optional) A
+  A
   [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
-  object: text, legend, fonts and sizes a user changed. Applied last, so
-  it wins over the arguments above; the plot's own defaults are used for
-  whatever it does not set. Any chart option can also be given by name
-  in `...`.
+  object or a list of chart options: a look made once, to give to
+  several charts. Applied after the text arguments, so a text it holds
+  wins over them.
+
+## Value
+
+A `ggplot` object with the chart options applied. Which chart it is
+depends on `type` and on the admin level of `x`.
+
+## Examples
+
+``` r
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#> ℹ Loading Excel "kenya.xlsx" for parts
+#> ! The following columns are empty: anc_1trimester, under5_deaths, total_deaths,
+#>   ipv2, measles_cases
+#> ℹ Successfully loaded and cleaned data
+#> ℹ Auto-detect candidates (|group|): vaccine=19, rmncah=28 -> selected rmncah
+cache$set_national_estimates(list(sbr = 0.02))
+cache$adjust_data()
+
+# national: a profile of the indicators, or the gap between facility data and the survey
+national <- cache$generate_coverage_data("national", "maternal")
+plot(national, type = "profile")
+
+plot(national, type = "gap", title = "Facility data against the survey", legend_position = "bottom")
+#> Warning: Removed 1 row containing missing values or values outside the scale range
+#> (`geom_segment()`).
+#> Warning: Removed 1 row containing missing values or values outside the scale range
+#> (`geom_point()`).
+
+
+# by region: a heatmap (or "dot")
+regions <- cache$generate_coverage_data("adminlevel_1", "child")
+plot(regions, type = "heatmap", legend_title = "Coverage (%)")
+
+```

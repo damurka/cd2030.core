@@ -1,12 +1,8 @@
-# Flag indicators that are entirely empty across the whole dataset
+# Flag indicators that have no data
 
-Same detector `standardize_data()` already uses for its own "empty
-columns" log line (`colSums(is.na(data)) == nrow(data)`,
-`0_import_load_data.R`), scoped to just the indicator columns for the
-currently-selected indicator group
-([`get_indicator_groups()`](get_indicator_groups.md)) rather than every
-column – an admin/year/month/population column being "empty" isn't a
-data-quality signal the same way an indicator column being empty is.
+Finds the indicators of the selected indicator group whose column is
+missing in every row of the dataset. An indicator with no data cannot be
+analysed.
 
 ## Usage
 
@@ -18,8 +14,33 @@ check_indicator_emptiness(.data)
 
 - .data:
 
-  The dataset (`countdown_data`-shaped).
+  A data frame. The merged dataset, with one column per indicator.
 
 ## Value
 
-A character vector of indicator names that are 100% empty.
+A character vector of the names of the empty indicators. It has length
+zero if there are none.
+
+## Details
+
+Only indicator columns that are present in `.data` are examined. An
+indicator whose column is absent is not reported here.
+
+## Examples
+
+``` r
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+#> ℹ Loading Excel "kenya.xlsx" for parts
+#> ! The following columns are empty: anc_1trimester, under5_deaths, total_deaths,
+#>   ipv2, measles_cases
+#> ℹ Successfully loaded and cleaned data
+#> ℹ Auto-detect candidates (|group|): vaccine=19, rmncah=28 -> selected rmncah
+check_indicator_emptiness(data)
+#> [1] "anc_1trimester"
+
+# An indicator that was never reported
+data$penta3 <- NA_real_
+check_indicator_emptiness(data)
+#> [1] "anc_1trimester" "penta3"        
+```

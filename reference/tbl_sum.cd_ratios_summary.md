@@ -29,3 +29,28 @@ tbl_sum(x, ...)
 A character vector providing a descriptive title that clarifies the type
 of summary and the indicator ratios reported, to enhance interpretation
 when viewing the data.
+
+## Examples
+
+``` r
+data <- load_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#> ℹ Loading Excel "kenya.xlsx" for parts
+#> ! The following columns are empty: anc_1trimester, under5_deaths, total_deaths,
+#>   ipv2, measles_cases
+#> ℹ Successfully loaded and cleaned data
+#> ℹ Auto-detect candidates (|group|): vaccine=19, rmncah=28 -> selected rmncah
+ratios <- calculate_ratios_and_adequacy(data)
+
+# the summary is the header printed above the table
+calculate_ratios_summary(ratios)
+#> # Table 3a.b: Ratios of ANC1/Penta1, Penta1/Penta3, and OPV1/OPV3 by Year
+#> # A tibble:   6 × 6
+#>   year            anc1  penta1  penta3 `Ratio anc1/penta1` `Ratio penta1/penta3`
+#>   <chr>          <dbl>   <dbl>   <dbl>               <dbl>                 <dbl>
+#> 1 2019          1.43e6 1359967 1293250                1.05                  1.05
+#> 2 2020          1.47e6 1323091 1266781                1.11                  1.04
+#> 3 2021          1.55e6 1411557 1332230                1.10                  1.06
+#> 4 2022          1.48e6 1387864 1340620                1.07                  1.04
+#> 5 2023          1.50e6 1410586 1355282                1.06                  1.04
+#> 6 Expected Ra… NA           NA      NA                1.08                  1.09
+```

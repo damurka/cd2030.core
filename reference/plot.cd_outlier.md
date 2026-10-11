@@ -1,4 +1,4 @@
-# Visualize Summary of Outlier Detection
+# Visualize summary of outlier detection
 
 Plots annual trends or heat maps of non-outlier rates for immunization
 indicators at subnational levels.
@@ -13,10 +13,13 @@ plot(
   indicator = NULL,
   threshold = .cd_method$data_quality$reporting_threshold,
   title = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
-  legend = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
+  indicator_labels = NULL,
   options = NULL
 )
 ```
@@ -49,29 +52,49 @@ plot(
 
 - title:
 
-  Optional plot title. Defaults to a title based on `selection_type`.
+  The chart's title.
 
-- x_axis, y_axis:
+- subtitle:
 
-  Optional x- and y-axis titles. Default to `"Year"` and a "Percent
-  non-outliers" label.
+  The line under the title.
 
-- legend:
+- caption:
 
-  Optional legend title. Defaults to a "Percent non-outliers" label.
+  The note under the chart.
+
+- x_title:
+
+  The title of the horizontal axis.
+
+- y_title:
+
+  The title of the vertical axis.
+
+- legend_title:
+
+  The title of the legend.
 
 - ...:
 
-  Not used.
+  Chart options by name (see
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)):
+  background, fonts, sizes, axes, grid, legend, colours. Other arguments
+  are ignored.
+
+- indicator_labels:
+
+  (Optional) A named vector or list, indicator code -\> label, for the
+  axis that names indicators (see
+  [`cd_indicator_labels()`](cd_indicator_labels.md), which gives them
+  translated). By default the English labels.
 
 - options:
 
-  (Optional) A
+  A
   [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
-  object: text, legend, fonts and sizes a user changed. Applied last, so
-  it wins over the arguments above; the plot's own defaults are used for
-  whatever it does not set. Any chart option can also be given by name
-  in `...`.
+  object or a list of chart options: a look made once, to give to
+  several charts. Applied after the text arguments, so a text it holds
+  wins over them.
 
 ## Value
 

@@ -1,4 +1,4 @@
-# Filter Dataset by Removing Specified Years
+# Filter dataset by removing specified years
 
 The `filter_out_years` function is used to exclude specified years from
 a DHIS-2 dataset, refining the data for more targeted analysis or

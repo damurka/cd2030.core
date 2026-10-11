@@ -1,4 +1,4 @@
-# Plot District Reporting Rate Summary
+# Plot district reporting rate summary
 
 Generates a bar plot displaying the percentage of districts with
 reporting rates below the defined threshold for multiple indicators
@@ -12,12 +12,14 @@ Institutional Delivery, PNC, Vaccination, OPD, and IPD.
 # S3 method for class 'cd_district_reporting_rate'
 plot(
   x,
-  title = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
-  caption = NULL,
   indicator_labels = NULL,
   facet_ncol = 3,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
   options = NULL
 )
@@ -31,21 +33,6 @@ plot(
   data, processed by
   [`calculate_district_reporting_rate()`](calculate_district_reporting_rate.md).
 
-- title:
-
-  Optional plot title. Defaults to a title that includes the
-  reporting-rate threshold.
-
-- x_axis, y_axis:
-
-  Optional x- and y-axis titles. By default the x axis has no title and
-  the y axis is labelled with a percent sign.
-
-- caption:
-
-  Optional plot caption. Defaults to a note stating the low-reporting
-  threshold.
-
 - indicator_labels:
 
   Optional named character vector of panel titles, keyed by short
@@ -54,23 +41,48 @@ plot(
 
 - facet_ncol:
 
-  How many service-panel columns the facet grid uses (default 3,
-  unchanged from before this param existed – e.g. 4 services lay out
-  3-then-1). Additive: every existing caller keeps its current layout
-  unless it explicitly asks for a different one.
+  Integer. The number of columns the service panels are laid out in.
+  Default is `3`, so four services are drawn as a row of three and a row
+  of one.
+
+- title:
+
+  The chart's title.
+
+- subtitle:
+
+  The line under the title.
+
+- caption:
+
+  The note under the chart.
+
+- x_title:
+
+  The title of the horizontal axis.
+
+- y_title:
+
+  The title of the vertical axis.
+
+- legend_title:
+
+  The title of the legend.
 
 - ...:
 
-  Additional parameters passed to the plotting function.
+  Chart options by name (see
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)):
+  background, fonts, sizes, axes, grid, legend, colours. Other arguments
+  are ignored.
 
 - options:
 
-  (Optional) A
+  A
   [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
-  object: text, legend, fonts and sizes a user changed. Applied last, so
-  it wins over the arguments above; the plot's own defaults are used for
-  whatever it does not set. Any chart option can also be given by name
-  in `...`.
+  object or a list of chart options: a look made once, to give to
+  several charts. Applied after the text arguments, so a text it holds
+  wins over them.
 
 ## Value
 
@@ -78,11 +90,12 @@ A ggplot object visualizing reporting rates across indicators and years.
 
 ## Details
 
-This function inverts reporting rate percentages to display the
-proportion of districts with rates below the threshold for each
-indicator (e.g., if a district achieves a 95% rate, it shows as 5% below
-threshold). Each indicator is visualized in a separate panel with data
-grouped by year, providing an overview of performance trends over time.
+Inverts the percentages in `x` (the percentage of districts at or above
+the threshold) to display the percentage of districts with rates below
+the threshold for each indicator (e.g., if 95% of districts reach the
+threshold, 5% are shown as below it). Each indicator is visualized in a
+separate panel with data grouped by year, providing an overview of
+performance trends over time.
 
 Indicators plotted include:
 

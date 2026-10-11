@@ -1,4 +1,4 @@
-# List All Vaccine and Related Coverage Indicators
+# List all vaccine and related coverage indicators
 
 Returns a vector of standard vaccine and related indicators used in
 coverage and dropout analysis. This includes routine immunizations,

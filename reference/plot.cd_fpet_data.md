@@ -1,4 +1,4 @@
-# Plot Family Planning Estimation Tool (FPET) Data
+# Plot family planning estimation tool (FPET) data
 
 Generates a line and ribbon plot for FPET indicators (e.g., mCPR, Demand
 Satisfied) displaying median estimates and 95% credible intervals.
@@ -9,11 +9,13 @@ Satisfied) displaying median estimates and 95% credible intervals.
 # S3 method for class 'cd_fpet_data'
 plot(
   x,
-  title = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
-  caption = NULL,
   indicator_labels = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
   options = NULL
 )
@@ -25,36 +27,72 @@ plot(
 
   An object of class `cd_fpet_data`.
 
-- title:
-
-  (Optional) Custom translated title.
-
-- x_axis:
-
-  (Optional) Custom translated x-axis label.
-
-- y_axis:
-
-  (Optional) Custom translated y-axis label.
-
-- caption:
-
-  (Optional) Custom translated caption.
-
 - indicator_labels:
 
   (Optional) A named list mapping raw indicator names to translated
   legend labels.
 
+- title:
+
+  The chart's title.
+
+- subtitle:
+
+  The line under the title.
+
+- caption:
+
+  The note under the chart.
+
+- x_title:
+
+  The title of the horizontal axis.
+
+- y_title:
+
+  The title of the vertical axis.
+
+- legend_title:
+
+  The title of the legend.
+
 - ...:
 
-  Additional arguments.
+  Chart options by name (see
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)):
+  background, fonts, sizes, axes, grid, legend, colours. Other arguments
+  are ignored.
 
 - options:
 
-  (Optional) A
+  A
   [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
-  object: text, legend, fonts and sizes a user changed. Applied last, so
-  it wins over the arguments above; the plot's own defaults are used for
-  whatever it does not set. Any chart option can also be given by name
-  in `...`.
+  object or a list of chart options: a look made once, to give to
+  several charts. Applied after the text arguments, so a text it holds
+  wins over them.
+
+## Value
+
+A `ggplot` object with the chart options applied: one line per indicator
+by year, with a shaded band for the credible interval.
+
+## Examples
+
+``` r
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+cache <- load_cache_data(path)
+#> ℹ Loading Excel "kenya.xlsx" for parts
+#> ! The following columns are empty: anc_1trimester, under5_deaths, total_deaths,
+#>   ipv2, measles_cases
+#> ℹ Successfully loaded and cleaned data
+#> ℹ Auto-detect candidates (|group|): vaccine=19, rmncah=28 -> selected rmncah
+fpet <- cache$fpet_data
+
+plot(fpet)
+
+plot(
+  fpet,
+  indicator_labels = list(prevalence = "Modern contraceptive prevalence", demand = "Demand satisfied"),
+  title = "Family planning in Kenya"
+)
+```

@@ -1,5 +1,10 @@
 pandoc: 3.8.3
 pkgdown: 2.2.1
 pkgdown_sha: ~
-articles: {}
-last_built: 2026-10-08T15:24Z
+articles:
+  building-an-app: building-an-app.html
+  cd2030.core: cd2030.core.html
+  coverage: coverage.html
+  data-quality: data-quality.html
+  preparing-data: preparing-data.html
+last_built: 2026-10-11T13:00Z

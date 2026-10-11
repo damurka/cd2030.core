@@ -35,3 +35,27 @@ slide deck (see
 [`export_deck()`](https://rdrr.io/pkg/datasuite.ui/man/export_deck.html)).
 [`report_project_blocks()`](https://rdrr.io/pkg/datasuite.ui/man/report_project_blocks.html)
 gives the blocks of either.
+
+## Examples
+
+``` r
+presets <- report_presets(lang = "en", group = "rmncah")
+names(presets)
+#>  [1] "data_quality"          "adjustment"            "denominator_selection"
+#>  [4] "national_coverage"     "national_inequality"   "mortality"            
+#>  [7] "service_utilization"   "health_system"         "private_sector"       
+#> [10] "synthesis"             "one_pager"            
+presets$mortality$name
+#> [1] "Mortality"
+length(presets$mortality$blocks)
+#> [1] 21
+
+# the vaccine group's reports, named in French
+vapply(report_presets("fr", group = "vaccine"), function(p) p$name, character(1))
+#>                  data_quality                    adjustment 
+#>         "Qualité des données"      "Ajustement des données" 
+#>         denominator_selection           national_inequality 
+#>   "Sélection du dénominateur"       "Inégalités nationales" 
+#>                     synthesis                     one_pager 
+#>         "Recueil de synthèse" "Fiche d'une page par région" 
+```

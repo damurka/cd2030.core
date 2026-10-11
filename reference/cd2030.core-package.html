@@ -15,7 +15,7 @@ the pages, wizard and app frame it exports, on datasuite.ui's interface kit and 
 
     <a class="navbar-brand me-2" href="../index.html">cd2030.core</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.10</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -23,7 +23,14 @@ the pages, wizard and app frame it exports, on datasuite.ui's interface kit and 
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/preparing-data.html">Preparing your data</a></li>
+    <li><a class="dropdown-item" href="../articles/data-quality.html">Checking data quality</a></li>
+    <li><a class="dropdown-item" href="../articles/coverage.html">From adjustment to coverage</a></li>
+    <li><a class="dropdown-item" href="../articles/building-an-app.html">Building an app on cd2030.core</a></li>
+  </ul></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -68,7 +75,7 @@ wizard's checks, <code><a href="run_all_quality_checks.html">run_all_quality_che
 <code><a href="calculate_health_system_metrics.html">calculate_health_system_metrics()</a></code>, <code><a href="generate_fpet_summary.html">generate_fpet_summary()</a></code>, <code><a href="generate_bayes_model.html">generate_bayes_model()</a></code>.</p></li>
 <li><p><strong>Reports:</strong> <code><a href="report_presets.html">report_presets()</a></code> (the standard reports) and <code><a href="https://rdrr.io/pkg/datasuite.ui/man/export_report.html" class="external-link">export_report()</a></code> (Word, PDF, PowerPoint).</p></li>
 <li><p><strong>Indicator groups:</strong> <code><a href="list_indicator_groups.html">list_indicator_groups()</a></code>, <code><a href="set_selected_group.html">set_selected_group()</a></code>, <code><a href="register_indicator_group.html">register_indicator_group()</a></code>.</p></li>
-<li><p><strong>Apps:</strong> <a href="countdown-pages.html">countdown-pages</a> (<code><a href="countdown-pages.html">cd_app()</a></code> and the pages every Countdown app shares).</p></li>
+<li><p><strong>Apps:</strong> <a href="countdown-pages.html">countdown-pages</a> (<code><a href="cd_app.html">cd_app()</a></code> and the pages every Countdown app shares).</p></li>
 </ul><p>The README (<a href="https://github.com/damurka/cd2030.core" class="external-link">https://github.com/damurka/cd2030.core</a>) explains how the packages fit together, how an app is built on
 this one, and how to develop and release it.</p>
     </div>
@@ -81,7 +88,8 @@ this one, and how to develop and release it.</p>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
     <p><strong>Maintainer</strong>: David Kariuki <a href="mailto:hello@damurka.com">hello@damurka.com</a> (<a href="https://orcid.org/0009-0003-6159-1107" class="external-link">ORCID</a>)</p>
-<p>Authors:</p><ul><li><p>Martin Mutua</p></li>
+<p>Authors:</p><ul><li><p>David Kariuki <a href="mailto:hello@damurka.com">hello@damurka.com</a> (<a href="https://orcid.org/0009-0003-6159-1107" class="external-link">ORCID</a>)</p></li>
+<li><p>Martin Mutua</p></li>
 <li><p>Peter Kaberia <a href="mailto:pkaberia@aphrc.org">pkaberia@aphrc.org</a></p></li>
 <li><p>Godfrey Adero <a href="mailto:gadero@aphrc.org">gadero@aphrc.org</a></p></li>
 <li><p>Rornald Muhumuza <a href="mailto:rmuhumuza@aphrc.org">rmuhumuza@aphrc.org</a></p></li>

@@ -1,12 +1,8 @@
-# Check every row's month string parses to a real calendar month, pre-merge
+# Check that every month value is a recognized month, before merging
 
-`month` here is already normalized
-([`load_excel_parts()`](load_excel_parts.md) does this on every sheet,
-before `merge_data()` ever runs – see its own comment for why) – `NA`
-means it genuinely didn't parse, no need to re-run `parse_month_name()`
-here. `raw_month` (preserved by that same normalization step) is what
-this reports, so a typo or different-language value shows up as the
-actual original text, not just `NA`.
+Checks the service sheets, before they are merged, for rows whose month
+could not be read as a calendar month, for example because of a typo or
+a month name in a language that is not supported.
 
 ## Usage
 
@@ -18,8 +14,44 @@ check_month_validity_presheet(parts, service_sheet_names)
 
 - parts:
 
-  Named list of cleaned per-sheet tibbles.
+  A named list of cleaned per-sheet tibbles
+  (`load_excel_parts()$parts`).
 
 - service_sheet_names:
 
-  Names of the service-data sheets within `parts`.
+  A character vector. The names of the service data sheets within
+  `parts`.
+
+## Value
+
+`NULL` if every month is recognized, or if the service sheets have no
+`month` column. Otherwise a character vector of length one, named `"x"`,
+with the message.
+
+## Details
+
+A row is a problem when its `month` is `NA`. If the sheets have a
+`raw_month` column (the month text as it was in the workbook, which
+[`load_excel_parts()`](load_excel_parts.md) keeps), the message lists
+the distinct unrecognized values. If they do not, or if those values are
+all missing, the message gives the number of affected rows instead.
+
+## Examples
+
+``` r
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+sheets <- load_excel_parts(path)
+#> ℹ Loading Excel "kenya.xlsx" for parts
+check_month_validity_presheet(sheets$parts, sheets$service_sheet_names)
+#> NULL
+
+# A month the workbook misspells is read as missing
+parts <- sheets$parts
+sheet <- sheets$service_sheet_names[1]
+typo <- parts[[sheet]]$month == "March"
+parts[[sheet]]$raw_month[typo] <- "Mrch"
+parts[[sheet]]$month[typo] <- NA
+check_month_validity_presheet(parts, sheets$service_sheet_names)
+#>                                                                         x 
+#> "Unrecognized month value(s) (typo, different language, etc.): \"Mrch\"." 
+```

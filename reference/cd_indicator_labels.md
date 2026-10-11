@@ -1,0 +1,38 @@
+# The indicators' labels
+
+Gives the display label of each indicator, keyed by its code (`anc1` -\>
+"ANC 1"). Charts use it to name indicators on an axis, in place of the
+column names. With a translator the labels are translated (the key of an
+indicator is `opt_<code>`); a label that has no translation stays in
+English, and a code the package does not know is returned as it is.
+
+## Usage
+
+``` r
+cd_indicator_labels(i18n = NULL, indicators = names(.cd_dict_indicator_labels))
+```
+
+## Arguments
+
+- i18n:
+
+  Optional translator (`i18n$t(key)`); without it, the English labels.
+
+- indicators:
+
+  Which indicators, in this order. Default: every indicator the package
+  knows.
+
+## Value
+
+A named character vector, code -\> label.
+
+## Examples
+
+``` r
+cd_indicator_labels(indicators = c("anc1", "penta3", "instlivebirths"))
+#>                        anc1                      penta3 
+#>                     "ANC 1"             "Pentavalent 3" 
+#>              instlivebirths 
+#> "Institutional Live Births" 
+```

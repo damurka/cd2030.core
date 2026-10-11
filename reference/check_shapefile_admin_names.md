@@ -1,10 +1,8 @@
-# Flag dataset admin-1 names that have no matching shapefile region
+# Flag admin level 1 names with no matching shapefile region
 
-Same direction as
-[`check_survey_admin_names()`](check_survey_admin_names.md) and for the
-same reason: a dataset region with no shapefile match can't be shown on
-a map at all, which is the actual problem worth flagging – not a
-shapefile region with no dataset match, which is just an unused polygon.
+Finds the admin level 1 names in the dataset that have no close match
+among the regions of the shapefile. A dataset region without a shapefile
+match cannot be shown on a map.
 
 ## Usage
 
@@ -16,26 +14,57 @@ check_shapefile_admin_names(shapefile, countdown_data, name_field = "NAME_1")
 
 - shapefile:
 
-  The country's shapefile (`sf` object – either the package-bundled one,
-  with its own `NAME_1` column, see
-  [`get_country_shapefile()`](get_country_shapefile.md), or a
-  user-uploaded one via
-  [`read_shapefile_folder()`](read_shapefile_folder.md), whose admin-1
-  name column is whatever `name_field` says).
+  An `sf` object, or `NULL`. The country's shapefile: the one bundled
+  with the package or one the user uploaded.
 
 - countdown_data:
 
-  The dataset (`countdown_data`-shaped).
+  A data frame. The dataset, with an `adminlevel_1` column.
 
 - name_field:
 
-  Name of the column in `shapefile` holding admin-1 names. Default
-  `"NAME_1"`, matching the bundled shapefile – a real uploaded one won't
-  necessarily use that name, hence the parameter
-  (`CacheConnection$shapefile_name_field`, set when the user picks it at
-  upload).
+  A string. The column of `shapefile` that holds the admin level 1
+  names. Default is `"NAME_1"`, the column the bundled shapefiles use.
 
 ## Value
 
-A tibble of dataset admin-1 names with no shapefile match, each with its
-closest suggestion (see `match_admin_names()`).
+A tibble with one row per unmatched dataset name and columns `name` (the
+dataset name), `suggestion` (the closest shapefile name) and `distance`
+(the distance between them). It has no rows if every name matches, or if
+`shapefile` is `NULL` or has no `name_field` column.
+
+## Details
+
+Names are compared without regard to case or accents, using the
+Jaro-Winkler distance. A name is unmatched when its distance to the
+closest shapefile name is 0.25 or more. Shapefile regions that match no
+dataset name are not reported.
+
+## Examples
+
+``` r
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+cache <- load_cache_data(path)
+#> ℹ Loading Excel "kenya.xlsx" for parts
+#> ! The following columns are empty: anc_1trimester, under5_deaths, total_deaths,
+#>   ipv2, measles_cases
+#> ℹ Successfully loaded and cleaned data
+#> ℹ Auto-detect candidates (|group|): vaccine=19, rmncah=28 -> selected rmncah
+
+# The bundled shapefile has the counties, the dataset's regions are the former provinces
+check_shapefile_admin_names(cache$shapefile, cache$countdown_data)
+#> # A tibble: 6 × 3
+#>   name          suggestion distance
+#>   <chr>         <chr>         <dbl>
+#> 1 Rift Valley   Garissa       0.433
+#> 2 Western       West Pokot    0.343
+#> 3 Eastern       Makueni       0.381
+#> 4 North Eastern Tana River    0.373
+#> 5 Central       Mandera       0.381
+#> 6 Coast         Mombasa       0.324
+
+# With no shapefile there is nothing to compare
+check_shapefile_admin_names(NULL, cache$countdown_data)
+#> # A tibble: 0 × 3
+#> # ℹ 3 variables: name <chr>, suggestion <chr>, distance <dbl>
+```

@@ -1,6 +1,8 @@
-# Create a Master Dataset from DHIS2 Data
+# Create a master dataset from DHIS2 data
 
-Create a Master Dataset from DHIS2 Data
+Combines the service, completeness, population and admin data downloaded
+from DHIS2 into one Countdown dataset, with a row per district, year and
+month and a column per data element.
 
 ## Usage
 
@@ -17,20 +19,21 @@ save_dhis2_master_data(.data)
 
 ## Value
 
-A data frame representing the combined and cleaned DHIS2 dataset.
+A tibble of class `cd_data` holding the combined and standardized DHIS2
+dataset.
 
 ## Details
 
-This function combines all DHIS2 data types into a single dataset. It
-pivots data to a wide format, merges datasets on common keys, and
-ensures completeness by filtering out rows with missing values in
-critical columns. The final dataset is standardized for consistency and
-usability.
+Pivots the service, completeness and population data to a wide format
+and merges them on their common keys (`district`, `year` and, where
+present, `month`), then adds the admin data by `district`. The merged
+data is standardized and made into a `cd_data` object, which checks that
+the required columns are present.
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
-master_dataset <- create_master_dataset(data)
+master_dataset <- save_dhis2_master_data(data)
 } # }
 ```

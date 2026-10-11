@@ -1,4 +1,4 @@
-# Identify Monthly Outliers by District
+# Identify monthly outliers by district
 
 Flags extreme monthly values for every indicator at district level using
 the Hampel method.

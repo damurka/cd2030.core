@@ -1,4 +1,4 @@
-# Annual Summary of Outlier-Free Reporting Rates
+# Annual summary of outlier-free reporting rates
 
 `calculate_outliers_summary` computes yearly percentages of non-outlier
 values for each health indicator, based on precomputed 5-MAD outlier
@@ -36,26 +36,20 @@ calculate_outliers_summary(
   Optional. Restrict to a specific region (only when
   `admin_level = "adminlevel_1"`).
 
+## Value
+
+A tibble of class `cd_outlier`.
+
 ## Details
 
 Outliers are defined using a Hampel filter with a 5-MAD threshold.
 
-This function:
-
-- Aggregates outlier flags by year and administrative level
-
-- Computes the share of valid (non-outlier) values per indicator
-
-- Adds overall summary metrics:
-
-  - `mean_out_all`: average non-outlier rate across all indicators
-
-  - `mean_out_four`: average across a subset of key indicators
-    (excluding IPD)
+Aggregates the outlier flags by year and administrative level and
+computes the share of valid (non-outlier) values per indicator. The IPD
+indicators are left out. Adds `mean_out_all`, the average non-outlier
+rate across the indicators summarised.
 
 Values are expressed as percentages (0-100).
-
-@return A tibble of class `cd_outlier`.
 
 ## Examples
 

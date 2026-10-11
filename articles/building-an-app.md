@@ -1,0 +1,187 @@
+# Building an app on cd2030.core
+
+The Countdown apps (cd2030.rmncah, cd2030.vaxx, cd2030.pooled) are Shiny
+front ends to this package. cd2030.core holds everything they share: the
+app frame, the Load Data screen, the analysis pages, the filters and the
+report content. An app is a small package that says what is particular
+to it. This guide describes the parts and how they fit;
+`cd2030.rmncah::run_app()` is the complete example.
+
+## How the packages fit
+
+    DataSuite
+      └─ countdown-analytics                              the DataSuite extension: lists the apps
+           └─ cd2030.rmncah / cd2030.vaxx / cd2030.pooled   one R package per app: run_app()
+                └─ cd2030.core                            analysis, pages, Load Data screen, report content
+                     └─ datasuite.ui                      interface kit, chart options, report builder
+
+datasuite.ui knows nothing about Countdown: it has the components, the
+page frame and the report engine. cd2030.core plugs Countdown into it.
+An app adds its indicator group, its pages and its text.
+
+## The parts of an app
+
+An app’s `run_app()` does five things, in this order.
+
+### 1. Choose the indicator group and the app’s settings
+
+``` r
+
+set_selected_group("rmncah")
+options(
+  cd2030.app_group = "rmncah",
+  cd2030.config = list(
+    nat_cov_indicators = c("anc4", "instlivebirths", "penta3", "measles1"),
+    consistency_pairs = list(c("anc1", "penta1"), c("penta1", "penta3")),
+    has_maternal = TRUE
+  )
+)
+```
+
+`cd2030.config` is what the shared pages read to know what to show for
+this app: which indicators a page offers, which pairs the consistency
+check compares, whether there is a maternal denominator. A page reads a
+setting with [`cd_cfg()`](../reference/cd_cfg.md), and
+[`?cd_cfg`](../reference/cd_cfg.md) lists the keys.
+
+### 2. Set up the Load Data screen
+
+The Load Data screen is the same in every app. The fields it asks for
+(which surveys, which rates) come from `options(cd2030.wizard = ...)`;
+[`?cd_upload_data_ui`](../reference/cd_upload_data_ui.md) describes them
+and the builders for an app’s own fields.
+
+### 3. Build the translator
+
+Every label is a translation key. The app’s own file is merged with
+datasuite.ui’s and cd2030.core’s.
+
+``` r
+
+i18n <- shiny.i18n::init_i18n(
+  translation_json_path = cd_translations(system.file("translation", "translation.json", package = "myapp"))
+)
+i18n$set_translation_language(language)
+cd_use_i18n(i18n)
+```
+
+### 4. List the pages
+
+A page is a `_ui` function and a `_server` function. The app lists every
+page it has, shared or its own, with the kit’s `cd_page_def()`: the id,
+the two functions, and the keys of its title and subtitle.
+
+``` r
+
+my_pages <- function() list(
+  cd_page_def(
+    id = "reporting_rate",
+    ui = reporting_rate_ui, server = reporting_rate_server,          # a shared page, from cd2030.core
+    title = "title_rr_main", section = "lbl_nav_section_quality", subtitle = "sub_rr_main"
+  ),
+  cd_page_def(
+    id = "my_page",
+    ui = my_page_ui, server = my_page_server,                        # a page of the app's own
+    title = "title_my_page", section = "lbl_nav_section_analysis", subtitle = "sub_my_page"
+  )
+)
+pages <- my_pages()
+cd_use_pages(pages)
+```
+
+The shared pages are listed in the reference under “App: pages”.
+
+### 5. Build the sidebar and call `cd_app()`
+
+The sidebar is a list of sections. The standard ones come ready made;
+`cd_nav_section()` and `cd_nav_item()` build others. An item’s `tabName`
+is a page’s `id`.
+
+``` r
+
+nav <- list(
+  cd_nav_start(),
+  cd_nav_quality(),
+  cd_nav_denominators(),
+  cd_nav_section("lbl_nav_section_analysis",
+    cd_nav_national(),
+    cd_nav_item("title_my_page", tabName = "my_page", icon = "chart-line", requires_adjustment = TRUE)
+  )
+)
+
+cd_app(
+  app_name = "My app", app_version = "1.0.0", theme = "rmncah",
+  nav_sections = nav, registry = pages,
+  i18n = i18n, language = language, selected_file = selected_file,
+  upload_ui = cd_upload_data_ui, upload_server = cd_upload_data_server
+)
+```
+
+[`cd_app()`](../reference/cd_app.md) returns a Shiny app. It adds what
+is the same everywhere: the header and sidebar, the Introduction and
+Load Data screens, the row naming the denominators in use, and the
+dataset, which every page receives as `cache`. Pages unlock once a
+dataset is loaded; items with `requires_adjustment = TRUE` unlock once
+it is also adjusted.
+
+## Writing a page
+
+A page’s `_ui` function builds its layout from the kit’s components and
+the shared pieces in this package. Its `_server` function receives the
+dataset as a reactive `cache` and draws from it.
+
+``` r
+
+my_page_ui <- function(id, i18n) {
+  ns <- shiny::NS(id)
+  cd_page_ui(id, i18n = i18n, cd_table_ui(ns("table")))
+}
+
+my_page_server <- function(id, cache, i18n) {
+  shiny::moduleServer(id, function(input, output, session) {
+    cd_table_server("table", data = shiny::reactive(cache()$reporting_rate_national), i18n = i18n)
+  })
+}
+```
+
+The pieces a page is built from each have a help page, grouped in the
+reference:
+
+| Group | What is in it | Start at |
+|----|----|----|
+| App: building an app | [`cd_app()`](../reference/cd_app.md), the settings, the guide to the interface | [`?cd_app`](../reference/cd_app.md), [`?"countdown-pages"`](../reference/countdown-pages.md) |
+| App: pages | the shared analysis pages, each a `_ui` / `_server` pair | [`?reporting_rate_ui`](../reference/reporting_rate_ui.md) |
+| App: Load Data wizard | the Load Data screen, its steps and field builders | [`?cd_upload_data_ui`](../reference/cd_upload_data_ui.md) |
+| App: filters | indicator, administrative level, denominator, years | [`?cd_admin_level_ui`](../reference/cd_admin_level_ui.md) |
+| App: layout | the dataset header, sidebar sections, scoped pages, tabbed charts | [`?cd_scope`](../reference/cd_scope.md) |
+| App: charts and tables | chart and table cards with their downloads | [`?cd_table_ui`](../reference/cd_table_ui.md) |
+
+Read the source of a shared page that resembles yours before writing
+one: `R/page-reporting_rate.R` is a short one. The kit’s own components
+are described in datasuite.ui (`docs/COMPONENTS.md`).
+
+## Results a page can read
+
+A page should read results from the dataset object, not compute them.
+Each result is computed once, kept, and cleared when something it
+depends on changes, so two pages showing the same table do not compute
+it twice. [`?CacheConnection`](../reference/CacheConnection.md) lists
+them, and [`cache_definition()`](../reference/cache_definition.md) says
+for any of them what it depends on and which pages show it.
+
+## Running and publishing
+
+During development, load the app package and call its `run_app()`:
+
+``` r
+
+devtools::load_all()
+run_app(language = "en")
+```
+
+In DataSuite, the countdown-analytics extension names each app’s
+package; DataSuite installs the package from r-universe with the
+extension, and starts `run_app()` with the chosen file and language. An
+app’s `DESCRIPTION` must require the cd2030.core version it needs
+(`cd2030.core (>= 1.4.0)`), because DataSuite only updates a package
+when a newer version is required.

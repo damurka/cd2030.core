@@ -1,4 +1,4 @@
-# Plot Service Utilization Indicators
+# Plot service utilization indicators
 
 Visualizes service utilization over time from a
 `cd_service_utilization_filtered` object.
@@ -7,7 +7,18 @@ Visualizes service utilization over time from a
 
 ``` r
 # S3 method for class 'cd_service_utilization_filtered'
-plot(x, labels = NULL, ..., options = NULL)
+plot(
+  x,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
+  ...,
+  legend_labels = NULL,
+  options = NULL
+)
 ```
 
 ## Arguments
@@ -15,27 +26,52 @@ plot(x, labels = NULL, ..., options = NULL)
 - x:
 
   A `cd_service_utilization_filtered` object created by
-  [`filter_service_utilization()`](filter_service_utilization.md).
+  [`select_service_utilization()`](select_service_utilization.md).
 
-- labels:
+- title:
 
-  (Optional) A named list to override the default English text of the
-  chart drawn, e.g. with translations. Valid keys: `title`, `x_axis`,
-  `y_axis`, and the legend entries `y1` and `y2` of its two series (for
-  `opd` and `ipd`: under-5 and all ages). Defaults to `NULL`.
+  The chart's title.
+
+- subtitle:
+
+  The line under the title.
+
+- caption:
+
+  The note under the chart.
+
+- x_title:
+
+  The title of the horizontal axis.
+
+- y_title:
+
+  The title of the vertical axis.
+
+- legend_title:
+
+  The title of the legend.
 
 - ...:
 
-  not used
+  Chart options by name (see
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)):
+  background, fonts, sizes, axes, grid, legend, colours. Other arguments
+  are ignored.
+
+- legend_labels:
+
+  (Optional) A named list to override the legend's entries, e.g. with
+  translations: `y1` and `y2`, the chart's two series (for `opd` and
+  `ipd`: under-5 and all ages). Defaults to `NULL`.
 
 - options:
 
-  (Optional) A
+  A
   [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
-  object: text, legend, fonts and sizes a user changed. Applied last, so
-  it wins over the arguments above; the plot's own defaults are used for
-  whatever it does not set. Any chart option can also be given by name
-  in `...`.
+  object or a list of chart options: a look made once, to give to
+  several charts. Applied after the text arguments, so a text it holds
+  wins over them.
 
 ## Value
 
@@ -45,6 +81,6 @@ A `ggplot2` plot object.
 
 ``` r
 if (FALSE) { # \dontrun{
-plot(filter_service_utilization(dat, indicator = 'opd'))
+plot(select_service_utilization(dat, indicator = 'opd'))
 } # }
 ```

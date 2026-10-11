@@ -1,4 +1,4 @@
-# Plot Comparison with Linear Fit and R-squared
+# Plot comparison with linear fit and R-squared
 
 Creates a scatter plot to compare two indicators over multiple years,
 including a linear regression line and a diagonal reference line. The
@@ -14,11 +14,14 @@ plot_comparison(
   x_var,
   y_var,
   title = NULL,
-  x_label = NULL,
-  y_label = NULL,
-  legend = NULL,
-  call = caller_env(),
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
+  legend_labels = NULL,
+  call = caller_env(),
   options = NULL
 )
 ```
@@ -41,18 +44,36 @@ plot_comparison(
 
 - title:
 
-  Character. The main title for the plot. Defaults to a title based on
-  `x_var` and `y_var`.
+  The chart's title.
 
-- x_label:
+- subtitle:
 
-  Character. Label for the x-axis. Defaults to the value of `x_var`.
+  The line under the title.
 
-- y_label:
+- caption:
 
-  Character. Label for the y-axis. Defaults to the value of `y_var`.
+  The note under the chart.
 
-- legend:
+- x_title:
+
+  The title of the horizontal axis.
+
+- y_title:
+
+  The title of the vertical axis.
+
+- legend_title:
+
+  The title of the legend.
+
+- ...:
+
+  Chart options by name (see
+  [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)):
+  background, fonts, sizes, axes, grid, legend, colours. Other arguments
+  are ignored.
+
+- legend_labels:
 
   Optional named list or vector overriding the legend labels. Recognised
   names are `district`, `linear_fit` and `diagonale`; unnamed entries
@@ -62,19 +83,13 @@ plot_comparison(
 
   The calling environment.
 
-- ...:
-
-  Additional arguments for customization, such as `size`, `color`, or
-  `linetype`, for finer control over plot appearance.
-
 - options:
 
-  (Optional) A
+  A
   [`cd_chart_options()`](https://rdrr.io/pkg/datasuite.ui/man/cd_chart_options.html)
-  object: text, legend, fonts and sizes a user changed. Applied last, so
-  it wins over the arguments above; the plot's own defaults are used for
-  whatever it does not set. Any chart option can also be given by name
-  in `...`.
+  object or a list of chart options: a look made once, to give to
+  several charts. Applied after the text arguments, so a text it holds
+  wins over them.
 
 ## Value
 

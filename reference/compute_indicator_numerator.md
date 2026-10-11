@@ -1,4 +1,4 @@
-# Compute Aggregated Numerators for Health Indicators
+# Compute aggregated numerators for health indicators
 
 `compute_indicator_numerator` aggregates the numerators for specified
 health indicators across different administrative levels, such as

@@ -1,4 +1,4 @@
-# Summarize Data Completeness by Year
+# Summarize data completeness by year
 
 Computes yearly percentage of non-missing values for each indicator,
 along with overall completeness summaries.
@@ -26,8 +26,8 @@ calculate_completeness_summary(
 
 - threshold:
 
-  Integer. Completeness threshold (in percent) stored as an attribute on
-  the result and used when plotting. Default is `90`.
+  Numeric. The performance threshold (in percent) stored as an attribute
+  on the result and used when plotting. Default is `90`.
 
 - region:
 

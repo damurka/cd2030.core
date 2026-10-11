@@ -27,7 +27,8 @@ adjustment_evidence(
 
 - threshold:
 
-  The reporting threshold (percent) of the Reporting rate page.
+  Numeric. The performance threshold (in percent) of the Reporting rate
+  page.
 
 - year:
 
@@ -39,3 +40,33 @@ A list: `year`, `threshold`, `groups` (named by group: `rr`, `below`),
 `indicators` (named by indicator: `outliers`, `missing`, months),
 `areas` (a list of
 `list(region, rr, districts = list(list(name, rr)))`).
+
+## Examples
+
+``` r
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+#> ℹ Loading Excel "kenya.xlsx" for parts
+#> ! The following columns are empty: anc_1trimester, under5_deaths, total_deaths,
+#>   ipv2, measles_cases
+#> ℹ Successfully loaded and cleaned data
+#> ℹ Auto-detect candidates (|group|): vaccine=19, rmncah=28 -> selected rmncah
+evidence <- adjustment_evidence(data)
+str(evidence$groups$opd)
+#> List of 2
+#>  $ rr   : num 97
+#>  $ below: int 4
+str(evidence$indicators$penta3)
+#> List of 2
+#>  $ outliers: int 29
+#>  $ missing : int 0
+
+# Against a stricter threshold, for an earlier year
+adjustment_evidence(data, threshold = 95, year = 2021)$groups$opd
+#> $rr
+#> [1] 96
+#> 
+#> $below
+#> [1] 12
+#> 
+```

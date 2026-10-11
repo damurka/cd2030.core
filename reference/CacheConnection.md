@@ -1,4 +1,4 @@
-# CacheConnection Class
+# CacheConnection class
 
 An R6 class that handles persistent or in-memory caching of data used in
 the Countdown 2030 analysis and reporting workflows.
@@ -12,7 +12,7 @@ the Countdown 2030 analysis and reporting workflows.
   `adjusted_data`, reporting rates, completeness, overall scores.
 
 - **Layer 2 (Coverage & Denominators):** Depends on Layer 1. Includes
-  derived coverages at national, admin1, and district levels.
+  derived coverages at national, admin level 1, and district levels.
 
 - **Layer 3 (Inequality & Health Systems):** Depends on Layer 2
   (Coverage). Includes inequalities, mortality ratios, and service
@@ -46,68 +46,57 @@ object.
 
 - `data_years`:
 
-  Active Binding: Extracts unique years present in the raw data. Before
-  Finish (`wizard_parts` still set, no `countdown_data` yet), falls back
-  to the raw Population sheet's own `year` column – confirmed live this
-  matters: several other page modules read `cache()$data_years`
-  unconditionally the moment `cache()` itself becomes non-NULL (e.g.
-  `modules/1b_remove_years.R`'s own `req(cache()$data_years)`), and
-  those page modules are instantiated at app startup the same "always
-  running" way the wizard's own step servers are – reachable well before
-  Finish, not just after.
+  Active Binding: Gets the years present in the raw data, in ascending
+  order. While the Load Data wizard's sheets are not yet merged
+  (`wizard_parts` set, no `countdown_data`), the years come from the
+  population sheet's `year` column. `NULL` when neither gives any.
 
 - `subnational_regions`:
 
-  Active Binding: Extracts unique admin1 and district combinations.
-  Before Finish (`wizard_parts` still set, no `countdown_data` yet),
-  falls back to the raw Admin sheet's own `first_admin_level`/`district`
-  columns – this is what lets Map Survey/Map Shapefile show the real
-  admin1 list mid-wizard, per the wizard redesign's own requirement that
-  mapping happens "against the admin1 from admin sheet."
+  Active Binding: Gets the unique admin level 1 and district
+  combinations, a data frame with columns `adminlevel_1` and `district`.
+  While the Load Data wizard's sheets are not yet merged (`wizard_parts`
+  set, no `countdown_data`), they come from the admin sheet's
+  `first_admin_level` and `district` columns. `NULL` when neither gives
+  any.
 
 - `country`:
 
-  Active Binding: Gets the text string representing the focal country.
-  Readonly. Before Finish, falls back to `wizard_country` – a
-  best-effort, non-aborting resolution
-  ([`resolve_country_best_effort()`](resolve_country_best_effort.md),
-  0_import_load_data.R) computed right after upload, since the real,
-  validated `country` attribute only exists once
-  [`merge_and_standardize()`](merge_and_standardize.md)'s
-  `match_country()` call has actually run. The genuine validation (is
-  there cleanly one country value at all) stays
-  [`check_single_country()`](check_single_country.md)'s job, surfaced at
-  the Data Quality step – this fallback's only job is unblocking
-  everything else that needs a country before Finish (the header badge,
-  national-rate/survey defaults, the bundled shapefile lookup).
+  Active Binding: Gets the name of the dataset's country. Readonly.
+  While the Load Data wizard's sheets are not yet merged (no
+  `countdown_data`), it is the country stored with
+  `set_wizard_country()`, which is `NULL` when the country could not be
+  worked out.
 
 - `country_iso`:
 
   Active Binding: Gets the 3-letter ISO code for the country. Readonly.
-  Same pre-Finish fallback as `country` above.
+  While the Load Data wizard's sheets are not yet merged, it is the code
+  stored with `set_wizard_country()`, which is `NULL` when the country
+  could not be worked out.
 
 - `wizard_parts`:
 
-  Active Binding: Gets the Load Data wizard's own in-progress,
-  not-yet-merged sheets ([`load_excel_parts()`](load_excel_parts.md)'s
-  result) – `NULL` once Finish has merged them into `countdown_data`, or
-  for any cache that was never in wizard mode to begin with.
+  Active Binding: Gets the sheets of an upload that the Load Data wizard
+  has read but not yet merged (the result of
+  [`load_excel_parts()`](load_excel_parts.md)). `NULL` once they are
+  merged into `countdown_data` and cleared, and for a dataset that was
+  not loaded through the wizard.
 
 - `quality_confirmed`:
 
-  Active Binding: `TRUE` once this cache's data finished the Load Data
-  wizard with its quality checks passed (set once, at Finish – see
-  `set_quality_confirmed()` below) – persisted with everything else in
-  the `.rds`, so it survives a resume. `FALSE` for a cache still
-  mid-wizard, and for any cache built outside the wizard entirely.
+  Active Binding: `TRUE` once the data has finished the Load Data wizard
+  with its quality checks passed (see `set_quality_confirmed()`). It is
+  saved with the dataset. `FALSE` while the wizard is in progress, and
+  for a dataset built outside the wizard.
 
 - `wizard_quality_results`:
 
-  Active Binding: Gets the frozen, pre-merge quality-check snapshot
-  taken at Finish (`NULL` before Finish, and for any cache that never
-  went through the wizard) – see `set_wizard_quality_results()`'s own
-  comment for why this exists and what reads it
-  ([`run_all_quality_checks()`](run_all_quality_checks.md)).
+  Active Binding: Gets the quality check results stored when the Load
+  Data wizard finished (see `set_wizard_quality_results()`), which
+  [`run_all_quality_checks()`](run_all_quality_checks.md) returns once
+  the wizard's sheets are cleared. `NULL` before that, and for a dataset
+  that did not go through the wizard.
 
 - `adjusted_data`:
 
@@ -116,10 +105,9 @@ object.
 
 - `data_with_excluded_years`:
 
-  Active Binding: Raw data filtered to remove user-excluded years.
-  Readonly. `NULL` before Finish (no `countdown_data` yet, mid-wizard) –
-  "Remove Years" is a separate, post-Finish page, not something the
-  wizard itself needs a pre-merge equivalent for.
+  Active Binding: Raw data without the years in `excluded_years`.
+  Readonly. `NULL` when there is no `countdown_data` yet (the Load Data
+  wizard has not finished).
 
 - `performance_threshold`:
 
@@ -138,9 +126,8 @@ object.
 - `adjustment_settings`:
 
   Active Binding: The Data Adjustment page's settings (see
-  [`adjust_service_data()`](adjust_service_data.md)); a dataset saved
-  before they existed gets them from its `k_factors` and
-  `excluded_years`.
+  [`adjust_service_data()`](adjust_service_data.md)). When none are
+  stored, they are made from `k_factors` and `excluded_years`.
 
 - `adjusted_flag`:
 
@@ -333,7 +320,8 @@ object.
 
 - `fpet_data`:
 
-  Active Binding: Fetches FPET metrics (loads from global if missing).
+  Active Binding: Fetches FPET metrics (the package's built-in data for
+  the country when none was set).
 
 - `un_estimates`:
 
@@ -357,19 +345,16 @@ object.
 
 - `shapefile`:
 
-  Active Binding: Fetches the shapefile to use for this country – a
-  user-uploaded override (`set_shapefile()`) if one exists, otherwise
-  the package-bundled default for `country_iso`, same
-  override-with-fallback pattern as `regional_survey` above. `NULL` if
-  `country_iso` isn't known yet (mid-wizard, before the admin sheet's
-  country resolves) – there's nothing to fetch a bundled shapefile FOR
-  yet.
+  Active Binding: Fetches the shapefile for the country: the one
+  uploaded with `set_shapefile()` when there is one, otherwise the
+  package's built-in admin level 1 shapefile for `country_iso`. `NULL`
+  when none was uploaded and `country_iso` is not known yet.
 
 - `shapefile_name_field`:
 
-  Active Binding: Which column of `self$shapefile` holds admin-1 names –
-  `"NAME_1"` (the bundled shapefile's own column) unless a user-uploaded
-  one set a different field via `set_shapefile_name_field()`.
+  Active Binding: The column of `shapefile` that holds the admin level 1
+  names: `"NAME_1"` (the column of the built-in shapefiles) unless
+  `set_shapefile_name_field()` set another.
 
 - `wiq_survey`:
 
@@ -431,13 +416,19 @@ object.
 
 - `inequality_admin1`:
 
-  Active Binding: Automatically calculates and caches Admin1 inequality
-  matrices.
+  Active Binding: Automatically calculates and caches Admin level 1
+  inequality matrices.
 
 - `inequality_district`:
 
   Active Binding: Automatically calculates and caches District
   inequality matrices.
+
+- `adjustment_values`:
+
+  Active Binding: The yearly numbers as reported and after each step of
+  the dataset's adjustment (completeness, outliers, missing values), for
+  every indicator. Computed once and kept.
 
 - `mortality_summary`:
 
@@ -456,7 +447,7 @@ object.
 
 - `service_utilization_admin1`:
 
-  Active Binding: Caches OPD/IPD utilizations parsed by Admin 1 level.
+  Active Binding: Caches OPD/IPD utilizations parsed at admin level 1.
 
 - `health_system_comparison`:
 
@@ -471,7 +462,7 @@ object.
 - `health_system_metrics_admin1`:
 
   Active Binding: Compiles core indicators (staff density, beds) at the
-  Admin 1 scale.
+  Admin level 1 scale.
 
 - `national_private_share`:
 
@@ -481,19 +472,13 @@ object.
 - `area_private_share`:
 
   Active Binding: Returns baseline metrics regarding private sector
-  operations (Area/Region). Invalidate entirely (Usually triggered on
-  initial data load) Invalidate downstream computations (Coverage,
-  Mortality, etc.) derived from adjustments Invalidate Data Quality
-  Cache Invalidate Denominator Cache Invalidate Coverage Cache
-  (Automatically cascades to Inequality & Health Systems) Invalidate
-  Inequality Cache Invalidate Mortality Cache Invalidate Utilization
-  Cache Invalidate Health Systems Cache
+  operations (Area/Region).
 
 ## Methods
 
 ### Public methods
 
-- [`CacheConnection$new()`](#method-CacheConnection-new)
+- [`CacheConnection$new()`](#method-CacheConnection-initialize)
 
 - [`CacheConnection$load_from_disk()`](#method-CacheConnection-load_from_disk)
 
@@ -727,7 +712,7 @@ object.
 
 ------------------------------------------------------------------------
 
-### Method `new()`
+### `CacheConnection$new()`
 
 Initialize a CacheConnection instance.
 
@@ -754,25 +739,19 @@ Initialize a CacheConnection instance.
 - `data_path`:
 
   Path to the original source file `countdown_data` was built from (e.g.
-  the picked `.xlsx`). The cache always lives at
-  `<dirname(data_path)>/<stem(data_path)>.rds` – if that file already
-  exists, it's loaded instead of `countdown_data` (the fresh parse is
-  discarded); otherwise it's created there. This is the only place that
-  decides the cache's location and load-vs-create behavior, so every
-  caller gets the same behavior regardless of how they got here.
+  the picked `.xlsx`). The cache is kept at
+  `<dirname(data_path)>/<stem(data_path)>.rds`. If that file already
+  exists, it is loaded and `countdown_data` is not used; otherwise it is
+  created there.
 
 - `wizard_parts`:
 
   A [`load_excel_parts()`](load_excel_parts.md) result
-  (`list(parts, sheet_names, sheet_ids, ...)`) – a third,
-  mutually-exclusive mode alongside `rds_path`/`countdown_data`, for the
-  Load Data wizard's own in-progress state (Phase 3 of the wizard
-  redesign, apps/rmncah): the sheets have been read and cleaned but not
-  yet merged/standardized into a real `cd_data` object, so there's no
-  `countdown_data` yet – see `wizard_parts`/`country`/`country_iso`'s
-  own active bindings below for how the rest of the class degrades
-  gracefully until `set_countdown_data()` is finally called (at Finish,
-  once [`merge_and_standardize()`](merge_and_standardize.md) has run).
+  (`list(parts, sheet_names, sheet_ids, ...)`): the sheets of an upload
+  that the Load Data wizard has read and cleaned but not yet merged into
+  a `cd_data` object. Use it instead of `rds_path` or `countdown_data`.
+  Until `set_countdown_data()` is called, `countdown_data` is `NULL`,
+  and `data_years` and `subnational_regions` are read from these sheets.
 
 - `read_only`:
 
@@ -781,7 +760,7 @@ Initialize a CacheConnection instance.
 
 ------------------------------------------------------------------------
 
-### Method `load_from_disk()`
+### `CacheConnection$load_from_disk()`
 
 Load cached data from the designated RDS file on disk.
 
@@ -791,7 +770,7 @@ Load cached data from the designated RDS file on disk.
 
 ------------------------------------------------------------------------
 
-### Method `save_to_disk()`
+### `CacheConnection$save_to_disk()`
 
 Save current in-memory state to the assigned RDS file, provided state
 has changed.
@@ -802,7 +781,7 @@ has changed.
 
 ------------------------------------------------------------------------
 
-### Method `adjust_data()`
+### `CacheConnection$adjust_data()`
 
 Processes raw data into adjusted data with the adjustment settings
 (`adjustment_settings`: the years and areas removed, each indicator's k,
@@ -814,7 +793,7 @@ outlier and missing-value switches, everywhere or by area).
 
 ------------------------------------------------------------------------
 
-### Method [`calculate_indicator_coverage()`](calculate_indicator_coverage.md)
+### `CacheConnection$calculate_indicator_coverage()`
 
 Run indicator coverage calculation using stored models and parameters.
 
@@ -842,7 +821,7 @@ Run indicator coverage calculation using stored models and parameters.
 
 ------------------------------------------------------------------------
 
-### Method [`calculate_inequality()`](calculate_inequality.md)
+### `CacheConnection$calculate_inequality()`
 
 Run inequality calculation using subnational coverage compared to
 reference data.
@@ -863,7 +842,7 @@ reference data.
 
 ------------------------------------------------------------------------
 
-### Method [`calculate_coverage()`](calculate_coverage.md)
+### `CacheConnection$calculate_coverage()`
 
 Integrates immunization coverage data from DHIS2, Surveys, and WUENIC.
 
@@ -883,7 +862,7 @@ Integrates immunization coverage data from DHIS2, Surveys, and WUENIC.
 
 ------------------------------------------------------------------------
 
-### Method [`generate_coverage_data()`](generate_coverage_data.md)
+### `CacheConnection$generate_coverage_data()`
 
 Generate Continuum of Care Coverage Data summary format.
 
@@ -907,7 +886,7 @@ Generate Continuum of Care Coverage Data summary format.
 
 ------------------------------------------------------------------------
 
-### Method [`get_mapping_data()`](get_mapping_data.md)
+### `CacheConnection$get_mapping_data()`
 
 Formats base coverage data with spatial map coordinates for plotting.
 
@@ -923,7 +902,7 @@ Formats base coverage data with spatial map coordinates for plotting.
 
 ------------------------------------------------------------------------
 
-### Method `lbr_mean()`
+### `CacheConnection$lbr_mean()`
 
 Retrieves the mean of institutional livebirths from the national
 coverage cache.
@@ -934,7 +913,7 @@ coverage cache.
 
 ------------------------------------------------------------------------
 
-### Method [`summarise_completeness_ratio()`](summarise_completeness_ratio.md)
+### `CacheConnection$summarise_completeness_ratio()`
 
 Creates mortality completeness ratio summaries.
 
@@ -950,7 +929,7 @@ Creates mortality completeness ratio summaries.
 
 ------------------------------------------------------------------------
 
-### Method [`filter_mortality_summary()`](filter_mortality_summary.md)
+### `CacheConnection$filter_mortality_summary()`
 
 Returns the appropriate mortality summary based on the indicator type to
 plot.
@@ -979,7 +958,7 @@ plot.
 
 ------------------------------------------------------------------------
 
-### Method [`compute_service_utilization()`](compute_service_utilization.md)
+### `CacheConnection$compute_service_utilization()`
 
 Computes service utilization for various indicators (OPD/IPD).
 
@@ -995,7 +974,7 @@ Computes service utilization for various indicators (OPD/IPD).
 
 ------------------------------------------------------------------------
 
-### Method [`filter_service_utilization()`](filter_service_utilization.md)
+### `CacheConnection$filter_service_utilization()`
 
 Filters service utilization data for a specific indicator and region.
 
@@ -1023,7 +1002,7 @@ Filters service utilization data for a specific indicator and region.
 
 ------------------------------------------------------------------------
 
-### Method [`prepare_mapping_service_utlization()`](prepare_mapping_service_utlization.md)
+### `CacheConnection$prepare_mapping_service_utlization()`
 
 Prepares service utilization data mapping tables.
 
@@ -1051,7 +1030,7 @@ Prepares service utilization data mapping tables.
 
 ------------------------------------------------------------------------
 
-### Method `get_denominator()`
+### `CacheConnection$get_denominator()`
 
 Resolves the appropriate denominator column string based on the
 indicator category.
@@ -1068,17 +1047,18 @@ indicator category.
 
 ------------------------------------------------------------------------
 
-### Method `decompose_change()`
+### `CacheConnection$decompose_change()`
 
-Which units drive a change in an indicator's coverage between two years:
-for each district (or region) its count and denominator in both years,
-its coverage change, and its contribution in percentage points to the
-change at the level above – split into service delivery (its change in
-count) and its share of the denominator's change – with its reporting
-rate, flagged when reporting was low or fell, since a drop may be
-missing reports rather than fewer services. Denominators are the ones
-the app's coverage uses (count / coverage), so the parts add up to the
-change the app shows.
+Shows which units drive a change in an indicator's coverage between two
+years. For each district (or region) it gives the count and denominator
+in both years, the coverage change, and the unit's contribution in
+percentage points to the change at the level above. The contribution is
+split into service delivery (the change in count) and the unit's share
+of the denominator's change. Each unit also has its reporting rate,
+flagged when reporting was low or fell, since a drop may be missing
+reports rather than fewer services. Denominators are the ones the app's
+coverage uses (count / coverage), so the parts add up to the change the
+app shows.
 
 #### Usage
 
@@ -1127,7 +1107,7 @@ above's coverage in both years and its change.
 
 ------------------------------------------------------------------------
 
-### Method `denominator_comparison()`
+### `CacheConnection$denominator_comparison()`
 
 The Denominator Selection comparison as one tidy table: for each
 indicator and year, its coverage under each of the six denominator
@@ -1173,7 +1153,7 @@ year the derived denominators start from).
 
 ------------------------------------------------------------------------
 
-### Method `reactive()`
+### `CacheConnection$reactive()`
 
 Returns a reactive wrapper for use within Shiny applications.
 
@@ -1183,7 +1163,7 @@ Returns a reactive wrapper for use within Shiny applications.
 
 ------------------------------------------------------------------------
 
-### Method `set_language()`
+### `CacheConnection$set_language()`
 
 Sets the UI Language.
 
@@ -1199,7 +1179,7 @@ Sets the UI Language.
 
 ------------------------------------------------------------------------
 
-### Method `set_cache_path()`
+### `CacheConnection$set_cache_path()`
 
 Sets the caching RDS path and attempts a save to disk immediately.
 
@@ -1215,7 +1195,7 @@ Sets the caching RDS path and attempts a save to disk immediately.
 
 ------------------------------------------------------------------------
 
-### Method `set_countdown_data()`
+### `CacheConnection$set_countdown_data()`
 
 Sets the core unadjusted countdown data. Wipes all derived caches.
 
@@ -1231,15 +1211,12 @@ Sets the core unadjusted countdown data. Wipes all derived caches.
 
 ------------------------------------------------------------------------
 
-### Method `set_wizard_parts()`
+### `CacheConnection$set_wizard_parts()`
 
-Sets the Load Data wizard's own in-progress, not-yet-merged sheets
-([`load_excel_parts()`](load_excel_parts.md)'s result). Called once,
-right after a fresh Excel/Stata upload, by `apps/rmncah`'s own
-`upload_box.R` – see `wizard_parts`'s own active-binding comment for
-what this unblocks in the meantime, and
-[`merge_and_standardize()`](merge_and_standardize.md)/Finish for where
-it's cleared.
+Stores the sheets of an upload that the Load Data wizard has read but
+not yet merged (the result of
+[`load_excel_parts()`](load_excel_parts.md)). `clear_wizard_parts()`
+removes them.
 
 #### Usage
 
@@ -1253,16 +1230,11 @@ it's cleared.
 
 ------------------------------------------------------------------------
 
-### Method `clear_wizard_parts()`
+### `CacheConnection$clear_wizard_parts()`
 
-Clears the wizard's in-progress parts/country state once Finish has
-actually merged them into real `countdown_data` – called right after
-`set_countdown_data()` at Finish (`wizard_panels.R`). Not just tidiness:
-[`run_all_quality_checks()`](run_all_quality_checks.md) branches on
-whether `wizard_parts` is still set, so leaving it behind would keep
-routing a now-fully-merged cache through the pre-merge check path if the
-wizard's own Data Quality step (or edit mode) is ever revisited
-afterward.
+Removes the wizard's unmerged sheets and the country stored with
+`set_wizard_country()`. Call it after `set_countdown_data()`, once the
+sheets have been merged into `countdown_data`.
 
 #### Usage
 
@@ -1270,23 +1242,14 @@ afterward.
 
 ------------------------------------------------------------------------
 
-### Method `set_wizard_country()`
+### `CacheConnection$set_wizard_country()`
 
-Sets the wizard's best-effort, non-aborting country resolution – see
-`country`/`country_iso`'s own active-binding comments for why this is
-separate from the real
-[`check_single_country()`](check_single_country.md) validation. Uses
-`update_field()` directly (not `setter()`, which rejects `NULL`) since
-`value$country`/`value$country_iso` being `NULL` – an ambiguous or
-unmatched admin sheet – is itself a legitimate, expected result to
-store: the `country`/`country_iso` bindings need a real `NULL` back, not
-a stray `NA`, to keep matching the
-[`is.null()`](https://rdrr.io/r/base/NULL.html) convention every other
-consumer already uses. Also runs `initialize_survey_estimates()` once a
-real `country_iso` is actually known – the `initialize()`-time call the
-non-wizard branch gets was deliberately skipped for wizard mode (see
-that branch's own comment) precisely because it needed this to have
-already happened.
+Stores the country worked out from an upload before its sheets are
+merged, so that `country` and `country_iso` have a value in the
+meantime. Either element may be `NULL` when the country could not be
+worked out. When `country_iso` is given, the survey year, survey
+estimates and national rates are filled in from the package's built-in
+survey data for that country.
 
 #### Usage
 
@@ -1302,12 +1265,10 @@ already happened.
 
 ------------------------------------------------------------------------
 
-### Method `set_quality_confirmed()`
+### `CacheConnection$set_quality_confirmed()`
 
-Marks this cache's data as having finished the Load Data wizard with its
-quality checks passed – set once, at Finish, right before
-`set_cache_path()` writes it to disk. See `quality_confirmed`'s own
-active-binding comment for what reads this.
+Records whether the data finished the Load Data wizard with its quality
+checks passed (see `quality_confirmed`).
 
 #### Usage
 
@@ -1321,28 +1282,13 @@ active-binding comment for what reads this.
 
 ------------------------------------------------------------------------
 
-### Method `set_wizard_quality_results()`
+### `CacheConnection$set_wizard_quality_results()`
 
-A permanent snapshot of
-[`run_all_quality_checks()`](run_all_quality_checks.md)'s own result,
-taken once at Finish – right before `clear_wizard_parts()`
-(`wizard_panels.R`, apps/rmncah), while `wizard_parts` is still set, so
-this captures the exact pre-merge, per-sheet checks the user actually
-saw during the walkthrough. Exists because `clear_wizard_parts()`'s own
-removal of `wizard_parts` (deliberate – see its own comment) means
-[`run_all_quality_checks()`](run_all_quality_checks.md) would otherwise
-silently fall through to the POST-merge check path
-(`.run_post_merge_quality_checks()`) the moment Data Quality is
-revisited after Finish (a landing-page Edit link, or edit mode
-generally) – a genuinely different set of checks, computed against the
-merged/standardized `countdown_data` instead of the original unmerged
-sheets, that can report different numbers than what was shown at upload
-time. Confirmed live: this is exactly the bug reported as "data quality
-is not giving the actual values given during the uploading".
-`wizard_parts` itself can't just be kept around instead – it would grow
-stale the moment anything downstream (Remove Years, Data Adjustment)
-changes `countdown_data`, which this snapshot, frozen at the one moment
-it was genuinely accurate, doesn't have that problem.
+Stores the quality check results the Load Data wizard showed for the
+uploaded sheets (the result of
+[`run_all_quality_checks()`](run_all_quality_checks.md) while
+`wizard_parts` is set). They are kept after `clear_wizard_parts()`, so
+the Data Quality step shows the same results when it is opened again.
 
 #### Usage
 
@@ -1357,7 +1303,7 @@ it was genuinely accurate, doesn't have that problem.
 
 ------------------------------------------------------------------------
 
-### Method `set_adjusted_data()`
+### `CacheConnection$set_adjusted_data()`
 
 Sets custom adjusted data. Wipes downstream coverage/health system
 metrics.
@@ -1374,7 +1320,7 @@ metrics.
 
 ------------------------------------------------------------------------
 
-### Method `set_performance_threshold()`
+### `CacheConnection$set_performance_threshold()`
 
 Sets the performance threshold used for DQA score calculations.
 
@@ -1390,7 +1336,7 @@ Sets the performance threshold used for DQA score calculations.
 
 ------------------------------------------------------------------------
 
-### Method `set_excluded_years()`
+### `CacheConnection$set_excluded_years()`
 
 Sets a list of years to manually exclude from modeling.
 
@@ -1406,7 +1352,7 @@ Sets a list of years to manually exclude from modeling.
 
 ------------------------------------------------------------------------
 
-### Method `set_adjustment_settings()`
+### `CacheConnection$set_adjustment_settings()`
 
 Sets the adjustment settings (see
 [`adjust_service_data()`](adjust_service_data.md)) the Data Adjustment
@@ -1428,7 +1374,7 @@ made again by `adjust_data()`.
 
 ------------------------------------------------------------------------
 
-### Method `set_k_factors()`
+### `CacheConnection$set_k_factors()`
 
 Sets the correction factors for under-reporting.
 
@@ -1444,7 +1390,7 @@ Sets the correction factors for under-reporting.
 
 ------------------------------------------------------------------------
 
-### Method `set_adjusted_flag()`
+### `CacheConnection$set_adjusted_flag()`
 
 Toggles the adjusted flag status.
 
@@ -1460,7 +1406,7 @@ Toggles the adjusted flag status.
 
 ------------------------------------------------------------------------
 
-### Method `set_survey_estimates()`
+### `CacheConnection$set_survey_estimates()`
 
 Manually overrides survey estimates. Clears coverage cache.
 
@@ -1476,7 +1422,7 @@ Manually overrides survey estimates. Clears coverage cache.
 
 ------------------------------------------------------------------------
 
-### Method `set_derivation_population()`
+### `CacheConnection$set_derivation_population()`
 
 Sets the base derivation population indicator (e.g.
 totlivebirths_dhis2).
@@ -1493,7 +1439,7 @@ totlivebirths_dhis2).
 
 ------------------------------------------------------------------------
 
-### Method `set_national_estimates()`
+### `CacheConnection$set_national_estimates()`
 
 Sets list of explicit national estimates (nmr, pnmr, etc.).
 
@@ -1509,7 +1455,7 @@ Sets list of explicit national estimates (nmr, pnmr, etc.).
 
 ------------------------------------------------------------------------
 
-### Method `set_survey_year()`
+### `CacheConnection$set_survey_year()`
 
 Set integer year representing the source survey year.
 
@@ -1525,13 +1471,10 @@ Set integer year representing the source survey year.
 
 ------------------------------------------------------------------------
 
-### Method `clear_survey_year()`
+### `CacheConnection$clear_survey_year()`
 
-Clears the survey year back to unset. See clear_un_estimates() for why
-this bypasses the public setter – set_survey_year()'s own validation
-(is_scalar_integerish) rejects NULL outright, so there was no supported
-way to un-set an already-entered survey year (e.g. the user clearing the
-field by hand) until this.
+Clears the survey year, so that `survey_year` is `NULL`. The tables
+computed from it are cleared as well.
 
 #### Usage
 
@@ -1539,7 +1482,7 @@ field by hand) until this.
 
 ------------------------------------------------------------------------
 
-### Method `set_start_survey_year()`
+### `CacheConnection$set_start_survey_year()`
 
 Set year the survey timeline begins filtering from.
 
@@ -1555,7 +1498,7 @@ Set year the survey timeline begins filtering from.
 
 ------------------------------------------------------------------------
 
-### Method `set_denominator()`
+### `CacheConnection$set_denominator()`
 
 Set baseline denominator (e.g. penta1).
 
@@ -1571,7 +1514,7 @@ Set baseline denominator (e.g. penta1).
 
 ------------------------------------------------------------------------
 
-### Method `set_maternal_denominator()`
+### `CacheConnection$set_maternal_denominator()`
 
 Set maternal specific baseline denominator (e.g. anc1).
 
@@ -1587,7 +1530,7 @@ Set maternal specific baseline denominator (e.g. anc1).
 
 ------------------------------------------------------------------------
 
-### Method `set_selected_admin_level_1()`
+### `CacheConnection$set_selected_admin_level_1()`
 
 Sets the selected Region for targeted dashboard filtering.
 
@@ -1603,7 +1546,7 @@ Sets the selected Region for targeted dashboard filtering.
 
 ------------------------------------------------------------------------
 
-### Method `set_selected_district()`
+### `CacheConnection$set_selected_district()`
 
 Sets the selected District for targeted dashboard filtering.
 
@@ -1619,7 +1562,7 @@ Sets the selected District for targeted dashboard filtering.
 
 ------------------------------------------------------------------------
 
-### Method `set_mapping_years()`
+### `CacheConnection$set_mapping_years()`
 
 Sets mapping years for generic plots.
 
@@ -1635,7 +1578,7 @@ Sets mapping years for generic plots.
 
 ------------------------------------------------------------------------
 
-### Method `set_chart_options()`
+### `CacheConnection$set_chart_options()`
 
 Stores what the user changed about how one chart (or, with
 `id = "default"`, every chart of this dataset) looks: text, legend,
@@ -1668,7 +1611,7 @@ Invisibly, TRUE when something changed.
 
 ------------------------------------------------------------------------
 
-### Method `set_report_project()`
+### `CacheConnection$set_report_project()`
 
 Saves a report built in the report builder (see
 [`export_report()`](https://rdrr.io/pkg/datasuite.ui/man/export_report.html)),
@@ -1692,10 +1635,10 @@ or removes it.
 
 ------------------------------------------------------------------------
 
-### Method `set_graph()`
+### `CacheConnection$set_graph()`
 
 Saves a custom chart (report kind `custom_chart`: where its data comes
-from, transforms and a plot description – see
+from, transforms and a plot description; see
 [`datasuite.ui::report_validate_spec()`](https://rdrr.io/pkg/datasuite.ui/man/report_validate_spec.html)),
 or removes it. Saved graphs redraw from the data like every other chart
 and can be added to any report.
@@ -1718,7 +1661,7 @@ and can be added to any report.
 
 ------------------------------------------------------------------------
 
-### Method `set_report_asset()`
+### `CacheConnection$set_report_asset()`
 
 Saves a picture used by the reports (a block's `src` is then
 `"asset:<id>"`), or removes it. Pictures are kept once in the dataset
@@ -1742,7 +1685,7 @@ own copy.
 
 ------------------------------------------------------------------------
 
-### Method `set_report_theme()`
+### `CacheConnection$set_report_theme()`
 
 Saves a theme made from an Office file (see
 [`report_theme_from_file()`](https://rdrr.io/pkg/datasuite.ui/man/report_theme_from_file.html)),
@@ -1765,7 +1708,7 @@ or removes it. Its template (the file itself) is kept as a report asset,
 
 ------------------------------------------------------------------------
 
-### Method `get_chart_options()`
+### `CacheConnection$get_chart_options()`
 
 The chart options that apply to one chart: the dataset's `"default"`
 options with the chart's own on top.
@@ -1789,7 +1732,7 @@ object (empty when nothing is stored).
 
 ------------------------------------------------------------------------
 
-### Method `reset_chart_options()`
+### `CacheConnection$reset_chart_options()`
 
 Forgets stored chart options.
 
@@ -1810,7 +1753,7 @@ Invisibly, TRUE when something changed.
 
 ------------------------------------------------------------------------
 
-### Method `set_mortality_mapping_years()`
+### `CacheConnection$set_mortality_mapping_years()`
 
 Sets mapping years explicitly for mortality dashboards.
 
@@ -1826,7 +1769,7 @@ Sets mapping years explicitly for mortality dashboards.
 
 ------------------------------------------------------------------------
 
-### Method `set_utilization_mapping_years()`
+### `CacheConnection$set_utilization_mapping_years()`
 
 Sets mapping years explicitly for utilization dashboards.
 
@@ -1842,7 +1785,7 @@ Sets mapping years explicitly for utilization dashboards.
 
 ------------------------------------------------------------------------
 
-### Method `set_fpet_data()`
+### `CacheConnection$set_fpet_data()`
 
 Sets the Family Planning Estimation Tool (FPET) dataset.
 
@@ -1858,7 +1801,7 @@ Sets the Family Planning Estimation Tool (FPET) dataset.
 
 ------------------------------------------------------------------------
 
-### Method `set_un_estimates()`
+### `CacheConnection$set_un_estimates()`
 
 Sets the official UN Demographic Estimates dataset. Clears denominators.
 
@@ -1874,15 +1817,11 @@ Sets the official UN Demographic Estimates dataset. Clears denominators.
 
 ------------------------------------------------------------------------
 
-### Method `clear_un_estimates()`
+### `CacheConnection$clear_un_estimates()`
 
-Clears any uploaded UN Demographic Estimates override, reverting the
-un_estimates active binding to the package's own built-in default for
-the current country (its own %\|\|% fallback). The public setter
-validates its input and rejects NULL outright, so this bypasses it via
-update_field() directly, the same way invalidate_cached_data() already
-resets other fields to NULL internally – there was no supported way to
-undo an override before this.
+Removes an uploaded UN Demographic Estimates dataset. `un_estimates`
+then returns the package's built-in estimates for the current country.
+The tables computed from the estimates are cleared.
 
 #### Usage
 
@@ -1890,7 +1829,7 @@ undo an override before this.
 
 ------------------------------------------------------------------------
 
-### Method `set_un_mortality_estimates()`
+### `CacheConnection$set_un_mortality_estimates()`
 
 Sets the UN Mortality specific estimates dataset. Clears mortality
 cache.
@@ -1907,11 +1846,12 @@ cache.
 
 ------------------------------------------------------------------------
 
-### Method `clear_un_mortality_estimates()`
+### `CacheConnection$clear_un_mortality_estimates()`
 
-Clears any uploaded UN Mortality Estimates override, reverting to the
-package's built-in default for the current country. See
-clear_un_estimates() for why this bypasses the public setter.
+Removes an uploaded UN Mortality Estimates dataset.
+`un_mortality_estimates` then returns the package's built-in estimates
+for the current country. The tables computed from the estimates are
+cleared.
 
 #### Usage
 
@@ -1919,7 +1859,7 @@ clear_un_estimates() for why this bypasses the public setter.
 
 ------------------------------------------------------------------------
 
-### Method `set_wuenic_estimates()`
+### `CacheConnection$set_wuenic_estimates()`
 
 Sets WUENIC estimates dataset. Clears coverage cache.
 
@@ -1935,11 +1875,11 @@ Sets WUENIC estimates dataset. Clears coverage cache.
 
 ------------------------------------------------------------------------
 
-### Method `clear_wuenic_estimates()`
+### `CacheConnection$clear_wuenic_estimates()`
 
-Clears any uploaded WUENIC Estimates override, reverting to the
-package's built-in default for the current country. See
-clear_un_estimates() for why this bypasses the public setter.
+Removes an uploaded WUENIC Estimates dataset. `wuenic_estimates` then
+returns the package's built-in estimates for the current country. The
+tables computed from the estimates are cleared.
 
 #### Usage
 
@@ -1947,7 +1887,7 @@ clear_un_estimates() for why this bypasses the public setter.
 
 ------------------------------------------------------------------------
 
-### Method `set_national_survey()`
+### `CacheConnection$set_national_survey()`
 
 Sets overall national survey dataset and automatically extracts its
 estimates.
@@ -1964,15 +1904,12 @@ estimates.
 
 ------------------------------------------------------------------------
 
-### Method `clear_national_survey()`
+### `CacheConnection$clear_national_survey()`
 
-Clears an uploaded national survey override, reverting to the package's
-own built-in default. See clear_un_estimates() for why this bypasses the
-public setter – unlike that one, this deliberately does NOT re-run
-extract_national_estimates_from_survey(): any national rate fields it
-already filled in are their own, separately edited values now, the same
-way clearing un_estimates never un-does anything it once fed into a
-downstream calculation either.
+Removes an uploaded national survey. `national_survey` then returns the
+package's built-in survey data for the current country. The survey year,
+survey estimates and national rates that were taken from the removed
+survey are kept.
 
 #### Usage
 
@@ -1980,7 +1917,7 @@ downstream calculation either.
 
 ------------------------------------------------------------------------
 
-### Method `set_regional_survey()`
+### `CacheConnection$set_regional_survey()`
 
 Sets the disaggregated regional survey dataset.
 
@@ -1996,11 +1933,11 @@ Sets the disaggregated regional survey dataset.
 
 ------------------------------------------------------------------------
 
-### Method `clear_regional_survey()`
+### `CacheConnection$clear_regional_survey()`
 
-Clears an uploaded regional survey override, reverting to the package's
-own built-in default. See clear_un_estimates() for why this bypasses the
-public setter.
+Removes an uploaded regional survey. `regional_survey` then returns the
+package's built-in survey data for the current country. The tables
+computed from the regional survey are cleared.
 
 #### Usage
 
@@ -2008,12 +1945,10 @@ public setter.
 
 ------------------------------------------------------------------------
 
-### Method `set_shapefile()`
+### `CacheConnection$set_shapefile()`
 
-Sets a user-uploaded shapefile override, replacing the package-bundled
-default for the current country – see `shapefile`'s own active-binding
-comment for the override-with-fallback pattern this mirrors
-(`regional_survey`, above).
+Sets an uploaded shapefile, used instead of the package's built-in
+shapefile for the current country.
 
 #### Usage
 
@@ -2028,7 +1963,7 @@ comment for the override-with-fallback pattern this mirrors
 
 ------------------------------------------------------------------------
 
-### Method `clear_shapefile()`
+### `CacheConnection$clear_shapefile()`
 
 Clears an uploaded shapefile override, reverting to the package's
 built-in default for the current country.
@@ -2039,13 +1974,13 @@ built-in default for the current country.
 
 ------------------------------------------------------------------------
 
-### Method `set_shapefile_name_field()`
+### `CacheConnection$set_shapefile_name_field()`
 
-Sets which column of the uploaded shapefile holds admin-1 names – a real
-uploaded shapefile won't necessarily use the bundled shapefile's own
-`NAME_1` convention, so
-[`check_shapefile_admin_names()`](check_shapefile_admin_names.md) needs
-to be told which one to use.
+Sets which column of the uploaded shapefile holds the admin level 1
+names. Without it, `NAME_1` is used, the column of the built-in
+shapefiles.
+[`check_shapefile_admin_names()`](check_shapefile_admin_names.md) reads
+the names from this column.
 
 #### Usage
 
@@ -2059,7 +1994,7 @@ to be told which one to use.
 
 ------------------------------------------------------------------------
 
-### Method `set_wiq_survey()`
+### `CacheConnection$set_wiq_survey()`
 
 Sets wealth quantile (WIQ) survey dataset.
 
@@ -2075,12 +2010,11 @@ Sets wealth quantile (WIQ) survey dataset.
 
 ------------------------------------------------------------------------
 
-### Method `clear_wiq_survey()`
+### `CacheConnection$clear_wiq_survey()`
 
-Clears an uploaded WIQ survey override, reverting to the package's own
-built-in default (or NULL, for a country with no bundled equity default
-– see the `wiq_survey` active binding). See clear_un_estimates() for why
-this bypasses the public setter.
+Removes an uploaded wealth quintile (WIQ) survey. `wiq_survey` then
+returns the package's built-in survey data for the current country,
+which has no rows for a country without any.
 
 #### Usage
 
@@ -2088,7 +2022,7 @@ this bypasses the public setter.
 
 ------------------------------------------------------------------------
 
-### Method `set_area_survey()`
+### `CacheConnection$set_area_survey()`
 
 Sets area level (urban/rural) survey dataset.
 
@@ -2104,11 +2038,10 @@ Sets area level (urban/rural) survey dataset.
 
 ------------------------------------------------------------------------
 
-### Method `clear_area_survey()`
+### `CacheConnection$clear_area_survey()`
 
-Clears an uploaded area survey override, reverting to the package's own
-built-in default. See clear_un_estimates() for why this bypasses the
-public setter.
+Removes an uploaded area (urban/rural) survey. `area_survey` then
+returns the package's built-in survey data for the current country.
 
 #### Usage
 
@@ -2116,7 +2049,7 @@ public setter.
 
 ------------------------------------------------------------------------
 
-### Method `set_education_survey()`
+### `CacheConnection$set_education_survey()`
 
 Sets education level survey dataset.
 
@@ -2132,11 +2065,10 @@ Sets education level survey dataset.
 
 ------------------------------------------------------------------------
 
-### Method `clear_education_survey()`
+### `CacheConnection$clear_education_survey()`
 
-Clears an uploaded education survey override, reverting to the package's
-own built-in default. See clear_un_estimates() for why this bypasses the
-public setter.
+Removes an uploaded education survey. `education_survey` then returns
+the package's built-in survey data for the current country.
 
 #### Usage
 
@@ -2144,7 +2076,7 @@ public setter.
 
 ------------------------------------------------------------------------
 
-### Method `set_survey_mapping()`
+### `CacheConnection$set_survey_mapping()`
 
 Sets survey to countdown nomenclature mapping matrix.
 
@@ -2160,12 +2092,12 @@ Sets survey to countdown nomenclature mapping matrix.
 
 ------------------------------------------------------------------------
 
-### Method `clear_survey_mapping()`
+### `CacheConnection$clear_survey_mapping()`
 
-Clears the survey region mapping back to "unmapped" – unlike
-un_estimates/ un_mortality_estimates/wuenic_estimates, this field has no
-package-bundled default to fall back to, so clearing it just means "ask
-the user to map again," not "use the built-in data."
+Removes the mapping between the survey's regions and the dataset's
+regions. There is no built-in mapping, so `survey_mapping` is `NULL`
+until a new one is set. The tables computed from the mapping are
+cleared.
 
 #### Usage
 
@@ -2173,7 +2105,7 @@ the user to map again," not "use the built-in data."
 
 ------------------------------------------------------------------------
 
-### Method `set_map_mapping()`
+### `CacheConnection$set_map_mapping()`
 
 Sets map coordinates to countdown nomenclature mapping matrix.
 
@@ -2189,11 +2121,11 @@ Sets map coordinates to countdown nomenclature mapping matrix.
 
 ------------------------------------------------------------------------
 
-### Method `clear_map_mapping()`
+### `CacheConnection$clear_map_mapping()`
 
-Clears the map region mapping back to "unmapped" – see
-clear_survey_mapping(), same reasoning (no package-bundled default for
-this field either).
+Removes the mapping between the shapefile's regions and the dataset's
+regions. There is no built-in mapping, so `map_mapping` is `NULL` until
+a new one is set.
 
 #### Usage
 
@@ -2201,19 +2133,13 @@ this field either).
 
 ------------------------------------------------------------------------
 
-### Method `is_default()`
+### `CacheConnection$is_default()`
 
-Checks whether a data field is still at its built-in default – i.e. the
-user has not uploaded an override
-(un_estimates/un_mortality_estimates/wuenic_estimates, each with a real
-package-bundled fallback) or made a mapping (survey_mapping/map_mapping,
-which have no default at all, so this is equivalent there to asking
-whether anything has been set). There was previously no way to ask this
-at all: the active bindings for the first three never return NULL once a
-country is set (they fall back to the bundled dataset instead), so
-app-layer code checking `is.null(cache$un_estimates)` to mean "nothing
-uploaded yet" was always structurally wrong – this checks the underlying
-stored value directly, before any fallback is applied.
+Checks whether nothing has been set for a field. For a field with
+built-in data (`un_estimates`, `un_mortality_estimates`,
+`wuenic_estimates`) this means no dataset was uploaded, although the
+active binding still returns the built-in data. For a field without any
+(`survey_mapping`, `map_mapping`) it means the field is empty.
 
 #### Usage
 
@@ -2227,12 +2153,11 @@ stored value directly, before any fallback is applied.
 
 #### Returns
 
-Logical. TRUE if nothing has been set for this field (so it's showing
-the built-in default, or is simply empty for a field with no default).
+Logical. `TRUE` when nothing has been set for the field.
 
 ------------------------------------------------------------------------
 
-### Method `set_sector_national_estimates()`
+### `CacheConnection$set_sector_national_estimates()`
 
 Set sector national estimates mapping.
 
@@ -2248,7 +2173,7 @@ Set sector national estimates mapping.
 
 ------------------------------------------------------------------------
 
-### Method `set_sector_area_estimates()`
+### `CacheConnection$set_sector_area_estimates()`
 
 Set sector area estimates mapping.
 
@@ -2264,7 +2189,7 @@ Set sector area estimates mapping.
 
 ------------------------------------------------------------------------
 
-### Method `set_csection_national_estimates()`
+### `CacheConnection$set_csection_national_estimates()`
 
 Set c-section national estimates mapping.
 
@@ -2280,7 +2205,7 @@ Set c-section national estimates mapping.
 
 ------------------------------------------------------------------------
 
-### Method `set_csection_area_estimates()`
+### `CacheConnection$set_csection_area_estimates()`
 
 Set c-section area estimates mapping.
 
@@ -2296,7 +2221,7 @@ Set c-section area estimates mapping.
 
 ------------------------------------------------------------------------
 
-### Method `calculate_reporting_rate()`
+### `CacheConnection$calculate_reporting_rate()`
 
 Wrapper to calculate average reporting rates from raw countdown data.
 
@@ -2316,7 +2241,7 @@ Wrapper to calculate average reporting rates from raw countdown data.
 
 ------------------------------------------------------------------------
 
-### Method [`calculate_district_reporting_rate()`](calculate_district_reporting_rate.md)
+### `CacheConnection$calculate_district_reporting_rate()`
 
 Wrapper to calculate proportion of districts meeting reporting
 thresholds.
@@ -2333,7 +2258,7 @@ thresholds.
 
 ------------------------------------------------------------------------
 
-### Method [`calculate_completeness_summary()`](calculate_completeness_summary.md)
+### `CacheConnection$calculate_completeness_summary()`
 
 Wrapper to calculate completeness proportions from raw countdown data.
 
@@ -2353,7 +2278,7 @@ Wrapper to calculate completeness proportions from raw countdown data.
 
 ------------------------------------------------------------------------
 
-### Method [`calculate_district_completeness_summary()`](calculate_district_completeness_summary.md)
+### `CacheConnection$calculate_district_completeness_summary()`
 
 Wrapper to calculate district level completeness details.
 
@@ -2369,7 +2294,7 @@ Wrapper to calculate district level completeness details.
 
 ------------------------------------------------------------------------
 
-### Method [`list_missing_units()`](countdown-pages.md)
+### `CacheConnection$list_missing_units()`
 
 Locates missing/non-reporting facility units.
 
@@ -2389,7 +2314,7 @@ Locates missing/non-reporting facility units.
 
 ------------------------------------------------------------------------
 
-### Method [`calculate_outliers_summary()`](calculate_outliers_summary.md)
+### `CacheConnection$calculate_outliers_summary()`
 
 Identifies severe outliers across administrative levels using Hampel
 method.
@@ -2410,7 +2335,7 @@ method.
 
 ------------------------------------------------------------------------
 
-### Method [`calculate_district_outlier_summary()`](calculate_district_outlier_summary.md)
+### `CacheConnection$calculate_district_outlier_summary()`
 
 Flags percentage of districts with acceptable outlier variances.
 
@@ -2426,7 +2351,7 @@ Flags percentage of districts with acceptable outlier variances.
 
 ------------------------------------------------------------------------
 
-### Method `calculate_ratios_and_adequacy()`
+### `CacheConnection$calculate_ratios_and_adequacy()`
 
 Calculates adequacy ratios across chronological indicator sequences
 (e.g. Penta1 to Penta3).
@@ -2443,7 +2368,7 @@ Calculates adequacy ratios across chronological indicator sequences
 
 ------------------------------------------------------------------------
 
-### Method [`check_population_service_collision()`](check_population_service_collision.md)
+### `CacheConnection$check_population_service_collision()`
 
 Flags district-years where a service indicator looks mixed up with
 population data.
@@ -2454,7 +2379,7 @@ population data.
 
 ------------------------------------------------------------------------
 
-### Method [`check_indicator_emptiness()`](check_indicator_emptiness.md)
+### `CacheConnection$check_indicator_emptiness()`
 
 Flags indicators that are entirely empty across the whole dataset.
 
@@ -2464,10 +2389,10 @@ Flags indicators that are entirely empty across the whole dataset.
 
 ------------------------------------------------------------------------
 
-### Method [`check_survey_admin_names()`](check_survey_admin_names.md)
+### `CacheConnection$check_survey_admin_names()`
 
-Matches survey `adminlevel_1` names against the dataset's own admin-1
-names, skipping names already resolved via `survey_mapping`.
+Matches survey `adminlevel_1` names against the dataset's own admin
+level 1 names, skipping names already resolved via `survey_mapping`.
 
 #### Usage
 
@@ -2475,12 +2400,11 @@ names, skipping names already resolved via `survey_mapping`.
 
 ------------------------------------------------------------------------
 
-### Method [`check_shapefile_admin_names()`](check_shapefile_admin_names.md)
+### `CacheConnection$check_shapefile_admin_names()`
 
-Matches the shapefile's own admin-1 name column
-(`self$shapefile_name_field` – `self$shapefile`'s uploaded override if
-one exists, otherwise the bundled default) against the dataset's own
-admin-1 names, skipping names already resolved via `map_mapping`.
+Matches the shapefile's admin level 1 names (the `shapefile_name_field`
+column of `shapefile`) against the dataset's admin level 1 names,
+skipping names already resolved in `map_mapping`.
 
 #### Usage
 
@@ -2488,7 +2412,7 @@ admin-1 names, skipping names already resolved via `map_mapping`.
 
 ------------------------------------------------------------------------
 
-### Method [`calculate_overall_score()`](calculate_overall_score.md)
+### `CacheConnection$calculate_overall_score()`
 
 Calculates the aggregate DQA overall score assessing reporting,
 completeness, and outliers.
@@ -2517,7 +2441,7 @@ completeness, and outliers.
 
 ------------------------------------------------------------------------
 
-### Method `calculate_service_dqa_summary()`
+### `CacheConnection$calculate_service_dqa_summary()`
 
 Calculates Service DQA Summary comparing general reporting vs specific
 utilization metrics.
@@ -2546,9 +2470,9 @@ utilization metrics.
 
 ------------------------------------------------------------------------
 
-### Method [`generate_admin1_service_utilization()`](generate_admin1_service_utilization.md)
+### `CacheConnection$generate_admin1_service_utilization()`
 
-Generates Service Utilization Admin 1 Data mapping format.
+Generates Service Utilization Admin level 1 Data mapping format.
 
 #### Usage
 
@@ -2568,7 +2492,7 @@ A tibble with class `cd_service_util_admin1`.
 
 ------------------------------------------------------------------------
 
-### Method [`generate_admin1_mch_curative_index()`](generate_admin1_mch_curative_index.md)
+### `CacheConnection$generate_admin1_mch_curative_index()`
 
 Formats Maternal Child Health vs Curative Index data for plotting.
 
@@ -2578,7 +2502,7 @@ Formats Maternal Child Health vs Curative Index data for plotting.
 
 ------------------------------------------------------------------------
 
-### Method `get_filtered_coverage()`
+### `CacheConnection$get_filtered_coverage()`
 
 Gets filtered coverage data isolating a specific indicator for charts.
 
@@ -2602,7 +2526,7 @@ Gets filtered coverage data isolating a specific indicator for charts.
 
 ------------------------------------------------------------------------
 
-### Method `get_filtered_inequality()`
+### `CacheConnection$get_filtered_inequality()`
 
 Gets filtered inequality data targeting a single indicator.
 
@@ -2626,7 +2550,7 @@ Gets filtered inequality data targeting a single indicator.
 
 ------------------------------------------------------------------------
 
-### Method `get_filtered_mapping_data()`
+### `CacheConnection$get_filtered_mapping_data()`
 
 Filters mapping spatial data focusing on a specific year and palette.
 
@@ -2659,7 +2583,7 @@ Filters mapping spatial data focusing on a specific year and palette.
 
 ------------------------------------------------------------------------
 
-### Method `get_base_indicator_coverage()`
+### `CacheConnection$get_base_indicator_coverage()`
 
 Returns the base denominator and numerator metrics before survey
 interpolation.
@@ -2688,7 +2612,7 @@ interpolation.
 
 ------------------------------------------------------------------------
 
-### Method `get_filtered_threshold()`
+### `CacheConnection$get_filtered_threshold()`
 
 Evaluates indicator data against set threshold benchmarks (e.g. 80%
 coverage).
@@ -2713,7 +2637,7 @@ coverage).
 
 ------------------------------------------------------------------------
 
-### Method [`calculate_derived_coverage()`](calculate_derived_coverage.md)
+### `CacheConnection$calculate_derived_coverage()`
 
 Derives specific complex coverage indicators based on basic survey data.
 
@@ -2741,7 +2665,7 @@ Derives specific complex coverage indicators based on basic survey data.
 
 ------------------------------------------------------------------------
 
-### Method `get_high_performers()`
+### `CacheConnection$get_high_performers()`
 
 Identifies regions/districts that exceed benchmark coverage thresholds.
 
@@ -2765,28 +2689,44 @@ Identifies regions/districts that exceed benchmark coverage thresholds.
 
 ------------------------------------------------------------------------
 
-### Method `get_regional_estimates()`
+### `CacheConnection$get_regional_estimates()`
 
-Substitutes national rates with regional estimates for a specific
-requested sub-region.
+The rates for one region, from the survey files: the region's own
+mortality rates and survey coverage (its latest survey value of each,
+from `regional_survey`, read through `survey_mapping` so the region is
+named as in the data). A rate the region's surveys do not give keeps the
+national value; the national rates are returned whole only when no
+region is asked for or the region is not in the survey files (the
+result's `source` attribute says which: `"regional"` or `"national"`).
 
 #### Usage
 
-    CacheConnection$get_regional_estimates(admin_level, region)
+    CacheConnection$get_regional_estimates(
+      admin_level = c("adminlevel_1", "district"),
+      region = NULL
+    )
 
 #### Arguments
 
 - `admin_level`:
 
-  Character. Level of aggregation.
+  Character. `"adminlevel_1"` when `region` is a region, `"district"`
+  when it is a district (its region's rates are given).
 
 - `region`:
 
-  Character. Region name.
+  Character. The region's (or district's) name, as in the data. `NULL`:
+  the national rates.
+
+#### Returns
+
+A list like `national_estimates` (proportions: `nmr`, `pnmr`, `sbr`,
+`twin_rate`, `preg_loss`, `anc1`, `penta1`), with the region's other
+survey coverage values added when it has them.
 
 ------------------------------------------------------------------------
 
-### Method [`generate_health_system_table()`](generate_health_system_table.md)
+### `CacheConnection$generate_health_system_table()`
 
 Generates a formatted table of core health system metrics.
 
@@ -2802,7 +2742,7 @@ Generates a formatted table of core health system metrics.
 
 ------------------------------------------------------------------------
 
-### Method [`generate_phc_scatter_data()`](generate_phc_scatter_data.md)
+### `CacheConnection$generate_phc_scatter_data()`
 
 Prepares scatter plot data comparing Primary Health Care performance.
 
@@ -2819,7 +2759,7 @@ Prepares scatter plot data comparing Primary Health Care performance.
 
 ------------------------------------------------------------------------
 
-### Method [`generate_private_sector_data()`](generate_private_sector_data.md)
+### `CacheConnection$generate_private_sector_data()`
 
 Extracts private versus public sector ownership distributions.
 
@@ -2836,7 +2776,7 @@ Extracts private versus public sector ownership distributions.
 
 ------------------------------------------------------------------------
 
-### Method `get_bayes_model()`
+### `CacheConnection$get_bayes_model()`
 
 Generates or retrieves a pre-calculated Bayesian mathematical model for
 an indicator.
@@ -2857,7 +2797,7 @@ an indicator.
 
 ------------------------------------------------------------------------
 
-### Method `bayes_model_key()`
+### `CacheConnection$bayes_model_key()`
 
 The key a Bayesian model is kept under (its admin level, indicator and
 denominator).
@@ -2878,7 +2818,7 @@ denominator).
 
 ------------------------------------------------------------------------
 
-### Method `bayes_model_cached()`
+### `CacheConnection$bayes_model_cached()`
 
 The Bayesian model already made for an indicator (by `get_bayes_model()`
 or kept with `keep_bayes_model()`), or `NULL`: nothing is fitted.
@@ -2899,7 +2839,7 @@ or kept with `keep_bayes_model()`), or `NULL`: nothing is fitted.
 
 ------------------------------------------------------------------------
 
-### Method `bayes_model_inputs()`
+### `CacheConnection$bayes_model_inputs()`
 
 What [`generate_bayes_model()`](generate_bayes_model.md) needs for an
 indicator, to fit it in another R process (a Shiny ExtendedTask, so the
@@ -2927,7 +2867,7 @@ A list: `key`, `coverage_data`, `overall_score`, `indicator`,
 
 ------------------------------------------------------------------------
 
-### Method `keep_bayes_model()`
+### `CacheConnection$keep_bayes_model()`
 
 Keeps a Bayesian model fitted elsewhere (see `bayes_model_inputs()`).
 
@@ -2948,7 +2888,7 @@ Keeps a Bayesian model fitted elsewhere (see `bayes_model_inputs()`).
 
 ------------------------------------------------------------------------
 
-### Method `bayes_estimates()`
+### `CacheConnection$bayes_estimates()`
 
 The estimates of the Bayesian models already fitted at an admin level,
 as one table ([`bayes_model_estimates()`](bayes_model_estimates.md) of
@@ -2972,7 +2912,7 @@ A tibble, or `NULL` when no model has been fitted at that level.
 
 ------------------------------------------------------------------------
 
-### Method `clone()`
+### `CacheConnection$clone()`
 
 The objects of this class are cloneable with this method.
 

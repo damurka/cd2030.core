@@ -1,6 +1,8 @@
-# Save DHIS2 Data to an Excel Workbook
+# Save DHIS2 data to an Excel workbook
 
-Save DHIS2 Data to an Excel Workbook
+Writes the admin, population, completeness and service data downloaded
+from DHIS2 to one Excel workbook, with styled sheets for each type of
+data. A file that already exists at `filename` is overwritten.
 
 ## Usage
 
@@ -32,8 +34,7 @@ Saves the workbook to the specified filename.
 
 ## Details
 
-This function generates an Excel workbook containing multiple sheets for
-different types of DHIS2 data:
+The workbook contains sheets for the different types of DHIS2 data:
 
 - **Admin Data**: Maps health districts to administrative units.
 
