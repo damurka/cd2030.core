@@ -541,6 +541,8 @@
       depends_on = "get_denominator", shown_on = P$bayesian),
     bayes_model_cached = .cd_def("method", "The Bayesian model already fitted for an indicator (by get_bayes_model() or kept with keep_bayes_model()), or NULL: nothing is fitted.",
       depends_on = "bayes_model_key", shown_on = P$bayesian),
+    bayes_national_routine = .cd_def("method", "The country's coverage of one of the Bayesian model's indicators from the facility data, by year, as a proportion, with the indicator's denominator: what a sub-national model's charts show beside the regions. NULL when coverage cannot be computed yet.",
+      depends_on = c("indicator_coverage_national", "get_denominator"), shown_on = P$bayesian),
     bayes_model_inputs = .cd_def("method", "What fitting one indicator's Bayesian model needs (its coverage data, the overall score, the indicator and denominator, the key), so the app fits it in another R process without freezing.",
       depends_on = c("calculate_coverage", "overall_score", "get_denominator", "bayes_model_key"), shown_on = P$bayesian),
     keep_bayes_model = .cd_def("method", "Keeps a Bayesian model fitted in another R process under its key, so the page and reports use it without fitting it again.",

@@ -218,9 +218,10 @@ adjustment_changes_server <- function(id, cache, i18n, active = reactive(TRUE)) 
           stringsAsFactors = FALSE
         )
         col <- function(key, ...) colDef(name = cd_plain_text(i18n, key), align = "right", ...)
-        reactable(
+        # a row a year, in order: not sorted or paged. Otherwise the options every data table has.
+        .cd_reactable(
           rows,
-          compact = TRUE, sortable = FALSE, pagination = FALSE,
+          sortable = FALSE, paginate = FALSE,
           columns = list(
             year = colDef(name = cd_plain_text(i18n, "title_global_year"), align = "left", style = list(fontWeight = 600)),
             reported = col("lbl_adj_changes_reported"),

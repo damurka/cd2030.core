@@ -36,7 +36,7 @@ cd_rate_status_cell <- function(value) {
   span(
     class = "cd-status-cell",
     tags$svg(width = "10", height = "10", viewBox = "0 0 10 10", `aria-hidden` = "true", shape),
-    format(round(value), nsmall = 0)
+    .cd_table_number(value, "rate")
   )
 }
 
@@ -313,19 +313,8 @@ cd_table_server <- function(
           }
         }
 
-        dt %>%
-          reactable(
-            columns = final_cols,
-            defaultColDef = colDef(
-              minWidth = 110, # keeps a name from breaking mid-word; a wide table scrolls sideways instead
-              cell = function(value) {
-                if (!is.numeric(value)) {
-                  return(value)
-                }
-                format(round(value), nsmall = 0)
-              }
-            )
-          )
+        # the options and the number format every data table has (R/table-style.R)
+        .cd_reactable(dt, columns = final_cols)
       })
 
       # A table given no writer downloads what it shows, on one sheet. (Its button is on the page either way: with

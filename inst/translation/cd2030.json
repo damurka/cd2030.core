@@ -3412,6 +3412,24 @@
       "pt": "Fonte: Dados de inquérito e dados de rotina DHIS2"
     },
     {
+      "key": "lbl_bayes_estimate",
+      "en": "Model estimate (95% interval)",
+      "fr": "Estimation du modèle (intervalle à 95 %)",
+      "pt": "Estimativa do modelo (intervalo de 95%)"
+    },
+    {
+      "key": "lbl_bayes_facility",
+      "en": "Facility data",
+      "fr": "Données des établissements",
+      "pt": "Dados das unidades de saúde"
+    },
+    {
+      "key": "lbl_bayes_national_facility",
+      "en": "National, facility data",
+      "fr": "National, données des établissements",
+      "pt": "Nacional, dados das unidades de saúde"
+    },
+    {
       "key": "sub_bayesian",
       "en": "Model coverage estimates with a Bayesian approach.",
       "fr": "Modélisez les estimations de couverture avec une approche bayésienne.",

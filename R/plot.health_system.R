@@ -428,13 +428,6 @@ plot.cd_health_system_table <- function(x,
     as_grouped_data(groups = "section") %>%
     as_flextable() %>%
     
-    # FIX 1: Move theme_vanilla() UP so it doesn't wipe out custom padding/borders
-    theme_vanilla() %>%
-    
-    font(fontname = "sans", part = "all") %>%
-    fontsize(size = base_font, part = "all") %>%
-    bg(part = "all", bg = "white") %>%
-    
     # 1. Headers & Titles
     set_header_labels(
       # FIX 2: Removed 'section = ""' since the column no longer exists
@@ -443,7 +436,8 @@ plot.cd_health_system_table <- function(x,
       unit = unit_label
     ) %>%
     add_header_lines(values = as.character(year)) %>%
-    bold(i = 1, part = "header", bold = TRUE) %>%
+    # the look every formatted table has
+    .cd_table_style(section = ~ !is.na(section), base_font = base_font, centre = c("value", "unit")) %>%
     align(i = 1, align = "center", part = "header") %>%
     
     # 2. Style the Section Group Headers
@@ -452,23 +446,13 @@ plot.cd_health_system_table <- function(x,
       j = 1,
       value = as_paragraph(as_chunk(section))
     ) %>%
-    bold(i = ~ !is.na(section), bold = TRUE, part = "body") %>%
-    bg(i = ~ !is.na(section), part = "body", bg = "#D9EAF7") %>%
-    merge_h(i = ~ !is.na(section), part = "body") %>% 
+    merge_h(i = ~ !is.na(section), part = "body") %>%
     
     # 3. Format Data & Indents
     colformat_double(j = "value", digits = 1, na_str = "") %>%
     colformat_char(j = "unit", na_str = "") %>%
-    align(j = c("value", "unit"), align = "center", part = "all") %>%
-    
-    # FIX 3: Removed "section" from j, only aligning the indicator column
-    align(j = "indicator", align = "left", part = "all") %>%
-    padding(i = ~ is.na(section), j = "indicator", padding.left = 15, part = "body") %>%
-    
-    # 4. Apply Table Borders (Steelblue)
-    border_inner_h(border = officer::fp_border(color = "steelblue"), part = "body") # %>%
-    # border_top(border = officer::fp_border(color = "steelblue", width = 1.5), part = "all") # %>%
-    # border_bottom(border = officer::fp_border(color = "steelblue", width = 1.5), part = "all")
+    # the indicators of a section are set in from its title
+    padding(i = ~ is.na(section), j = "indicator", padding.left = 15, part = "body")
 
   # 5. Handle Sizing
   if (!is.null(width)) {

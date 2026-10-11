@@ -5,6 +5,7 @@
 ^README\.Rmd$
 ^_pkgdown\.yml$
 ^docs$
+^data-raw$
 ^pkgdown$
 ^CRAN-SUBMISSION$
 ^cran-comments\.md$

@@ -1225,8 +1225,20 @@ CacheConnection <- R6::R6Class(
 
       ineq_data <- if (admin_level == "adminlevel_1" && is.null(region)) self$inequality_admin1 else self$inequality_district
       if (!is.null(region)) ineq_data <- ineq_data %>% filter(adminlevel_1 == region)
-      
-      ineq_data %>% select_inequality(indicator = indicator, denominator = denom)
+
+      out <- ineq_data %>% select_inequality(indicator = indicator, denominator = denom)
+      # A region's districts are compared with the country (`nat`); the region's own coverage goes with them, so
+      # the chart shows where the region itself stands (it showed the national value under the region's name).
+      if (!is.null(region)) {
+        column <- paste0('cov_', indicator, '_', denom)
+        own <- self$indicator_coverage_admin1
+        own <- own[own$adminlevel_1 == region, c('year', intersect(column, names(own))), drop = FALSE]
+        if (column %in% names(own)) {
+          out$region_value <- own[[column]][match(out$year, own$year)]
+          attr(out, 'region') <- region
+        }
+      }
+      out
     },
 
     #' @description Filters mapping spatial data focusing on a specific year and palette.
@@ -1430,6 +1442,21 @@ CacheConnection <- R6::R6Class(
       models_list <- private$getter("bayesian_models")
       if (is.null(models_list)) return(NULL)
       models_list[[self$bayes_model_key(admin_level, indicator)]]
+    },
+
+    #' @description The country's coverage of a model's indicator from the facility data, with the indicator's
+    #'   denominator: what a sub-national model's charts show beside the regions (`plot()`'s `national`).
+    #' @param indicator Character. One of the model's indicators.
+    #' @return A tibble with `year` and `value` (a proportion), or `NULL` when coverage cannot be computed yet.
+    bayes_national_routine = function(indicator) {
+      indicator <- arg_match(indicator, c('anc4', 'anc_1trimester', 'ideliv', 'measles1', 'penta3'))
+      if (!self$check_inequality_params) return(NULL)
+      coverage <- self$indicator_coverage_national
+      # institutional deliveries under the name the table has (as generate_bayes_model() reads them)
+      names_to_try <- if (indicator == 'ideliv') c('ideliv', 'instdeliveries', 'instlivebirths') else indicator
+      column <- intersect(paste0('cov_', names_to_try, '_', self$get_denominator(indicator)), names(coverage))
+      if (!length(column)) return(NULL)
+      tibble::tibble(year = as.integer(coverage$year), value = coverage[[column[[1]]]] / 100)
     },
 
     #' @description What [generate_bayes_model()] needs for an indicator, to fit it in another R process (a

@@ -252,12 +252,19 @@ bayes_model_estimates <- function(model) {
 #'
 #' @param x An object of class `cd_bayes_model` returned by `generate_bayes_model()`.
 #' @inheritParams cd_plot_arguments
-#' @param region (Optional) Specific region code to plot for subnational data.
+#' @param region (Optional) A region of a sub-national model: its estimates by year are drawn, as a national
+#'   model's are. `NULL` compares the regions in one year.
+#' @param year (Optional) For a sub-national model. The year the regions are compared in; by default the latest
+#'   year the facility data has. With a `region`, the year is marked on its chart.
+#' @param national (Optional) For a sub-national model. The country's coverage from the facility data, with the
+#'   same denominator: a data frame with `year` and `value` (a proportion), as `cache$bayes_national_routine()`
+#'   gives. The comparison draws it as a line and a region's chart as a series.
+#' @param legend_labels (Optional) A named list to override the legend's entries, e.g. with translations: `model`,
+#'   `routine` (the facility data) and `national`.
 #'
-#'
-#' @return A `ggplot` object with the chart options applied: the estimated coverage by year for a national
-#'   model or for the `region` of a sub-national model, or a comparison of the regions in 2025 for a
-#'   sub-national model when `region` is `NULL`.
+#' @return A `ggplot` object with the chart options applied. For a national model, or the `region` of a
+#'   sub-national model: the estimated coverage by year. For a sub-national model with no `region`: the regions
+#'   compared in `year`, each with its model estimate and interval and its facility-data value.
 #' @examples
 #' \dontrun{
 #' # `cache` is a dataset with adjusted data; fitting needs the Bayesian model packages
@@ -267,12 +274,15 @@ bayes_model_estimates <- function(model) {
 #'
 #' # a sub-national model: the regions compared, or the trend of one region
 #' regional <- cache$get_bayes_model("adminlevel_1", "penta3")
-#' plot(regional)
-#' plot(regional, region = "Nairobi")
+#' country <- cache$bayes_national_routine("penta3")
+#' plot(regional, national = country)
+#' plot(regional, year = 2021, national = country)
+#' plot(regional, region = "Nairobi", national = country)
 #' }
 #' @export
 plot.cd_bayes_model <- function(x,
                                 region = NULL,
+                                year = NULL,
                                 title = NULL,
                                 subtitle = NULL,
                                 caption = NULL,
@@ -280,8 +290,11 @@ plot.cd_bayes_model <- function(x,
                                 y_title = NULL,
                                 legend_title = NULL,
                                 ...,
+                                national = NULL,
+                                legend_labels = NULL,
                                 options = NULL) {
-  .cd_draw(.plot_cd_bayes_model_impl, x, list(region = region), ..., options = options)
+  .cd_draw(.plot_cd_bayes_model_impl, x,
+           list(region = region, year = year, national = national, legend_labels = legend_labels), ..., options = options)
 }
 
 .plot_cd_bayes_model_impl <- function(x,
@@ -290,8 +303,11 @@ plot.cd_bayes_model <- function(x,
                                 y_title = NULL,
                                 caption = NULL,
                                 region = NULL,
+                                year = NULL,
+                                national = NULL,
+                                legend_labels = NULL,
                                 ...) {
-  
+
   # 1. Retrieve attributes stored during the data generation step
   indicator <- attr_or_abort(x, "indicator")
   is_national <- attr_or_abort(x, 'is_national')
@@ -299,52 +315,98 @@ plot.cd_bayes_model <- function(x,
   if (is_national && !is.null(region)) {
     cd_abort(c('x' = '{.arg region} must be null for national data'))
   }
-  
-  # Determine if this is a comparison plot (subnational with no specific region selected)
-  is_comparison <- !is_national && is.null(region)
-  
-  # 2. Setup Smart Defaults for Labels and Axes
-  if (is_comparison) {
-    # Scenario A: Subnational Comparison Plot
-    t_title <- title %||% paste("Subnational Comparison (2025):", toupper(indicator))
-    t_x     <- x_title %||% "Region"
-    t_y     <- y_title %||% "Coverage"
-    
-  } else if (!is_national && !is.null(region)) {
-    # Scenario B: Subnational Trend Plot for a specific region
-    t_title <- title %||% paste("Bayesian Coverage Model Estimates:", toupper(indicator), "-", region)
-    t_x     <- x_title %||% "Year"
-    t_y     <- y_title %||% "Coverage"
-    
-  } else {
-    # Scenario C: National Trend Plot
-    t_title <- title %||% paste("Bayesian Coverage Model Estimates:", toupper(indicator))
-    t_x     <- x_title %||% "Year"
-    t_y     <- y_title %||% "Coverage"
+  if (!is.null(national) && !(is.data.frame(national) && all(c("year", "value") %in% names(national)))) {
+    cd_abort(c("x" = "{.arg national} must be a data frame with the columns {.field year} and {.field value}."))
   }
-  
+  if (!is.null(year) && !(is_scalar_integerish(year) && !is.na(year))) {
+    cd_abort(c("x" = "{.arg year} must be one year."))
+  }
+
+  labels <- utils::modifyList(
+    list(model = "Model estimate (95% interval)", routine = "Facility data", national = "National, facility data"),
+    as.list(legend_labels)
+  )
   t_cap <- caption %||% "Source: Survey Data & DHIS2 Routine Data"
 
-  # 3. Call the package's plotting function
-  plot_list <- if (!is_comparison) {
-    bayescoveragemodel::plot_estimates_local_all(
-      results = x,
-      indicator_name = t_y,
-      use_for_facetting = TRUE,
-      region_codes = region
-    )
-  } else {
-    bayescoveragemodel::plot_subnational_comparison(
-      results = x,
-      model_names = "Bayesian model estimates",
-      year_select = 2025
-    )
+  # Determine if this is a comparison plot (subnational with no specific region selected)
+  is_comparison <- !is_national && is.null(region)
+
+  # ---------------------------------------------------------
+  # A. The regions compared in one year: each region's model estimate with its interval, its facility-data
+  #    value beside it, and the national facility-data value as a line
+  # ---------------------------------------------------------
+  if (is_comparison) {
+    estimates <- x$posteriors$temporal
+    estimates <- estimates[estimates$admin1 != "National", , drop = FALSE]
+    routine <- x$dat_routine
+    years <- sort(unique(estimates$year))
+    # by default the latest year the facility data has (what the model was fitted to), not a year it only projects
+    if (is.null(year)) {
+      with_data <- intersect(years, routine$year[!is.na(routine$routine_value)])
+      year <- if (length(with_data)) max(with_data) else max(years)
+    }
+    if (!year %in% years) {
+      cd_abort(c("x" = "The model has no estimate for {year}.", "i" = "It has {min(years)} to {max(years)}."))
+    }
+
+    shown <- estimates[estimates$year == year, , drop = FALSE]
+    shown$region <- forcats::fct_reorder(shown$admin1, shown[["50%"]])
+    facility <- routine[routine$year == year & !is.na(routine$routine_value), c("admin1", "routine_value"), drop = FALSE]
+    facility <- facility[facility$admin1 %in% shown$admin1, , drop = FALSE]
+    facility$region <- factor(facility$admin1, levels = levels(shown$region))
+    country <- if (is.null(national)) NULL else national[national$year == year & !is.na(national$value), , drop = FALSE]
+
+    upper <- max(1, shown[["97.5%"]], facility$routine_value, country$value, na.rm = TRUE)
+    p <- ggplot(shown, aes(y = .data$region)) +
+      geom_linerange(aes(xmin = .data[["2.5%"]], xmax = .data[["97.5%"]], colour = labels$model), linewidth = 1.1) +
+      geom_point(aes(x = .data[["50%"]], colour = labels$model), size = 3.2)
+    if (nrow(facility)) {
+      p <- p + geom_point(data = facility, aes(x = .data$routine_value, colour = labels$routine), shape = 18, size = 4)
+    }
+    if (!is.null(country) && nrow(country)) {
+      p <- p +
+        geom_vline(data = country, aes(xintercept = .data$value, linetype = labels$national), colour = "grey30", linewidth = 0.6) +
+        scale_linetype_manual(values = set_names("dashed", labels$national), name = NULL)
+    }
+    p <- p +
+      scale_colour_manual(values = set_names(c("#D6604D", "grey20"), c(labels$model, labels$routine)),
+                          breaks = c(labels$model, if (nrow(facility)) labels$routine), name = NULL) +
+      scale_x_continuous(limits = c(0, upper), labels = scales::percent_format(accuracy = 1),
+                         expand = expansion(mult = c(0, 0.03))) +
+      cd_plot_theme(
+        title = title %||% paste0("Model estimates by region, ", year, ": ", toupper(indicator)),
+        x_title = x_title %||% "Coverage",
+        y_title = y_title %||% "Region",
+        caption = t_cap
+      ) +
+      theme(legend.position = "right", panel.grid.major.y = element_blank())
+    return(p)
   }
 
-  # 4. Extract the actual ggplot object
-  p <- if (!is_comparison) plot_list[[1]] else plot_list
+  # ---------------------------------------------------------
+  # B. One series over the years: the country's, or one region's (the same chart)
+  # ---------------------------------------------------------
+  t_title <- title %||% if (is_national) {
+    paste("Bayesian Coverage Model Estimates:", toupper(indicator))
+  } else {
+    paste("Bayesian Coverage Model Estimates:", toupper(indicator), "-", region)
+  }
+  t_x <- x_title %||% "Year"
+  t_y <- y_title %||% "Coverage"
 
-  # 5. Extract Custom Theme Labels
+  if (!is_national && !region %in% x$posteriors$temporal$admin1) {
+    cd_abort(c("x" = "The model has no estimate for {.val {region}}."))
+  }
+
+  # Call the package's plotting function and take the plot out of its list
+  p <- bayescoveragemodel::plot_estimates_local_all(
+    results = x,
+    indicator_name = t_y,
+    use_for_facetting = TRUE,
+    region_codes = region
+  )[[1]]
+
+  # Extract Custom Theme Labels
   my_theme <- cd_plot_theme(
     title = t_title,
     x_title = t_x,
@@ -352,26 +414,42 @@ plot.cd_bayes_model <- function(x,
     caption = t_cap
   )
 
-  # 6. Apply Labels, Scales, and safely clean up the Legend
-  p + 
-    # Use my_theme[[1]] to apply ONLY the labels (labs) so we don't break 
+  # A region's chart also has the country's facility-data values, to read the region against, and the year chosen
+  if (!is_national && !is.null(national)) {
+    country <- national[!is.na(national$value) & national$value <= 1, , drop = FALSE]
+    if (nrow(country)) {
+      last <- country[which.max(country$year), , drop = FALSE]
+      p <- p +
+        geom_line(data = country, aes(x = .data$year, y = .data$value), inherit.aes = FALSE, linetype = "dashed", colour = "grey30") +
+        geom_point(data = country, aes(x = .data$year, y = .data$value), inherit.aes = FALSE, shape = 18, size = 3, colour = "grey30") +
+        geom_text(data = last, aes(x = .data$year, y = .data$value, label = labels$national), inherit.aes = FALSE,
+                  hjust = 0, nudge_x = 0.3, size = 3.2, colour = "grey30")
+    }
+  }
+  if (!is_national && !is.null(year)) {
+    p <- p + geom_vline(xintercept = year, linetype = "dotted", colour = "grey45")
+  }
+
+  # Apply Labels, Scales, and safely clean up the Legend
+  p +
+    # Use my_theme[[1]] to apply ONLY the labels (labs) so we don't break
     # the internal package's complex legend positioning/borders
-    my_theme[[1]] + 
-    
+    my_theme[[1]] +
+
     # Scale Y axis to percentage
     scale_y_continuous(
-      limits = c(0, 1), 
+      limits = c(0, 1),
       labels = scales::percent_format(accuracy = 1)
     ) +
-    
+
     # Strip all hardcoded titles from the internal ggnewscale legends
     guides(
       fill = guide_legend(title = NULL),
       color = guide_legend(title = NULL),
-      color_new = guide_legend(title = NULL), 
+      color_new = guide_legend(title = NULL),
       linetype = guide_legend(title = NULL)
     ) +
-    
+
     theme(
       legend.position = "right",
       # legend.title = element_blank()

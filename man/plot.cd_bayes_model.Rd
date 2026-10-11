@@ -7,6 +7,7 @@
 \method{plot}{cd_bayes_model}(
   x,
   region = NULL,
+  year = NULL,
   title = NULL,
   subtitle = NULL,
   caption = NULL,
@@ -14,13 +15,19 @@
   y_title = NULL,
   legend_title = NULL,
   ...,
+  national = NULL,
+  legend_labels = NULL,
   options = NULL
 )
 }
 \arguments{
 \item{x}{An object of class \code{cd_bayes_model} returned by \code{generate_bayes_model()}.}
 
-\item{region}{(Optional) Specific region code to plot for subnational data.}
+\item{region}{(Optional) A region of a sub-national model: its estimates by year are drawn, as a national
+model's are. \code{NULL} compares the regions in one year.}
+
+\item{year}{(Optional) For a sub-national model. The year the regions are compared in; by default the latest
+year the facility data has. With a \code{region}, the year is marked on its chart.}
 
 \item{title}{The chart's title.}
 
@@ -37,13 +44,20 @@
 \item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
 colours. Other arguments are ignored.}
 
+\item{national}{(Optional) For a sub-national model. The country's coverage from the facility data, with the
+same denominator: a data frame with \code{year} and \code{value} (a proportion), as \code{cache$bayes_national_routine()}
+gives. The comparison draws it as a line and a region's chart as a series.}
+
+\item{legend_labels}{(Optional) A named list to override the legend's entries, e.g. with translations: \code{model},
+\code{routine} (the facility data) and \code{national}.}
+
 \item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
 charts. Applied after the text arguments, so a text it holds wins over them.}
 }
 \value{
-A \code{ggplot} object with the chart options applied: the estimated coverage by year for a national
-model or for the \code{region} of a sub-national model, or a comparison of the regions in 2025 for a
-sub-national model when \code{region} is \code{NULL}.
+A \code{ggplot} object with the chart options applied. For a national model, or the \code{region} of a
+sub-national model: the estimated coverage by year. For a sub-national model with no \code{region}: the regions
+compared in \code{year}, each with its model estimate and interval and its facility-data value.
 }
 \description{
 Leverages the bayescoveragemodel package's internal plotting function
@@ -58,7 +72,9 @@ plot(national, title = "Penta3 coverage, Kenya", y_title = "Coverage")
 
 # a sub-national model: the regions compared, or the trend of one region
 regional <- cache$get_bayes_model("adminlevel_1", "penta3")
-plot(regional)
-plot(regional, region = "Nairobi")
+country <- cache$bayes_national_routine("penta3")
+plot(regional, national = country)
+plot(regional, year = 2021, national = country)
+plot(regional, region = "Nairobi", national = country)
 }
 }

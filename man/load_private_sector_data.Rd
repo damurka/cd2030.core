@@ -35,7 +35,7 @@ Loads the data from \code{path}, or uses \code{.data}, and checks that it matche
 \item Assigns \code{"Public"} or \code{"Private"} to the \code{sector} column based on \code{indic} suffix.
 \item Removes sector suffix from \code{indic}.
 \item Computes number of c-sections (\code{num_csection}) and sector share of c-sections (\code{share_csection})
-over the whole dataset, or within each value of the \code{level} column for area data.
+within each country and survey year, and within each value of the \code{level} column for area data.
 \item If level is \code{"area"}, parses \code{level} string into \code{area = "Urban"} or \code{"Rural"}.
 }
 }

@@ -213,3 +213,129 @@ test_that("the two charts with quadrants draw them the same way", {
   # the high-high text is in the top right corner
   expect_identical(phc$layers[[6]]$aes_params$label, "Both high")
 })
+
+test_that("a sector's share of the C-sections is within its own country and year", {
+  estimates <- tibble::tibble(
+    iso = rep(c("AAA", "BBB"), each = 2), country = rep(c("A", "B"), each = 2), year = 2020L, source = "DHS",
+    indic = rep(c("csectionpub", "csectionpriv"), 2), r_raw = c(0.10, 0.05, 0.02, 0.02), N = c(1000, 1000, 5000, 5000)
+  )
+  shares <- load_private_sector_data(.data = estimates, level = "national")
+  by_country <- tapply(shares$share_csection, shares$iso, sum)
+  expect_equal(as.vector(by_country), c(1, 1))
+  expect_equal(shares$share_csection[shares$iso == "AAA"], c(2 / 3, 1 / 3))
+
+  # the built-in shares: a country's two bars add up to its survey rate
+  built_in <- private_share$national
+  kenya <- built_in[built_in$iso == "KEN" & built_in$indic == "csection", ]
+  survey <- survey_data$all
+  rate <- survey$r_csection[survey$iso3 == "KEN" & survey$year == kenya$year]
+  expect_equal(kenya$totalPrevalence * 100, rate, tolerance = 1e-6)
+  every <- built_in[built_in$indic == "csection", ]
+  expect_true(all(every$totalPrevalence > 0.005 & every$totalPrevalence < 0.5))
+})
+
+test_that("the Bayesian fits run in another R process, not in the app's", {
+  skip_on_cran()
+  old <- future::plan()
+  on.exit(future::plan(old), add = TRUE)
+  future::plan(future::sequential)
+  cd_start_bayes_workers()
+  expect_false(inherits(future::plan(), "sequential"))
+  worker <- future::value(future::future(Sys.getpid()))
+  expect_false(identical(worker, Sys.getpid()))
+})
+
+# a sub-national model as generate_bayes_model() returns it, without the fit: what its charts read
+fake_bayes_model <- function() {
+  regions <- c("North", "South", "East")
+  temporal <- expand.grid(admin1 = regions, year = 2019:2025, stringsAsFactors = FALSE)
+  centre <- c(North = 0.9, South = 0.7, East = 0.8)[temporal$admin1]
+  temporal <- tibble::tibble(variable = "eta", iso = "KEN", admin1 = temporal$admin1, year = temporal$year,
+                             `2.5%` = centre - 0.1, `50%` = centre, `97.5%` = centre + 0.05)
+  routine <- tibble::tibble(admin1 = rep(regions, each = 3), year = rep(2021:2023, 3), routine_value = rep(c(0.85, 0.75, 0.95), each = 3))
+  structure(list(posteriors = list(temporal = temporal), dat_routine = routine),
+            class = c("cd_bayes_model", "list"), indicator = "penta3", is_national = FALSE)
+}
+
+test_that("a sub-national model's regions are compared in the year asked, with their facility data and the country's", {
+  model <- fake_bayes_model()
+  country <- tibble::tibble(year = 2021:2023, value = c(0.8, 0.82, 0.84))
+  p <- plot(model, national = country)
+  built <- ggplot2::ggplot_build(p)
+  # the latest year the facility data has, not a year the model only projects
+  expect_match(ggplot2::get_labs(p)$title, "2023", fixed = TRUE)
+  geoms <- unname(vapply(p$layers, function(l) class(l$geom)[[1]], character(1)))
+  expect_identical(geoms, c("GeomLinerange", "GeomPoint", "GeomPoint", "GeomVline"))
+  expect_equal(built$data[[4]]$xintercept, 0.84)
+  expect_equal(sort(built$data[[3]]$x), c(0.75, 0.85, 0.95))
+  # the regions are ordered by their estimate
+  expect_identical(levels(p$data$region), c("South", "East", "North"))
+
+  p <- plot(model, year = 2025, national = country)
+  expect_match(ggplot2::get_labs(p)$title, "2025", fixed = TRUE)
+  # a year the facility data does not have: the estimates alone
+  expect_identical(unname(vapply(p$layers, function(l) class(l$geom)[[1]], character(1))), c("GeomLinerange", "GeomPoint"))
+  expect_error(plot(model, year = 1990), "no estimate for 1990")
+  expect_error(plot(model, national = data.frame(a = 1)), "year")
+  labelled <- plot(model, national = country, legend_labels = list(model = "Estimation", national = "National"))
+  expect_true("Estimation" %in% ggplot2::ggplot_build(labelled)$plot$scales$get_scales("colour")$get_labels())
+})
+
+test_that("a region's inequality chart has the region's own coverage and the national one, each under its name", {
+  path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+  skip_if(identical(path, ""), "kenya.xlsx fixture not found")
+  cache <- suppressMessages(load_cache_data(path))
+  cache$set_national_estimates(list(sbr = 0.02))
+  suppressMessages(cache$adjust_data())
+  districts <- cache$get_filtered_inequality("instlivebirths", "adminlevel_1", region = "Nairobi")
+  expect_true("region_value" %in% names(districts))
+  expect_identical(attr(districts, "region"), "Nairobi")
+  # the region's own coverage, not the country's
+  admin1 <- cache$indicator_coverage_admin1
+  denominator <- cache$get_denominator("instlivebirths")
+  own <- admin1[admin1$adminlevel_1 == "Nairobi", ][[paste0("cov_instlivebirths_", denominator)]]
+  expect_equal(sort(unique(districts$region_value)), sort(unique(own)))
+  p <- plot(districts)
+  entries <- ggplot2::ggplot_build(p)$plot$scales$get_scales("colour")$get_labels()
+  expect_identical(entries, c("Coverage at subnational unit", "Nairobi coverage", "National coverage"))
+  # every region compared with the country: no region of its own
+  all_regions <- cache$get_filtered_inequality("instlivebirths", "adminlevel_1")
+  expect_false("region_value" %in% names(all_regions))
+  expect_identical(ggplot2::ggplot_build(plot(all_regions))$plot$scales$get_scales("colour")$get_labels(),
+                   c("Coverage at subnational unit", "National coverage"))
+})
+
+test_that("the formatted tables share one look, and the data tables one way of writing numbers", {
+  path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+  skip_if(identical(path, ""), "kenya.xlsx fixture not found")
+  cache <- suppressMessages(load_cache_data(path))
+  suppressMessages(cache$adjust_data())
+  tables <- list(
+    score = plot(cache$calculate_overall_score("national")),
+    utilization = plot(cache$calculate_service_dqa_summary("national")),
+    health = plot(cache$generate_health_system_table(), year = 2023)
+  )
+  for (name in names(tables)) {
+    ft <- tables[[name]]
+    expect_s3_class(ft, "flextable")
+    # the header's fill, and a section row's, are the same on each
+    expect_true(all(ft$header$styles$cells$background.color$data == .cd_table_colours$header), info = name)
+    expect_true(.cd_table_colours$section %in% ft$body$styles$cells$background.color$data, info = name)
+    expect_identical(unique(as.vector(ft$body$styles$text$font.family$data)), "sans", info = name)
+  }
+  # a cell judged against the threshold has the charts' colours
+  fills <- unique(as.vector(tables$score$body$styles$cells$background.color$data))
+  expect_true(all(fills %in% c("white", "transparent", .cd_table_colours$section, .cd_palette$traffic_light)))
+  expect_true(.cd_palette$traffic_light[[3]] %in% fills)
+
+  expect_identical(.cd_table_number(12345.4, "penta1"), "12,345")
+  expect_identical(.cd_table_number(98.44, "anc_rr"), "98.4")
+  expect_identical(.cd_table_number(87.25, "cov_penta3_penta1"), "87.2")
+  expect_identical(.cd_table_number(2023, "year"), "2023")
+  expect_identical(.cd_table_number(NA_real_, "penta1"), "")
+  expect_identical(.cd_table_number("Nairobi", "district"), "Nairobi")
+  table <- .cd_reactable(data.frame(district = letters[1:12], penta1 = 1:12))
+  expect_false(isFALSE(table$x$tag$attribs$pagination))   # paged (the default is left unsaid)
+  expect_identical(table$x$tag$attribs$defaultPageSize %||% 10, 10)
+  expect_false(.cd_reactable(data.frame(year = 2021:2023, n = 1:3), sortable = FALSE, paginate = FALSE)$x$tag$attribs$pagination)
+})

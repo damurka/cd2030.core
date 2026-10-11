@@ -357,6 +357,7 @@ adjustment (completeness, outliers, missing values), for every indicator. Comput
     \item \href{#method-CacheConnection-get_bayes_model}{\code{CacheConnection$get_bayes_model()}}
     \item \href{#method-CacheConnection-bayes_model_key}{\code{CacheConnection$bayes_model_key()}}
     \item \href{#method-CacheConnection-bayes_model_cached}{\code{CacheConnection$bayes_model_cached()}}
+    \item \href{#method-CacheConnection-bayes_national_routine}{\code{CacheConnection$bayes_national_routine()}}
     \item \href{#method-CacheConnection-bayes_model_inputs}{\code{CacheConnection$bayes_model_inputs()}}
     \item \href{#method-CacheConnection-keep_bayes_model}{\code{CacheConnection$keep_bayes_model()}}
     \item \href{#method-CacheConnection-bayes_estimates}{\code{CacheConnection$bayes_estimates()}}
@@ -2539,6 +2540,29 @@ files (the result's \code{source} attribute says which: \code{"regional"} or \co
       \item{\code{indicator}}{Character. Indicator name (e.g., 'penta3').}
     }
     \if{html}{\out{</div>}}
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CacheConnection-bayes_national_routine"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-bayes_national_routine}{}}}
+\subsection{\code{CacheConnection$bayes_national_routine()}}{
+  The country's coverage of a model's indicator from the facility data, with the indicator's
+denominator: what a sub-national model's charts show beside the regions (\code{plot()}'s \code{national}).
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$bayes_national_routine(indicator)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{indicator}}{Character. One of the model's indicators.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A tibble with \code{year} and \code{value} (a proportion), or \code{NULL} when coverage cannot be computed yet.
   }
 }
 

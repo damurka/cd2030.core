@@ -50,9 +50,6 @@ plot.cd_utilization_dqa <- function(x, years = NULL, title = NULL, width = NULL,
     # Group by the 'header' column created in the previous function
     as_grouped_data(groups = "header") %>%
     as_flextable() %>%
-    font(fontname = "sans", part = "all") %>%
-    fontsize(size = base_font, part = "all") %>%
-    bg(part = "all", bg = "white") %>%
     # Update column mapping to match new column names
     set_header_labels(no = "", indicator_label = main_title) %>%
     compose(
@@ -61,9 +58,7 @@ plot.cd_utilization_dqa <- function(x, years = NULL, title = NULL, width = NULL,
       value = as_paragraph(as_chunk(header))
     ) %>%
     # Format the section header rows
-    bold(j = 1, i = ~ !is.na(header), bold = TRUE, part = "body") %>%
-    bg(i = ~ !is.na(header), part = "body", bg = "lightgoldenrodyellow") %>%
-    bold(part = "header", bold = TRUE) %>%
+    .cd_table_style(section = ~ !is.na(header), base_font = base_font, centre = as.character(years)) %>%
     
     # FORMATTING NUMBERS: 
     # percentages (0 digits) apply to all rows EXCEPT 3a (the ratio)
@@ -79,32 +74,11 @@ plot.cd_utilization_dqa <- function(x, years = NULL, title = NULL, width = NULL,
     
     # CONDITIONAL COLORING
     # Applied to all rows except 3a
-    bg(
-      i = ~ is.na(header) & !no %in% c("3a", '3b', '3c'),
-      j = as.character(years),
-      bg = function(val) {
-        result <- map_chr(as.list(val), ~ {
-          if (is.na(.x) || is.null(.x)) {
-            return("transparent")
-          } else if (.x >= threshold) {
-            return("seagreen")
-          } else if (.x >= 70 && .x < threshold) {
-            return("yellow")
-          } else if (.x < 70) {
-            return("red")
-          } else {
-            return("transparent")
-          }
-        })
-        return(result)
-      },
-      part = "body"
-    ) %>%
-    theme_vanilla() %>%
+    .cd_table_status(i = ~ is.na(header) & !no %in% c("3a", '3b', '3c'), j = as.character(years), threshold = threshold) %>%
     add_footer_lines("Reference: \u25CB 3a 16-47   \u25CB 3b and 3c 15 - 45%") %>%
     fontsize(size = base_font - 1, part = "footer") %>%
     italic(part = "footer") %>%
-    color(color = "gray30", part = "footer")
+    color(color = .cd_table_colours$note, part = "footer")
   
   # WIDTH SIZING LOGIC
   if (!is.null(width)) {

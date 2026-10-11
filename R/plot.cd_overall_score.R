@@ -49,44 +49,19 @@ plot.cd_overall_score <- function(x, years = NULL, title = NULL, width = NULL, .
   ft <- x %>%
     as_grouped_data(groups = "type") %>%
     as_flextable() %>%
-    font(fontname = "sans", part = "all") %>%
-    fontsize(size = base_font, part = "all") %>%
-    bg(part = "all", bg = "white") %>%
     set_header_labels(no = "", `Data Quality Metrics` = main_title) %>%
     compose(
       i = ~ !is.na(type),
       j = 1,
       value = as_paragraph(as_chunk(type))
     ) %>%
-    bold(j = 1, i = ~ !is.na(type), bold = TRUE, part = "body") %>%
-    bg(i = ~ !is.na(type), part = "body", bg = "lightgoldenrodyellow") %>%
+    # the look every formatted table has; the score's own row stands out as a section row does
+    .cd_table_style(section = ~ !is.na(type), base_font = base_font, centre = as.character(years)) %>%
     bold(i = ~ is.na(type) & no == "4", bold = TRUE, part = "body") %>%
-    bg(i = ~ is.na(type) & no == "4", part = "body", bg = "lightgoldenrodyellow") %>%
-    bold(part = "header", bold = TRUE) %>%
+    bg(i = ~ is.na(type) & no == "4", j = 1:2, part = "body", bg = .cd_table_colours$section) %>%
     colformat_double(i = ~ is.na(type) & !no %in% c("3a", "3b"), j = as.character(years), digits = 0, big.mark = ",") %>%
     colformat_double(i = ~ is.na(type) & no %in% c("3a", "3b"), j = as.character(years), digits = 2) %>%
-    bg(
-      i = ~ is.na(type) & !no %in% c("3a", "3b"),
-      j = as.character(years),
-      bg = function(x) {
-        result <- map_chr(as.list(x), ~ {
-          if (is.na(.x) || is.null(.x)) {
-            return("transparent")
-          } else if (.x >= threshold) {
-            return("seagreen")
-          } else if (.x >= 70 && .x < threshold) {
-            return("yellow")
-          } else if (.x < 70) {
-            return("red")
-          } else {
-            return("transparent")
-          }
-        })
-        return(result)
-      },
-      part = "body"
-    ) %>%
-    theme_vanilla()
+    .cd_table_status(i = ~ is.na(type) & !no %in% c("3a", "3b"), j = as.character(years), threshold = threshold)
 
   if (!is.null(width)) {
     if (width < 5) {

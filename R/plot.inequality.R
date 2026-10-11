@@ -8,7 +8,8 @@
 #' @param x A `cd_inequality_filtered` object returned by [select_inequality()].
 #' @inheritParams cd_plot_arguments
 #' @param legend_labels (Optional) A named list or vector to override the legend keys and MADM label for translation.
-#'   Valid keys: `subnational`, `national`, `madm`. Defaults to `NULL`.
+#'   Valid keys: `subnational`, `national`, `region` (the region's own coverage, drawn when the data is a
+#'   region's districts) and `madm`. Defaults to `NULL`.
 #'
 #' @return A `ggplot` object displaying the subnational health coverage plot.
 #'
@@ -111,7 +112,8 @@ plot.cd_inequality_filtered <- function(x,
   # 3. Handle Legend Labels
   default_legend <- list(
     subnational = "Coverage at subnational unit",
-    national = if (is.null(region)) "National coverage" else str_glue("{region} Coverage"),
+    national = "National coverage",
+    region = if (is.null(region)) "Region coverage" else paste(region, "coverage"),
     madm = "MADM"
   )
 
@@ -121,9 +123,12 @@ plot.cd_inequality_filtered <- function(x,
   lbl_subnat <- final_legend$subnational
   lbl_nat <- final_legend$national
   lbl_madm <- final_legend$madm
+  lbl_region <- final_legend$region
+  # a region's own coverage, beside its districts' and the country's (cache$get_filtered_inequality() with a region)
+  has_region <- "region_value" %in% names(x) && any(!is.na(x$region_value))
 
   # Setup Y-axis properties
-  max_y <- robust_max(x$rd_max, 100)
+  max_y <- robust_max(c(x$rd_max, if ("region_value" %in% names(x)) x$region_value), 100)
   limits <- c(0, max_y)
   breaks <- scales::pretty_breaks(n = 11)(limits)
   second_last_break <- sort(breaks, decreasing = TRUE)[2]
@@ -136,6 +141,7 @@ plot.cd_inequality_filtered <- function(x,
       size = 3
     ) +
     geom_point(aes(x = year, y = nat, color = lbl_nat), size = 1.5, shape = 3, stroke = 1.5) +
+    (if (has_region) geom_point(aes(x = year, y = .data$region_value, color = lbl_region), size = 3.2, shape = 18)) +
     geom_text(
       aes(x = year, y = second_last_break, label = round(madm, 2)),
       color = "black", fontface = "bold", vjust = 0.5, size = 4
@@ -147,7 +153,10 @@ plot.cd_inequality_filtered <- function(x,
       breaks = breaks,
       labels = function(y) ifelse(y == second_last_break, lbl_madm, ifelse(y == max_break, "", as.character(y))) # Replace max_y - 10 with "MADM"
     ) +
-    scale_color_manual(values = set_names(.cd_palette$subnational_national, c(lbl_subnat, lbl_nat))) +
+    scale_color_manual(
+      values = set_names(c(.cd_palette$subnational_national, "#1B7837"), c(lbl_subnat, lbl_nat, lbl_region)),
+      breaks = c(lbl_subnat, if (has_region) lbl_region, lbl_nat)
+    ) +
     cd_plot_theme(
       title = final_title,
       y_title = final_y_axis,

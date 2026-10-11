@@ -77,7 +77,9 @@ cd_start_bayes_workers <- function() {
   # computer. Two fits at once took longer than one after the other even with 24 cores (about 135 s for the
   # pair, against 47 s each), and twice the memory.
   workers <- max(1L, as.integer(getOption("cd2030.bayes_workers", 1L)))
-  if (inherits(future::plan(), "sequential")) future::plan(future::multisession, workers = workers)
+  # I(): a plan of one worker is otherwise run in this process ("multisession with workers = 1 is sequential"), so
+  # the fit held every page for as long as it took -- the very thing the workers are for.
+  if (inherits(future::plan(), "sequential")) future::plan(future::multisession, workers = I(workers))
   invisible(future::plan())
 }
 
@@ -169,8 +171,10 @@ bayesian_indicators <- function() cd_cfg("bayes_indicators", cd_bayes_indicators
 #' ([cd_bayes_packages_missing()]) the page shows a notice and fits nothing: inside DataSuite the
 #' notice has a button that asks it to install them, elsewhere it shows the R command to run.
 #'
-#' The page has no filters of its own. Apps register it with [bayesian_page_server()], which also
-#' starts the workers.
+#' At admin level 1 the page has two filters: the region (every region compared in one year, each with its
+#' model estimate and its facility-data value, or one region followed over the years as the national page
+#' follows the country) and the year the regions are compared in. The national page has none. Apps register
+#' the page with [bayesian_page_server()], which also starts the workers.
 #'
 #' @param id The module's id. A page's id is also its entry in the app's page registry.
 #' @param i18n The app's translator (a `shiny.i18n` translator), used for every label.
@@ -195,7 +199,17 @@ bayesian_indicators <- function() cd_cfg("bayes_indicators", cd_bayes_indicators
 bayesian_ui <- function(id, i18n, label) {
   ns <- NS(id)
 
-  cd_page_ui(id, i18n,
+  # The page's level is in its entry of the page registry (`server_args`). The sub-national page has a region to
+  # choose (all of them compared, or one followed over the years) and the year the regions are compared in.
+  level <- tryCatch(cd_page_meta(id)$server_args[[1]], error = function(e) NULL)
+  filters <- if (identical(level, "adminlevel_1")) {
+    cd_filter_bar(
+      cd_admin_level_ui(ns("scope"), i18n, show_admin_level = FALSE),
+      cd_chip_select(ns("year"), "title_global_year", options = list(), i18n = i18n)
+    )
+  }
+
+  cd_page_ui(id, i18n, filters = filters,
     # the model's packages are installed when it is first wanted (see bayesian_server)
     uiOutput(ns("needs_packages")),
     cd_tabbed_charts_ui(ns("panel"), i18n, "title_bayesian_analysis", cd_coverage_plot_ui,
@@ -242,6 +256,30 @@ bayesian_server <- function(id, cache, i18n, admin_level, active = reactive(TRUE
         showNotification(i18n$t("msg_bayes_installing_packages"), type = "message")
       })
 
+      # Sub-national: the region chosen (NULL: every region, compared in one year) and that year. The years offered
+      # are the facility data's and the ones the model projects after them; the latest year with data to start.
+      sub_national <- identical(admin_level, "adminlevel_1")
+      scope <- if (sub_national) {
+        cd_admin_level_server("scope", cache, i18n, allow_select_all = TRUE, show_district = FALSE, show_admin_level = FALSE)
+      }
+      region <- reactive(if (sub_national) scope()$region)
+      if (sub_national) {
+        year_chip <- cd_mounted(input, "year")
+        observe({
+          req(year_chip(), cache(), cache()$data_years)
+          data_years <- as.integer(cache()$data_years)
+          years <- as.character(seq(min(data_years), max(2030L, max(data_years))))
+          keep <- isolate(input$year)
+          cd_update_input("year", session, options = cd_plain_options(years),
+                          value = if (!is.null(keep) && keep %in% years) keep else as.character(max(data_years)))
+        })
+      }
+      year <- reactive({
+        if (!sub_national) return(NULL)
+        req(input$year)
+        as.integer(input$year)
+      })
+
       cd_tabbed_charts_server(
         "panel",
         serverInput = function(id, current_indicator) {
@@ -284,15 +322,39 @@ bayesian_server <- function(id, cache, i18n, admin_level, active = reactive(TRUE
             data_fn = model,
             sheet_name = reactive('bayesian'),
             plot_fun = function(d) {
-             nice_indicator <- i18n$t(paste0('opt_', current_indicator))
-              
+              nice_indicator <- i18n$t(paste0('opt_', current_indicator))
+              title <- paste(i18n$t("plot_title_bayes_coverage"), "-", nice_indicator)
+
+              if (!sub_national) {
+                return(plot(
+                  d,
+                  title = title,
+                  x_title = i18n$t("title_global_year"),
+                  y_title = i18n$t("opt_coverage"),
+                  caption = i18n$t("plot_legend_source")
+                ))
+              }
+
+              # Sub-national. One region: its estimates over the years, as the national page shows the country's,
+              # with the country's facility-data coverage beside it. Every region: compared in the year chosen,
+              # each with its facility-data value, and the country's as a line. Facility values are with the
+              # indicator's denominator, as the model's are.
+              one_region <- region()
+              compared <- is.null(one_region)
               plot(
                 d,
-                # Dynamically paste the translated plot title and the translated indicator name
-                title = paste(i18n$t("plot_title_bayes_coverage"), "-", nice_indicator),
-                x_title = i18n$t("title_global_year"),
-                y_title = i18n$t("opt_coverage"),
-                caption = i18n$t("plot_legend_source")
+                region = one_region,
+                year = year(),
+                national = cache()$bayes_national_routine(current_indicator),
+                title = if (compared) paste0(title, ", ", year()) else paste(title, "-", one_region),
+                x_title = i18n$t(if (compared) "opt_coverage" else "title_global_year"),
+                y_title = i18n$t(if (compared) "opt_adminlevel_1" else "opt_coverage"),
+                caption = i18n$t("plot_legend_source"),
+                legend_labels = list(
+                  model = i18n$t("lbl_bayes_estimate"),
+                  routine = i18n$t("lbl_bayes_facility"),
+                  national = i18n$t("lbl_bayes_national_facility")
+                )
               )
             },
             i18n = i18n

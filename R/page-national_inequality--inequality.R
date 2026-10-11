@@ -92,7 +92,6 @@ inequality_server <- function(id, cache, i18n, admin_level, region = reactive(NU
               } else if (admin_level() == 'district' && is.null(region())) {
                 'lbl_inequ_subnat_district'
               } 
-              labels <- if (is.null(region())) "title_coverage_national" else "lbl_inequ_coverage_region"
               region <- region()
               denominator <- i18n$t(paste0("opt_", denom_rx()))
               plot(d,
@@ -103,7 +102,8 @@ inequality_server <- function(id, cache, i18n, admin_level, region = reactive(NU
                    caption = i18n$t(paste0("plt_caption_equity_", denom_rx())),
                    legend_labels = list(
                      subnational = i18n$t("lbl_inequ_coverage_subnat"),
-                     national = str_glue(i18n$t(labels))
+                     national = i18n$t("title_coverage_national"),
+                     region = if (is.null(region)) NULL else str_glue(i18n$t("lbl_inequ_coverage_region"))
                    )
               )
             },

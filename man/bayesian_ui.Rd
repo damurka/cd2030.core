@@ -41,8 +41,10 @@ for an admin level, indicator and denominator. While the model's packages are mi
 notice has a button that asks it to install them, elsewhere it shows the R command to run.
 }
 \details{
-The page has no filters of its own. Apps register it with \code{\link[=bayesian_page_server]{bayesian_page_server()}}, which also
-starts the workers.
+At admin level 1 the page has two filters: the region (every region compared in one year, each with its
+model estimate and its facility-data value, or one region followed over the years as the national page
+follows the country) and the year the regions are compared in. The national page has none. Apps register
+the page with \code{\link[=bayesian_page_server]{bayesian_page_server()}}, which also starts the workers.
 }
 \examples{
 \dontrun{

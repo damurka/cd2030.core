@@ -36,7 +36,8 @@
 colours. Other arguments are ignored.}
 
 \item{legend_labels}{(Optional) A named list or vector to override the legend keys and MADM label for translation.
-Valid keys: \code{subnational}, \code{national}, \code{madm}. Defaults to \code{NULL}.}
+Valid keys: \code{subnational}, \code{national}, \code{region} (the region's own coverage, drawn when the data is a
+region's districts) and \code{madm}. Defaults to \code{NULL}.}
 
 \item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
 charts. Applied after the text arguments, so a text it holds wins over them.}

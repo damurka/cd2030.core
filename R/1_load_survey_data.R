@@ -301,7 +301,7 @@ load_fpet_data <- function(path = NULL, .data = NULL, country_iso = NULL) {
 #' - Assigns `"Public"` or `"Private"` to the `sector` column based on `indic` suffix.
 #' - Removes sector suffix from `indic`.
 #' - Computes number of c-sections (`num_csection`) and sector share of c-sections (`share_csection`)
-#'   over the whole dataset, or within each value of the `level` column for area data.
+#'   within each country and survey year, and within each value of the `level` column for area data.
 #' - If level is `"area"`, parses `level` string into `area = "Urban"` or `"Rural"`.
 #'
 #' @section Output columns:
@@ -353,7 +353,9 @@ load_private_sector_data  <- function(path = NULL, .data = NULL, country_iso = N
     mutate(
       total_csection = sum(if_else(indic == 'csection', num_csection, 0), na.rm = TRUE),
       share_csection = num_csection / total_csection,
-      .by = level_cols
+      # a sector's share of ITS country's and year's C-sections (and area's). It was its share of the whole file's:
+      # with several countries or surveys in the file, each country's two bars added up to a fraction of its rate.
+      .by = any_of(c("iso", "country", "year", "source", level_cols))
     )
 
   if (level == 'area') {
