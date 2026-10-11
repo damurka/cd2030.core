@@ -1,5 +1,55 @@
 # Changelog
 
+## cd2030.core 1.4.1
+
+- Bayesian Analysis no longer holds the app while a model is fitted.
+  1.4.0 asked for one background worker, and a plan of one worker is run
+  in the app’s own process: every page waited for the whole fit (10 to
+  13 seconds for a national model, minutes for a sub-national one). The
+  worker is now a separate process whatever their number; starting a fit
+  gives the app back in 0.2 seconds.
+- Public/Private Share: the C-section bars are each country’s own. A
+  sector’s share of the C-sections was taken from all the countries in
+  the file together, so a country’s two bars added up to a fraction of
+  its rate (Kenya 2022: 1.8 %, for a survey rate of 16.5 %). The
+  built-in shares are corrected for the 32 countries, national and by
+  area (`data-raw/private_share_csection.R` says how); the private share
+  itself, the ratio of the two bars, was right and is unchanged.
+  [`load_private_sector_data()`](../reference/load_private_sector_data.md)
+  takes the share within each country and year.
+- Sub-national Bayesian Analysis has a region and a year to choose.
+  - One region: its estimates over the years, the chart the national
+    page has for the country, with the country’s facility-data coverage
+    beside the region’s.
+  - Every region: the regions compared in the year chosen (it was always
+    2025), each with its model estimate and interval and its
+    facility-data value, and the country’s facility-data value as a
+    line. The year starts at the latest one the facility data has.
+  - Facility-data values are with the indicator’s denominator, as the
+    model’s are.
+  - In R: [`plot()`](https://rdrr.io/r/graphics/plot.default.html) of a
+    sub-national model takes `year`, `national` and `legend_labels`;
+    `cache$bayes_national_routine()` gives the country’s values.
+- Sub-National Inequality with a region chosen shows the region’s own
+  coverage beside its districts’ and the national coverage. It showed
+  the national value under the region’s name (“Central Coverage”).
+  [`plot()`](https://rdrr.io/r/graphics/plot.default.html) of such a
+  table draws `region_value` when the table has it; `legend_labels`
+  takes `region`.
+- The tables read as one family.
+  - The three formatted tables (overall data quality score, service
+    utilization data quality, national health system) have one look: the
+    same header, section rows, lines, alignment and text. A cell judged
+    against the threshold has the charts’ red, amber and green, with its
+    number readable on each. They had three different section colours,
+    their own borders, and “seagreen”, “yellow” and “red”.
+  - The data tables of the pages (units with low reporting, with extreme
+    outliers, with missing data, the adjustment’s changes by year, the
+    units meeting a target) have the same options (compact rows, paged
+    in tens when there are more than ten) and write numbers the same
+    way: a count whole with its thousands apart (“12,345”), a rate or a
+    coverage to one decimal, a year as it is.
+
 ## cd2030.core 1.4.0
 
 - A change of setting writes the dataset’s file once. Each table a

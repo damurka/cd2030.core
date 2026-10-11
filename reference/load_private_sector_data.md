@@ -51,8 +51,8 @@ Then:
 - Removes sector suffix from `indic`.
 
 - Computes number of c-sections (`num_csection`) and sector share of
-  c-sections (`share_csection`) over the whole dataset, or within each
-  value of the `level` column for area data.
+  c-sections (`share_csection`) within each country and survey year, and
+  within each value of the `level` column for area data.
 
 - If level is `"area"`, parses `level` string into `area = "Urban"` or
   `"Rural"`.

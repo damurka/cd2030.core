@@ -64,8 +64,9 @@ plot(
 - legend_labels:
 
   (Optional) A named list or vector to override the legend keys and MADM
-  label for translation. Valid keys: `subnational`, `national`, `madm`.
-  Defaults to `NULL`.
+  label for translation. Valid keys: `subnational`, `national`, `region`
+  (the region's own coverage, drawn when the data is a region's
+  districts) and `madm`. Defaults to `NULL`.
 
 - options:
 

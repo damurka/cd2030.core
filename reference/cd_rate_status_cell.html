@@ -13,7 +13,7 @@ of a reactable::colDef(), for example in the columns of cd_table_server()."><met
 
     <a class="navbar-brand me-2" href="../index.html">cd2030.core</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -85,14 +85,14 @@ is <code>NULL</code> or <code>NA</code>.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;path d="M5 9.5L9.5 1.5h-9z" fill="#c0392b"&gt;&lt;/path&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/svg&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   64</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   64.2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;/span&gt;</span>
 <span class="r-in"><span><span class="fu">cd_rate_status_cell</span><span class="op">(</span><span class="fl">95</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;span class="cd-status-cell"&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     &lt;circle cx="5" cy="5" r="4.5" fill="#1b7f5a"&gt;&lt;/circle&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   &lt;/svg&gt;</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   95</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   95.0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;/span&gt;</span>
 <span class="r-in"><span><span class="fu">cd_rate_status_cell</span><span class="op">(</span><span class="cn">NA</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] ""</span>
@@ -115,9 +115,9 @@ is <code>NULL</code> or <code>NA</code>.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     }</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>     span(class = "cd-status-cell", tags$svg(width = "10", height = "10", </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>         viewBox = "0 0 10 10", `aria-hidden` = "true", shape), </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         format(round(value), nsmall = 0))</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         .cd_table_number(value, "rate"))</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> }</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x557de8598788&gt;</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> &lt;bytecode: 0x55f89360d1d0&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> &lt;environment: namespace:cd2030.core&gt;</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>

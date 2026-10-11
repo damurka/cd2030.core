@@ -10,6 +10,7 @@ and applies the custom Countdown (CD) theme and translated labels.
 plot(
   x,
   region = NULL,
+  year = NULL,
   title = NULL,
   subtitle = NULL,
   caption = NULL,
@@ -17,6 +18,8 @@ plot(
   y_title = NULL,
   legend_title = NULL,
   ...,
+  national = NULL,
+  legend_labels = NULL,
   options = NULL
 )
 ```
@@ -30,7 +33,15 @@ plot(
 
 - region:
 
-  (Optional) Specific region code to plot for subnational data.
+  (Optional) A region of a sub-national model: its estimates by year are
+  drawn, as a national model's are. `NULL` compares the regions in one
+  year.
+
+- year:
+
+  (Optional) For a sub-national model. The year the regions are compared
+  in; by default the latest year the facility data has. With a `region`,
+  the year is marked on its chart.
 
 - title:
 
@@ -63,6 +74,18 @@ plot(
   background, fonts, sizes, axes, grid, legend, colours. Other arguments
   are ignored.
 
+- national:
+
+  (Optional) For a sub-national model. The country's coverage from the
+  facility data, with the same denominator: a data frame with `year` and
+  `value` (a proportion), as `cache$bayes_national_routine()` gives. The
+  comparison draws it as a line and a region's chart as a series.
+
+- legend_labels:
+
+  (Optional) A named list to override the legend's entries, e.g. with
+  translations: `model`, `routine` (the facility data) and `national`.
+
 - options:
 
   A
@@ -73,10 +96,11 @@ plot(
 
 ## Value
 
-A `ggplot` object with the chart options applied: the estimated coverage
-by year for a national model or for the `region` of a sub-national
-model, or a comparison of the regions in 2025 for a sub-national model
-when `region` is `NULL`.
+A `ggplot` object with the chart options applied. For a national model,
+or the `region` of a sub-national model: the estimated coverage by year.
+For a sub-national model with no `region`: the regions compared in
+`year`, each with its model estimate and interval and its facility-data
+value.
 
 ## Examples
 
@@ -89,7 +113,9 @@ plot(national, title = "Penta3 coverage, Kenya", y_title = "Coverage")
 
 # a sub-national model: the regions compared, or the trend of one region
 regional <- cache$get_bayes_model("adminlevel_1", "penta3")
-plot(regional)
-plot(regional, region = "Nairobi")
+country <- cache$bayes_national_routine("penta3")
+plot(regional, national = country)
+plot(regional, year = 2021, national = country)
+plot(regional, region = "Nairobi", national = country)
 } # }
 ```

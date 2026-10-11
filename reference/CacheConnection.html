@@ -23,7 +23,7 @@ Layer 3 (Inequality &amp;amp; Health Systems): Depends on Layer 2 (Coverage). In
 
     <a class="navbar-brand me-2" href="../index.html">cd2030.core</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -591,6 +591,7 @@ adjustment (completeness, outliers, missing values), for every indicator. Comput
 <li><p><a href="#method-CacheConnection-get_bayes_model"><code>CacheConnection$get_bayes_model()</code></a></p></li>
 <li><p><a href="#method-CacheConnection-bayes_model_key"><code>CacheConnection$bayes_model_key()</code></a></p></li>
 <li><p><a href="#method-CacheConnection-bayes_model_cached"><code>CacheConnection$bayes_model_cached()</code></a></p></li>
+<li><p><a href="#method-CacheConnection-bayes_national_routine"><code>CacheConnection$bayes_national_routine()</code></a></p></li>
 <li><p><a href="#method-CacheConnection-bayes_model_inputs"><code>CacheConnection$bayes_model_inputs()</code></a></p></li>
 <li><p><a href="#method-CacheConnection-keep_bayes_model"><code>CacheConnection$keep_bayes_model()</code></a></p></li>
 <li><p><a href="#method-CacheConnection-bayes_estimates"><code>CacheConnection$bayes_estimates()</code></a></p></li>
@@ -2546,15 +2547,35 @@ files (the result's <code>source</code> attribute says which: <code>"regional"</
 
 </div>
 
+<p></p><hr><a id="method-CacheConnection-bayes_national_routine"></a><div class="section">
+<h3 id="cacheconnection-bayes-national-routine-"><code>CacheConnection$bayes_national_routine()</code><a class="anchor" aria-label="anchor" href="#cacheconnection-bayes-national-routine-"></a></h3>
+<p>The country's coverage of a model's indicator from the facility data, with the indicator's
+denominator: what a sub-national model's charts show beside the regions (<code><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot()</a></code>'s <code>national</code>).</p><div class="section">
+<h4 id="usage-112">Usage<a class="anchor" aria-label="anchor" href="#usage-112"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CacheConnection</span><span class="op">$</span><span class="fu">bayes_national_routine</span><span class="op">(</span><span class="va">indicator</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div><p></p><div class="section">
+<h4 id="arguments-89">Arguments<a class="anchor" aria-label="anchor" href="#arguments-89"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>indicator</code></dt>
+<dd><p>Character. One of the model's indicators.</p></dd>
+
+
+</dl><p></p></div>
+</div><p></p><div class="section">
+<h4 id="returns-8">Returns<a class="anchor" aria-label="anchor" href="#returns-8"></a></h4>
+<p>A tibble with <code>year</code> and <code>value</code> (a proportion), or <code>NULL</code> when coverage cannot be computed yet.</p>
+</div>
+
+</div>
+
 <p></p><hr><a id="method-CacheConnection-bayes_model_inputs"></a><div class="section">
 <h3 id="cacheconnection-bayes-model-inputs-"><code>CacheConnection$bayes_model_inputs()</code><a class="anchor" aria-label="anchor" href="#cacheconnection-bayes-model-inputs-"></a></h3>
 <p>What <code><a href="generate_bayes_model.html">generate_bayes_model()</a></code> needs for an indicator, to fit it in another R process (a
 Shiny ExtendedTask, so the app is not frozen for the minutes a fit takes); its result is kept with
 <code>keep_bayes_model()</code> under <code>key</code>.</p><div class="section">
-<h4 id="usage-112">Usage<a class="anchor" aria-label="anchor" href="#usage-112"></a></h4>
+<h4 id="usage-113">Usage<a class="anchor" aria-label="anchor" href="#usage-113"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CacheConnection</span><span class="op">$</span><span class="fu">bayes_model_inputs</span><span class="op">(</span><span class="va">admin_level</span>, <span class="va">indicator</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div><p></p><div class="section">
-<h4 id="arguments-89">Arguments<a class="anchor" aria-label="anchor" href="#arguments-89"></a></h4>
+<h4 id="arguments-90">Arguments<a class="anchor" aria-label="anchor" href="#arguments-90"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>admin_level</code></dt>
 <dd><p>Administrative level ("national", "adminlevel_1").</p></dd>
 
@@ -2564,7 +2585,7 @@ Shiny ExtendedTask, so the app is not frozen for the minutes a fit takes); its r
 
 </dl><p></p></div>
 </div><p></p><div class="section">
-<h4 id="returns-8">Returns<a class="anchor" aria-label="anchor" href="#returns-8"></a></h4>
+<h4 id="returns-9">Returns<a class="anchor" aria-label="anchor" href="#returns-9"></a></h4>
 <p>A list: <code>key</code>, <code>coverage_data</code>, <code>overall_score</code>, <code>indicator</code>, <code>denominator</code>.</p>
 </div>
 
@@ -2573,10 +2594,10 @@ Shiny ExtendedTask, so the app is not frozen for the minutes a fit takes); its r
 <p></p><hr><a id="method-CacheConnection-keep_bayes_model"></a><div class="section">
 <h3 id="cacheconnection-keep-bayes-model-"><code>CacheConnection$keep_bayes_model()</code><a class="anchor" aria-label="anchor" href="#cacheconnection-keep-bayes-model-"></a></h3>
 <p>Keeps a Bayesian model fitted elsewhere (see <code>bayes_model_inputs()</code>).</p><div class="section">
-<h4 id="usage-113">Usage<a class="anchor" aria-label="anchor" href="#usage-113"></a></h4>
+<h4 id="usage-114">Usage<a class="anchor" aria-label="anchor" href="#usage-114"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CacheConnection</span><span class="op">$</span><span class="fu">keep_bayes_model</span><span class="op">(</span><span class="va">key</span>, <span class="va">model</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div><p></p><div class="section">
-<h4 id="arguments-90">Arguments<a class="anchor" aria-label="anchor" href="#arguments-90"></a></h4>
+<h4 id="arguments-91">Arguments<a class="anchor" aria-label="anchor" href="#arguments-91"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>key</code></dt>
 <dd><p>The key it was fitted for (<code>bayes_model_inputs()$key</code>).</p></dd>
 
@@ -2594,17 +2615,17 @@ Shiny ExtendedTask, so the app is not frozen for the minutes a fit takes); its r
 <p>The estimates of the Bayesian models already fitted at an admin level, as one table
 (<code><a href="bayes_model_estimates.html">bayes_model_estimates()</a></code> of each, with the denominator it was fitted for). Only the models for the
 denominators selected now, as the Bayesian pages show; nothing is fitted here.</p><div class="section">
-<h4 id="usage-114">Usage<a class="anchor" aria-label="anchor" href="#usage-114"></a></h4>
+<h4 id="usage-115">Usage<a class="anchor" aria-label="anchor" href="#usage-115"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CacheConnection</span><span class="op">$</span><span class="fu">bayes_estimates</span><span class="op">(</span><span class="va">admin_level</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div><p></p><div class="section">
-<h4 id="arguments-91">Arguments<a class="anchor" aria-label="anchor" href="#arguments-91"></a></h4>
+<h4 id="arguments-92">Arguments<a class="anchor" aria-label="anchor" href="#arguments-92"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>admin_level</code></dt>
 <dd><p>Administrative level ("national", "adminlevel_1").</p></dd>
 
 
 </dl><p></p></div>
 </div><p></p><div class="section">
-<h4 id="returns-9">Returns<a class="anchor" aria-label="anchor" href="#returns-9"></a></h4>
+<h4 id="returns-10">Returns<a class="anchor" aria-label="anchor" href="#returns-10"></a></h4>
 <p>A tibble, or <code>NULL</code> when no model has been fitted at that level.</p>
 </div>
 
@@ -2613,10 +2634,10 @@ denominators selected now, as the Bayesian pages show; nothing is fitted here.</
 <p></p><hr><a id="method-CacheConnection-clone"></a><div class="section">
 <h3 id="cacheconnection-clone-"><code>CacheConnection$clone()</code><a class="anchor" aria-label="anchor" href="#cacheconnection-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-115">Usage<a class="anchor" aria-label="anchor" href="#usage-115"></a></h4>
+<h4 id="usage-116">Usage<a class="anchor" aria-label="anchor" href="#usage-116"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CacheConnection</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div><p></p><div class="section">
-<h4 id="arguments-92">Arguments<a class="anchor" aria-label="anchor" href="#arguments-92"></a></h4>
+<h4 id="arguments-93">Arguments<a class="anchor" aria-label="anchor" href="#arguments-93"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 

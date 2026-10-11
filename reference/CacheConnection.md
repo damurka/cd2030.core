@@ -702,6 +702,8 @@ object.
 
 - [`CacheConnection$bayes_model_cached()`](#method-CacheConnection-bayes_model_cached)
 
+- [`CacheConnection$bayes_national_routine()`](#method-CacheConnection-bayes_national_routine)
+
 - [`CacheConnection$bayes_model_inputs()`](#method-CacheConnection-bayes_model_inputs)
 
 - [`CacheConnection$keep_bayes_model()`](#method-CacheConnection-keep_bayes_model)
@@ -2836,6 +2838,30 @@ or kept with `keep_bayes_model()`), or `NULL`: nothing is fitted.
 - `indicator`:
 
   Character. Indicator name (e.g., 'penta3').
+
+------------------------------------------------------------------------
+
+### `CacheConnection$bayes_national_routine()`
+
+The country's coverage of a model's indicator from the facility data,
+with the indicator's denominator: what a sub-national model's charts
+show beside the regions
+([`plot()`](https://rdrr.io/r/graphics/plot.default.html)'s `national`).
+
+#### Usage
+
+    CacheConnection$bayes_national_routine(indicator)
+
+#### Arguments
+
+- `indicator`:
+
+  Character. One of the model's indicators.
+
+#### Returns
+
+A tibble with `year` and `value` (a proportion), or `NULL` when coverage
+cannot be computed yet.
 
 ------------------------------------------------------------------------
 

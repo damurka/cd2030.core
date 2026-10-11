@@ -9,7 +9,7 @@ internal preprocessing for c-section share calculation."><meta name="description
 
     <a class="navbar-brand me-2" href="../index.html">cd2030.core</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -88,7 +88,7 @@ one code), the rows of this one are kept; data for one country is used as it is.
 <code>level</code> column and national data does not. Then:</p><ul><li><p>Assigns <code>"Public"</code> or <code>"Private"</code> to the <code>sector</code> column based on <code>indic</code> suffix.</p></li>
 <li><p>Removes sector suffix from <code>indic</code>.</p></li>
 <li><p>Computes number of c-sections (<code>num_csection</code>) and sector share of c-sections (<code>share_csection</code>)
-over the whole dataset, or within each value of the <code>level</code> column for area data.</p></li>
+within each country and survey year, and within each value of the <code>level</code> column for area data.</p></li>
 <li><p>If level is <code>"area"</code>, parses <code>level</code> string into <code>area = "Urban"</code> or <code>"Rural"</code>.</p></li>
 </ul></div>
     <div class="section level2">

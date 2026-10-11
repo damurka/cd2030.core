@@ -25,7 +25,7 @@ notice has a button that asks it to install them, elsewhere it shows the R comma
 
     <a class="navbar-brand me-2" href="../index.html">cd2030.core</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -115,8 +115,10 @@ reactive that holds the key of the tab shown: an indicator's name, or <code>"cus
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The page has no filters of its own. Apps register it with <code><a href="bayesian_page_server.html">bayesian_page_server()</a></code>, which also
-starts the workers.</p>
+    <p>At admin level 1 the page has two filters: the region (every region compared in one year, each with its
+model estimate and its facility-data value, or one region followed over the years as the national page
+follows the country) and the year the regions are compared in. The national page has none. Apps register
+the page with <code><a href="bayesian_page_server.html">bayesian_page_server()</a></code>, which also starts the workers.</p>
     </div>
 
     <div class="section level2">

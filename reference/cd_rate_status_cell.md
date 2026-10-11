@@ -39,14 +39,14 @@ cd_rate_status_cell(64.2)
 #>   <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
 #>     <path d="M5 9.5L9.5 1.5h-9z" fill="#c0392b"></path>
 #>   </svg>
-#>   64
+#>   64.2
 #> </span>
 cd_rate_status_cell(95)
 #> <span class="cd-status-cell">
 #>   <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
 #>     <circle cx="5" cy="5" r="4.5" fill="#1b7f5a"></circle>
 #>   </svg>
-#>   95
+#>   95.0
 #> </span>
 cd_rate_status_cell(NA)
 #> [1] ""
@@ -69,9 +69,9 @@ reactable::colDef(cell = cd_rate_status_cell)
 #>     }
 #>     span(class = "cd-status-cell", tags$svg(width = "10", height = "10", 
 #>         viewBox = "0 0 10 10", `aria-hidden` = "true", shape), 
-#>         format(round(value), nsmall = 0))
+#>         .cd_table_number(value, "rate"))
 #> }
-#> <bytecode: 0x557de8598788>
+#> <bytecode: 0x55f89360d1d0>
 #> <environment: namespace:cd2030.core>
 #> 
 #> attr(,"class")
