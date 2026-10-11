@@ -2,24 +2,55 @@
 % Please edit documentation in R/plot.health_system.R
 \name{plot.cd_private_sector}
 \alias{plot.cd_private_sector}
-\title{Plot S3 method for Private Sector Ownership}
+\title{Plot S3 method for private sector ownership}
 \usage{
-\method{plot}{cd_private_sector}(x, title = NULL, x_axis = NULL, y_axis = NULL, ..., options = NULL)
+\method{plot}{cd_private_sector}(
+  x,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
+  ...,
+  options = NULL
+)
 }
 \arguments{
-\item{x}{An object of class \code{cd_private_sector}}
+\item{x}{An object of class \code{cd_private_sector}, as returned by \code{\link[=generate_private_sector_data]{generate_private_sector_data()}}.}
 
-\item{title}{(Optional) Custom title for the plot.}
+\item{title}{The chart's title.}
 
-\item{x_axis}{(Optional) Custom label for the x-axis.}
+\item{subtitle}{The line under the title.}
 
-\item{y_axis}{(Optional) Custom label for the y-axis.}
+\item{caption}{The note under the chart.}
 
-\item{...}{Additional arguments}
+\item{x_title}{The title of the horizontal axis.}
 
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
+}
+\value{
+A \code{ggplot} object, with the chart options applied.
 }
 \description{
-Plot S3 method for Private Sector Ownership
+Draws a stacked bar for each admin level 1 unit showing the percentage of health facilities that
+are private, NGO and public, with the percentage written inside each segment.
+}
+\examples{
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+cache$adjust_data()
+ownership <- cache$generate_private_sector_data()
+
+plot(ownership)
+plot(ownership, title = "Who owns the health facilities", y_title = "Facilities (\%)",
+     legend_title = "Owner", legend_position = "right")
+
 }

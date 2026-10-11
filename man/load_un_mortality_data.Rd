@@ -2,7 +2,7 @@
 % Please edit documentation in R/1_load_survey_data.R
 \name{load_un_mortality_data}
 \alias{load_un_mortality_data}
-\title{Load and Filter UN Mortality Estimates}
+\title{Load and filter UN mortality estimates}
 \usage{
 load_un_mortality_data(path = NULL, .data = NULL, country_iso)
 }

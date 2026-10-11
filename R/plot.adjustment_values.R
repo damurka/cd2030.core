@@ -1,4 +1,4 @@
-#' Plot Adjusted vs. Unadjusted Data for Health Indicators
+#' Plot adjusted vs. unadjusted data for health indicators
 #'
 #' `plot.cd_adjustment_values_filtered` creates a bar plot to compare the unadjusted (raw)
 #' and adjusted values of health indicators over time. It allows users to specify
@@ -8,14 +8,11 @@
 #' @param x A data frame containing the `year` column and columns for the raw
 #'   and adjusted values of health indicators (e.g., `ideliv_raw`, `ideliv_adj`).
 #'   The indicator plotted is taken from its `indicator` attribute.
-#' @param title A character string for the plot title. If `NULL`, a default title
-#'   based on the indicator is generated.
-#' @param x_axis,y_axis Optional x- and y-axis titles. Default is `NULL`.
+#' @inheritParams cd_plot_arguments
 #' @param legend_labels A named list or vector of custom legend labels, with
 #'   names `raw` (unadjusted data) and/or `adjusted`. Supplied entries replace
 #'   the defaults ("N of `indicator` before adjustment" and "N of `indicator`
 #'   after adjustment"). Default is `NULL`.
-#' @param ... Additional arguments (currently not used).
 #' @param type With the adjustment's steps in `x` ([generate_adjustment_values()] with `settings`): `"stacked"` (the
 #'   default) draws, each year, the reported count beside the adjusted count made of its parts -- the reported count,
 #'   what completeness added, what filling missing values added, and the outliers' correction (a correction that lowers
@@ -25,8 +22,6 @@
 #' @param zoom `"stacked"`: `TRUE` starts the axis near the smallest bar, so changes of a few percent can be seen (a
 #'   note says where it starts); `FALSE` from zero.
 #'
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A ggplot2 object showing the comparison of unadjusted and adjusted data
 #'   for the specified indicator over time.
 #'
@@ -53,18 +48,24 @@
 #' @export
 plot.cd_adjustment_values_filtered <- function(x,
                                                title = NULL,
-                                               x_axis = NULL,
-                                               y_axis = NULL,
+                                               subtitle = NULL,
+                                               caption = NULL,
+                                               x_title = NULL,
+                                               y_title = NULL,
+                                               legend_title = NULL,
+                                               ...,
                                                legend_labels = NULL,
-                                               ..., type = c("stacked", "change", "totals"), zoom = TRUE, options = NULL) {
+                                               type = c("stacked", "change", "totals"),
+                                               zoom = TRUE,
+                                               options = NULL) {
   type <- match.arg(type)
-  cd_finish_plot(.plot_cd_adjustment_values_filtered_impl(x, title = title, x_axis = x_axis, y_axis = y_axis, legend_labels = legend_labels, type = type, zoom = zoom, ...), options, ..., .source = x)
+  .cd_draw(.plot_cd_adjustment_values_filtered_impl, x, list(legend_labels = legend_labels, type = type, zoom = zoom), ..., options = options)
 }
 
 .plot_cd_adjustment_values_filtered_impl <- function(x,
                                                title = NULL,
-                                               x_axis = NULL,
-                                               y_axis = NULL,
+                                               x_title = NULL,
+                                               y_title = NULL,
                                                legend_labels = NULL,
                                                ..., type = c("stacked", "change", "totals"), zoom = TRUE) {
   year <- perc_diff <- value <- step <- change <- share <- NULL
@@ -128,7 +129,7 @@ plot.cd_adjustment_values_filtered <- function(x,
       ggplot2::coord_cartesian(ylim = c(lower, top * 1.01)) +
       # every step in the legend, drawn plainly, even one that changed nothing here
       ggplot2::guides(fill = ggplot2::guide_legend(override.aes = list(alpha = 1, colour = NA, linetype = "solid"))) +
-      cd_plot_theme(title = title, x_axis = x_axis, y_axis = y_axis)
+      cd_plot_theme(title = title, x_title = x_title, y_title = y_title)
     if (lower > 0) p <- p + ggplot2::labs(caption = paste0("The axis starts at ", format(lower, big.mark = ",", scientific = FALSE), ", so the changes can be seen."))
     return(p)
   }
@@ -162,7 +163,7 @@ plot.cd_adjustment_values_filtered <- function(x,
         scale_y_continuous(labels = scales::number_format(), expand = ggplot2::expansion(mult = 0.12)) +
         scale_fill_manual(values = .cd_palette$adjustment_steps[c("completeness", "outliers", "missing")],
                           labels = unlist(step_labels[c("completeness", "outliers", "missing")]), name = NULL, drop = FALSE) +
-        cd_plot_theme(title = title, x_axis = x_axis, y_axis = y_axis %||% "Change from the reported number")
+        cd_plot_theme(title = title, x_title = x_title, y_title = y_title %||% "Change from the reported number")
     )
   }
 
@@ -201,7 +202,7 @@ plot.cd_adjustment_values_filtered <- function(x,
     scale_fill_manual(values = fill_colors, label = unlist(final_labels[keys]), name = "Data Type") +
     cd_plot_theme(
       title = title,
-      x_axis = x_axis,
-      y_axis = y_axis
+      x_title = x_title,
+      y_title = y_title
     )
 }

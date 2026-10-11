@@ -2,13 +2,29 @@
 % Please edit documentation in R/0_data_quality_checks.R
 \name{check_month_presence}
 \alias{check_month_presence}
-\title{Check every district-year has all 12 calendar months present}
+\title{Check that every district-year has all 12 months}
 \usage{
 check_month_presence(.data)
 }
 \arguments{
-\item{.data}{The merged, standardized dataset (\code{district}, \code{year}, \code{month} columns).}
+\item{.data}{A data frame with \code{district}, \code{year} and \code{month} columns, where \code{month} holds
+English month names. This is usually the merged and standardized dataset.}
+}
+\value{
+\code{NULL} if no month is missing. Otherwise a character vector of length one, named
+\code{"x"}, with a message that lists the missing months as \verb{district year/month}. The message
+lists the first 10 and gives a count of the rest.
 }
 \description{
-Check every district-year has all 12 calendar months present
+Checks that each district has a row for every calendar month of every year it appears in.
+A missing month leaves a gap in the monthly series the analysis relies on.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+check_month_presence(data)
+
+# One month of one district-year dropped
+gap <- data$district == "Baringo" & data$year == 2023 & data$month == "March"
+check_month_presence(data[!gap, ])
 }

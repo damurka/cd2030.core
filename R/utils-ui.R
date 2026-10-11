@@ -1,4 +1,4 @@
-#' Create a Theme for Messages with Bullets
+#' Create a theme for messages with bullets
 #'
 #' @noRd
 cd_theme <- function() {
@@ -44,7 +44,7 @@ cd_theme <- function() {
   )
 }
 
-#' Display Information Messages
+#' Display information messages
 #'
 #' Uses `cli_inform` to display information messages with a custom theme.
 #'
@@ -62,7 +62,7 @@ cd_info <- function(message, ..., .envir = parent.frame(), call = caller_env()) 
   cli::cli_inform(message = message, ..., .envir = .envir, call = call)
 }
 
-#' Display Error Messages and Abort Execution
+#' Display error messages and abort execution
 #'
 #' Uses `cli_abort` to display error messages and stop execution.
 #'
@@ -83,7 +83,7 @@ cd_abort <- function(message, ..., class = NULL, .envir = parent.frame(), call =
   )
 }
 
-#' Display Warning Messages
+#' Display warning messages
 #'
 #' Uses `cli_warn` to display warning messages with a custom theme.
 #'
@@ -98,7 +98,7 @@ cd_warn <- function(message, ..., .envir = parent.frame(), call = caller_env()) 
   cli::cli_warn(message = message, ..., .envir = .envir, call = call)
 }
 
-#' Check if the Application is in Quiet Mode
+#' Check if the application is in quiet mode
 #'
 #' Returns `TRUE` if quiet mode is enabled or the application is in testing mode.
 #'
@@ -109,7 +109,7 @@ is_quiet_mode <- function() {
   cd_quiet() %|% is_testing()
 }
 
-#' Quote Text if ANSI Colors are Not Available
+#' Quote text if ANSI colors are not available
 #'
 #' This function wraps text in quotes if ANSI colors are not supported in the terminal.
 #'
@@ -128,7 +128,7 @@ quote_if_no_color <- function(x, quote = "'") {
   }
 }
 
-#' Check if the Application is in Testing Mode
+#' Check if the application is in testing mode
 #'
 #' Returns `TRUE` if the application is running in a testing environment.
 #'
@@ -139,7 +139,7 @@ is_testing <- function() {
   identical(Sys.getenv("TESTTHAT"), "true")
 }
 
-#' Get the Quiet Mode Status for cd2030
+#' Get the quiet mode status for cd2030
 #'
 #' This function checks if `cd2030` is running in quiet mode.
 #'
@@ -151,12 +151,25 @@ cd_quiet <- function() {
 }
 
 
-#' Execute Code in Quiet Mode
+#' Execute code in quiet mode
 #'
 #' Temporarily suppress messages by enabling quiet mode within the provided code block.
 #'
 #' @param code Code to execute quietly
 #' @return No return value, called for side effects
+#'
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#'
+#' # no progress messages while the data loads
+#' data <- with_cd_quiet(load_data(path))
+#'
+#' # quiet until the function returns
+#' load_quietly <- function(path) {
+#'   local_cd_quiet()
+#'   load_data(path)
+#' }
+#' data <- load_quietly(path)
 #'
 #' @rdname cd2030-configuration
 #' @export
@@ -165,7 +178,7 @@ with_cd_quiet <- function(code) {
   withr::with_options(list(cd_quiet = TRUE), code = code)
 }
 
-#' Enable Quiet Mode in a Specific Scope
+#' Enable quiet mode in a specific scope
 #'
 #' Temporarily suppress messages within the specified environment.
 #'
@@ -176,16 +189,4 @@ with_cd_quiet <- function(code) {
 #' @export
 local_cd_quiet <- function(env = parent.frame()) {
   withr::local_options(list(cd_quiet = TRUE), .local_envir = env)
-}
-
-#' Enable Loud Mode in a Specific Scope
-#'
-#' Temporarily disable quiet mode and allow messages within the specified environment.
-#'
-#' @param env The environment to use for scoping.
-#' @return No return value, called for side effects.
-#'
-#' @noRd
-local_cd_loud <- function(env = parent.frame()) {
-  withr::local_options(list(cd_quiet = FALSE), .local_envir = env)
 }

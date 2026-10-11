@@ -1,20 +1,38 @@
-#' Plot S3 method for Overall Score
+#' Plot S3 method for overall score
 #'
-#' @param x The score dataframe (class cs_overall_score)
-#' @param years Vector of years to display
+#' Draws the overall data quality score as a formatted table, with the metrics grouped by type and a
+#' column for each year. Percentage scores are shaded green at or above the threshold stored with
+#' the scores, yellow from 70 up to the threshold and red below 70.
+#'
+#' @param x The score dataframe (class `cd_overall_score`), as returned by
+#'   [calculate_overall_score()].
+#' @param years Vector of years to display. Required: each must be a year column of `x`.
 #' @param title (Optional) Custom title for the table
 #' @param width (Optional) Total width in inches. If NULL, autofit is used.
 #' @param ... Additional arguments
 #'
 #' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
 #'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
+#'
+#' @return A `flextable` object (from the flextable package), not a ggplot. Chart options change
+#'   ggplots only, so `options` has no effect on this table.
+#'
+#' @examples
+#' data <- load_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#' score <- calculate_overall_score(data, threshold = 90)
+#'
+#' plot(score, years = 2019:2023)
+#' plot(score, years = 2021:2023, title = "Data quality, last three years", width = 7)
+#'
 #' @export
 plot.cd_overall_score <- function(x, years = NULL, title = NULL, width = NULL, ..., options = NULL) {
   cd_finish_plot(.plot_cd_overall_score_impl(x, years = years, title = title, width = width, ...), options, ..., .source = x)
 }
 
 .plot_cd_overall_score_impl <- function(x, years = NULL, title = NULL, width = NULL, ...) {
-  if (!is_integerish(years)) {
+  # by default every year the table has a column for
+  if (is.null(years)) years <- as.integer(grep("^[0-9]{4}$", names(x), value = TRUE))
+  if (!length(years) || !is_integerish(years)) {
     cd_abort(c("x" = "{.arg years} cannot be null"))
   }
   threshold <- attr_or_abort(x, "threshold")

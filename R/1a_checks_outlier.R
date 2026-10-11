@@ -1,4 +1,4 @@
-#' Annual Summary of Outlier-Free Reporting Rates
+#' Annual summary of outlier-free reporting rates
 #'
 #' `calculate_outliers_summary` computes yearly percentages of non-outlier values
 #' for each health indicator, based on precomputed 5-MAD outlier flags. Summarizes
@@ -14,16 +14,13 @@
 #' @details
 #' Outliers are defined using a Hampel filter with a 5-MAD threshold.
 #'
-#' This function:
-#' - Aggregates outlier flags by year and administrative level
-#' - Computes the share of valid (non-outlier) values per indicator
-#' - Adds overall summary metrics:
-#'   - `mean_out_all`: average non-outlier rate across all indicators
-#'   - `mean_out_four`: average across a subset of key indicators (excluding IPD)
+#' Aggregates the outlier flags by year and administrative level and computes the share of valid
+#' (non-outlier) values per indicator. The IPD indicators are left out. Adds `mean_out_all`, the
+#' average non-outlier rate across the indicators summarised.
 #'
 #' Values are expressed as percentages (0-100).
 #'
-#'  @return A tibble of class `cd_outlier`.
+#' @return A tibble of class `cd_outlier`.
 #'
 #' @examples
 #' \dontrun{
@@ -35,6 +32,7 @@ calculate_outliers_summary <- function(.data, admin_level = c("national", "admin
   year <- . <- NULL
 
   check_cd_data(.data)
+  local_data_group(.data)
   admin_level <- arg_match(admin_level)
   admin_level_cols <- get_admin_columns(admin_level, region)
 
@@ -58,7 +56,7 @@ calculate_outliers_summary <- function(.data, admin_level = c("national", "admin
   )
 }
 
-#' District-Level Outlier Summary by Year
+#' District-level outlier summary by year
 #'
 #' Calculates the yearly percentage of districts without extreme outliers for each health indicator.
 #' Flags are based on the Hampel X84 method (beyond 5 MAD from median).
@@ -88,6 +86,7 @@ calculate_district_outlier_summary <- function(.data, region = NULL) {
   district <- year <- . <- NULL
 
   check_cd_data(.data)
+  local_data_group(.data)
 
   all_indicators <- get_all_indicators()
   ipd <- get_indicator_groups()[["ipd"]]
@@ -120,7 +119,7 @@ calculate_district_outlier_summary <- function(.data, region = NULL) {
   )
 }
 
-#' Identify Monthly Outliers by District
+#' Identify monthly outliers by district
 #'
 #' Flags extreme monthly values for every indicator at district level using the
 #' Hampel method.
@@ -147,6 +146,7 @@ calculate_district_outlier_summary <- function(.data, region = NULL) {
 #' @export
 list_outlier_units <- function(.data) {
   check_cd_data(.data)
+  local_data_group(.data)
 
   admin_level <- "district"
   admin_level_cols <- get_admin_columns(admin_level)
@@ -163,7 +163,7 @@ list_outlier_units <- function(.data) {
 }
 
 
-#' Calculate Outlier Flags for Reporting Indicators
+#' Calculate outlier flags for reporting indicators
 #'
 #' Computes monthly averages for selected indicators and flags outliers based on
 #' a 5-standard-deviation rule. Aggregation is done by year, month, and the specified
@@ -184,6 +184,7 @@ list_outlier_units <- function(.data) {
 #' @noRd
 calculate_outlier_core <- function(.data, indicators, admin_level = c("national", "adminlevel_1", "district"), region = NULL) {
   check_cd_data(.data)
+  local_data_group(.data)
   check_required(indicators)
 
   admin_level <- arg_match(admin_level)

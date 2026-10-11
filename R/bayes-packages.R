@@ -12,6 +12,12 @@
 #'
 #' @return A character vector: the packages [generate_bayes_model()] needs and that are not installed, empty when
 #'   the model can run.
+#' @examples
+#' cd_bayes_packages_missing()
+#'
+#' if (length(cd_bayes_packages_missing()) == 0) {
+#'   message("The Bayesian model can run.")
+#' }
 #' @export
 cd_bayes_packages_missing <- function() {
   .bayes_packages[!vapply(.bayes_packages, function(p) length(find.package(p, quiet = TRUE)) > 0, logical(1))]
@@ -24,6 +30,16 @@ cd_bayes_packages_missing <- function() {
 #'
 #' @param packages The packages to install, by default the missing ones.
 #' @return `TRUE` when DataSuite was asked, invisibly.
+#' @examples
+#' \dontrun{
+#' # in an app DataSuite started, before the model is first used
+#' if (length(cd_bayes_packages_missing()) > 0) {
+#'   cd_request_bayes_packages()
+#' }
+#'
+#' # one package only
+#' cd_request_bayes_packages("bayescoveragedeploy")
+#' }
 #' @export
 cd_request_bayes_packages <- function(packages = cd_bayes_packages_missing()) {
   packages <- intersect(packages, .bayes_packages)
@@ -39,8 +55,16 @@ cd_request_bayes_packages <- function(packages = cd_bayes_packages_missing()) {
 #'
 #' @param packages The packages to install, by default the missing ones.
 #' @return The command, as a string.
+#' @examples
+#' cd_bayes_install_command(c("bayescoveragemodel", "bayescoveragedeploy"))
+#'
+#' # only what is missing
+#' missing <- cd_bayes_packages_missing()
+#' if (length(missing) > 0) cd_bayes_install_command(missing)
 #' @export
 cd_bayes_install_command <- function(packages = cd_bayes_packages_missing()) {
+  # nothing to install: no command (it was install.packages(c(""), ...))
+  if (!length(packages)) return(character())
   sprintf("install.packages(c(%s), repos = c(%s))",
     paste0('"', packages, '"', collapse = ", "), paste0('"', .bayes_repos, '"', collapse = ", "))
 }

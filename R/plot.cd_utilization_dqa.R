@@ -1,20 +1,40 @@
-#' Plot S3 method for Service DQA Summary
+#' Plot S3 method for service DQA summary
 #'
-#' @param x The score dataframe (needs class 'cd_utilization_dqa')
-#' @param years Vector of years to display (e.g., 2020:2024)
+#' Draws the service utilization data quality summary as a formatted table, with the indicators
+#' grouped by section and a column for each year. Completeness and outlier percentages are shaded
+#' green at or above the threshold stored with the summary, yellow from 70 up to the threshold and
+#' red below 70.
+#'
+#' @param x The score dataframe (needs class 'cd_utilization_dqa'), as returned by
+#'   [generate_service_dqa_summary()].
+#' @param years Vector of years to display (e.g., 2020:2024). Required.
 #' @param title (Optional) Custom title for the table
 #' @param width (Optional) Total width in inches. If NULL, autofit is used.
 #' @param ... Additional arguments
 #'
 #' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
 #'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
+#'
+#' @return A `flextable` object (from the flextable package), not a ggplot. Chart options change
+#'   ggplots only, so `options` has no effect on this table.
+#'
+#' @examples
+#' cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#' cache$adjust_data()
+#' dqa <- cache$calculate_service_dqa_summary("national")
+#'
+#' plot(dqa, years = cache$data_years)
+#' plot(dqa, years = 2021:2023, title = "Quality of OPD and IPD data", width = 7)
+#'
 #' @export
 plot.cd_utilization_dqa <- function(x, years = NULL, title = NULL, width = NULL, ..., options = NULL) {
   cd_finish_plot(.plot_cd_utilization_dqa_impl(x, years = years, title = title, width = width, ...), options, ..., .source = x)
 }
 
 .plot_cd_utilization_dqa_impl <- function(x, years = NULL, title = NULL, width = NULL, ...) {
-  if (is.null(years) || !is.numeric(years)) {
+  # by default every year the table has a column for
+  if (is.null(years)) years <- as.integer(grep("^[0-9]{4}$", names(x), value = TRUE))
+  if (!length(years) || !is.numeric(years)) {
     cd_abort(c("x" = "{.arg years} cannot be null"))
   }
   

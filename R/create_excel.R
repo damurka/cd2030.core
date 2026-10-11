@@ -1,4 +1,4 @@
-#' Create an Excel Sheet with Custom Styles and Data
+#' Create an Excel sheet with custom styles and data
 #'
 #' @param wb A workbook object created using `createWorkbook()`.
 #' @param .data A data frame containing the data to be written to the Excel sheet.
@@ -84,7 +84,7 @@ create_excel_sheet <- function(wb, .data, sheet_name, hfd_ids, hfd_titles,
   }
 }
 
-#' Create a Custom Style for Excel Sheets
+#' Create a custom style for Excel sheets
 #'
 #' @param fontSize Font size, default is 11.
 #' @param fontColour Font color, default is `"black"`.
@@ -115,7 +115,7 @@ create_custom_style <- function(fontSize = 11, fontColour = "black", fgFill = "w
   )
 }
 
-#' Create Excel Sheets for Data Groups
+#' Create Excel sheets for data groups
 #'
 #' @param wb A workbook object created using `createWorkbook()`.
 #' @param .data A data frame containing grouped data for each sheet to be created.
@@ -206,7 +206,7 @@ create_sheets <- function(wb, .data, header_rows, freeze_col = 4,
     })
 }
 
-#' Create an Administrative Data Sheet in Excel
+#' Create an administrative data sheet in Excel
 #'
 #' @description
 #' This function generates a formatted Excel sheet for administrative data,
@@ -264,7 +264,7 @@ create_admin_sheet <- function(wb, .data, header_rows, instruction) {
   )
 
   sheet_name <- unique(.data$hfd_sheet)
-  admin_data <- admin_data %>%
+  admin_data <- .data %>%
     select(-iso3) %>%
     relocate(district)
 

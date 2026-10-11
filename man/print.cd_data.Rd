@@ -2,7 +2,7 @@
 % Please edit documentation in R/print.cd_data.R
 \name{print.cd_data}
 \alias{print.cd_data}
-\title{Print Method for \code{cd_data} Class}
+\title{Print method for \code{cd_data} class}
 \usage{
 \method{print}{cd_data}(x, ...)
 }
@@ -17,8 +17,8 @@ Invisibly returns \code{x}. This function is called for its side effect of print
 a formatted summary of the \code{cd_data} object.
 }
 \description{
-This function provides a custom print method for objects of class \code{cd_data},
-displaying a summary of the dataset, including data dimensions, available years,
+Prints a summary of an object of class \code{cd_data},
+including data dimensions, available years,
 regions, variable groups, and any quality metrics associated with the data.
 It uses the \code{cli} package for enhanced, styled output.
 }

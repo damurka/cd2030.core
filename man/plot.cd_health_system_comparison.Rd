@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.health_system.R
 \name{plot.cd_health_system_comparison}
 \alias{plot.cd_health_system_comparison}
-\title{Compare District vs Admin 1 Health Metrics}
+\title{Compare district vs admin level 1 health metrics}
 \usage{
 \method{plot}{cd_health_system_comparison}(
   x,
@@ -10,11 +10,13 @@
     "ratio_ipd_u5_bed"),
   denominator = NULL,
   title = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
+  subtitle = NULL,
   caption = NULL,
-  legend_labels = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
+  legend_labels = NULL,
   options = NULL
 )
 }
@@ -25,25 +27,40 @@
 
 \item{denominator}{Optional for cov_ indicators. Must be one of 'dhis2', 'anc1', 'penta1'.}
 
-\item{title}{(Optional) Custom title for the plot.}
+\item{title}{The chart's title.}
 
-\item{x_axis}{(Optional) Custom label for the x-axis.}
+\item{subtitle}{The line under the title.}
 
-\item{y_axis}{(Optional) Custom label for the y-axis.}
+\item{caption}{The note under the chart.}
 
-\item{caption}{(Optional) Custom caption text (R-squared will automatically be prepended to this).}
+\item{x_title}{The title of the horizontal axis.}
+
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
 
 \item{legend_labels}{(Optional) A named list to override default legend labels (keys: 'admin', 'linear').}
 
-\item{...}{Chart options (see \code{\link[=cd_chart_options]{cd_chart_options()}}) given by name, applied as
-with \code{options}.}
-
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
 }
 \value{
 A ggplot object.
 }
 \description{
-Generates scatterplots with linear fit and identity line comparing district to admin 1 metrics or coverage vs density.
+Generates scatterplots with linear fit and identity line comparing district to admin level 1 metrics or coverage vs density.
+}
+\examples{
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+cache$set_national_estimates(list(sbr = 0.02))
+cache$adjust_data()
+comparison <- cache$health_system_comparison
+
+plot(comparison, indicator = "ratio_opd_u5_hstaff")
+plot(comparison, indicator = "ratio_ipd_u5_bed", title = "Admissions of children and hospital beds",
+     legend_labels = list(admin = "Regions", linear = "Trend"))
+
 }

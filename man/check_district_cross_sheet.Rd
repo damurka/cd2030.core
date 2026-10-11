@@ -2,18 +2,33 @@
 % Please edit documentation in R/0_data_quality_checks.R
 \name{check_district_cross_sheet}
 \alias{check_district_cross_sheet}
-\title{Check districts match between the Admin sheet and every other sheet, both directions}
+\title{Check that districts match between the Admin sheet and the others}
 \usage{
 check_district_cross_sheet(parts, admin_sheet_name)
 }
 \arguments{
-\item{parts}{Named list of cleaned per-sheet tibbles (\code{load_excel_parts()$parts}).}
+\item{parts}{A named list of cleaned per-sheet tibbles (\code{load_excel_parts()$parts}).}
 
-\item{admin_sheet_name}{Name of the admin sheet within \code{parts}.}
+\item{admin_sheet_name}{A string. The name of the Admin sheet within \code{parts}.}
+}
+\value{
+\code{NULL} if the districts match, or if the Admin sheet has no \code{district} column.
+Otherwise a character vector with one or two messages, each named \code{"x"}: one that lists
+the districts found in another sheet but not in the Admin sheet, each with the sheets it
+was found in, and one that lists the Admin sheet districts found in no other sheet.
 }
 \description{
-The direct fix for the root problem this redesign exists for: \code{merge_data()} left-joins
-everything onto the Admin sheet, so a district that exists in Population_data/Service_data but
-not in Admin_data was silently dropped before any check ever ran against the merged result. This
-runs on unmerged \code{parts}, so nothing has been dropped yet.
+Compares the districts in the Admin sheet with the districts in all the other sheets, in
+both directions. Run it on the unmerged sheets: merging keeps only the districts of one
+sheet, so a district that is missing from that sheet would be dropped without notice.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+sheets <- load_excel_parts(path)
+check_district_cross_sheet(sheets$parts, sheets$admin_sheet_name)
+
+# A district renamed in the Admin sheet only
+parts <- sheets$parts
+parts[[sheets$admin_sheet_name]]$district[1] <- "Baringo County"
+check_district_cross_sheet(parts, sheets$admin_sheet_name)
 }

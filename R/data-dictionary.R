@@ -167,6 +167,9 @@ cd_dictionary <- function() {
 
 #' The denominator options' labels
 #'
+#' Gives the display label of each denominator option, keyed by its id. With a translator the
+#' labels are translated; a label that has no translation stays in English.
+#'
 #' @param i18n Optional translator (`i18n$t(key)`); without it, the English labels.
 #' @param ids Which denominators, in this order. Default: all six.
 #' @return A named character vector, id -> label.

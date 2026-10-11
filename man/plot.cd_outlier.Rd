@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.outlier.R
 \name{plot.cd_outlier}
 \alias{plot.cd_outlier}
-\title{Visualize Summary of Outlier Detection}
+\title{Visualize summary of outlier detection}
 \usage{
 \method{plot}{cd_outlier}(
   x,
@@ -10,9 +10,11 @@
   indicator = NULL,
   threshold = .cd_method$data_quality$reporting_threshold,
   title = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
-  legend = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
   options = NULL
 )
@@ -33,19 +35,23 @@ for \code{"region"} view.}
 \item{threshold}{Numeric. Upper cut-off (in percent) of the middle colour
 band; values above it are shown as good. Default is \code{90}.}
 
-\item{title}{Optional plot title. Defaults to a title based on
-\code{selection_type}.}
+\item{title}{The chart's title.}
 
-\item{x_axis, y_axis}{Optional x- and y-axis titles. Default to \code{"Year"} and
-a "Percent non-outliers" label.}
+\item{subtitle}{The line under the title.}
 
-\item{legend}{Optional legend title. Defaults to a "Percent non-outliers"
-label.}
+\item{caption}{The note under the chart.}
 
-\item{...}{Not used.}
+\item{x_title}{The title of the horizontal axis.}
 
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
 }
 \value{
 A \code{ggplot} object.

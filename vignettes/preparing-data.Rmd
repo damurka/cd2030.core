@@ -1,0 +1,159 @@
+---
+title: "Preparing your data"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Preparing your data}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+options(width = 100, tibble.print_min = 5, tibble.print_max = 10, tibble.max_extra_cols = 6)
+```
+
+This guide describes the file cd2030.core reads, what happens to it when it is loaded, and how to find out what is
+wrong with a file that does not load.
+
+```{r}
+library(cd2030.core)
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+```
+
+## The three kinds of file
+
+| File | What it is | Read with |
+|---|---|---|
+| `.xlsx`, `.xls` | The Countdown workbook, one sheet per kind of data | `load_data()`, `load_cache_data()` |
+| `.dta` | A Stata master file: the merged table, already one row per district and month | `load_data()`, `load_cache_data()` |
+| `.rds` | A dataset saved by this package, with the choices made about it | `load_cache_data()` |
+
+## The workbook
+
+The example workbook has these sheets:
+
+```{r}
+readxl::excel_sheets(path)
+```
+
+Four kinds of sheet are read. The others (the read-me, the workbook's own checks, stock and campaign data) are left
+alone.
+
+| Sheet | One row per | Key columns | Holds |
+|---|---|---|---|
+| `Admin_data` | district | `district` | the country, the first administrative level (region) of each district, numbers of facilities and staff |
+| `Population_data` | district and year | `district`, `year` | total population, under-fives, under-ones, live births, total births, women aged 15 to 49 |
+| `Reporting_completeness` | district and month | `district`, `year`, `month` | reports expected and received, and the reporting rate, for each group of services |
+| `Service_data_1`, `Service_data_2`, ... | district and month | `district`, `year`, `month` | the monthly counts: one column per indicator |
+
+Every sheet whose name contains `Service_data` is read, so indicators can be spread over as many service sheets as
+is convenient. If your workbook names its sheets differently, give the names:
+
+```{r, eval = FALSE}
+load_data(
+  "my-country.xlsx",
+  admin_sheet_name = "Admin",
+  population_sheet_name = "Population",
+  reporting_sheet_name = "Completeness",
+  service_sheet_names = c("ANC", "Delivery", "Vaccines")
+)
+```
+
+## What loading does
+
+```{r}
+data <- load_data(path)
+```
+
+1. **Column names are cleaned**: lower case, with the workbook's headings mapped to the names the package uses
+   (`First_admin_level` becomes `adminlevel_1`, `Penta1` becomes `penta1`).
+2. **The sheets are merged** into one table with a row for each district and month.
+3. **The country is recognised** from the Admin sheet, and its ISO3 code is attached. The name can be any usual
+   form of it (`"Kenya"`, `"Republic of Kenya"`, `"KEN"`, `"RDC"`, `"Côte d'Ivoire"`, `"Ivory Coast"`), whatever
+   the case or accents, and a small misspelling is accepted. A name that could be two countries stops the load
+   and names both. The country must be one of those the package holds reference data for.
+4. **The indicator group is detected**: the group whose indicators best match the columns in the file.
+5. **Empty columns are reported**, as in the message above. They are not an error: an indicator your country does
+   not collect stays empty and its results are left out.
+
+The result is a tibble of class `cd_data`. The country and group travel with it:
+
+```{r}
+attr(data, "country")
+attr(data, "iso3")
+attr(data, "indicator_group")
+```
+
+## Indicator groups
+
+An indicator group says which indicators a dataset has and how they are grouped for reporting rates and
+adjustment. Two are built in.
+
+```{r}
+list_indicator_groups()
+```
+
+These are the groups and indicators of the one the example file was matched to:
+
+```{r}
+get_indicator_groups()
+```
+
+A group of indicators has a reporting rate column named after it (`anc_rr`, `idelv_rr`, `vacc_rr`, `opd_rr`), which
+is what the `Reporting_completeness` sheet supplies.
+
+To load a file as a particular group, name it: `load_data(path, indicator_group = "vaccine")`. To add indicators of
+your own to a built-in group, register them before loading:
+
+```{r, eval = FALSE}
+register_indicator_group("rmncah", list(hiv = c("hiv_test", "pmtct1")), on_conflict = "merge")
+```
+
+## What the columns mean
+
+`cd_dictionary()` holds the package's vocabulary: the indicators, the populations, the denominators and the
+pattern of the computed column names.
+
+```{r}
+head(cd_dictionary()$indicators)
+```
+
+`cd_describe_columns()` explains any column name, including the computed ones that appear later in the analysis.
+
+```{r}
+cd_describe_columns(c("anc1", "vacc_rr", "cov_penta3_dhis2", "totunder1_un"))[, c("column", "type", "description")]
+```
+
+## When a file does not load
+
+`load_data()` stops with a message when the file cannot be used. The usual causes:
+
+- **A sheet or a key column is missing.** The message names the sheet and the column.
+- **The country is not recognised**, or the Admin sheet names more than one country.
+- **A district is not the same throughout**: it is placed in two regions, or is missing from one of the years.
+  It has usually been renamed or misspelled in part of the workbook.
+- **A month is missing or not valid.** Each district needs a row for every month of every year it appears in.
+
+The last two are checks on the data, not on the structure of the file. To load the file anyway and see every
+problem at once, turn them off and run the checks yourself:
+
+```{r, eval = FALSE}
+data <- load_data("my-country.xlsx", validate = FALSE)
+run_all_quality_checks(data)
+```
+
+Each check returns what it found, or `NULL` when there is nothing to report. The Load Data screen of the Countdown
+apps runs the same checks and shows the findings before the data is accepted.
+
+## Reference data for the country
+
+For the countries it knows, the package holds UN population estimates, UN mortality estimates, WUENIC immunization
+estimates and household survey estimates. `load_cache_data()` attaches them to the dataset:
+
+```{r}
+cache <- load_cache_data(path)
+cache$un_estimates
+```
+
+A country's own files can replace them: see `load_un_estimates()`, `load_wuenic_data()`, `load_survey_data()` and
+the matching `cache$set_...()` methods in `?CacheConnection`.

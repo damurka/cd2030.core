@@ -1,0 +1,154 @@
+---
+title: "Checking data quality"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Checking data quality}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4, dpi = 96)
+options(width = 100, tibble.print_min = 5, tibble.print_max = 10, tibble.max_extra_cols = 6)
+```
+
+Before coverage is computed, the Countdown analysis asks four questions of the facility data: were the reports
+sent, are there values that cannot be right, are values missing, and do related indicators agree. This guide goes
+through the function for each, on the example dataset.
+
+```{r}
+library(cd2030.core)
+
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+data <- cache$countdown_data
+```
+
+Three things are the same for every check:
+
+- **The level.** `admin_level` is `"national"`, `"adminlevel_1"` (region) or `"district"`, and `region` keeps one
+  region.
+- **The result** is a table with a class of its own, which gives it a caption and usually a `plot()` method.
+- **The threshold** is the reporting rate a district is expected to reach, in percent. 90 is used here.
+
+## Reporting rates
+
+The reporting rate is the share of expected monthly reports that were received, for each group of services.
+
+```{r}
+calculate_average_reporting_rate(data)
+```
+
+By region, as a chart:
+
+```{r}
+plot(calculate_average_reporting_rate(data, admin_level = "adminlevel_1"))
+```
+
+`calculate_district_reporting_rate()` counts districts: the percentage whose reporting rate reaches the threshold.
+
+```{r}
+calculate_district_reporting_rate(data, threshold = 90)
+```
+
+## Extreme outliers
+
+A monthly value is an extreme outlier when it is more than five median absolute deviations from the district's
+median for that indicator. The summary gives the percentage of values that are *not* outliers, so higher is
+better.
+
+```{r}
+outliers <- calculate_outliers_summary(data, admin_level = "adminlevel_1")
+plot(outliers, selection_type = "heat_map", indicator = "penta1")
+```
+
+`calculate_district_outlier_summary()` gives the percentage of districts with no extreme outlier in the year, and
+`list_outlier_units()` returns the monthly values with their bounds, to find the months concerned.
+
+```{r}
+calculate_district_outlier_summary(data)[, c("year", "anc1_outlier5std", "penta1_outlier5std", "penta3_outlier5std")]
+```
+
+## Missing values
+
+Completeness is the percentage of monthly values that are present.
+
+```{r}
+completeness <- calculate_completeness_summary(data, admin_level = "adminlevel_1")
+plot(completeness, indicator = "penta1")
+```
+
+`calculate_district_completeness_summary()` gives the percentage of districts with no missing value, and
+`list_missing_units()` names the districts and months where an indicator is missing.
+
+```{r}
+list_missing_units(data, indicator = "low_bweight")
+```
+
+## Consistency between indicators
+
+Some indicators should move together: nearly every woman who attends a first antenatal visit has a child who
+receives a first dose of pentavalent vaccine, and the first dose is a little more common than the third. The ratio
+of each pair is compared with the ratio expected from survey coverage, the last row of the table.
+
+```{r}
+cache$ratios_summary
+```
+
+```{r}
+plot(cache$ratios_summary)
+```
+
+## The overall score
+
+`calculate_overall_score()` brings the checks together, one row per measure and one column per year. The last row
+is the year's data quality score.
+
+```{r}
+score <- calculate_overall_score(data, threshold = 90)
+score[, c("no", "Data Quality Metrics", "2021", "2022", "2023")]
+```
+
+## Changing how a chart looks
+
+Every chart in the package takes the same arguments for its text: `title`, `subtitle`, `caption`, `x_title`,
+`y_title` and `legend_title`. Anything else about its look is a chart option, given by name: the background, fonts,
+sizes, the legend, the grid, the colours.
+
+```{r}
+rates <- calculate_average_reporting_rate(data, admin_level = "adminlevel_1")
+
+plot(rates,
+     title = "Reporting by region", subtitle = "All services", x_title = "Region", legend_title = "Rate",
+     background_color = "grey96", font_family = "serif", legend_position = "right")
+```
+
+To give several charts one look, make the options once and pass them as `options`.
+
+```{r}
+look <- cd_chart_options(font_family = "serif", background_color = "grey96", text_scale = 0.9)
+
+plot(calculate_district_reporting_rate(data, threshold = 90), title = "Districts reporting on time", options = look)
+```
+
+`?cd_plot_arguments` describes the shared arguments and `?cd_chart_options` lists every option.
+
+## Through the dataset object
+
+The `CacheConnection` holds each of these tables, computed once with the threshold it has stored and kept until
+something they depend on changes. This is what the apps' pages read.
+
+```{r}
+cache$set_performance_threshold(90)
+cache$reporting_rate_national
+```
+
+`?CacheConnection` lists them all (`reporting_rate_*`, `completeness_*`, `outliers_*`, `ratios_summary`,
+`overall_score`).
+
+## Acting on what you find
+
+- **A year too poor to use** can be left out of the analysis: `cache$set_excluded_years(2019)`.
+- **Under-reporting, outliers and missing values** are corrected by adjustment, the next step:
+  `vignette("coverage")`.
+- **A written summary**: `export_report(cache, report_presets("en")[["data_quality"]], "data-quality.docx")` writes
+  the standard data quality report as a Word document.

@@ -2,22 +2,39 @@
 % Please edit documentation in R/0_data_quality_checks.R
 \name{check_survey_admin_names}
 \alias{check_survey_admin_names}
-\title{Flag dataset admin-1 names that have no matching survey region}
+\title{Flag admin level 1 names with no matching survey region}
 \usage{
 check_survey_admin_names(regional_survey, countdown_data)
 }
 \arguments{
-\item{regional_survey}{The \code{regional_survey} data (has its own \code{adminlevel_1} column).}
+\item{regional_survey}{A data frame of regional survey data with an \code{adminlevel_1} column,
+or \code{NULL}.}
 
-\item{countdown_data}{The dataset (\code{countdown_data}-shaped).}
+\item{countdown_data}{A data frame. The dataset, with an \code{adminlevel_1} column.}
 }
 \value{
-A tibble of dataset admin-1 names with no survey match, each with its closest
-suggestion (see \code{match_admin_names()}).
+A tibble with one row per unmatched dataset name and columns \code{name} (the dataset
+name), \code{suggestion} (the closest survey name) and \code{distance} (the distance between them).
+It has no rows if every name matches, or if \code{regional_survey} is \code{NULL} or has no
+\code{adminlevel_1} column.
 }
 \description{
-Checked in this direction (not the other way around) because it's the dataset's own regions
-that need coverage: a region present in \code{countdown_data} but missing from the survey can't get
-a regional/equity estimate at all. A survey region with no dataset match is just unused data,
-not something that blocks anything.
+Finds the admin level 1 names in the dataset that have no close match among the regions of
+the regional survey. A dataset region without a survey match cannot get a regional or equity
+estimate.
+}
+\details{
+Names are compared without regard to case or accents, using the Jaro-Winkler distance. A
+name is unmatched when its distance to the closest survey name is 0.25 or more. Survey
+regions that match no dataset name are not reported.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+cache <- load_cache_data(path)
+data <- cache$countdown_data
+check_survey_admin_names(cache$regional_survey, data)
+
+# A region the survey calls something else
+data$adminlevel_1[data$adminlevel_1 == "Coast"] <- "Pwani"
+check_survey_admin_names(cache$regional_survey, data)
 }

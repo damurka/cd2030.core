@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.health_system.R
 \name{plot.cd_health_system_table}
 \alias{plot.cd_health_system_table}
-\title{Plot S3 method for Health System Metrics}
+\title{Plot S3 method for health system metrics}
 \usage{
 \method{plot}{cd_health_system_table}(
   x,
@@ -16,7 +16,8 @@
 )
 }
 \arguments{
-\item{x}{An object of class \code{cd_health_system_table}}
+\item{x}{An object of class \code{cd_health_system_table}, as returned by
+\code{\link[=generate_health_system_table]{generate_health_system_table()}}.}
 
 \item{year}{The year to display in the header (defaults to 2024)}
 
@@ -33,6 +34,22 @@
 \item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
 arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
 }
+\value{
+A \code{flextable} object (from the flextable package), not a ggplot. Chart options change
+ggplots only, so \code{options} has no effect on this table.
+}
 \description{
-Plot S3 method for Health System Metrics
+Draws the national health system metrics as a formatted table. The indicators are grouped under
+their section, each with its value and unit, and the year is shown in a line above the column
+headers.
+}
+\examples{
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+cache$adjust_data()
+metrics <- cache$generate_health_system_table()
+
+plot(metrics, year = 2023)
+plot(metrics, year = 2023, width = 6, indicator_label = "Indicateur", value_label = "Valeur",
+     unit_label = "Unite")
+
 }

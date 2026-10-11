@@ -18,3 +18,10 @@ and the indicator (\code{"coverage_filtered.national.anc4"}). The app's customiz
 options saved for a chart in the app (\code{"report/<id>"}) reach the same chart in a generated report. Ids are grouped by their
 parts: everything under \code{coverage_filtered.national} is the national coverage charts.
 }
+\examples{
+data <- load_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+cd_chart_id(calculate_average_reporting_rate(data))
+
+# plain data does not say what it is
+cd_chart_id(mtcars)
+}

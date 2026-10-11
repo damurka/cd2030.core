@@ -2,14 +2,17 @@
 % Please edit documentation in R/plot.completeness.R
 \name{plot.cd_missing_district}
 \alias{plot.cd_missing_district}
-\title{Plot Percent of Districts with Complete Data}
+\title{Plot percent of districts with complete data}
 \usage{
 \method{plot}{cd_missing_district}(
   x,
   indicator = NULL,
   title = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
   options = NULL
 )
@@ -22,16 +25,23 @@ corresponding \verb{mis_\{indicator\}} columns.}
 \item{indicator}{A character string specifying the indicator to plot.
 Must be one of the values returned by \code{get_all_indicators()}.}
 
-\item{title}{Optional character string to override the default plot title.}
+\item{title}{The chart's title.}
 
-\item{x_axis}{Optional character string to override the x-axis label.}
+\item{subtitle}{The line under the title.}
 
-\item{y_axis}{Optional character string to override the y-axis label.}
+\item{caption}{The note under the chart.}
 
-\item{...}{Additional arguments reserved for future use.}
+\item{x_title}{The title of the horizontal axis.}
 
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
 }
 \value{
 A \code{ggplot} object.

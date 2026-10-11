@@ -2,7 +2,7 @@
 % Please edit documentation in R/1a_checks_outlier.R
 \name{calculate_district_outlier_summary}
 \alias{calculate_district_outlier_summary}
-\title{District-Level Outlier Summary by Year}
+\title{District-level outlier summary by year}
 \usage{
 calculate_district_outlier_summary(.data, region = NULL)
 }

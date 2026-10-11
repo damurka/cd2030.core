@@ -135,18 +135,18 @@
     metric,
     population = plot(cache$denominator_metrics, metric = "population",
                       title = t("plt_title_denom_pop", "Total Population (in thousands), DHIS2 and UN projections"),
-                      x_label = t("title_global_year", "Year"), y_label = t("opt_population", "Population"),
+                      x_title = t("title_global_year", "Year"), y_title = t("opt_population", "Population"),
                       legend_labels = c(t("lbl_leg_denom_un_pop", "UN Population (in 1000)"),
                                         t("lbl_leg_denom_dhis2_pop", "DHIS-2 Population Projection (in 1000)"))),
     births = plot(cache$denominator_metrics, metric = "births",
                   title = t("plt_title_denom_births", "Total Live Births (in thousands), DHIS2 and UN projections"),
-                  x_label = t("title_global_year", "Year"), y_label = t("opt_live_births", "Live births"),
+                  x_title = t("title_global_year", "Year"), y_title = t("opt_live_births", "Live births"),
                   legend_labels = c(t("lbl_leg_denom_un_births", "UN Live Births (in 1000)"),
                                     t("lbl_leg_denom_dhis2_live_births", "DHIS-2 Live Births Projection (in 1000)"),
                                     t("lbl_leg_denom_dhis2_tot_births", "DHIS-2 Total Births Projection (in 1000)"))),
     under1 = plot(cache$denominator_metrics, metric = "under1",
                   title = t("plt_title_denom_under1", "Under 1 (in thousands), DHIS2 and UN projections"),
-                  x_label = t("title_global_year", "Year"), y_label = t("opt_under1", "Under 1"),
+                  x_title = t("title_global_year", "Year"), y_title = t("opt_under1", "Under 1"),
                   legend_labels = c(t("lbl_leg_denom_un_under1", "UN Under 1 (in 1000)"),
                                     t("lbl_leg_denom_dhis2_under1", "DHIS-2 Under 1 Projection (in 1000)")))
   )
@@ -165,7 +165,7 @@
     plot(data,
          title = fill(t("plt_title_denom_survey_comp",
                         "{indicator} Coverage, DHIS2-based with different denominators, and survey coverage for {year}"), name, year),
-         y_label = fill(t("lbl_axis_y_coverage", "{indicator} Coverage (%)"), name, year),
+         y_title = fill(t("lbl_axis_y_coverage", "{indicator} Coverage (%)"), name, year),
          legend_labels = c(.rb_denominator_labels(t), list(
            facility = t("lbl_denom_facility_based", "Facility-based coverage (%)"),
            survey_national = t("lbl_denom_survey_national", "Coverage survey, national")
@@ -174,7 +174,7 @@
     plot(data,
          title = fill(t("plt_title_cross_section_subnat",
                         "Comparison of {indicator} Coverage Estimates by Region and Denominator in {year}"), name, year),
-         x_label = t("opt_coverage", "Coverage"), y_label = t("lbl_axis_y_region", "Region"),
+         x_title = t("opt_coverage", "Coverage"), y_title = t("lbl_axis_y_region", "Region"),
          legend_labels = .rb_denominator_labels(t))
   }
 }

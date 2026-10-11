@@ -26,6 +26,14 @@ class \code{cd_adjustment_values}. It returns a named character vector summarizi
 the table as "Unadjusted and adjusted values" along with any additional details
 provided by the \code{NextMethod()} function.
 }
+\examples{
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+cache$adjust_data()
+
+# the summary is the header printed above the table
+cache$adjustment_values
+
+}
 \seealso{
 \code{\link[=generate_adjustment_values]{generate_adjustment_values()}} for generating the \code{cd_adjustment_values}
 object.

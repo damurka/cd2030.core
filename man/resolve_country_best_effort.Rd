@@ -2,22 +2,36 @@
 % Please edit documentation in R/0_import_load_data.R
 \name{resolve_country_best_effort}
 \alias{resolve_country_best_effort}
-\title{Best-effort, non-aborting country resolution from a raw Admin sheet}
+\title{Find the country of an Admin sheet without raising an error}
 \usage{
 resolve_country_best_effort(admin_data)
 }
 \arguments{
-\item{admin_data}{The raw Admin sheet (\code{parts[[admin_sheet_name]]}).}
+\item{admin_data}{A data frame. The cleaned Admin sheet, before the sheets are merged.}
 }
 \value{
-\code{list(country, country_iso)} -- both \code{NULL} if the admin sheet's own \code{country} column
-doesn't resolve to exactly one confident match.
+A list with two elements: \code{country} (the country's name as the package spells it)
+and \code{country_iso} (its ISO3 code), both strings. Both are \code{NULL} if the sheet has no
+\code{country} column or the country cannot be resolved.
 }
 \description{
-A non-aborting wrapper around \code{match_country()}, used by the Load Data wizard (apps/rmncah) so
-\code{CacheConnection$country}/\verb{$country_iso} have something real to return before Finish -- see those
-active bindings' own comments (\code{CacheConnection-class.R}) for why this is deliberately separate
-from \code{check_single_country()}'s real validation, which still runs (non-blockingly, at the Data
-Quality step) regardless: this function's only job is not leaving \code{country}/\code{country_iso} \code{NULL}
-for the entire wizard just because \code{match_country()} would abort on anything ambiguous.
+Looks up the country named in the Admin sheet and returns its name and ISO3 code. Unlike
+the lookup in \code{\link[=new_countdown]{new_countdown()}}, it does not stop with an error when the country cannot be
+resolved. Use it to show the country before the sheets are merged.
+}
+\details{
+The country is resolved only when the \code{country} column holds exactly one distinct value,
+ignoring missing values, and that value is close to a name in the package's list of
+countries. This function does not validate the sheet. Use \code{\link[=check_single_country]{check_single_country()}} and
+\code{\link[=check_country_recognized]{check_country_recognized()}} for that.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+sheets <- load_excel_parts(path)
+admin <- sheets$parts[[sheets$admin_sheet_name]]
+resolve_country_best_effort(admin)
+
+# Nothing is returned, and no error raised, for a country that is not recognized
+admin$country <- "Atlantis"
+resolve_country_best_effort(admin)
 }

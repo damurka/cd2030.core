@@ -1,4 +1,4 @@
-#' Generate Adjusted and Unadjusted Service Counts by Year
+#' Generate adjusted and unadjusted service counts by year
 #'
 #' `generate_adjustment_values` calculates yearly unadjusted and adjusted service counts
 #' for each indicator within a `cd_data` dataset, applying the specified adjustment type.
@@ -17,7 +17,7 @@
 #'   and areas left out).
 #' @param area,level One area only: a region (`level = "adminlevel_1"`) or a district (`"district"`); `NULL`, all.
 #'
-#' @details This function performs the following steps:
+#' @details Performs the following steps:
 #'   1. **Data Validation**: Ensures `.data` is of the `cd_data` class and `adjustment`
 #'      is correctly specified.
 #'   2. **Unadjusted Summation**: Calculates the yearly sums of unadjusted service counts.
@@ -56,6 +56,7 @@ generate_adjustment_values <- function(.data,
   year <- NULL
 
   check_cd_data(.data)
+  local_data_group(.data)
   adjustment <- arg_match(adjustment)
   level <- arg_match(level)
 
@@ -95,9 +96,9 @@ generate_adjustment_values <- function(.data,
   )
 }
 
-#' Filter one indicator’s adjustment values
+#' Select one indicator's adjustment values
 #'
-#' Keeps `year` and the two columns for a single indicator’s raw and adjusted
+#' Keeps `year` and the two columns for a single indicator's raw and adjusted
 #' values, e.g. `anc1_raw` and `anc1_adj`.
 #'
 #' @param .data A tibble of class `cd_adjustment_values`.
@@ -112,11 +113,11 @@ generate_adjustment_values <- function(.data,
 #'
 #' @examples
 #' \dontrun{
-#' x <- filter_adjustment_value(adj_values, "anc1")
+#' x <- select_adjustment_value(adj_values, "anc1")
 #' attr(x, "indicator")   # "anc1"
 #' }
 #' @export
-filter_adjustment_value <- function(.data, indicator) {
+select_adjustment_value <- function(.data, indicator) {
   check_cd_class(.data, 'cd_adjustment_values')
   indicator <- arg_match(indicator, get_all_indicators())
 

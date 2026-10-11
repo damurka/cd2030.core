@@ -16,11 +16,9 @@ A character vector that summarizes the data content and purpose,
 specifically indicating the proportion of values that are complete across years.
 }
 \description{
-This function provides a custom summary for \code{cd_completeness_summary} objects,
-offering an overview of the percentage of data completeness (non-missing values)
-for each indicator, aggregated by year. The summary output helps users quickly
-identify data completeness trends across indicators and time points, giving insight
-into potential gaps in data collection.
+Provides the header shown when a \code{cd_completeness_summary} object is printed. It labels the
+table as the percentage of monthly values with complete (non-missing) data, by year, ahead of
+the usual tibble header.
 }
 \examples{
 \dontrun{

@@ -2,40 +2,57 @@
 % Please edit documentation in R/plot.mortality.R
 \name{plot.cd_mortality_summary_filtered}
 \alias{plot.cd_mortality_summary_filtered}
-\title{Plot Filtered Institutional Mortality Rates}
+\title{Plot filtered institutional mortality rates}
 \usage{
-\method{plot}{cd_mortality_summary_filtered}(x, labels = NULL, ..., options = NULL)
+\method{plot}{cd_mortality_summary_filtered}(
+  x,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
+  ...,
+  options = NULL
+)
 }
 \arguments{
 \item{x}{A \code{cd_mortality_summary_filtered} object.}
 
-\item{labels}{(Optional) A named list to override the default English text, e.g. with translations. Valid keys: \code{title} and
-\code{legend} (the legend title). Defaults to \code{NULL}.}
+\item{title}{The chart's title.}
 
-\item{...}{Additional arguments (not used).}
+\item{subtitle}{The line under the title.}
 
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{caption}{The note under the chart.}
+
+\item{x_title}{The title of the horizontal axis.}
+
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
 }
 \value{
-A \code{ggplot2} object. This function is called for its side effect of rendering a map.
+A \code{ggplot2} object: the map, with the chart options applied.
 }
 \description{
 Visualizes institutional mortality rates (\code{MMR} or \code{SBR}) across regions using filled
 geographic polygons. Facets the map by year and applies a color gradient by value.
 }
 \details{
-The function:
-\itemize{
-\item Determines the appropriate plot title and legend based on the \code{indicator} attribute
-\item Projects the geometry to WGS84 for consistent map rendering
-\item Facets by year and uses \code{geom_sf()} to draw filled polygons
-\item Applies a sequential \code{Reds} color scale with gray for missing values
-}
+Takes the default title and legend title from the \code{indicator} attribute of \code{x} and sets the
+geometry to WGS84 coordinates. Draws the regions as filled polygons with \code{geom_sf()}, one panel
+per year, on a sequential colour scale from the palette stored on \code{x} (\code{Reds} by default), with
+gray for missing values.
 }
 \examples{
 \dontrun{
-filtered <- filter_mortality_summary(mortality_data, "UGA", indicator = "mmr",
+filtered <- select_mortality_summary(mortality_data, "UGA", indicator = "mmr",
                                      plot_year = 2020:2022)
 plot(filtered)
 }

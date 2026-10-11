@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils-quality_checks.R
 \name{add_missing_column}
 \alias{add_missing_column}
-\title{Add Missing Value Flags to Health Indicators}
+\title{Add missing value flags to health indicators}
 \usage{
 add_missing_column(.data, indicators)
 }

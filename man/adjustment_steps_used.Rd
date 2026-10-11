@@ -28,3 +28,16 @@ A named logical: \code{completeness}, \code{outliers}, \code{missing}.
 Whether completeness (a k above 0), outlier correction and filling missing values apply to an indicator in at
 least one district of the data (or of one area), with the settings: a step no district gets is off.
 }
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+settings <- adjustment_settings_default()
+adjustment_steps_used(settings, data, "penta3")
+
+# A region with its own settings: no completeness adjustment, outliers left as they are
+settings$areas <- list(
+  list(area = "Coast", level = "adminlevel_1", group_k = list(vacc = 0), all_outliers = FALSE)
+)
+adjustment_steps_used(settings, data, "penta3", area = "Coast")
+adjustment_steps_used(settings, data, "penta3")
+}

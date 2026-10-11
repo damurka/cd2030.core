@@ -196,9 +196,9 @@
     y_var = pair[2],
     title = .rb_dq_fill(t("plt_title_consist_checks", "Relationship between reported numbers of {vacc1} and {vacc2} by year"),
                         vacc1 = vacc1, vacc2 = vacc2),
-    x_label = vacc1,
-    y_label = vacc2,
-    legend = c(district = t("lbl_leg_consist_district", "District"), linear_fit = t("lbl_leg_consist_linear_fit", "Linear fit"),
+    x_title = vacc1,
+    y_title = vacc2,
+    legend_labels = c(district = t("lbl_leg_consist_district", "District"), linear_fit = t("lbl_leg_consist_linear_fit", "Linear fit"),
                diagonale = t("lbl_leg_consist_diagonal", "Diagonal"))
   ) +
     # the legend's entries say what they are (its title would be the name of an aesthetic)

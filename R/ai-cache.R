@@ -46,6 +46,16 @@ cd_chartable_members <- function() {
 #' @param member A member name, one of [cd_chartable_members()].
 #' @param args A named list of arguments for a method.
 #' @return A data frame.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' cache <- load_cache_data(path)
+#'
+#' # a precomputed result
+#' cd_member_data(cache, "reporting_rate_national")
+#'
+#' # a method, with its arguments
+#' rates <- cd_member_data(cache, "calculate_reporting_rate", args = list(admin_level = "adminlevel_1"))
+#' head(rates)
 #' @export
 cd_member_data <- function(cache, member, args = list()) {
   if (!is_scalar_character(member) || !member %in% cd_chartable_members()) {
@@ -67,9 +77,26 @@ cd_member_data <- function(cache, member, args = list()) {
 
 #' The table a custom chart draws
 #'
+#' Checks a custom chart description, reads the data of the dataset member it names and applies the
+#' transforms it lists. The result is the table the chart is drawn from.
+#'
 #' @param cache A `CacheConnection`.
 #' @param spec A custom chart description (report kind `custom_chart`, see `datasuite.ui::report_validate_spec()`).
 #' @return The data frame after the spec's transforms.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' cache <- load_cache_data(path)
+#'
+#' spec <- list(
+#'   title = "Antenatal care reporting rate by region, 2023",
+#'   data = list(member = "reporting_rate_admin1"),
+#'   transform = list(
+#'     list(filter = list(year = 2023)),
+#'     list(select = c("adminlevel_1", "anc_rr"))
+#'   ),
+#'   plot = list(geom = "col", x = "adminlevel_1", y = "anc_rr")
+#' )
+#' cd_custom_chart_data(cache, spec)
 #' @export
 cd_custom_chart_data <- function(cache, spec) {
   spec <- datasuite.ui::report_validate_spec(spec, members = cd_chartable_members())

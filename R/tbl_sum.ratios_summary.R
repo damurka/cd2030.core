@@ -14,6 +14,13 @@
 #'   type of summary and the indicator ratios reported, to enhance interpretation
 #'   when viewing the data.
 #'
+#' @examples
+#' data <- load_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#' ratios <- calculate_ratios_and_adequacy(data)
+#'
+#' # the summary is the header printed above the table
+#' calculate_ratios_summary(ratios)
+#'
 #' @export
 tbl_sum.cd_ratios_summary <- function(x, ...) {
   c(
@@ -37,6 +44,13 @@ tbl_sum.cd_ratios_summary <- function(x, ...) {
 #' @return A character vector providing a descriptive title indicating the percentage
 #'   of districts with indicator ratios that meet adequacy criteria, aiding in data
 #'   quality interpretation.
+#'
+#' @examples
+#' data <- load_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#' ratios <- calculate_ratios_and_adequacy(data)
+#'
+#' # the summary is the header printed above the table
+#' calculate_district_ratios_summary(ratios)
 #'
 #' @export
 tbl_sum.cd_district_ratios_summary <- function(x, ...) {

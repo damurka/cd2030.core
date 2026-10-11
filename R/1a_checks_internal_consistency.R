@@ -1,4 +1,4 @@
-#' Plot Comparison with Linear Fit and R-squared
+#' Plot comparison with linear fit and R-squared
 #'
 #' Creates a scatter plot to compare two indicators over multiple years, including
 #' a linear regression line and a diagonal reference line. The plot is faceted by year,
@@ -7,14 +7,11 @@
 #' @param .data A `cd_data` object containing merged data for the specified indicators.
 #' @param x_var Character. Name of the variable to plot on the x-axis (e.g., 'anc1').
 #' @param y_var Character. Name of the variable to plot on the y-axis (e.g., 'penta1').
-#' @param title Character. The main title for the plot. Defaults to a title based on `x_var` and `y_var`.
-#' @param x_label Character. Label for the x-axis. Defaults to the value of `x_var`.
-#' @param y_label Character. Label for the y-axis. Defaults to the value of `y_var`.
-#' @param legend Optional named list or vector overriding the legend labels.
+#' @param legend_labels Optional named list or vector overriding the legend labels.
 #'   Recognised names are `district`, `linear_fit` and `diagonale`; unnamed
 #'   entries keep their defaults. Default is `NULL`.
 #' @param call The calling environment.
-#' @param ... Additional arguments for customization, such as `size`, `color`, or `linetype`, for finer control over plot appearance.
+#' @inheritParams cd_plot_arguments
 #'
 #' @details
 #' This function calculates R-squared values for each year and displays them in each facet,
@@ -26,8 +23,6 @@
 #' - PENTA1 vs PENTA3
 #' - OPV1 vs OPV3
 #'
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A ggplot2 object showing the comparison plot of two indicators with linear regression and R-squared values.
 #'
 #' @examples
@@ -37,25 +32,26 @@
 #'
 #' @export
 plot_comparison.cd_data <- function(
-    .data, x_var, y_var, title = NULL,
-    x_label = NULL, y_label = NULL, legend = NULL,
-    call = caller_env(), ..., options = NULL) {
-  cd_finish_plot(.plot_comparison_cd_data_impl(.data, x_var = x_var, y_var = y_var, title = title, x_label = x_label, y_label = y_label, legend = legend, call = call, ...), options, ..., .source = .data)
+    .data, x_var, y_var, title = NULL, subtitle = NULL, caption = NULL, x_title = NULL, y_title = NULL,
+    legend_title = NULL, ..., legend_labels = NULL, call = caller_env(), options = NULL) {
+  .cd_draw(.plot_comparison_cd_data_impl, .data, list(x_var = x_var, y_var = y_var, legend_labels = legend_labels, call = call), ...,
+           options = options)
 }
 
 .plot_comparison_cd_data_impl <- function(
     .data, x_var, y_var, title = NULL,
-    x_label = NULL, y_label = NULL, legend = NULL,
+    x_title = NULL, y_title = NULL, legend_labels = NULL,
     call = caller_env(), ...) {
   district <- year <- min_x <- max_x <- r_squared <- NULL
 
   check_cd_data(.data)
+  local_data_group(.data)
   check_required(x_var)
   check_required(y_var)
 
   # Check if specified indicators exist in the data
   if (!(x_var %in% names(.data)) || !(y_var %in% names(.data))) {
-    cd_abort(c("x" = "Specified indicators do not exist in {.arg .arg}. Please check variable names."))
+    cd_abort(c("x" = "{.val {x_var}} or {.val {y_var}} is not a column of {.arg .data}."))
   }
 
   # Filter data and calculate yearly sums
@@ -82,8 +78,8 @@ plot_comparison.cd_data <- function(
 
   # Set default title and labels if not provided
   plot_title <- title %||% paste("Comparison of", x_var, "and", y_var, "by Year")
-  plot_x <- x_label %||% x_var
-  plot_y <- y_label %||% y_var
+  plot_x <- x_title %||% x_var
+  plot_y <- y_title %||% y_var
 
   legend_default <- c(
     district = "District",
@@ -91,7 +87,7 @@ plot_comparison.cd_data <- function(
     diagonale = "Diagonale"
   )
 
-  legend_user <- if (is.null(legend)) NULL else unlist(legend)
+  legend_user <- if (is.null(legend_labels)) NULL else unlist(legend_labels)
 
   # merge: user values override defaults
   legend_labels <- utils::modifyList(as.list(legend_default), as.list(legend_user)) |> unlist()
@@ -121,8 +117,8 @@ plot_comparison.cd_data <- function(
     scale_y_continuous(labels = scales::label_number()) +
     cd_plot_theme(
       title = plot_title,
-      x_axis = plot_x,
-      y_axis = plot_y
+      x_title = plot_x,
+      y_title = plot_y
     ) +
     scale_color_manual(
       values = c(
@@ -137,7 +133,7 @@ plot_comparison.cd_data <- function(
   return(plot)
 }
 
-#' Internal Consistency Plot Functions for Indicator Comparisons
+#' Internal consistency plot functions for indicator comparisons
 #'
 #' These functions generate scatter plots that compare two health indicators across years, assessing internal consistency
 #' through visualization of linear regression fits and R-squared values by year. Each function is designed to compare a specific
@@ -146,14 +142,12 @@ plot_comparison.cd_data <- function(
 #' @param .data A data frame of class `cd_data` that includes the relevant indicators for comparison.
 #' @param x_var Character. The name of the indicator variable to plot on the x-axis.
 #' @param y_var Character. The name of the indicator variable to plot on the y-axis.
-#' @param title Character. The title for the plot. Defaults to a title based on `x_var` and `y_var`.
-#' @param x_label Character. Label for the x-axis. Defaults to `x_var`.
-#' @param y_label Character. Label for the y-axis. Defaults to `y_var`.
-#' @param legend Optional named list or vector overriding the legend labels.
+#' @param legend_labels Optional named list or vector overriding the legend labels.
 #'   Recognised names are `district`, `linear_fit` and `diagonale`. Default is
 #'   `NULL`.
 #' @param call The calling environment, used for error handling. Default is `caller_env()`.
-#' @param ... Additional parameters for further customization, such as point size, line type, or color.
+#' @param options A [cd_chart_options()] object; see [cd_plot_arguments].
+#' @inheritParams cd_plot_arguments
 #'
 #' @details
 #' - The scatter plot displays the relationship between the two specified indicators over multiple years,
@@ -187,95 +181,84 @@ plot_comparison.cd_data <- function(
 #'
 #' @rdname internal_consistency
 #' @export
-plot_comparison <- function(.data, x_var, y_var, title = NULL, x_label = NULL, y_label = NULL,
-                            legend = NULL, call = caller_env(), ...) {
+plot_comparison <- function(.data, x_var, y_var, title = NULL, subtitle = NULL, caption = NULL, x_title = NULL,
+                            y_title = NULL, legend_title = NULL, ..., legend_labels = NULL, call = caller_env()) {
   check_cd_data(.data, call = call)
+  local_data_group(.data)
   check_required(x_var, call = call)
   check_required(y_var, call = call)
   UseMethod("plot_comparison")
 }
 
-#' Plot Comparison of Penta1 and ANC1
+#' Plot comparison of ANC1 and Penta1
 #'
-#' `plot_comparison_penta1_anc1` compares Penta1 and ANC1 indicators across.
+#' `plot_comparison_anc1_penta1()` compares ANC1 and Penta1. Its title is "Comparison of numbers of ANC1 and Penta1 by year" and its axes are titled "ANC1" and "Penta1" unless others are given; the two functions below are the same for their pairs.
 #'
-#' @param options A [cd_chart_options()] object; see [plot_comparison()].
 #' @rdname internal_consistency
 #'
 #' @export
 plot_comparison_anc1_penta1 <- function(
     .data,
-    title = "Comparison of numbers of ANC1 and Penta1 by year",
-    x_label = "ANC1",
-    y_label = "Penta1",
-    legend = NULL,
+    title = NULL,
+    subtitle = NULL,
+    caption = NULL,
+    x_title = NULL,
+    y_title = NULL,
+    legend_title = NULL,
     ...,
+    legend_labels = NULL,
     options = NULL) {
-  .data %>%
-    plot_comparison(
-      x_var = "anc1",
-      y_var = "penta1",
-      title = title,
-      x_label = x_label,
-      y_label = y_label,
-      legend = legend,
-      ...,
-      options = options
-    )
+  .cd_comparison(.data, "anc1", "penta1", text = mget(.cd_text_args), ..., legend_labels = legend_labels, options = options,
+                 defaults = list(title = "Comparison of numbers of ANC1 and Penta1 by year", x_title = "ANC1", y_title = "Penta1"))
 }
 
-#' Plot Comparison of Penta1 and Penta3
+#' Plot comparison of Penta1 and Penta3
 #'
-#' `plot_comparison_penta1_penta3` compares Penta1 and Penta23 indicators.
+#' `plot_comparison_penta1_penta3()` compares Penta1 and Penta3.
 #'
 #' @rdname internal_consistency
 #'
 #' @export
 plot_comparison_penta1_penta3 <- function(
     .data,
-    title = "Comparison of numbers of Penta1 and Penta3 by year",
-    x_label = "Penta1",
-    y_label = "Penta3",
-    legend = NULL,
+    title = NULL,
+    subtitle = NULL,
+    caption = NULL,
+    x_title = NULL,
+    y_title = NULL,
+    legend_title = NULL,
     ...,
+    legend_labels = NULL,
     options = NULL) {
-  .data %>%
-    plot_comparison(
-      x_var = "penta1",
-      y_var = "penta3",
-      title = title,
-      x_label = x_label,
-      y_label = y_label,
-      legend = legend,
-      ...,
-      options = options
-    )
+  .cd_comparison(.data, "penta1", "penta3", text = mget(.cd_text_args), ..., legend_labels = legend_labels, options = options,
+                 defaults = list(title = "Comparison of numbers of Penta1 and Penta3 by year", x_title = "Penta1", y_title = "Penta3"))
 }
 
-#' Plot Comparison of OPV1 and OPV3
+#' Plot comparison of OPV1 and OPV3
 #'
-#' `plot_comparison_opv1_opv3` compares OPV1 and OPV3 indicators.
+#' `plot_comparison_opv1_opv3()` compares OPV1 and OPV3.
 #'
 #' @rdname internal_consistency
 #'
 #' @export
 plot_comparison_opv1_opv3 <- function(
     .data,
-    title = "Comparison of numbers of Penta1 and Penta3 by year",
-    x_label = "Penta1",
-    y_label = "Penta3",
-    legend = NULL,
+    title = NULL,
+    subtitle = NULL,
+    caption = NULL,
+    x_title = NULL,
+    y_title = NULL,
+    legend_title = NULL,
     ...,
+    legend_labels = NULL,
     options = NULL) {
-  .data %>%
-    plot_comparison(
-      x_var = "opv1",
-      y_var = "opv3",
-      title = title,
-      x_label = x_label,
-      y_label = y_label,
-      legend = legend,
-      ...,
-      options = options
-    )
+  .cd_comparison(.data, "opv1", "opv3", text = mget(.cd_text_args), ..., legend_labels = legend_labels, options = options,
+                 defaults = list(title = "Comparison of numbers of OPV1 and OPV3 by year", x_title = "OPV1", y_title = "OPV3"))
+}
+
+# What the three functions above end with: the comparison chart of two indicators, with the texts they give it when
+# the caller gives none.
+.cd_comparison <- function(.data, x_var, y_var, text, defaults, ..., legend_labels = NULL, options = NULL) {
+  .cd_draw(.plot_comparison_cd_data_impl, .data, list(x_var = x_var, y_var = y_var, legend_labels = legend_labels), ...,
+           options = options, text = text, defaults = defaults)
 }

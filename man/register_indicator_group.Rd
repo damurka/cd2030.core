@@ -51,4 +51,7 @@ register_indicator_group(
   on_conflict = "merge"
 )
 
+# Back to the built-in group
+reset_indicator_group("rmncah")
+
 }

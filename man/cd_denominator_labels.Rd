@@ -15,7 +15,8 @@ cd_denominator_labels(i18n = NULL, ids = .cd_dict_denominators$id)
 A named character vector, id -> label.
 }
 \description{
-The denominator options' labels
+Gives the display label of each denominator option, keyed by its id. With a translator the
+labels are translated; a label that has no translation stays in English.
 }
 \examples{
 cd_denominator_labels()

@@ -2,21 +2,44 @@
 % Please edit documentation in R/plot.mortality.R
 \name{plot.cd_mortality_ratio_summarised}
 \alias{plot.cd_mortality_ratio_summarised}
-\title{Plot Completeness of Facility Reporting Ratios}
+\title{Plot completeness of facility reporting ratios}
 \usage{
-\method{plot}{cd_mortality_ratio_summarised}(x, labels = NULL, ..., options = NULL)
+\method{plot}{cd_mortality_ratio_summarised}(
+  x,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
+  ...,
+  legend_labels = NULL,
+  options = NULL
+)
 }
 \arguments{
 \item{x}{A \code{cd_mortality_ratio_summarised } object from completeness estimation.}
 
-\item{labels}{(Optional) A named list to override the default English text, e.g. with translations. Valid keys: \code{title},
-\code{x_axis}, \code{y_axis}, and the legend entries \code{lower}, \code{best} and \code{upper} (the UN lower bound, best estimate and upper bound).
-Defaults to \code{NULL}.}
+\item{title}{The chart's title.}
 
-\item{...}{Additional arguments (not used).}
+\item{subtitle}{The line under the title.}
 
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{caption}{The note under the chart.}
+
+\item{x_title}{The title of the horizontal axis.}
+
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{legend_labels}{(Optional) A named list to override the legend's entries, e.g. with translations: \code{lower}, \code{best}
+and \code{upper} (the UN lower bound, best estimate and upper bound). Defaults to \code{NULL}.}
+
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
 }
 \value{
 A ggplot object with ratio lines, labels, and reference points.
@@ -25,4 +48,15 @@ A ggplot object with ratio lines, labels, and reference points.
 Calculates and plots the estimated completeness of facility reporting
 for maternal deaths or stillbirths based on UN estimates and assumed
 community-to-institution ratios.
+}
+\examples{
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+cache$set_national_estimates(list(sbr = 0.02))
+cache$adjust_data()
+completeness <- cache$summarise_completeness_ratio("mmr")
+
+plot(completeness)
+plot(completeness, title = "Completeness of maternal death reporting", y_title = "Completeness (\%)",
+     legend_labels = list(lower = "UN lower bound", best = "UN best estimate", upper = "UN upper bound"))
+
 }

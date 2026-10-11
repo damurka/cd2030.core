@@ -2,15 +2,34 @@
 % Please edit documentation in R/7_health_systems.R
 \name{generate_health_system_table}
 \alias{generate_health_system_table}
-\title{Generate Health System Metrics Data}
+\title{Generate health system metrics data}
 \usage{
 generate_health_system_table(metric_data, labels = NULL)
 }
 \arguments{
-\item{metric_data}{A dataframe or list containing the yearly health system values.}
+\item{metric_data}{A \code{cd_health_system_metric} object for the national level, as returned by
+\code{\link[=calculate_health_system_metrics]{calculate_health_system_metrics()}} with \code{admin_level = "national"}.}
 
-\item{labels}{(Optional) A nested list of localized labels for sections, indicators, and units.}
+\item{labels}{(Optional) A nested list of localized labels for sections, indicators, and units
+(elements \code{section}, \code{indicator} and \code{unit}). English labels are used for whatever it does not set.}
+}
+\value{
+A tibble of class \code{cd_health_system_table} with one row per indicator and the columns
+\code{section}, \code{indicator}, \code{value} and \code{unit} (\code{NA} where the indicator has no unit).
 }
 \description{
-Generate Health System Metrics Data
+Arranges national health system metrics as a table of eight indicators in three sections: health
+infrastructure, health workforce and the role of the private sector. Each row has the indicator's
+label, its value and its unit, ready for \code{\link[=plot.cd_health_system_table]{plot.cd_health_system_table()}}.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+metrics <- calculate_health_system_metrics(data, admin_level = "national")
+
+generate_health_system_table(metrics)
+
+# labels in another language: what is not given stays in English
+generate_health_system_table(metrics, labels = list(section = list(workforce = "Personnel de sante")))
+
 }

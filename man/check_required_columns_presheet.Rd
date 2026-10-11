@@ -2,25 +2,37 @@
 % Please edit documentation in R/0_data_quality_checks.R
 \name{check_required_columns_presheet}
 \alias{check_required_columns_presheet}
-\title{Check the sheets have every column the selected indicator group needs, before they are merged}
+\title{Check that the sheets have the columns an indicator group needs}
 \usage{
 check_required_columns_presheet(parts, group = get_selected_group())
 }
 \arguments{
-\item{parts}{Named list of cleaned per-sheet tibbles.}
+\item{parts}{A named list of cleaned per-sheet tibbles (\code{load_excel_parts()$parts}).}
 
-\item{group}{The indicator group to check against. Default: the selected one (the wizard sets it at upload).}
+\item{group}{A string. The indicator group to check against. Default is the selected group.}
+}
+\value{
+\code{NULL} if no required column is missing, or if the sheets have no columns. Otherwise
+a character vector with up to three messages, each named \code{"x"}: one for the population
+columns, one for the reporting rate columns and one for the indicator columns.
 }
 \description{
-What \code{new_countdown()} stops on at Finish (\code{check_required_columns_exist()}), asked at the Data Quality step
-instead: the group's indicators, a reporting rate for each of its categories, and the population columns.
-It reads only the sheets' column names, as they will be once merged and standardized
-(\code{.standardized_column_names()}, which shares \code{standardize_data()}'s own list of renames), so a
-column the merge renames or computes is not reported as missing -- what kept this check out of the step
-before -- and what it reports is what Finish would.
+Checks the unmerged sheets for every column the indicator group requires: the group's
+indicators, a reporting rate for each of its categories, and the population columns. It
+reports the same missing columns that \code{\link[=new_countdown]{new_countdown()}} stops on, before the sheets are merged.
 }
 \details{
-Confirmed live on a workbook from the Data Extractor, whose Population sheet has no \code{Pop_growth_rate}:
-it passed every check, and Finish failed in \code{standardize_data()} with "\code{false} must be a vector, not
-\code{NULL}" in the first district.
+Only the column names are read. They are compared as they will be once the sheets are merged
+and standardized, so a column that standardization renames or computes is not reported as
+missing. The messages use the names the workbook uses.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+sheets <- load_excel_parts(path)
+check_required_columns_presheet(sheets$parts, group = "rmncah")
+
+# A Population sheet without its growth rate column
+parts <- sheets$parts
+parts[[sheets$population_sheet_name]]$pop_growth_rate <- NULL
+check_required_columns_presheet(parts, group = "rmncah")
 }

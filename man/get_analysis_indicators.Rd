@@ -12,3 +12,9 @@ Character vector of all indicators
 \description{
 Flatten all indicators from all groups
 }
+\examples{
+get_analysis_indicators()
+
+# what the selected group has and the analysis leaves out
+setdiff(get_all_indicators(), get_analysis_indicators())
+}

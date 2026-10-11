@@ -1,11 +1,11 @@
-#' Summarize Data Completeness by Year
+#' Summarize data completeness by year
 #'
 #' Computes yearly percentage of non-missing values for each indicator, along with
 #' overall completeness summaries.
 #'
 #' @param .data A `cd_data` object.
 #' @param admin_level One of `'national'`, `'adminlevel_1'`, or `'district'`.
-#' @param threshold Integer. Completeness threshold (in percent) stored as an
+#' @param threshold Numeric. The performance threshold (in percent) stored as an
 #'   attribute on the result and used when plotting. Default is `90`.
 #' @param region Optional name of an `adminlevel_1` region. If supplied, only
 #'   that region's rows are kept and results are shown by district. Only valid
@@ -29,6 +29,7 @@ calculate_completeness_summary <- function(.data,
   year <- . <- NULL
 
   check_cd_data(.data)
+  local_data_group(.data)
   check_scalar_integerish(threshold)
   admin_level <- arg_match(admin_level)
   admin_level_cols <- get_admin_columns(admin_level, region)
@@ -63,7 +64,7 @@ calculate_completeness_summary <- function(.data,
   )
 }
 
-#' District-Level Completeness Summary
+#' District-level completeness summary
 #'
 #' Calculates yearly % of districts with complete data for each indicator.
 #'
@@ -71,7 +72,7 @@ calculate_completeness_summary <- function(.data,
 #' @param region Optional name of an `adminlevel_1` region. If supplied, only
 #'   districts in that region are included. Default is `NULL` (all districts).
 #'
-#' @return A `cd_district_completeness_summary` tibble:
+#' @return A `cd_missing_district` tibble:
 #'   - One row per year
 #'   - `% non-missing` per indicator
 #'   - `mean_mis_all`, `mean_mis_four` summaries
@@ -86,6 +87,7 @@ calculate_district_completeness_summary <- function(.data, region = NULL) {
   year <- district <- . <- NULL
 
   check_cd_data(.data)
+  local_data_group(.data)
 
   indicators <- get_all_indicators()
   indicators <- indicators[which(indicators != "ipd")]
@@ -118,11 +120,35 @@ calculate_district_completeness_summary <- function(.data, region = NULL) {
 }
 
 
+#' List the districts and months with a missing value
+#'
+#' Lists every district and month in which the value of one indicator is missing. Use it to see
+#' where the gaps behind a completeness summary are.
+#'
+#' @param .data A `cd_data` object.
+#' @param indicator Character. The indicator to check: one of the indicators of the dataset (for
+#'   example `"penta3"`).
+#' @param region Optional name of an `adminlevel_1` region. If supplied, only the districts of
+#'   that region are listed. Default is `NULL`.
+#'
+#' @return A tibble of class `cd_missing_list` with one row per district and month where the
+#'   indicator is missing, and the columns `adminlevel_1`, `district`, `year` and `month`. The
+#'   attribute `indicator` holds the indicator.
+#'
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' data <- load_data(path)
+#' list_missing_units(data, "measles2")
+#'
+#' # Within one region
+#' list_missing_units(data, "measles2", region = "Rift Valley")
+#'
 #' @export
 list_missing_units <- function(.data,
                                indicator,
                                region = NULL) {
   check_cd_data(.data)
+  local_data_group(.data)
   indicator <- arg_match(indicator, get_all_indicators())
 
   # admin_level_cols <- get_admin_columns('adminlevel_1', region)
@@ -141,7 +167,7 @@ list_missing_units <- function(.data,
   )
 }
 
-#' Core Function to Calculate Completeness Metrics
+#' Core function to calculate completeness metrics
 #'
 #' Computes completeness (non-missing rate) for selected indicators grouped by admin level.
 #'
@@ -156,6 +182,7 @@ calculate_completeness_core <- function(.data,
                                         indicators,
                                         region = NULL) {
   check_cd_data(.data)
+  local_data_group(.data)
   check_required(indicators)
 
   .data %>%

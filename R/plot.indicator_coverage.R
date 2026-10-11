@@ -1,4 +1,4 @@
-#' Plot National Denominators and Coverage Indicators
+#' Plot national denominators and coverage indicators
 #'
 #' Generates specific plots for national denominators and health coverage indicators.
 #' It supports dynamic customization of titles and labels.
@@ -10,30 +10,37 @@
 #'   - **ANC1 Derived**: `"anc_coverage_anc1"`, `"delivery_coverage_anc1"`, `"immunization_coverage_anc1"`
 #'   - **Penta1 Derived**: `"anc_coverage_penta1"`, `"delivery_coverage_penta1"`, `"immunization_coverage_penta1"`
 #' @param admin_name Optional character. The specific admin area to filter by (required if data is subnational).
-#' @param title Optional character. Custom plot title.
-#' @param x_label Optional character. Custom x-axis label (default "Year").
-#' @param y_label Optional character. Custom y-axis label (default "%").
+#' @inheritParams cd_plot_arguments
 #' @param legend_labels Optional character vector. Custom labels for the legend items. Must match the number of lines in the selected plot type.
-#' @param ... Additional arguments passed to the plotting function.
 #'
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A ggplot object.
+#'
+#' @examples
+#' cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#' cache$set_national_estimates(list(sbr = 0.02))
+#' cache$adjust_data()
+#'
+#' plot(cache$indicator_coverage_national, plot_type = "anc_coverage_penta1")
+#' plot(cache$indicator_coverage_national, plot_type = "immunization_coverage_dhis2",
+#'      title = "Immunization coverage, DHIS2 population", y_title = "Coverage (%)", legend_position = "right")
+#'
+#' # subnational data: name the unit
+#' plot(cache$indicator_coverage_admin1, plot_type = "immunization_coverage_dhis2", admin_name = "Nairobi")
+#'
 #' @export
 plot.cd_indicator_coverage <- function(x,
-                                       plot_type = c(
-                                         "anc_coverage_dhis2", "delivery_coverage_dhis2", "immunization_coverage_dhis2",
-                                         "anc_coverage_un", "delivery_coverage_un", "immunization_coverage_un",
-                                         "anc_coverage_anc1", "delivery_coverage_anc1", "immunization_coverage_anc1",
-                                         "anc_coverage_penta1", "delivery_coverage_penta1", "immunization_coverage_penta1"
-                                       ),
+                                       plot_type = c("anc_coverage_dhis2", "delivery_coverage_dhis2", "immunization_coverage_dhis2", "anc_coverage_un", "delivery_coverage_un", "immunization_coverage_un", "anc_coverage_anc1", "delivery_coverage_anc1", "immunization_coverage_anc1", "anc_coverage_penta1", "delivery_coverage_penta1", "immunization_coverage_penta1"),
                                        admin_name = NULL,
                                        title = NULL,
-                                       x_label = NULL,
-                                       y_label = NULL,
+                                       subtitle = NULL,
+                                       caption = NULL,
+                                       x_title = NULL,
+                                       y_title = NULL,
+                                       legend_title = NULL,
+                                       ...,
                                        legend_labels = NULL,
-                                       ..., options = NULL) {
-  cd_finish_plot(.plot_cd_indicator_coverage_impl(x, plot_type = plot_type, admin_name = admin_name, title = title, x_label = x_label, y_label = y_label, legend_labels = legend_labels, ...), options, ..., .source = x)
+                                       options = NULL) {
+  .cd_draw(.plot_cd_indicator_coverage_impl, x, list(plot_type = plot_type, admin_name = admin_name, legend_labels = legend_labels), ..., options = options)
 }
 
 .plot_cd_indicator_coverage_impl <- function(x,
@@ -45,8 +52,8 @@ plot.cd_indicator_coverage <- function(x,
                                        ),
                                        admin_name = NULL,
                                        title = NULL,
-                                       x_label = NULL,
-                                       y_label = NULL,
+                                       x_title = NULL,
+                                       y_title = NULL,
                                        legend_labels = NULL,
                                        ...) {
   # --- 1. Validation & Setup ---
@@ -153,14 +160,24 @@ plot.cd_indicator_coverage <- function(x,
 
   # --- 3. Execute Plot ---
   config <- defaults[[plot_type]]
+  labels <- legend_labels %||% config$legend_labels # User overrides or default
+  if (length(labels) != length(config$y_vars)) {
+    cd_abort(c("x" = "{.arg legend_labels} must have {length(config$y_vars)} labels for {.val {plot_type}}, one for each line."))
+  }
+  # the lines the data has: an indicator group need not hold every indicator of the chart
+  has <- config$y_vars %in% names(x)
+  if (!any(has)) {
+    cd_abort(c("x" = "The data has none of the indicators of {.val {plot_type}}.",
+               "i" = "It draws {.field {config$y_vars}}."))
+  }
 
   plot_line_graph(
     .data = x,
     x = "year",
-    y_vars = config$y_vars,
-    legend_labels = legend_labels %||% config$lgend_labels, # User overrides or default
+    y_vars = config$y_vars[has],
+    legend_labels = labels[has],
     title = title %||% config$title, # User overrides or default
-    y_axis = y_label %||% "%",
-    x_axis = x_label %||% "Year"
+    y_title = y_title %||% "%",
+    x_title = x_title %||% "Year"
   )
 }

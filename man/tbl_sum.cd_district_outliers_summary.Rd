@@ -21,3 +21,10 @@ Provides a summary for the \code{cd_district_outliers_summary} object, indicatin
 without extreme outliers for each indicator by year. This summary supports monitoring data quality across
 districts by showing the proportion of non-extreme values across all indicators.
 }
+\examples{
+data <- load_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+
+# the summary is the header printed above the table
+calculate_district_outlier_summary(data)
+
+}

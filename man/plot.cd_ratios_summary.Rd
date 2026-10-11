@@ -2,14 +2,17 @@
 % Please edit documentation in R/plot.ratios_summary.R
 \name{plot.cd_ratios_summary}
 \alias{plot.cd_ratios_summary}
-\title{Plot Ratios Summary for Indicator Ratios Summary Object}
+\title{Plot ratios summary for indicator ratios summary object}
 \usage{
 \method{plot}{cd_ratios_summary}(
   x,
-  title = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
   x_labels = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
   options = NULL
 )
@@ -19,25 +22,33 @@
 It should contain a \code{year} column and one or more columns with names starting with \code{"Ratio"},
 representing the calculated indicator ratios.}
 
-\item{title}{Optional plot title. Defaults to a title describing the ANC1 to
-Penta1 and Penta1 to Penta3 ratios.}
-
-\item{x_axis, y_axis}{Optional x- and y-axis titles. Default is \code{NULL}.}
-
 \item{x_labels}{Optional named list or vector of x-axis category labels,
 keyed by ratio name (\code{anc1_penta1}, \code{opv1_opv3}, \code{penta1_penta3}).
 Supplied entries replace the defaults.}
 
-\item{...}{Additional arguments passed to other methods (currently unused).}
+\item{title}{The chart's title.}
 
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{subtitle}{The line under the title.}
+
+\item{caption}{The note under the chart.}
+
+\item{x_title}{The title of the horizontal axis.}
+
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
 }
 \value{
 A \code{ggplot} object representing a bar plot of indicator ratios by year.
 }
 \description{
-This function generates a bar plot for a \code{cd_ratios_summary} object,
+Generates a bar plot for a \code{cd_ratios_summary} object,
 displaying the calculated indicator ratios for each year. It allows
 for visual comparison across years, showing how each indicator ratio
 changes over time.

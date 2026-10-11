@@ -2,7 +2,7 @@
 % Please edit documentation in R/3_4b_calculate_coverage.R
 \name{generate_coverage_data}
 \alias{generate_coverage_data}
-\title{Generate Coverage Data for Continuum of Care}
+\title{Generate coverage data for continuum of care}
 \usage{
 generate_coverage_data(
   .data,
@@ -36,4 +36,15 @@ spatial level and data type to extract relevant columns:
 The function automatically filters for the absolute latest available data point
 per indicator-source combination and converts the \code{indicator} column into an
 ordered factor representing the lifecycle stages to ensure plots are always ordered correctly.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+cache <- load_cache_data(path)
+cache$set_national_estimates(list(sbr = 0.02))
+cache$adjust_data()
+coverage <- cache$calculate_coverage("national")
+
+generate_coverage_data(coverage, type = "maternal", denominator = "anc1")
+generate_coverage_data(coverage, type = "child", denominator = "penta1")
+
 }

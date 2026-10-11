@@ -1,4 +1,4 @@
-#' Prepare Private Sector Plot Data
+#' Prepare private sector plot data
 #'
 #' Processes reshaped private sector data and c-section correction estimates
 #' to produce a tidy dataset for plotting public/private sector shares.
@@ -16,12 +16,10 @@
 #'     - `totalPrevalence`: total prevalence (public + private)
 #'
 #' @details
-#' This function:
-#'
-#' - Joins private sector data with correction estimates using `iso`, `year`, and `indic`.
-#' - For `"csection"` rows, applies adjustment: `r_raw = estimate * share_csection`.
-#' - Drops intermediate columns and reshapes data to wide format.
-#' - Calculates private sector share and total prevalence.
+#' Joins private sector data with correction estimates using `iso`, `year`, and `indic` (and `area`
+#' for area data). For `"csection"` rows, applies the adjustment `r_raw = estimate * share_csection`.
+#' Drops intermediate columns, reshapes the data to one row per indicator with a set of columns for
+#' each sector, and calculates private sector share and total prevalence.
 #'
 #' Used as input to [plot.cd_private_sector_plot_data()] for visualisation.
 #'

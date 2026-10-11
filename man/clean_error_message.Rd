@@ -2,7 +2,7 @@
 % Please edit documentation in R/clean_error_message.R
 \name{clean_error_message}
 \alias{clean_error_message}
-\title{Clean and Validate Error Messages}
+\title{Clean and validate error messages}
 \usage{
 clean_error_message(error_message)
 }

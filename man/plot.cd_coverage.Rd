@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.coverage.R
 \name{plot.cd_coverage}
 \alias{plot.cd_coverage}
-\title{Plot Coverage by Region}
+\title{Plot coverage by region}
 \usage{
 \method{plot}{cd_coverage}(
   x,
@@ -11,11 +11,13 @@
   year = NULL,
   region = NULL,
   title = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
+  subtitle = NULL,
   caption = NULL,
-  labels = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
+  legend_labels = NULL,
   options = NULL
 )
 }
@@ -30,23 +32,45 @@
 
 \item{region}{Character string for the specific region to highlight in yellow.}
 
-\item{title}{(Optional) Scalar character for a custom plot title.}
+\item{title}{The chart's title.}
 
-\item{x_axis}{(Optional) Scalar character for a custom x-axis label.}
+\item{subtitle}{The line under the title.}
 
-\item{y_axis}{(Optional) Scalar character for a custom y-axis label.}
+\item{caption}{The note under the chart.}
 
-\item{caption}{(Optional) Scalar character for a custom plot caption.}
+\item{x_title}{The title of the horizontal axis.}
 
-\item{labels}{(Optional) Named list to override the default category labels
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{legend_labels}{(Optional) Named list to override the default category labels
 (e.g., \code{list(lower = "Low", average = "Avg", higher = "High")}).}
 
-\item{...}{Additional arguments.}
-
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
+}
+\value{
+A \code{ggplot} object with the chart options applied: one bar per unit for the selected year,
+ordered by coverage and coloured by category (the lower, middle and upper third of the values).
 }
 \description{
 Generates a bar chart comparing indicator coverage across regions, highlighting
 a specific region and categorizing performance as lower, average, or higher.
+}
+\examples{
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+cache$set_national_estimates(list(sbr = 0.02))
+cache$adjust_data()
+coverage <- cache$calculate_coverage("adminlevel_1")
+
+# `region` is the unit drawn in yellow
+plot(coverage, indicator = "penta3", denominator = "penta1", year = 2023, region = "Nairobi")
+plot(coverage, indicator = "penta3", denominator = "penta1", year = 2023, region = "Nairobi",
+     title = "Penta3 coverage by region, 2023", y_title = "Coverage (\%)",
+     legend_labels = list(lower = "Lowest third", average = "Middle third", higher = "Highest third"))
+
 }

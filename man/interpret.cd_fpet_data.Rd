@@ -2,7 +2,7 @@
 % Please edit documentation in R/3_generate_fpet_summary.R
 \name{interpret.cd_fpet_data}
 \alias{interpret.cd_fpet_data}
-\title{Interpret FPET Results with Emphasis on Current Estimates}
+\title{Interpret FPET results with emphasis on current estimates}
 \usage{
 \method{interpret}{cd_fpet_data}(x, ...)
 }
@@ -16,4 +16,12 @@ A character string with interpretation summary.
 }
 \description{
 Summarizes 2020 and 2024 estimates, and briefly mentions FPET projections to 2030.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+cache <- load_cache_data(path)
+
+text <- interpret(cache$fpet_data)
+cat(text)
+
 }

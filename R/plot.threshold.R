@@ -1,27 +1,40 @@
-#' Plot Target Threshold Attainment Over Time
+#' Plot target threshold attainment over time
 #'
 #' Generates a grouped bar chart showing the percentage of administrative regions
 #' that meet specific health coverage or dropout thresholds over time.
 #'
 #' @param x A `cd_threshold` object returned by [calculate_threshold()].
-#' @param title (Optional) A scalar character string to override the default plot title. Defaults to `NULL`.
-#' @param x_axis (Optional) A scalar character string to override the default x-axis label. Defaults to `NULL`.
-#' @param y_axis (Optional) A scalar character string to override the default y-axis label. Defaults to `NULL`.
-#' @param legend_title (Optional) A scalar character string to override the default legend title. Defaults to `NULL`.
+#' @inheritParams cd_plot_arguments
 #' @param x_labels (Optional) A named list or vector to translate the raw indicator names
 #'   on the x-axis (e.g., `list(penta1 = "Penta 1", dropout_penta13 = "Penta 1-3 Dropout")`).
-#' @param ... Additional arguments passed to the plotting function.
 #'
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A `ggplot` object displaying a grouped bar chart of threshold attainment.
 #'
+#' @examples
+#' cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#' cache$set_national_estimates(list(sbr = 0.02))
+#' cache$adjust_data()
+#' reached <- cache$get_filtered_threshold("vaccine", "district")
+#'
+#' plot(reached)
+#' plot(reached, x_labels = list(bcg = "BCG", penta3 = "Penta 3", measles1 = "Measles 1"),
+#'      title = "Districts reaching the vaccination target", y_title = "Districts (%)", legend_title = "Year")
+#'
 #' @export
-plot.cd_threshold <- function(x, title = NULL, x_axis = NULL, y_axis = NULL, legend_title = NULL, x_labels = NULL, ..., options = NULL) {
-  cd_finish_plot(.plot_cd_threshold_impl(x, title = title, x_axis = x_axis, y_axis = y_axis, legend_title = legend_title, x_labels = x_labels, ...), options, ..., .source = x)
+plot.cd_threshold <- function(x,
+                              x_labels = NULL,
+                              title = NULL,
+                              subtitle = NULL,
+                              caption = NULL,
+                              x_title = NULL,
+                              y_title = NULL,
+                              legend_title = NULL,
+                              ...,
+                              options = NULL) {
+  .cd_draw(.plot_cd_threshold_impl, x, list(x_labels = x_labels), ..., options = options)
 }
 
-.plot_cd_threshold_impl <- function(x, title = NULL, x_axis = NULL, y_axis = NULL, legend_title = NULL, x_labels = NULL, ...) {
+.plot_cd_threshold_impl <- function(x, title = NULL, x_title = NULL, y_title = NULL, legend_title = NULL, x_labels = NULL, ...) {
   indicator = value = year = NULL
 
   # Extract attributes
@@ -31,10 +44,10 @@ plot.cd_threshold <- function(x, title = NULL, x_axis = NULL, y_axis = NULL, leg
   coverage <- attr_or_abort(x, 'threshold')
 
   # Validate scalar character inputs for custom labels
-  if (!is.null(title) && !is_scalar_character(title)) cd_abort("x" = "{.arg title} must be a scalar character or NULL.")
-  if (!is.null(x_axis) && !is_scalar_character(x_axis)) cd_abort("x" = "{.arg x_axis} must be a scalar character or NULL.")
-  if (!is.null(y_axis) && !is_scalar_character(y_axis)) cd_abort("x" = "{.arg y_axis} must be a scalar character or NULL.")
-  if (!is.null(legend_title) && !is_scalar_character(legend_title)) cd_abort("x" = "{.arg legend_title} must be a scalar character or NULL.")
+  if (!is.null(title) && !is_scalar_character(title)) cd_abort(c("x" = "{.arg title} must be a scalar character or NULL."))
+  if (!is.null(x_title) && !is_scalar_character(x_title)) cd_abort(c("x" = "{.arg x_title} must be a scalar character or NULL."))
+  if (!is.null(y_title) && !is_scalar_character(y_title)) cd_abort(c("x" = "{.arg y_title} must be a scalar character or NULL."))
+  if (!is.null(legend_title) && !is_scalar_character(legend_title)) cd_abort(c("x" = "{.arg legend_title} must be a scalar character or NULL."))
 
   # 1. Resolve Default Texts
   pretty_group <- switch(indicator_group,
@@ -60,8 +73,8 @@ plot.cd_threshold <- function(x, title = NULL, x_axis = NULL, y_axis = NULL, leg
   }
 
   final_title <- title %||% default_title
-  final_x_axis <- x_axis %||% ""
-  final_y_axis <- y_axis %||% "Percentage of Subnational Units (%)"
+  final_x_axis <- x_title %||% ""
+  final_y_axis <- y_title %||% "Percentage of Subnational Units (%)"
   final_legend_title <- legend_title %||% "Year"
 
   # Process data
@@ -91,7 +104,7 @@ plot.cd_threshold <- function(x, title = NULL, x_axis = NULL, y_axis = NULL, leg
     ) +
     cd_plot_theme(
       title = final_title,
-      x_axis = final_x_axis,
-      y_axis = final_y_axis
+      x_title = final_x_axis,
+      y_title = final_y_axis
     )
 }

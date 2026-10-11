@@ -2,7 +2,7 @@
 % Please edit documentation in R/1c_adjust_service_data.R
 \name{adjust_service_data}
 \alias{adjust_service_data}
-\title{Adjust Service Data for Coverage Analysis}
+\title{Adjust service data for coverage analysis}
 \usage{
 adjust_service_data(
   .data,
@@ -46,7 +46,7 @@ outliers for consistency in data analysis. This standardization supports reliabl
 comparisons in immunization coverage and health service utilization studies.
 }
 \details{
-This function prepares service data through a series of steps to ensure data quality and consistency:
+Prepares service data through a series of steps to ensure data quality and consistency:
 \enumerate{
 \item \strong{Validation}: Checks the structure of \code{.data} and ensures that the \code{adjustment}
 argument is valid. For \code{custom} adjustments, \code{k_factors} must be specified and contain valid values.

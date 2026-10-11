@@ -2,15 +2,17 @@
 % Please edit documentation in R/3_baye_model.R
 \name{plot.cd_bayes_model}
 \alias{plot.cd_bayes_model}
-\title{Plot S3 method for Bayesian Coverage Model}
+\title{Plot S3 method for Bayesian coverage model}
 \usage{
 \method{plot}{cd_bayes_model}(
   x,
-  title = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
-  caption = NULL,
   region = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
   options = NULL
 )
@@ -18,22 +20,45 @@
 \arguments{
 \item{x}{An object of class \code{cd_bayes_model} returned by \code{generate_bayes_model()}.}
 
-\item{title}{(Optional) Custom translated title.}
-
-\item{x_axis}{(Optional) Custom translated x-axis label.}
-
-\item{y_axis}{(Optional) Custom translated y-axis label.}
-
-\item{caption}{(Optional) Custom translated caption.}
-
 \item{region}{(Optional) Specific region code to plot for subnational data.}
 
-\item{...}{Additional arguments.}
+\item{title}{The chart's title.}
 
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{subtitle}{The line under the title.}
+
+\item{caption}{The note under the chart.}
+
+\item{x_title}{The title of the horizontal axis.}
+
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
+}
+\value{
+A \code{ggplot} object with the chart options applied: the estimated coverage by year for a national
+model or for the \code{region} of a sub-national model, or a comparison of the regions in 2025 for a
+sub-national model when \code{region} is \code{NULL}.
 }
 \description{
 Leverages the bayescoveragemodel package's internal plotting function
 and applies the custom Countdown (CD) theme and translated labels.
+}
+\examples{
+\dontrun{
+# `cache` is a dataset with adjusted data; fitting needs the Bayesian model packages
+national <- cache$get_bayes_model("national", "penta3")
+plot(national)
+plot(national, title = "Penta3 coverage, Kenya", y_title = "Coverage")
+
+# a sub-national model: the regions compared, or the trend of one region
+regional <- cache$get_bayes_model("adminlevel_1", "penta3")
+plot(regional)
+plot(regional, region = "Nairobi")
+}
 }

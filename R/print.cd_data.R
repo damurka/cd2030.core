@@ -1,7 +1,7 @@
-#' Print Method for `cd_data` Class
+#' Print method for `cd_data` class
 #'
-#' This function provides a custom print method for objects of class `cd_data`,
-#' displaying a summary of the dataset, including data dimensions, available years,
+#' Prints a summary of an object of class `cd_data`,
+#' including data dimensions, available years,
 #' regions, variable groups, and any quality metrics associated with the data.
 #' It uses the `cli` package for enhanced, styled output.
 #'

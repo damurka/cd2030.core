@@ -1,4 +1,4 @@
-#' Compute Aggregated Numerators for Health Indicators
+#' Compute aggregated numerators for health indicators
 #'
 #' `compute_indicator_numerator` aggregates the numerators for specified health
 #' indicators across different administrative levels, such as national, and
@@ -42,6 +42,7 @@ compute_indicator_numerator <- function(.data,
 
   # Validate inputs
   check_cd_data(.data)
+  local_data_group(.data)
 
   # Define grouping variables based on admin_level
   admin_level <- arg_match(admin_level)

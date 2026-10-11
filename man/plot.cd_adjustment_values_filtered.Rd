@@ -2,15 +2,18 @@
 % Please edit documentation in R/plot.adjustment_values.R
 \name{plot.cd_adjustment_values_filtered}
 \alias{plot.cd_adjustment_values_filtered}
-\title{Plot Adjusted vs. Unadjusted Data for Health Indicators}
+\title{Plot adjusted vs. unadjusted data for health indicators}
 \usage{
 \method{plot}{cd_adjustment_values_filtered}(
   x,
   title = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
-  legend_labels = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
+  legend_labels = NULL,
   type = c("stacked", "change", "totals"),
   zoom = TRUE,
   options = NULL
@@ -21,17 +24,25 @@
 and adjusted values of health indicators (e.g., \code{ideliv_raw}, \code{ideliv_adj}).
 The indicator plotted is taken from its \code{indicator} attribute.}
 
-\item{title}{A character string for the plot title. If \code{NULL}, a default title
-based on the indicator is generated.}
+\item{title}{The chart's title.}
 
-\item{x_axis, y_axis}{Optional x- and y-axis titles. Default is \code{NULL}.}
+\item{subtitle}{The line under the title.}
+
+\item{caption}{The note under the chart.}
+
+\item{x_title}{The title of the horizontal axis.}
+
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
 
 \item{legend_labels}{A named list or vector of custom legend labels, with
 names \code{raw} (unadjusted data) and/or \code{adjusted}. Supplied entries replace
 the defaults ("N of \code{indicator} before adjustment" and "N of \code{indicator}
 after adjustment"). Default is \code{NULL}.}
-
-\item{...}{Additional arguments (currently not used).}
 
 \item{type}{With the adjustment's steps in \code{x} (\code{\link[=generate_adjustment_values]{generate_adjustment_values()}} with \code{settings}): \code{"stacked"} (the
 default) draws, each year, the reported count beside the adjusted count made of its parts -- the reported count,
@@ -43,8 +54,8 @@ share of the reported count; \code{"totals"} the counts side by side. Legend lab
 \item{zoom}{\code{"stacked"}: \code{TRUE} starts the axis near the smallest bar, so changes of a few percent can be seen (a
 note says where it starts); \code{FALSE} from zero.}
 
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
 }
 \value{
 A ggplot2 object showing the comparison of unadjusted and adjusted data

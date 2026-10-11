@@ -2,16 +2,18 @@
 % Please edit documentation in R/plot.coverage.R
 \name{plot.cd_coverage_filtered}
 \alias{plot.cd_coverage_filtered}
-\title{Plot National Coverage Data}
+\title{Plot national coverage data}
 \usage{
 \method{plot}{cd_coverage_filtered}(
   x,
   title = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
+  subtitle = NULL,
   caption = NULL,
-  labels = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
+  legend_labels = NULL,
   options = NULL
 )
 }
@@ -19,27 +21,43 @@
 \item{x}{A data frame of type \code{cd_coverage_filtered}, containing year-wise
 coverage data for the specified indicator.}
 
-\item{title}{(Optional) A scalar character string to override the default plot title. Defaults to \code{NULL}.}
+\item{title}{The chart's title.}
 
-\item{x_axis}{(Optional) A scalar character string to override the default x-axis label. Defaults to \code{NULL}.}
+\item{subtitle}{The line under the title.}
 
-\item{y_axis}{(Optional) A scalar character string to override the default y-axis label. Defaults to \code{NULL}.}
+\item{caption}{The note under the chart.}
 
-\item{caption}{(Optional) A scalar character string to override the default denominator caption. Defaults to \code{NULL}.}
+\item{x_title}{The title of the horizontal axis.}
 
-\item{labels}{(Optional) A named list or vector to override the legend keys for translation.
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{legend_labels}{(Optional) A named list or vector to override the legend keys for translation.
 Valid keys: \code{dhis2}, \code{wuenic}, \code{survey}, \code{ci}. Defaults to \code{NULL}.}
 
-\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}); other arguments are ignored.}
-
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes the user changed. Applied last, so it wins over
-\code{title} and the other arguments above. Any chart option can also be given by name in \code{...}.}
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
 }
 \value{
 A \code{ggplot} object displaying a line plot of the coverage data.
 }
 \description{
-This function generates a line plot to visualize immunization coverage
+Generates a line plot to visualize immunization coverage
 data across years, allowing comparison between different estimates (e.g., DHIS2
 estimates, WUENIC estimates, and Survey estimates).
+}
+\examples{
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+cache$set_national_estimates(list(sbr = 0.02))
+cache$adjust_data()
+coverage <- cache$get_filtered_coverage("penta3", "national")
+
+plot(coverage)
+plot(coverage, title = "Penta3 coverage, Kenya", y_title = "Coverage (\%)",
+     legend_labels = list(dhis2 = "Facility data", survey = "Household surveys"))
+
 }

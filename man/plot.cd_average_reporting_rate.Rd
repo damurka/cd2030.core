@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.reporting_rate.R
 \name{plot.cd_average_reporting_rate}
 \alias{plot.cd_average_reporting_rate}
-\title{Plot Sub-National Reporting Rates by Year and Unit}
+\title{Plot sub-national reporting rates by year and unit}
 \usage{
 \method{plot}{cd_average_reporting_rate}(
   x,
@@ -10,9 +10,11 @@
   indicator = c("anc_rr", "idelv_rr", "vacc_rr", "opd_rr", "ipd_rr"),
   threshold = .cd_method$data_quality$reporting_threshold,
   title = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
-  legend = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
   options = NULL
 )
@@ -39,20 +41,23 @@
 \item{threshold}{Numeric value (default = 90). Used only in \code{"heat_map"} mode to define
 the boundary for high reporting rates.}
 
-\item{title}{Optional plot title. Defaults to a title naming the unit and
-region.}
+\item{title}{The chart's title.}
 
-\item{x_axis, y_axis}{Optional x- and y-axis titles. Default to labels suited
-to \code{plot_type}.}
+\item{subtitle}{The line under the title.}
 
-\item{legend}{Optional legend title. Defaults to a label suited to
-\code{plot_type}.}
+\item{caption}{The note under the chart.}
 
-\item{...}{Chart options (see \code{\link[=cd_chart_options]{cd_chart_options()}}) given by name, applied as
-with \code{options}.}
+\item{x_title}{The title of the horizontal axis.}
 
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set.}
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
 }
 \value{
 A \code{ggplot} object.

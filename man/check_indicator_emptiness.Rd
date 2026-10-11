@@ -2,20 +2,31 @@
 % Please edit documentation in R/0_data_quality_checks.R
 \name{check_indicator_emptiness}
 \alias{check_indicator_emptiness}
-\title{Flag indicators that are entirely empty across the whole dataset}
+\title{Flag indicators that have no data}
 \usage{
 check_indicator_emptiness(.data)
 }
 \arguments{
-\item{.data}{The dataset (\code{countdown_data}-shaped).}
+\item{.data}{A data frame. The merged dataset, with one column per indicator.}
 }
 \value{
-A character vector of indicator names that are 100\% empty.
+A character vector of the names of the empty indicators. It has length zero if
+there are none.
 }
 \description{
-Same detector \code{standardize_data()} already uses for its own "empty columns" log line
-(\code{colSums(is.na(data)) == nrow(data)}, \verb{0_import_load_data.R}), scoped to just the indicator
-columns for the currently-selected indicator group (\code{get_indicator_groups()}) rather than
-every column -- an admin/year/month/population column being "empty" isn't a data-quality
-signal the same way an indicator column being empty is.
+Finds the indicators of the selected indicator group whose column is missing in every row
+of the dataset. An indicator with no data cannot be analysed.
+}
+\details{
+Only indicator columns that are present in \code{.data} are examined. An indicator whose column
+is absent is not reported here.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+check_indicator_emptiness(data)
+
+# An indicator that was never reported
+data$penta3 <- NA_real_
+check_indicator_emptiness(data)
 }

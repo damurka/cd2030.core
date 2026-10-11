@@ -2,15 +2,27 @@
 % Please edit documentation in R/0_data_quality_checks.R
 \name{check_indicator_emptiness_presheet}
 \alias{check_indicator_emptiness_presheet}
-\title{Flag indicators entirely empty across every service sheet, pre-merge}
+\title{Flag indicators that have no data, before merging}
 \usage{
 check_indicator_emptiness_presheet(parts, service_sheet_names)
 }
 \arguments{
-\item{parts}{Named list of cleaned per-sheet tibbles.}
+\item{parts}{A named list of cleaned per-sheet tibbles (\code{load_excel_parts()$parts}).}
 
-\item{service_sheet_names}{Names of the service-data sheets within \code{parts}.}
+\item{service_sheet_names}{A character vector. The names of the service data sheets within
+\code{parts}.}
+}
+\value{
+A character vector of the names of the empty indicators. It has length zero if
+there are none.
 }
 \description{
-Reuses \code{check_indicator_emptiness()} unchanged against the row-bound service sheets.
+Runs \code{\link[=check_indicator_emptiness]{check_indicator_emptiness()}} on the service sheets, stacked together, before the
+sheets are merged. An indicator is flagged when it is missing in every row of every service
+sheet.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+sheets <- load_excel_parts(path)
+check_indicator_emptiness_presheet(sheets$parts, sheets$service_sheet_names)
 }

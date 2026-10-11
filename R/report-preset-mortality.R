@@ -43,7 +43,7 @@
     nn_inst = t("plt_mort_national_nn_inst", "National NN")
   )
   plot(cache$mortality_summary, indicator = v,
-       labels = list(title = titles[[v]], national = national[[v]], regions = t("plt_lbl_regions", "Regions")))
+       title = titles[[v]], legend_labels = list(national = national[[v]], regions = t("plt_lbl_regions", "Regions")))
 }
 
 # A figure caption from the template, under its chart

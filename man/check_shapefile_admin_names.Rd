@@ -2,27 +2,41 @@
 % Please edit documentation in R/0_data_quality_checks.R
 \name{check_shapefile_admin_names}
 \alias{check_shapefile_admin_names}
-\title{Flag dataset admin-1 names that have no matching shapefile region}
+\title{Flag admin level 1 names with no matching shapefile region}
 \usage{
 check_shapefile_admin_names(shapefile, countdown_data, name_field = "NAME_1")
 }
 \arguments{
-\item{shapefile}{The country's shapefile (\code{sf} object -- either the package-bundled one, with its
-own \code{NAME_1} column, see \code{get_country_shapefile()}, or a user-uploaded one via
-\code{read_shapefile_folder()}, whose admin-1 name column is whatever \code{name_field} says).}
+\item{shapefile}{An \code{sf} object, or \code{NULL}. The country's shapefile: the one bundled with
+the package or one the user uploaded.}
 
-\item{countdown_data}{The dataset (\code{countdown_data}-shaped).}
+\item{countdown_data}{A data frame. The dataset, with an \code{adminlevel_1} column.}
 
-\item{name_field}{Name of the column in \code{shapefile} holding admin-1 names. Default \code{"NAME_1"},
-matching the bundled shapefile -- a real uploaded one won't necessarily use that name, hence the
-parameter (\code{CacheConnection$shapefile_name_field}, set when the user picks it at upload).}
+\item{name_field}{A string. The column of \code{shapefile} that holds the admin level 1 names.
+Default is \code{"NAME_1"}, the column the bundled shapefiles use.}
 }
 \value{
-A tibble of dataset admin-1 names with no shapefile match, each with its closest
-suggestion (see \code{match_admin_names()}).
+A tibble with one row per unmatched dataset name and columns \code{name} (the dataset
+name), \code{suggestion} (the closest shapefile name) and \code{distance} (the distance between
+them). It has no rows if every name matches, or if \code{shapefile} is \code{NULL} or has no
+\code{name_field} column.
 }
 \description{
-Same direction as \code{check_survey_admin_names()} and for the same reason: a dataset region with
-no shapefile match can't be shown on a map at all, which is the actual problem worth flagging --
-not a shapefile region with no dataset match, which is just an unused polygon.
+Finds the admin level 1 names in the dataset that have no close match among the regions of
+the shapefile. A dataset region without a shapefile match cannot be shown on a map.
+}
+\details{
+Names are compared without regard to case or accents, using the Jaro-Winkler distance. A
+name is unmatched when its distance to the closest shapefile name is 0.25 or more. Shapefile
+regions that match no dataset name are not reported.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+cache <- load_cache_data(path)
+
+# The bundled shapefile has the counties, the dataset's regions are the former provinces
+check_shapefile_admin_names(cache$shapefile, cache$countdown_data)
+
+# With no shapefile there is nothing to compare
+check_shapefile_admin_names(NULL, cache$countdown_data)
 }

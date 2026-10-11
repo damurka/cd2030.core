@@ -2,7 +2,7 @@
 % Please edit documentation in R/1a_checks_ratios.R
 \name{calculate_district_ratios_summary}
 \alias{calculate_district_ratios_summary}
-\title{Calculate District Adequacy Summary}
+\title{Calculate district adequacy summary}
 \usage{
 calculate_district_ratios_summary(.data)
 }
@@ -17,7 +17,7 @@ meeting the adequacy criteria for the specified ratio, with overall metrics
 included for data interpretation and quality monitoring.
 }
 \description{
-This function calculates and summarizes the adequacy of specified indicator
+Calculates and summarizes the adequacy of specified indicator
 ratios by year, evaluating the consistency of key health indicators across
 districts. It computes the percentage of districts meeting the adequacy criteria
 for each indicator ratio, based on the specified range.
@@ -34,7 +34,7 @@ over time, providing insights into areas where health service delivery may vary.
 \examples{
 \dontrun{
 # Calculate adequacy summary for ANC1/Penta1 and other indicator ratios
-calculate_district_ratio_summary(cd_data)
+calculate_district_ratios_summary(cd_data)
 }
 
 }

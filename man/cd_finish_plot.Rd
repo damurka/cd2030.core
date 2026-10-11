@@ -22,3 +22,10 @@ The last step of every plot method: \code{resolve_chart_options()} then \code{\l
 graph (\code{\link[=cd_chart_type]{cd_chart_type()}}), then those saved for this very chart (\code{\link[=cd_chart_id]{cd_chart_id()}}); what the plot method or the template
 passes wins over all of them.
 }
+\examples{
+p <- ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) + ggplot2::geom_point()
+cd_finish_plot(p, title = "Weight and fuel use", x_title = "Weight", y_title = "Miles per gallon")
+
+# the same as one options object, the way a plot method receives it
+cd_finish_plot(p, cd_chart_options(title = "Weight and fuel use", legend_position = "bottom"))
+}

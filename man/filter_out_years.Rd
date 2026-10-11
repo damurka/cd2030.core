@@ -2,7 +2,7 @@
 % Please edit documentation in R/1b_remove_years.R
 \name{filter_out_years}
 \alias{filter_out_years}
-\title{Filter Dataset by Removing Specified Years}
+\title{Filter dataset by removing specified years}
 \usage{
 filter_out_years(.data, years_to_exclude)
 }

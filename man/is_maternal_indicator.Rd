@@ -16,3 +16,8 @@ TRUE if and indicator is maternal
 \description{
 Default grouping of indicators used in CD2030 coverage framework
 }
+\examples{
+is_maternal_indicator("anc4")
+is_maternal_indicator(c("anc4", "ideliv", "penta3"))
+
+}

@@ -2,15 +2,38 @@
 % Please edit documentation in R/7_health_systems.R
 \name{generate_private_sector_data}
 \alias{generate_private_sector_data}
-\title{Generate Private Sector Ownership Data}
+\title{Generate private sector ownership data}
 \usage{
 generate_private_sector_data(.data, legend_labels = NULL)
 }
 \arguments{
-\item{.data}{Data frame containing subnational health indicators.}
+\item{.data}{Data frame containing subnational health indicators, with the columns
+\code{adminlevel_1}, \code{private_facility_share} and \code{ngo_facility_share}, such as the output of
+\code{\link[=calculate_health_system_metrics]{calculate_health_system_metrics()}} with \code{admin_level = "adminlevel_1"}.}
 
-\item{legend_labels}{(Optional) A named list to override default legend labels.}
+\item{legend_labels}{(Optional) A named list to override default legend labels (elements
+\code{Private}, \code{NGO} and \code{Public}).}
+}
+\value{
+A tibble of class \code{cd_private_sector} with one row per admin level 1 unit and facility
+type, and the columns \code{adminlevel_1}, \code{facility_type} (a factor ordered private, NGO, public,
+with the labels as its levels) and \code{share} (percent). The attributes \code{lbl_prv}, \code{lbl_ngo} and
+\code{lbl_pub} hold the labels used.
 }
 \description{
-Generate Private Sector Ownership Data
+Reshapes health system metrics into the share of health facilities that are private, NGO and
+public in each admin level 1 unit, for \code{\link[=plot.cd_private_sector]{plot.cd_private_sector()}}. The public share is what
+remains after the private and NGO shares.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+metrics <- calculate_health_system_metrics(data, admin_level = "adminlevel_1")
+
+generate_private_sector_data(metrics)
+
+# with another label in the legend
+shares <- generate_private_sector_data(metrics, legend_labels = list(Private = "For profit"))
+plot(shares)
+
 }

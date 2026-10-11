@@ -1,4 +1,4 @@
-#' Load and Generate FPET Output
+#' Load and generate FPET output
 #'
 #' Processes raw FPET data (e.g., from Track20 or UNFPA) into a structured tibble
 #' for visualization and interpretation of modern contraceptive prevalence and
@@ -8,9 +8,19 @@
 #'
 #' @return A `cd_fpet_data` object.
 #'
+#' @examples
+#' \dontrun{
+#' # an FPET results file (.csv) for the country
+#' fpet <- load_fpet_data(path = "fpet_kenya.csv", country_iso = "KEN")
+#'
+#' summary <- generate_fpet_summary(fpet)
+#' plot(summary)
+#' interpret(summary)
+#' }
+#'
 #' @export
 generate_fpet_summary <- function(.data) {
-  check_cd_class(.data, 'cd_fpet_data')
+  check_cd_fpet_data(.data)
 
   country <- .data %>%
     distinct(country) %>%
@@ -46,36 +56,47 @@ generate_fpet_summary <- function(.data) {
 }
 
 
-#' Plot Family Planning Estimation Tool (FPET) Data
+#' Plot family planning estimation tool (FPET) data
 #'
 #' Generates a line and ribbon plot for FPET indicators (e.g., mCPR, Demand Satisfied) 
 #' displaying median estimates and 95% credible intervals.
 #'
 #' @param x An object of class `cd_fpet_data`.
-#' @param title (Optional) Custom translated title.
-#' @param x_axis (Optional) Custom translated x-axis label.
-#' @param y_axis (Optional) Custom translated y-axis label.
-#' @param caption (Optional) Custom translated caption.
+#' @inheritParams cd_plot_arguments
 #' @param indicator_labels (Optional) A named list mapping raw indicator names to translated legend labels.
-#' @param ... Additional arguments.
 #'
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
+#'
+#' @return A `ggplot` object with the chart options applied: one line per indicator by year, with a
+#'   shaded band for the credible interval.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' cache <- load_cache_data(path)
+#' fpet <- cache$fpet_data
+#'
+#' plot(fpet)
+#' plot(
+#'   fpet,
+#'   indicator_labels = list(prevalence = "Modern contraceptive prevalence", demand = "Demand satisfied"),
+#'   title = "Family planning in Kenya"
+#' )
 #' @export
 plot.cd_fpet_data <- function(x,
-                         title = NULL,
-                         x_axis = NULL,
-                         y_axis = NULL,
-                         caption = NULL,
-                         indicator_labels = NULL,
-                         ..., options = NULL) {
-  cd_finish_plot(.plot_cd_fpet_data_impl(x, title = title, x_axis = x_axis, y_axis = y_axis, caption = caption, indicator_labels = indicator_labels, ...), options, ..., .source = x)
+                              indicator_labels = NULL,
+                              title = NULL,
+                              subtitle = NULL,
+                              caption = NULL,
+                              x_title = NULL,
+                              y_title = NULL,
+                              legend_title = NULL,
+                              ...,
+                              options = NULL) {
+  .cd_draw(.plot_cd_fpet_data_impl, x, list(indicator_labels = indicator_labels), ..., options = options)
 }
 
 .plot_cd_fpet_data_impl <- function(x,
                          title = NULL,
-                         x_axis = NULL,
-                         y_axis = NULL,
+                         x_title = NULL,
+                         y_title = NULL,
                          caption = NULL,
                          indicator_labels = NULL,
                          ...) {
@@ -84,8 +105,8 @@ plot.cd_fpet_data <- function(x,
   default_title <- str_glue('Family planning among currently married women 15-49 years, {country_name}')
 
   t_title <- title %||% default_title
-  t_x     <- x_axis %||% 'Year'
-  t_y     <- y_axis %||% 'Percent of currently married women 15-49'
+  t_x     <- x_title %||% 'Year'
+  t_y     <- y_title %||% 'Percent of currently married women 15-49'
   t_cap   <- caption %||% 'Lines show the median estimates. Shaded bands represent the 95% credible interval.\nSource: FPET Track20 modeling'
 
   # 2. Translate Indicator labels for the legend safely
@@ -110,8 +131,8 @@ plot.cd_fpet_data <- function(x,
       labs(color = NULL, fill = NULL) +
       cd_plot_theme(
         title = t_title,
-        x_axis = t_x,
-        y_axis = t_y,
+        x_title = t_x,
+        y_title = t_y,
         caption = t_cap
       ) +
       theme(
@@ -120,19 +141,29 @@ plot.cd_fpet_data <- function(x,
       )
 }
 
-#' Generic Interpretation Method
+#' Generic interpretation method
 #'
 #' A generic method to extract narrative interpretation from structured data objects.
 #'
 #' @param x An object.
 #' @param ... Additional arguments passed to methods.
 #'
+#' @return What the method for the class of `x` returns. The method for `cd_fpet_data`
+#'   ([interpret.cd_fpet_data()]) returns a character string.
+#'
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' cache <- load_cache_data(path)
+#'
+#' # the family planning estimates that come with the dataset
+#' interpret(cache$fpet_data)
+#'
 #' @export
-interpret <- function(x, ...) {
+interpret <-function(x, ...) {
   UseMethod("interpret")
 }
 
-#' Interpret FPET Results with Emphasis on Current Estimates
+#' Interpret FPET results with emphasis on current estimates
 #'
 #' Summarizes 2020 and 2024 estimates, and briefly mentions FPET projections to 2030.
 #'
@@ -141,9 +172,16 @@ interpret <- function(x, ...) {
 #'
 #' @return A character string with interpretation summary.
 #'
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' cache <- load_cache_data(path)
+#'
+#' text <- interpret(cache$fpet_data)
+#' cat(text)
+#'
 #' @export
 interpret.cd_fpet_data <- function(x, ...) {
-  check_cd_fpet(x)
+  check_cd_fpet_data(x)
   country <- attr_or_abort(x, "country")
 
   focus_years <- c(2020, 2024)
@@ -165,7 +203,8 @@ interpret.cd_fpet_data <- function(x, ...) {
   # Summary text
   trend_text <- paste0(
     summary_df$indicator, ": ", summary_df$direction,
-    " by ", summary_df$change, " points"
+    # the size of the change: its direction is said already ("decreased by -0.005" said it twice)
+    ifelse(summary_df$change == 0, "", paste0(" by ", abs(summary_df$change)))
   )
 
   str_glue(

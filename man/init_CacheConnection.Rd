@@ -2,7 +2,7 @@
 % Please edit documentation in R/CacheConnection-class.R
 \name{init_CacheConnection}
 \alias{init_CacheConnection}
-\title{Create a CacheConnection Object}
+\title{Create a CacheConnection object}
 \usage{
 init_CacheConnection(
   rds_path = NULL,
@@ -19,12 +19,11 @@ init_CacheConnection(
 \item{countdown_data}{Optional \code{cd_data} object to initialize in-memory cache.}
 
 \item{data_path}{Optional character. Path to the original source file
-(e.g. the \code{.xlsx} \code{countdown_data} was parsed from). Used to derive
-where the cache lives -- see \code{CacheConnection$initialize}.}
+(e.g. the \code{.xlsx} \code{countdown_data} was parsed from). The cache is kept
+beside it, as a \code{.rds} file with the same name.}
 
-\item{wizard_parts}{Optional \code{load_excel_parts()} result -- a third, mutually-exclusive mode
-alongside \code{rds_path}/\code{countdown_data} for the Load Data wizard's own in-progress state (see
-\code{CacheConnection$initialize}'s own \code{wizard_parts} doc).}
+\item{wizard_parts}{Optional \code{load_excel_parts()} result: the sheets of an upload that the Load Data
+wizard has read but not yet merged. Use it instead of \code{rds_path} or \code{countdown_data}.}
 
 \item{indicator_group}{Character. Specifies the indicator group to use (auto, rmncah, vaccine, custom).}
 
@@ -37,4 +36,19 @@ An instance of the \code{CacheConnection} class.
 \description{
 \code{init_CacheConnection} initializes a \code{CacheConnection} either from a provided \code{.rds} file path
 or directly from a \code{cd_data} object. Only one of the arguments should be non-NULL.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+
+# in memory: no file is written
+cache <- init_CacheConnection(countdown_data = data)
+cache$country
+cache$data_years
+
+\dontrun{
+# the dataset an app saved, opened without ever writing to it
+cache <- init_CacheConnection(rds_path = "kenya_rmncah.rds", read_only = TRUE)
+}
+
 }

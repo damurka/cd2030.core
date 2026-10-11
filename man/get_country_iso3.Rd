@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils-cd-data.R
 \name{get_country_iso3}
 \alias{get_country_iso3}
-\title{Get Country ISO3 Code}
+\title{Get country ISO3 code}
 \usage{
 get_country_iso3(.data)
 }
@@ -13,5 +13,13 @@ get_country_iso3(.data)
 The ISO3 country code as a character string
 }
 \description{
-Get Country ISO3 Code
+Reads the ISO3 code of the country a Countdown dataset is for. The code is stored with the data
+when it is loaded.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+
+get_country_iso3(data)
+
 }

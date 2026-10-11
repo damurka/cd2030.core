@@ -2,7 +2,7 @@
 % Please edit documentation in R/6_service_utilization.R
 \name{generate_service_dqa_summary}
 \alias{generate_service_dqa_summary}
-\title{Generate Service DQA Summary}
+\title{Generate service DQA summary}
 \usage{
 generate_service_dqa_summary(
   average_reporting_rate,
@@ -31,7 +31,7 @@ generate_service_dqa_summary(
 
 \item{service_utilization}{Dataframe. Output of compute_service_utilization('national').}
 
-\item{threshold}{Numeric. The threshold to display in the label (default: 90).}
+\item{threshold}{Numeric. The performance threshold (in percent) shown in the label. Default is \code{90}.}
 
 \item{labels}{List. Optional custom labels for sections and indicators.}
 }
@@ -39,5 +39,22 @@ generate_service_dqa_summary(
 A wide-format tibble with summarized DQA indicators grouped by section.
 }
 \description{
-Generate Service DQA Summary
+Combines the reporting rate, completeness, outlier and service utilization results for
+outpatient (OPD) and inpatient (IPD) services into one data quality table, with a row per
+indicator and a column per year. The rows are numbered and grouped under three section headers,
+ready for \code{\link[=plot.cd_utilization_dqa]{plot.cd_utilization_dqa()}}.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+
+generate_service_dqa_summary(
+  average_reporting_rate = calculate_average_reporting_rate(data),
+  district_reporting_rate = calculate_district_reporting_rate(data),
+  completeness_national = calculate_completeness_summary(data),
+  district_completeness = calculate_district_completeness_summary(data),
+  outliers_summary = calculate_outliers_summary(data),
+  district_outliers_summary = calculate_district_outlier_summary(data),
+  service_utilization = compute_service_utilization(data, admin_level = "national")
+)
 }

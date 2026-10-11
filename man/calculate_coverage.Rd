@@ -2,7 +2,7 @@
 % Please edit documentation in R/3_4b_calculate_coverage.R
 \name{calculate_coverage}
 \alias{calculate_coverage}
-\title{Combine Immunization Coverage Data}
+\title{Combine immunization coverage data}
 \usage{
 calculate_coverage(.data, survey_data, wuenic_data, subnational_map = NULL)
 }

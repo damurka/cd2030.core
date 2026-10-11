@@ -2,7 +2,7 @@
 % Please edit documentation in R/5_mortality.R
 \name{summarise_completeness_ratio}
 \alias{summarise_completeness_ratio}
-\title{Summarize Completeness-Adjusted Mortality Ratio}
+\title{Summarize completeness-adjusted mortality ratio}
 \usage{
 summarise_completeness_ratio(
   .data,

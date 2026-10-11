@@ -2,7 +2,7 @@
 % Please edit documentation in R/save_data.R
 \name{save_data}
 \alias{save_data}
-\title{Save Processed Countdown 2030 Data to File}
+\title{Save processed Countdown 2030 data to file}
 \usage{
 save_data(.data, file = "master_dataset.dta")
 }

@@ -1,4 +1,4 @@
-#' Filter Dataset by Removing Specified Years
+#' Filter dataset by removing specified years
 #'
 #' The `filter_out_years` function is used to exclude specified years from a DHIS-2
 #' dataset, refining the data for more targeted analysis or reporting. This is
@@ -36,6 +36,7 @@ filter_out_years <- function(.data, years_to_exclude) {
   year <- NULL
 
   check_cd_data(.data)
+  local_data_group(.data)
   check_required(years_to_exclude)
 
   # Check that years_to_exclude is a vector of integers

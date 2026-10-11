@@ -2,21 +2,35 @@
 % Please edit documentation in R/0_data_quality_checks.R
 \name{quality_issues_table}
 \alias{quality_issues_table}
-\title{Every data quality result as tables: a summary of the checks, and one row per issue}
+\title{Tabulate data quality results}
 \usage{
 quality_issues_table(results, labels = NULL)
 }
 \arguments{
-\item{results}{What \code{run_all_quality_checks()} returns.}
+\item{results}{A named list. What \code{\link[=run_all_quality_checks]{run_all_quality_checks()}} returns.}
 
-\item{labels}{Optional named character vector: a check's key (\code{names(results)}) to the name to show for
-it (the wizard passes its translated ones). A check without one gets a plain English name.}
+\item{labels}{An optional named character vector that maps a check's key (\code{names(results)})
+to the name to show for it, for example a translated name. A check without a label gets a
+plain English name.}
 }
 \value{
-A list of two tibbles. \code{summary}: \code{check}, \code{severity}, \code{status} (\code{"passed"} or \code{"issue"}), \code{issues}
-(how many). \code{issues}: \code{check}, \code{severity}, \code{issue}, one row for each thing a check found (each
-district-year, each name, each sentence), with nothing shortened.
+A list of two tibbles. \code{summary} has columns \code{check}, \code{severity}, \code{status}
+(\code{"passed"} or \code{"issue"}) and \code{issues} (the number of issues). \code{issues} has columns \code{check},
+\code{severity} and \code{issue}, with one row for each thing a check found (each district-year,
+each name, each message) and nothing shortened.
 }
 \description{
-Every data quality result as tables: a summary of the checks, and one row per issue
+Turns the results of \code{\link[=run_all_quality_checks]{run_all_quality_checks()}} into two tables: a summary with one row per
+check, and a list with one row per issue found.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+cache <- load_cache_data(path)
+results <- run_all_quality_checks(cache)
+tables <- quality_issues_table(results)
+tables$summary
+tables$issues
+
+# A check under a name of your own
+quality_issues_table(results, labels = c(indicator_emptiness = "Indicators without data"))$summary
 }

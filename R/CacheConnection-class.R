@@ -1,4 +1,4 @@
-#' Create a CacheConnection Object
+#' Create a CacheConnection object
 #'
 #' `init_CacheConnection` initializes a `CacheConnection` either from a provided `.rds` file path
 #' or directly from a `cd_data` object. Only one of the arguments should be non-NULL.
@@ -6,16 +6,29 @@
 #' @param rds_path Optional character. Path to an RDS file to load the cache from.
 #' @param countdown_data Optional `cd_data` object to initialize in-memory cache.
 #' @param data_path Optional character. Path to the original source file
-#'   (e.g. the `.xlsx` `countdown_data` was parsed from). Used to derive
-#'   where the cache lives -- see `CacheConnection$initialize`.
-#' @param wizard_parts Optional `load_excel_parts()` result -- a third, mutually-exclusive mode
-#'   alongside `rds_path`/`countdown_data` for the Load Data wizard's own in-progress state (see
-#'   `CacheConnection$initialize`'s own `wizard_parts` doc).
+#'   (e.g. the `.xlsx` `countdown_data` was parsed from). The cache is kept
+#'   beside it, as a `.rds` file with the same name.
+#' @param wizard_parts Optional `load_excel_parts()` result: the sheets of an upload that the Load Data
+#'   wizard has read but not yet merged. Use it instead of `rds_path` or `countdown_data`.
 #' @param indicator_group Character. Specifies the indicator group to use (auto, rmncah, vaccine, custom).
 #' @param read_only Logical. `TRUE` never writes the cache back to its `.rds`: for reading a dataset another process
 #'   (the app) owns, e.g. the AI's copy.
 #'
 #' @return An instance of the `CacheConnection` class.
+#'
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' data <- load_data(path)
+#'
+#' # in memory: no file is written
+#' cache <- init_CacheConnection(countdown_data = data)
+#' cache$country
+#' cache$data_years
+#'
+#' \dontrun{
+#' # the dataset an app saved, opened without ever writing to it
+#' cache <- init_CacheConnection(rds_path = "kenya_rmncah.rds", read_only = TRUE)
+#' }
 #'
 #' @export
 init_CacheConnection <- function(rds_path = NULL, countdown_data = NULL, data_path = NULL, wizard_parts = NULL, indicator_group = c("auto", "rmncah", "vaccine", "custom"),
@@ -40,7 +53,7 @@ init_CacheConnection <- function(rds_path = NULL, countdown_data = NULL, data_pa
   if (!is.null(profile)) {
     ps <- .parse_profile(profile)
     if (isTRUE(ps$needs_registration)) {
-      register_indicator_group(ps$name, ps$value, on_conflict = on_conflict)
+      register_indicator_group(ps$name, ps$value)
     }
   }
 
@@ -56,7 +69,7 @@ init_CacheConnection <- function(rds_path = NULL, countdown_data = NULL, data_pa
   return(cache)
 }
 
-#' CacheConnection Class
+#' CacheConnection class
 #'
 #' @description
 #' An R6 class that handles persistent or in-memory caching of data used in the Countdown 2030
@@ -65,7 +78,7 @@ init_CacheConnection <- function(rds_path = NULL, countdown_data = NULL, data_pa
 #' **Dependency Architecture:**
 #' * **Layer 0 (Core Data):** Raw `countdown_data`, thresholds, external surveys (`un_estimates`).
 #' * **Layer 1 (DQA & Adjustments):** Depends on Layer 0. Includes `adjusted_data`, reporting rates, completeness, overall scores.
-#' * **Layer 2 (Coverage & Denominators):** Depends on Layer 1. Includes derived coverages at national, admin1, and district levels.
+#' * **Layer 2 (Coverage & Denominators):** Depends on Layer 1. Includes derived coverages at national, admin level 1, and district levels.
 #' * **Layer 3 (Inequality & Health Systems):** Depends on Layer 2 (Coverage). Includes inequalities, mortality ratios, and service utilization summaries.
 #'
 #' @docType class
@@ -82,19 +95,15 @@ CacheConnection <- R6::R6Class(
     #' @param rds_path Path to the RDS file to load state from (can be NULL).
     #' @param countdown_data Countdown data of class `cd_data`.
     #' @param data_path Path to the original source file `countdown_data` was
-    #'   built from (e.g. the picked `.xlsx`). The cache always lives at
-    #'   `<dirname(data_path)>/<stem(data_path)>.rds` -- if that file already
-    #'   exists, it's loaded instead of `countdown_data` (the fresh parse is
-    #'   discarded); otherwise it's created there. This is the only place
-    #'   that decides the cache's location and load-vs-create behavior, so
-    #'   every caller gets the same behavior regardless of how they got here.
-    #' @param wizard_parts A `load_excel_parts()` result (`list(parts, sheet_names, sheet_ids, ...)`)
-    #'   -- a third, mutually-exclusive mode alongside `rds_path`/`countdown_data`, for the Load Data
-    #'   wizard's own in-progress state (Phase 3 of the wizard redesign, apps/rmncah): the sheets
-    #'   have been read and cleaned but not yet merged/standardized into a real `cd_data` object, so
-    #'   there's no `countdown_data` yet -- see `wizard_parts`/`country`/`country_iso`'s own active
-    #'   bindings below for how the rest of the class degrades gracefully until `set_countdown_data()`
-    #'   is finally called (at Finish, once `merge_and_standardize()` has run).
+    #'   built from (e.g. the picked `.xlsx`). The cache is kept at
+    #'   `<dirname(data_path)>/<stem(data_path)>.rds`. If that file already
+    #'   exists, it is loaded and `countdown_data` is not used; otherwise it
+    #'   is created there.
+    #' @param wizard_parts A `load_excel_parts()` result (`list(parts, sheet_names, sheet_ids, ...)`):
+    #'   the sheets of an upload that the Load Data wizard has read and cleaned but not yet merged into
+    #'   a `cd_data` object. Use it instead of `rds_path` or `countdown_data`. Until
+    #'   `set_countdown_data()` is called, `countdown_data` is `NULL`, and `data_years` and
+    #'   `subnational_regions` are read from these sheets.
     #' @param read_only `TRUE` never writes the cache back to its `.rds` (see `init_CacheConnection()`).
     initialize = function(rds_path = NULL, countdown_data = NULL, data_path = NULL, wizard_parts = NULL, read_only = FALSE) {
       private$.read_only <- isTRUE(read_only)
@@ -219,7 +228,17 @@ CacheConnection <- R6::R6Class(
         
         tryCatch({
           # 3. Save to disk. This will now be lightning fast and tiny.
-          saveRDS(data_to_save, data_to_save$rds_path)
+          # Written beside the file and moved over it: a write that is cut short (the app closed, the disk full)
+          # leaves the file as it was, not half of a new one that cannot be read.
+          path <- data_to_save$rds_path
+          draft <- paste0(path, ".saving")
+          saveRDS(data_to_save, draft)
+          if (!isTRUE(suppressWarnings(file.rename(draft, path)))) {
+            # the file is held open by something else: written over in place, as before
+            ok <- file.copy(draft, path, overwrite = TRUE)
+            unlink(draft)
+            if (!isTRUE(ok)) cd_abort(c("x" = "The dataset could not be saved to {.path {path}}."))
+          }
           private$.has_changed <<- FALSE
         }, finally = {
           # 4. Instantly restore the data back to the live R6 class memory!
@@ -361,7 +380,7 @@ CacheConnection <- R6::R6Class(
     filter_mortality_summary = function(indicator, map_years = NULL, palette = 'Reds') {
       years <- if (is.null(map_years)) self$mortality_mapping_years else map_years
       self$mortality_summary %>%
-        filter_mortality_summary(self$country_iso, indicator, years, self$map_mapping, palette = palette)
+        select_mortality_summary(self$country_iso, indicator, years, self$map_mapping, palette = palette)
     },
 
     #' @description Computes service utilization for various indicators (OPD/IPD).
@@ -383,9 +402,9 @@ CacheConnection <- R6::R6Class(
       } else if (admin_level == 'adminlevel_1') {
         self$service_utilization_admin1
       } else {
-        compute_service_utilization(admin_level)
+        self$compute_service_utilization(admin_level)
       }
-      service_data %>% filter_service_utilization(indicator, region)
+      service_data %>% select_service_utilization(indicator, region)
     },
 
     #' @description Prepares service utilization data mapping tables.
@@ -409,12 +428,13 @@ CacheConnection <- R6::R6Class(
       }
     },
 
-    #' @description Which units drive a change in an indicator's coverage between two years: for each district (or
-    #'   region) its count and denominator in both years, its coverage change, and its contribution in percentage
-    #'   points to the change at the level above -- split into service delivery (its change in count) and its share of
-    #'   the denominator's change -- with its reporting rate, flagged when reporting was low or fell, since a drop may
-    #'   be missing reports rather than fewer services. Denominators are the ones the app's coverage uses (count /
-    #'   coverage), so the parts add up to the change the app shows.
+    #' @description Shows which units drive a change in an indicator's coverage between two years. For each district
+    #'   (or region) it gives the count and denominator in both years, the coverage change, and the unit's
+    #'   contribution in percentage points to the change at the level above. The contribution is split into service
+    #'   delivery (the change in count) and the unit's share of the denominator's change. Each unit also has its
+    #'   reporting rate, flagged when reporting was low or fell, since a drop may be missing reports rather than
+    #'   fewer services. Denominators are the ones the app's coverage uses (count / coverage), so the parts add up
+    #'   to the change the app shows.
     #' @param indicator Character. One indicator, e.g. `"anc4"`.
     #' @param from_year,to_year The two years to compare.
     #' @param admin_level `"district"` or `"adminlevel_1"`: the units to attribute the change to.
@@ -487,41 +507,35 @@ CacheConnection <- R6::R6Class(
     #' @param value A `cd_data` tibble.
     set_countdown_data = function(value) {
       private$setter("countdown_data", value, check_cd_data)
+      # the adjusted data was made from the data before: it is made again from the new data when next read
+      private$update_field("adjusted_data", NULL)
       private$invalidate_cached_data()
     },
 
-    #' @description Sets the Load Data wizard's own in-progress, not-yet-merged sheets
-    #'   (`load_excel_parts()`'s result). Called once, right after a fresh Excel/Stata upload, by
-    #'   `apps/rmncah`'s own `upload_box.R` -- see `wizard_parts`'s own active-binding comment for
-    #'   what this unblocks in the meantime, and `merge_and_standardize()`/Finish for where it's
-    #'   cleared.
+    #' @description Stores the sheets of an upload that the Load Data wizard has read but not yet merged
+    #'   (the result of `load_excel_parts()`). `clear_wizard_parts()` removes them.
     #' @param value The list `load_excel_parts()` returns.
     set_wizard_parts = function(value) private$setter("wizard_parts", value, is.list),
 
-    #' @description Clears the wizard's in-progress parts/country state once Finish has actually
-    #'   merged them into real `countdown_data` -- called right after `set_countdown_data()` at
-    #'   Finish (`wizard_panels.R`). Not just tidiness: `run_all_quality_checks()` branches on
-    #'   whether `wizard_parts` is still set, so leaving it behind would keep routing a
-    #'   now-fully-merged cache through the pre-merge check path if the wizard's own Data Quality
-    #'   step (or edit mode) is ever revisited afterward.
+    #' @description Removes the wizard's unmerged sheets and the country stored with `set_wizard_country()`.
+    #'   Call it after `set_countdown_data()`, once the sheets have been merged into `countdown_data`.
     clear_wizard_parts = function() {
+      # run_all_quality_checks() branches on whether wizard_parts is set: left behind, a merged dataset would
+      # keep going through the checks made for unmerged sheets when Data Quality is opened again.
       private$update_field("wizard_parts", NULL)
       private$update_field("wizard_country", NULL)
       private$update_field("wizard_country_iso", NULL)
     },
 
-    #' @description Sets the wizard's best-effort, non-aborting country resolution -- see
-    #'   `country`/`country_iso`'s own active-binding comments for why this is separate from the
-    #'   real `check_single_country()` validation. Uses `update_field()` directly (not `setter()`,
-    #'   which rejects `NULL`) since `value$country`/`value$country_iso` being `NULL` -- an
-    #'   ambiguous or unmatched admin sheet -- is itself a legitimate, expected result to store: the
-    #'   `country`/`country_iso` bindings need a real `NULL` back, not a stray `NA`, to keep matching
-    #'   the `is.null()` convention every other consumer already uses. Also runs
-    #'   `initialize_survey_estimates()` once a real `country_iso` is actually known -- the
-    #'   `initialize()`-time call the non-wizard branch gets was deliberately skipped for wizard mode
-    #'   (see that branch's own comment) precisely because it needed this to have already happened.
+    #' @description Stores the country worked out from an upload before its sheets are merged, so that `country`
+    #'   and `country_iso` have a value in the meantime. Either element may be `NULL` when the country could not
+    #'   be worked out. When `country_iso` is given, the survey year, survey estimates and national rates are
+    #'   filled in from the package's built-in survey data for that country.
     #' @param value A `list(country, country_iso)`, as `resolve_country_best_effort()` returns.
     set_wizard_country = function(value) {
+      # update_field(), not setter(): setter() rejects NULL, and NULL (an ambiguous or unmatched admin sheet) is
+      # a result to store, so that country and country_iso return NULL and not NA.
+      # initialize() leaves the survey estimates out in wizard mode because they need the ISO code: filled here.
       private$update_field("wizard_country", value$country)
       private$update_field("wizard_country_iso", value$country_iso)
       if (!is.null(value$country_iso)) {
@@ -529,26 +543,14 @@ CacheConnection <- R6::R6Class(
       }
     },
 
-    #' @description Marks this cache's data as having finished the Load Data wizard with its
-    #'   quality checks passed -- set once, at Finish, right before `set_cache_path()` writes it to
-    #'   disk. See `quality_confirmed`'s own active-binding comment for what reads this.
+    #' @description Records whether the data finished the Load Data wizard with its quality checks passed
+    #'   (see `quality_confirmed`).
     #' @param value Logical.
     set_quality_confirmed = function(value) private$setter("quality_confirmed", value, is.logical),
 
-    #' @description A permanent snapshot of `run_all_quality_checks()`'s own result, taken once at
-    #'   Finish -- right before `clear_wizard_parts()` (`wizard_panels.R`, apps/rmncah), while
-    #'   `wizard_parts` is still set, so this captures the exact pre-merge, per-sheet checks the user
-    #'   actually saw during the walkthrough. Exists because `clear_wizard_parts()`'s own removal of
-    #'   `wizard_parts` (deliberate -- see its own comment) means `run_all_quality_checks()` would
-    #'   otherwise silently fall through to the POST-merge check path (`.run_post_merge_quality_checks()`)
-    #'   the moment Data Quality is revisited after Finish (a landing-page Edit link, or edit mode
-    #'   generally) -- a genuinely different set of checks, computed against the merged/standardized
-    #'   `countdown_data` instead of the original unmerged sheets, that can report different numbers
-    #'   than what was shown at upload time. Confirmed live: this is exactly the bug reported as
-    #'   "data quality is not giving the actual values given during the uploading". `wizard_parts`
-    #'   itself can't just be kept around instead -- it would grow stale the moment anything
-    #'   downstream (Remove Years, Data Adjustment) changes `countdown_data`, which this snapshot,
-    #'   frozen at the one moment it was genuinely accurate, doesn't have that problem.
+    #' @description Stores the quality check results the Load Data wizard showed for the uploaded sheets (the
+    #'   result of `run_all_quality_checks()` while `wizard_parts` is set). They are kept after
+    #'   `clear_wizard_parts()`, so the Data Quality step shows the same results when it is opened again.
     #' @param value The list `run_all_quality_checks()` returns.
     set_wizard_quality_results = function(value) private$setter("wizard_quality_results", value, is.list),
 
@@ -562,14 +564,14 @@ CacheConnection <- R6::R6Class(
       self$set_adjusted_flag(TRUE)
       
       # 3. Trigger the master cascade (safely clears coverage, mortality, utilization, etc.)
-      private$invalidate_downstream_adjusted()
+      private$changed("adjusted_data")
     },
 
     #' @description Sets the performance threshold used for DQA score calculations.
     #' @param value Integer scalar (e.g., 90).
     set_performance_threshold = function(value) {
       if (private$setter("performance_threshold", value, is_scalar_integerish)) {
-        private$invalidate_dqa_cache()
+        private$changed("performance_threshold")
       }
     },
 
@@ -578,7 +580,7 @@ CacheConnection <- R6::R6Class(
     set_excluded_years = function(value) {
       if (private$setter("excluded_years", value, is.numeric)) {
         private$update_field("adjusted_data", NULL)
-        private$invalidate_downstream_adjusted()
+        private$changed("adjusted_data")
       }
     },
 
@@ -593,7 +595,7 @@ CacheConnection <- R6::R6Class(
         k <- unlist(value$everywhere$group_k)
         if (length(k)) private$setter("k_factors", utils::modifyList(as.list(self$k_factors), as.list(k)) %>% unlist(), is.numeric)
         private$update_field("adjusted_data", NULL)
-        private$invalidate_downstream_adjusted()
+        private$changed("adjusted_data")
       }
       invisible(self)
     },
@@ -606,7 +608,7 @@ CacheConnection <- R6::R6Class(
 
       if (private$setter("k_factors", value, ~ is.numeric(.x) && all(factors %in% names(.x)))) {
         private$update_field("adjusted_data", NULL)
-        private$invalidate_downstream_adjusted()
+        private$changed("adjusted_data")
       }
     },
 
@@ -614,7 +616,7 @@ CacheConnection <- R6::R6Class(
     #' @param value Logical scalar.
     set_adjusted_flag = function(value) {
       if (private$setter("adjusted_flag", value, ~ is.logical(.x) && length(.x) == 1)) {
-        private$invalidate_downstream_adjusted()
+        private$changed("adjusted_data")
       }
     },
 
@@ -646,7 +648,7 @@ CacheConnection <- R6::R6Class(
       new_est[incoming_keys] <- value[incoming_keys]
 
       if (private$setter("survey_estimates", new_est, is.numeric)) {
-        private$invalidate_coverage_cache()
+        private$changed("survey_estimates")
       }      
     },
 
@@ -654,7 +656,7 @@ CacheConnection <- R6::R6Class(
     #' @param value Character scalar.
     set_derivation_population = function(value) {
       if (private$setter("derivation_population", value, is_scalar_character)) {
-        private$invalidate_coverage_cache()
+        private$changed("derivation_population")
       }
     },
 
@@ -672,7 +674,7 @@ CacheConnection <- R6::R6Class(
       current_est[valid_keys] <- value[valid_keys]
 
       if (private$setter("national_estimates", current_est, is.list)) {
-        private$invalidate_coverage_cache()
+        private$changed("national_estimates")
       }
     },
 
@@ -680,37 +682,45 @@ CacheConnection <- R6::R6Class(
     #' @param value Integer year.
     set_survey_year = function(value) {
       if (private$setter("survey_year", value, is_scalar_integerish)) {
-        private$invalidate_denominator_cache()
+        private$changed("survey_year")
       }
     },
 
-    #' @description Clears the survey year back to unset. See clear_un_estimates() for why this bypasses the
-    #'   public setter -- set_survey_year()'s own validation (is_scalar_integerish) rejects NULL outright, so
-    #'   there was no supported way to un-set an already-entered survey year (e.g. the user clearing the
-    #'   field by hand) until this.
+    #' @description Clears the survey year, so that `survey_year` is `NULL`. The tables computed from it are
+    #'   cleared as well.
     clear_survey_year = function() {
+      # update_field(), not set_survey_year(): the setter's validation (is_scalar_integerish) rejects NULL
       private$update_field("survey_year", NULL)
-      private$invalidate_denominator_cache()
+      private$changed("survey_year")
     },
 
     #' @description Set year the survey timeline begins filtering from.
     #' @param value Integer year.
-    set_start_survey_year = function(value) private$setter("start_survey_year", value, is_scalar_integerish),
+    set_start_survey_year = function(value) {
+      # Every survey table is read from this year on (filter_survey()): the national and regional surveys the
+      # coverage, inequality and Bayesian results are computed from, as well as the equity surveys. Those results
+      # are kept, so they are cleared with it; they were left as computed from the surveys before the change.
+      if (private$setter("start_survey_year", value, is_scalar_integerish)) {
+        private$changed("start_survey_year")
+      }
+    },
 
     #' @description Set baseline denominator (e.g. penta1).
     #' @param value Character scalar.
     set_denominator = function(value) {
-      if (private$setter("denominator", value, is_scalar_character)) {
-        private$invalidate_coverage_cache()
-      }
+      # Nothing kept is cleared: the coverage tables hold every denominator's columns, and the choice is applied
+      # when one is read (get_denominator()); a Bayesian model is kept under its denominator (bayes_model_key()).
+      # Clearing them rebuilt eight tables that came out the same (2.2 s measured).
+      private$setter("denominator", value, is_scalar_character)
+      invisible()
     },
 
     #' @description Set maternal specific baseline denominator (e.g. anc1).
     #' @param value Character scalar.
     set_maternal_denominator = function(value) {
-      if (private$setter("maternal_denominator", value, is_scalar_character)) {
-        private$invalidate_coverage_cache()
-      }
+      # as set_denominator(): the choice is applied when a table is read, no kept table depends on it
+      private$setter("maternal_denominator", value, is_scalar_character)
+      invisible()
     },
 
     #' @description Sets the selected Region for targeted dashboard filtering.
@@ -750,7 +760,7 @@ CacheConnection <- R6::R6Class(
     },
 
     #' @description Saves a custom chart (report kind `custom_chart`: where its data comes from, transforms and a plot
-    #'   description -- see `datasuite.ui::report_validate_spec()`), or removes it. Saved graphs redraw from the
+    #'   description; see `datasuite.ui::report_validate_spec()`), or removes it. Saved graphs redraw from the
     #'   data like every other chart and can be added to any report.
     #' @param id Character. The graph's id.
     #' @param spec The chart's description, checked with `datasuite.ui::report_validate_spec()`, or `NULL` to remove it.
@@ -814,91 +824,93 @@ CacheConnection <- R6::R6Class(
 
     #' @description Sets the Family Planning Estimation Tool (FPET) dataset.
     #' @param value Data frame.
-    set_fpet_data = function(value) private$setter("fpet_data", value, check_fpet_data),
+    set_fpet_data = function(value) private$setter("fpet_data", value, check_cd_fpet_data),
 
     #' @description Sets the official UN Demographic Estimates dataset. Clears denominators.
     #' @param value Data frame.
     set_un_estimates = function(value) {
       if (private$setter("un_estimates", value, check_un_estimates_data)) {
-        private$invalidate_denominator_cache()
-        private$invalidate_coverage_cache()
+        private$changed("un_estimates")
       }
     },
 
-    #' @description Clears any uploaded UN Demographic Estimates override, reverting the un_estimates active
-    #'   binding to the package's own built-in default for the current country (its own %||% fallback). The
-    #'   public setter validates its input and rejects NULL outright, so this bypasses it via update_field()
-    #'   directly, the same way invalidate_cached_data() already resets other fields to NULL internally -- there
-    #'   was no supported way to undo an override before this.
+    #' @description Removes an uploaded UN Demographic Estimates dataset. `un_estimates` then returns the
+    #'   package's built-in estimates for the current country. The tables computed from the estimates are
+    #'   cleared.
     clear_un_estimates = function() {
+      # update_field(), not set_un_estimates(): the setter validates its input and rejects NULL
       private$update_field("un_estimates", NULL)
-      private$invalidate_denominator_cache()
-      private$invalidate_coverage_cache()
+      private$changed("un_estimates")
     },
 
     #' @description Sets the UN Mortality specific estimates dataset. Clears mortality cache.
     #' @param value Data frame.
     set_un_mortality_estimates = function(value) {
-      if (private$setter("un_mortality_estimates", value, check_un_mortality_data)) {
-        private$invalidate_mortality_cache()
+      if (private$setter("un_mortality_estimates", value, check_cd_un_mortality)) {
+        private$changed("un_mortality_estimates")
       }
     },
 
-    #' @description Clears any uploaded UN Mortality Estimates override, reverting to the package's built-in
-    #'   default for the current country. See clear_un_estimates() for why this bypasses the public setter.
+    #' @description Removes an uploaded UN Mortality Estimates dataset. `un_mortality_estimates` then returns
+    #'   the package's built-in estimates for the current country. The tables computed from the estimates are
+    #'   cleared.
     clear_un_mortality_estimates = function() {
+      # update_field(), not the setter, which rejects NULL (as clear_un_estimates())
       private$update_field("un_mortality_estimates", NULL)
-      private$invalidate_mortality_cache()
+      private$changed("un_mortality_estimates")
     },
 
     #' @description Sets WUENIC estimates dataset. Clears coverage cache.
     #' @param value Data frame.
     set_wuenic_estimates = function(value) {
       if (private$setter("wuenic_estimates", value, check_wuenic_data)) {
-        private$invalidate_coverage_cache()
+        private$changed("wuenic_estimates")
       }
     },
 
-    #' @description Clears any uploaded WUENIC Estimates override, reverting to the package's built-in default
-    #'   for the current country. See clear_un_estimates() for why this bypasses the public setter.
+    #' @description Removes an uploaded WUENIC Estimates dataset. `wuenic_estimates` then returns the package's
+    #'   built-in estimates for the current country. The tables computed from the estimates are cleared.
     clear_wuenic_estimates = function() {
+      # update_field(), not the setter, which rejects NULL (as clear_un_estimates())
       private$update_field("wuenic_estimates", NULL)
-      private$invalidate_coverage_cache()
+      private$changed("wuenic_estimates")
     },
 
     #' @description Sets overall national survey dataset and automatically extracts its estimates.
     #' @param value Data frame.
     set_national_survey = function(value) {
-      private$setter("national_survey", value, check_survey_data)
+      if (private$setter("national_survey", value, check_survey_data)) private$changed("national_survey")
       private$extract_national_estimates_from_survey(private$.in_memory_data$national_survey)
     },
 
-    #' @description Clears an uploaded national survey override, reverting to the package's own
-    #'   built-in default. See clear_un_estimates() for why this bypasses the public setter -- unlike
-    #'   that one, this deliberately does NOT re-run extract_national_estimates_from_survey(): any
-    #'   national rate fields it already filled in are their own, separately edited values now, the
-    #'   same way clearing un_estimates never un-does anything it once fed into a downstream
-    #'   calculation either.
-    clear_national_survey = function() private$update_field("national_survey", NULL),
+    #' @description Removes an uploaded national survey. `national_survey` then returns the package's built-in
+    #'   survey data for the current country. The survey year, survey estimates and national rates that were
+    #'   taken from the removed survey are kept.
+    clear_national_survey = function() {
+      # update_field(), not the setter, which rejects NULL (as clear_un_estimates()).
+      # extract_national_estimates_from_survey() is not run again: the values it filled in are edited on their
+      # own since, and are not the survey's to take back.
+      if (private$update_field("national_survey", NULL)) private$changed("national_survey")
+    },
 
     #' @description Sets the disaggregated regional survey dataset.
     #' @param value Data frame.
     set_regional_survey = function(value) {
       if (private$setter("regional_survey", value, ~ check_survey_data(.x, "adminlevel_1"))) {
-        private$invalidate_coverage_cache()
+        private$changed("regional_survey")
       }
     },
 
-    #' @description Clears an uploaded regional survey override, reverting to the package's own
-    #'   built-in default. See clear_un_estimates() for why this bypasses the public setter.
+    #' @description Removes an uploaded regional survey. `regional_survey` then returns the package's built-in
+    #'   survey data for the current country. The tables computed from the regional survey are cleared.
     clear_regional_survey = function() {
+      # update_field(), not the setter, which rejects NULL (as clear_un_estimates())
       private$update_field("regional_survey", NULL)
-      private$invalidate_coverage_cache()
+      private$changed("regional_survey")
     },
 
-    #' @description Sets a user-uploaded shapefile override, replacing the package-bundled default
-    #'   for the current country -- see `shapefile`'s own active-binding comment for the
-    #'   override-with-fallback pattern this mirrors (`regional_survey`, above).
+    #' @description Sets an uploaded shapefile, used instead of the package's built-in shapefile for the
+    #'   current country.
     #' @param value An `sf` object (as `read_shapefile_folder()` returns).
     set_shapefile = function(value) private$setter("shapefile", value, ~ inherits(.x, "sf")),
 
@@ -906,74 +918,70 @@ CacheConnection <- R6::R6Class(
     #'   default for the current country.
     clear_shapefile = function() private$update_field("shapefile", NULL),
 
-    #' @description Sets which column of the uploaded shapefile holds admin-1 names -- a real
-    #'   uploaded shapefile won't necessarily use the bundled shapefile's own `NAME_1` convention, so
-    #'   `check_shapefile_admin_names()` needs to be told which one to use.
+    #' @description Sets which column of the uploaded shapefile holds the admin level 1 names. Without it,
+    #'   `NAME_1` is used, the column of the built-in shapefiles. `check_shapefile_admin_names()` reads the
+    #'   names from this column.
     #' @param value Character. A column name present in `self$shapefile`.
     set_shapefile_name_field = function(value) private$setter("shapefile_name_field", value, is_scalar_character),
 
     #' @description Sets wealth quantile (WIQ) survey dataset.
     #' @param value Data frame.
-    set_wiq_survey = function(value) private$setter("wiq_survey", value, check_equity_data),
+    set_wiq_survey = function(value) private$setter("wiq_survey", value, check_cd_equity_data),
 
-    #' @description Clears an uploaded WIQ survey override, reverting to the package's own built-in
-    #'   default (or NULL, for a country with no bundled equity default -- see the `wiq_survey` active
-    #'   binding). See clear_un_estimates() for why this bypasses the public setter.
+    #' @description Removes an uploaded wealth quintile (WIQ) survey. `wiq_survey` then returns the package's
+    #'   built-in survey data for the current country, which has no rows for a country without any.
     clear_wiq_survey = function() private$update_field("wiq_survey", NULL),
 
     #' @description Sets area level (urban/rural) survey dataset.
     #' @param value Data frame.
-    set_area_survey = function(value) private$setter("area_survey", value, check_equity_data),
+    set_area_survey = function(value) private$setter("area_survey", value, check_cd_equity_data),
 
-    #' @description Clears an uploaded area survey override, reverting to the package's own built-in
-    #'   default. See clear_un_estimates() for why this bypasses the public setter.
+    #' @description Removes an uploaded area (urban/rural) survey. `area_survey` then returns the package's
+    #'   built-in survey data for the current country.
     clear_area_survey = function() private$update_field("area_survey", NULL),
 
     #' @description Sets education level survey dataset.
     #' @param value Data frame.
-    set_education_survey = function(value) private$setter("education_survey", value, check_equity_data),
+    set_education_survey = function(value) private$setter("education_survey", value, check_cd_equity_data),
 
-    #' @description Clears an uploaded education survey override, reverting to the package's own
-    #'   built-in default. See clear_un_estimates() for why this bypasses the public setter.
+    #' @description Removes an uploaded education survey. `education_survey` then returns the package's
+    #'   built-in survey data for the current country.
     clear_education_survey = function() private$update_field("education_survey", NULL),
 
     #' @description Sets survey to countdown nomenclature mapping matrix.
     #' @param value Data frame.
     set_survey_mapping = function(value) {
       private$setter("survey_mapping", value, is.data.frame)
-      private$invalidate_coverage_cache()
+      private$changed("survey_mapping")
     },
 
-    #' @description Clears the survey region mapping back to "unmapped" -- unlike un_estimates/
-    #'   un_mortality_estimates/wuenic_estimates, this field has no package-bundled default to fall back to, so
-    #'   clearing it just means "ask the user to map again," not "use the built-in data."
+    #' @description Removes the mapping between the survey's regions and the dataset's regions. There is no
+    #'   built-in mapping, so `survey_mapping` is `NULL` until a new one is set. The tables computed from the
+    #'   mapping are cleared.
     clear_survey_mapping = function() {
       private$update_field("survey_mapping", NULL)
-      private$invalidate_coverage_cache()
+      private$changed("survey_mapping")
     },
 
     #' @description Sets map coordinates to countdown nomenclature mapping matrix.
     #' @param value Data frame.
     set_map_mapping = function(value) private$setter("map_mapping", value, is.data.frame),
 
-    #' @description Clears the map region mapping back to "unmapped" -- see clear_survey_mapping(), same
-    #'   reasoning (no package-bundled default for this field either).
+    #' @description Removes the mapping between the shapefile's regions and the dataset's regions. There is no
+    #'   built-in mapping, so `map_mapping` is `NULL` until a new one is set.
     clear_map_mapping = function() {
       private$update_field("map_mapping", NULL)
     },
 
-    #' @description Checks whether a data field is still at its built-in default -- i.e. the user has not
-    #'   uploaded an override (un_estimates/un_mortality_estimates/wuenic_estimates, each with a real
-    #'   package-bundled fallback) or made a mapping (survey_mapping/map_mapping, which have no default at all,
-    #'   so this is equivalent there to asking whether anything has been set). There was previously no way to
-    #'   ask this at all: the active bindings for the first three never return NULL once a country is set (they
-    #'   fall back to the bundled dataset instead), so app-layer code checking `is.null(cache$un_estimates)` to
-    #'   mean "nothing uploaded yet" was always structurally wrong -- this checks the underlying stored value
-    #'   directly, before any fallback is applied.
+    #' @description Checks whether nothing has been set for a field. For a field with built-in data
+    #'   (`un_estimates`, `un_mortality_estimates`, `wuenic_estimates`) this means no dataset was uploaded, although
+    #'   the active binding still returns the built-in data. For a field without any (`survey_mapping`,
+    #'   `map_mapping`) it means the field is empty.
     #' @param field_name Character. The field to check (e.g. "un_estimates", "survey_mapping").
-    #' @return Logical. TRUE if nothing has been set for this field (so it's showing the built-in default, or
-    #'   is simply empty for a field with no default).
+    #' @return Logical. `TRUE` when nothing has been set for the field.
     is_default = function(field_name) {
+      # The stored value, before any fallback: the active bindings of the fields with built-in data never return
+      # NULL once a country is set, so is.null(cache$un_estimates) does not tell whether something was uploaded.
       is.null(private$getter(field_name))
     },
 
@@ -1063,7 +1071,7 @@ CacheConnection <- R6::R6Class(
       check_indicator_emptiness(.data = self$countdown_data)
     },
 
-    #' @description Matches survey `adminlevel_1` names against the dataset's own admin-1 names,
+    #' @description Matches survey `adminlevel_1` names against the dataset's own admin level 1 names,
     #'   skipping names already resolved via `survey_mapping`.
     check_survey_admin_names = function() {
       survey <- self$regional_survey
@@ -1077,9 +1085,8 @@ CacheConnection <- R6::R6Class(
       check_survey_admin_names(regional_survey = survey, countdown_data = self$subnational_regions)
     },
 
-    #' @description Matches the shapefile's own admin-1 name column (`self$shapefile_name_field` --
-    #'   `self$shapefile`'s uploaded override if one exists, otherwise the bundled default) against
-    #'   the dataset's own admin-1 names, skipping names already resolved via `map_mapping`.
+    #' @description Matches the shapefile's admin level 1 names (the `shapefile_name_field` column of
+    #'   `shapefile`) against the dataset's admin level 1 names, skipping names already resolved in `map_mapping`.
     check_shapefile_admin_names = function() {
       shapefile <- self$shapefile
       name_field <- self$shapefile_name_field
@@ -1175,7 +1182,7 @@ CacheConnection <- R6::R6Class(
       }
     },
 
-    #' @description Generates Service Utilization Admin 1 Data mapping format.
+    #' @description Generates Service Utilization Admin level 1 Data mapping format.
     #' @param metric_type Character. Either "opd" or "ipd".
     #' @return A tibble with class `cd_service_util_admin1`.
     generate_admin1_service_utilization = function(metric_type = c("opd", "ipd")) {
@@ -1199,7 +1206,7 @@ CacheConnection <- R6::R6Class(
 
       denom <- self$get_denominator(indicator)
       self$calculate_coverage(admin_level) %>%
-        filter_coverage(indicator = indicator, denominator = denom, region = region)
+        select_coverage(indicator = indicator, denominator = denom, region = region)
     },
 
     #' @description Gets filtered inequality data targeting a single indicator.
@@ -1219,7 +1226,7 @@ CacheConnection <- R6::R6Class(
       ineq_data <- if (admin_level == "adminlevel_1" && is.null(region)) self$inequality_admin1 else self$inequality_district
       if (!is.null(region)) ineq_data <- ineq_data %>% filter(adminlevel_1 == region)
       
-      ineq_data %>% filter_inequality(indicator = indicator, denominator = denom)
+      ineq_data %>% select_inequality(indicator = indicator, denominator = denom)
     },
 
     #' @description Filters mapping spatial data focusing on a specific year and palette.
@@ -1238,7 +1245,7 @@ CacheConnection <- R6::R6Class(
 
       years_to_plot <- plot_year %||% self$mapping_years
       map_data <- self$get_mapping_data(admin_level)
-      map_data %>% filter_mapping_data(indicator = indicator, denominator = denom, palette = palette, plot_year = years_to_plot)
+      map_data %>% select_mapping_data(indicator = indicator, denominator = denom, palette = palette, plot_year = years_to_plot)
     },
 
     #' @description Returns the base denominator and numerator metrics before survey interpolation.
@@ -1320,14 +1327,20 @@ CacheConnection <- R6::R6Class(
       cov_data %>% filter_high_performers(indicator = indicator, denominator = denom, threshold = threshold)
     },
 
-    #' @description Substitutes national rates with regional estimates for a specific requested sub-region.
-    #' @param admin_level Character. Level of aggregation.
-    #' @param region Character. Region name.
-    get_regional_estimates = function(admin_level, region) {
-      iso <- self$country_iso
-      rates <- self$national_estimates
-
-      if (is.null(region)) return(rates)
+    #' @description The rates for one region, from the survey files: the region's own mortality rates and survey
+    #'   coverage (its latest survey value of each, from `regional_survey`, read through `survey_mapping` so the
+    #'   region is named as in the data). A rate the region's surveys do not give keeps the national value; the
+    #'   national rates are returned whole only when no region is asked for or the region is not in the survey
+    #'   files (the result's `source` attribute says which: `"regional"` or `"national"`).
+    #' @param admin_level Character. `"adminlevel_1"` when `region` is a region, `"district"` when it is a district
+    #'   (its region's rates are given).
+    #' @param region Character. The region's (or district's) name, as in the data. `NULL`: the national rates.
+    #' @return A list like `national_estimates` (proportions: `nmr`, `pnmr`, `sbr`, `twin_rate`, `preg_loss`,
+    #'   `anc1`, `penta1`), with the region's other survey coverage values added when it has them.
+    get_regional_estimates = function(admin_level = c("adminlevel_1", "district"), region = NULL) {
+      admin_level <- arg_match(admin_level)
+      rates <- structure(self$national_estimates, source = "national")
+      if (is.null(region) || !length(region) || is.na(region) || !nzchar(region)) return(rates)
 
       target_admin1 <- region
       if (admin_level == "district") {
@@ -1335,19 +1348,23 @@ CacheConnection <- R6::R6Class(
           filter(district == region) %>%
           distinct(adminlevel_1) %>%
           pull(adminlevel_1)
-        if (is.null(target_admin1) || is.na(target_admin1)) return(rates)
+        if (!length(target_admin1) || is.na(target_admin1[1])) return(rates)
+        target_admin1 <- target_admin1[1]
       }
 
-      parsed <- parse_estimates_from_df(reg_data, self$country_iso, target_admin1)
+      survey <- self$regional_survey
+      if (is.null(survey) || !nrow(survey)) return(rates)
+      # the survey's own region names, as the data names them
+      survey <- join_subnational_map(survey, "adminlevel_1", self$survey_mapping)
+      parsed <- parse_estimates_from_df(survey, self$country_iso, target_admin1)
       if (is.null(parsed)) return(rates)
-      
+
+      # the parser gives mortality as a proportion already, and coverage as a percentage
       vals <- parsed$values
-      
-      needs_conversion <- !names(vals) %in% c('nmr', 'pnmr', 'sbr') & vals > 1
-      vals[needs_conversion] <- vals[needs_conversion] / 100
-      rates[names(vals)] <- vals
-      
-      return(rates)
+      is_coverage <- !names(vals) %in% c("nmr", "pnmr", "sbr")
+      vals[is_coverage] <- vals[is_coverage] / 100
+      rates[names(vals)] <- as.list(vals)
+      structure(rates, source = "regional", survey_year = parsed$year)
     },
 
     #' @description Generates a formatted table of core health system metrics.
@@ -1478,14 +1495,12 @@ CacheConnection <- R6::R6Class(
     #' @field countdown_data Active Binding: Gets the raw, unadjusted countdown tibble.
     countdown_data = function(value) private$getter("countdown_data", value),
 
-    #' @field data_years Active Binding: Extracts unique years present in the raw data. Before
-    #'   Finish (`wizard_parts` still set, no `countdown_data` yet), falls back to the raw Population
-    #'   sheet's own `year` column -- confirmed live this matters: several other page modules read
-    #'   `cache()$data_years` unconditionally the moment `cache()` itself becomes non-NULL (e.g.
-    #'   `modules/1b_remove_years.R`'s own `req(cache()$data_years)`), and those page modules are
-    #'   instantiated at app startup the same "always running" way the wizard's own step servers are
-    #'   -- reachable well before Finish, not just after.
+    #' @field data_years Active Binding: Gets the years present in the raw data, in ascending order. While the
+    #'   Load Data wizard's sheets are not yet merged (`wizard_parts` set, no `countdown_data`), the years come
+    #'   from the population sheet's `year` column. `NULL` when neither gives any.
     data_years = function(value) {
+      # The wizard fallback matters: page modules read data_years as soon as the cache exists (for example
+      # modules/1b_remove_years.R), which is before the wizard finishes.
       years <- private$getter("data_years", value)
       if (is.null(years) && !is.null(self$countdown_data)) {
         years <- self$countdown_data %>% distinct(year) %>% arrange(year) %>% pull(year)
@@ -1500,12 +1515,13 @@ CacheConnection <- R6::R6Class(
       return(years)
     },
 
-    #' @field subnational_regions Active Binding: Extracts unique admin1 and district combinations.
-    #'   Before Finish (`wizard_parts` still set, no `countdown_data` yet), falls back to the raw
-    #'   Admin sheet's own `first_admin_level`/`district` columns -- this is what lets Map
-    #'   Survey/Map Shapefile show the real admin1 list mid-wizard, per the wizard redesign's own
-    #'   requirement that mapping happens "against the admin1 from admin sheet."
+    #' @field subnational_regions Active Binding: Gets the unique admin level 1 and district combinations, a data
+    #'   frame with columns `adminlevel_1` and `district`. While the Load Data wizard's sheets are not yet merged
+    #'   (`wizard_parts` set, no `countdown_data`), they come from the admin sheet's `first_admin_level` and
+    #'   `district` columns. `NULL` when neither gives any.
     subnational_regions = function(value) {
+      # The wizard fallback lets the survey and shapefile mapping steps list the admin sheet's admin level 1
+      # names before the sheets are merged.
       regions <- private$getter("subnational_regions", value)
       if (is.null(regions) && !is.null(self$countdown_data)) {
         regions <- self$countdown_data %>% distinct(adminlevel_1, district) %>% arrange(adminlevel_1, district)
@@ -1522,15 +1538,13 @@ CacheConnection <- R6::R6Class(
       return(regions)
     },
 
-    #' @field country Active Binding: Gets the text string representing the focal country. Readonly.
-    #'   Before Finish, falls back to `wizard_country` -- a best-effort, non-aborting resolution
-    #'   (`resolve_country_best_effort()`, 0_import_load_data.R) computed right after upload, since
-    #'   the real, validated `country` attribute only exists once `merge_and_standardize()`'s
-    #'   `match_country()` call has actually run. The genuine validation (is there cleanly one
-    #'   country value at all) stays `check_single_country()`'s job, surfaced at the Data Quality
-    #'   step -- this fallback's only job is unblocking everything else that needs a country before
-    #'   Finish (the header badge, national-rate/survey defaults, the bundled shapefile lookup).
+    #' @field country Active Binding: Gets the name of the dataset's country. Readonly. While the Load Data
+    #'   wizard's sheets are not yet merged (no `countdown_data`), it is the country stored with
+    #'   `set_wizard_country()`, which is `NULL` when the country could not be worked out.
     country = function(value) {
+      # The wizard's country is a best guess (resolve_country_best_effort(), 0_import_load_data.R) for what needs
+      # a country before the sheets are merged: the header, the survey defaults, the built-in shapefile. The
+      # validation (exactly one country) is check_single_country()'s, shown at the Data Quality step.
       if (missing(value)) {
         if (!is.null(self$countdown_data)) return(attr_or_abort(self$countdown_data, "country"))
         return(private$getter("wizard_country"))
@@ -1538,8 +1552,9 @@ CacheConnection <- R6::R6Class(
       cd_abort(c("x" = "{.field country} is readonly."))
     },
 
-    #' @field country_iso Active Binding: Gets the 3-letter ISO code for the country. Readonly.
-    #'   Same pre-Finish fallback as `country` above.
+    #' @field country_iso Active Binding: Gets the 3-letter ISO code for the country. Readonly. While the Load
+    #'   Data wizard's sheets are not yet merged, it is the code stored with `set_wizard_country()`, which is
+    #'   `NULL` when the country could not be worked out.
     country_iso = function(value) {
       if (missing(value)) {
         if (!is.null(self$countdown_data)) return(attr_or_abort(self$countdown_data, "iso3"))
@@ -1548,21 +1563,19 @@ CacheConnection <- R6::R6Class(
       cd_abort(c("x" = "{.field iso3} is readonly."))
     },
 
-    #' @field wizard_parts Active Binding: Gets the Load Data wizard's own in-progress,
-    #'   not-yet-merged sheets (`load_excel_parts()`'s result) -- `NULL` once Finish has merged them
-    #'   into `countdown_data`, or for any cache that was never in wizard mode to begin with.
+    #' @field wizard_parts Active Binding: Gets the sheets of an upload that the Load Data wizard has read but
+    #'   not yet merged (the result of `load_excel_parts()`). `NULL` once they are merged into `countdown_data`
+    #'   and cleared, and for a dataset that was not loaded through the wizard.
     wizard_parts = function(value) private$getter("wizard_parts", value),
 
-    #' @field quality_confirmed Active Binding: `TRUE` once this cache's data finished the Load Data
-    #'   wizard with its quality checks passed (set once, at Finish -- see `set_quality_confirmed()`
-    #'   below) -- persisted with everything else in the `.rds`, so it survives a resume. `FALSE` for
-    #'   a cache still mid-wizard, and for any cache built outside the wizard entirely.
+    #' @field quality_confirmed Active Binding: `TRUE` once the data has finished the Load Data wizard with its
+    #'   quality checks passed (see `set_quality_confirmed()`). It is saved with the dataset. `FALSE` while the
+    #'   wizard is in progress, and for a dataset built outside the wizard.
     quality_confirmed = function(value) private$getter("quality_confirmed", value),
 
-    #' @field wizard_quality_results Active Binding: Gets the frozen, pre-merge quality-check
-    #'   snapshot taken at Finish (`NULL` before Finish, and for any cache that never went through
-    #'   the wizard) -- see `set_wizard_quality_results()`'s own comment for why this exists and what
-    #'   reads it (`run_all_quality_checks()`).
+    #' @field wizard_quality_results Active Binding: Gets the quality check results stored when the Load Data
+    #'   wizard finished (see `set_wizard_quality_results()`), which `run_all_quality_checks()` returns once the
+    #'   wizard's sheets are cleared. `NULL` before that, and for a dataset that did not go through the wizard.
     wizard_quality_results = function(value) private$getter("wizard_quality_results", value),
 
     #' @field adjusted_data Active Binding: Gets countdown data with K-factors applied. Adjusts automatically if flags are met.
@@ -1580,9 +1593,8 @@ CacheConnection <- R6::R6Class(
       cd_abort(c("x" = "{.field adjusted_data} is readonly."))
     },
 
-    #' @field data_with_excluded_years Active Binding: Raw data filtered to remove user-excluded years. Readonly.
-    #'   `NULL` before Finish (no `countdown_data` yet, mid-wizard) -- "Remove Years" is a separate,
-    #'   post-Finish page, not something the wizard itself needs a pre-merge equivalent for.
+    #' @field data_with_excluded_years Active Binding: Raw data without the years in `excluded_years`. Readonly.
+    #'   `NULL` when there is no `countdown_data` yet (the Load Data wizard has not finished).
     data_with_excluded_years = function(value) {
       if (missing(value)) {
         if (is.null(self$countdown_data)) return(NULL)
@@ -1603,8 +1615,8 @@ CacheConnection <- R6::R6Class(
     #' @field k_factors Active Binding: Gets the named vector of numeric adjustment ratios.
     k_factors = function(value) private$getter("k_factors", value),
 
-    #' @field adjustment_settings Active Binding: The Data Adjustment page's settings (see [adjust_service_data()]); a
-    #'   dataset saved before they existed gets them from its `k_factors` and `excluded_years`.
+    #' @field adjustment_settings Active Binding: The Data Adjustment page's settings (see [adjust_service_data()]).
+    #'   When none are stored, they are made from `k_factors` and `excluded_years`.
     adjustment_settings = function(value) {
       if (!missing(value)) cd_abort(c("x" = "Use {.fun set_adjustment_settings}."))
       private$getter("adjustment_settings", value) %||% adjustment_settings_from_k(self$k_factors, self$excluded_years)
@@ -1628,291 +1640,68 @@ CacheConnection <- R6::R6Class(
     # -------------------------------------------------------------------------
 
     #' @field reporting_rate_national Active Binding: Gets the cached national reporting rate dataset.
-    reporting_rate_national = function(value) {
-      if (missing(value)) {
-        private$depend("countdown_data")
-        data <- private$getter("reporting_rate_national", value)
-        if (is.null(data)) {
-          data <- self$calculate_reporting_rate("national")
-          private$update_field("reporting_rate_national", data)
-        }
-        return(data)
-      }
-      cd_abort(c("x" = "Read-only field."))
-    },
+    reporting_rate_national = function(value) private$kept("reporting_rate_national", value),
 
     #' @field reporting_rate_admin1 Active Binding: Gets the cached region-level reporting rate dataset.
-    reporting_rate_admin1 = function(value) {
-      if (missing(value)) {
-        private$depend("countdown_data")
-        data <- private$getter("reporting_rate_admin1", value)
-        if (is.null(data)) {
-          data <- self$calculate_reporting_rate("adminlevel_1")
-          private$update_field("reporting_rate_admin1", data)
-        }
-        return(data)
-      }
-      cd_abort(c("x" = "Read-only field."))
-    },
+    reporting_rate_admin1 = function(value) private$kept("reporting_rate_admin1", value),
 
     #' @field reporting_rate_district Active Binding: Gets the cached district-level reporting rate dataset.
-    reporting_rate_district = function(value) {
-      if (missing(value)) {
-        private$depend("countdown_data")
-        data <- private$getter("reporting_rate_district", value)
-        if (is.null(data)) {
-          data <- self$calculate_reporting_rate("district")
-          private$update_field("reporting_rate_district", data)
-        }
-        return(data)
-      }
-      cd_abort(c("x" = "Read-only field."))
-    },
+    reporting_rate_district = function(value) private$kept("reporting_rate_district", value),
 
     #' @field district_reporting_rate Active Binding: Gets percentage of districts passing the reporting threshold.
-    district_reporting_rate = function(value) {
-      if (!missing(value)) cd_abort(c("x" = "Read-only field."))
-      private$depend("countdown_data")
-      private$depend("performance_threshold")
-
-      data <- private$getter("district_reporting_rate", value)
-      if (is.null(data)) {
-        data <- self$calculate_district_reporting_rate()
-        private$update_field("district_reporting_rate", data)
-      }
-      return(data)
-    },
+    district_reporting_rate = function(value) private$kept("district_reporting_rate", value),
 
     #' @field completeness_national Active Binding: Gets non-missing values percentage at national level.
-    completeness_national = function(value) {
-      if (!missing(value)) cd_abort(c("x" = "Read-only field."))
-      private$depend("countdown_data")
-      private$depend("performance_threshold")
-
-      data <- private$getter("completeness_national", value)
-      if (is.null(data)) {
-        data <- self$calculate_completeness_summary("national")
-        private$update_field("completeness_national", data)
-      }
-      return(data)
-    },
+    completeness_national = function(value) private$kept("completeness_national", value),
 
     #' @field completeness_admin1 Active Binding: Gets non-missing values percentage at region level.
-    completeness_admin1 = function(value) {
-      if (!missing(value)) cd_abort(c("x" = "Read-only field."))
-      private$depend("countdown_data")
-      private$depend("performance_threshold")
-
-      data <- private$getter("completeness_admin1", value)
-      if (is.null(data)) {
-        data <- self$calculate_completeness_summary("adminlevel_1")
-        private$update_field("completeness_admin1", data)
-      }
-      return(data)
-    },
+    completeness_admin1 = function(value) private$kept("completeness_admin1", value),
 
     #' @field completeness_district Active Binding: Gets non-missing values percentage at district level.
-    completeness_district = function(value) {
-      if (!missing(value)) cd_abort(c("x" = "Read-only field."))
-      private$depend("countdown_data")
-      private$depend("performance_threshold")
-
-      data <- private$getter("completeness_district", value)
-      if (is.null(data)) {
-        data <- self$calculate_completeness_summary("district")
-        private$update_field("completeness_district", data)
-      }
-      return(data)
-    },
+    completeness_district = function(value) private$kept("completeness_district", value),
 
     #' @field district_completeness Active Binding: Gets % of districts passing completeness thresholds.
-    district_completeness = function(value) {
-      if (!missing(value)) cd_abort(c("x" = "Read-only field."))
-      private$depend("countdown_data")
-
-      data <- private$getter("district_completeness", value)
-      if (is.null(data)) {
-        data <- self$calculate_district_completeness_summary()
-        private$update_field("district_completeness", data)
-      }
-      return(data)
-    },
+    district_completeness = function(value) private$kept("district_completeness", value),
 
     #' @field outliers_national Active Binding: Gets percentage of non-outlier values at national level.
-    outliers_national = function(value) {
-      if (!missing(value)) cd_abort(c("x" = "Read-only field."))
-      private$depend("countdown_data")
-
-      data <- private$getter("outliers_national", value)
-      if (is.null(data)) {
-        data <- self$calculate_outliers_summary("national")
-        private$update_field("outliers_national", data)
-      }
-      return(data)
-    },
+    outliers_national = function(value) private$kept("outliers_national", value),
 
     #' @field outliers_admin1 Active Binding: Gets percentage of non-outlier values at region level.
-    outliers_admin1 = function(value) {
-      if (!missing(value)) cd_abort(c("x" = "Read-only field."))
-      private$depend("countdown_data")
-
-      data <- private$getter("outliers_admin1", value)
-      if (is.null(data)) {
-        data <- self$calculate_outliers_summary("adminlevel_1")
-        private$update_field("outliers_admin1", data)
-      }
-      return(data)
-    },
+    outliers_admin1 = function(value) private$kept("outliers_admin1", value),
 
     #' @field outliers_district Active Binding: Gets percentage of non-outlier values at district level.
-    outliers_district = function(value) {
-      if (!missing(value)) cd_abort(c("x" = "Read-only field."))
-      private$depend("countdown_data")
-
-      data <- private$getter("outliers_district", value)
-      if (is.null(data)) {
-        data <- self$calculate_outliers_summary("district")
-        private$update_field("outliers_district", data)
-      }
-      return(data)
-    },
+    outliers_district = function(value) private$kept("outliers_district", value),
 
     #' @field district_outliers_summary Active Binding: Gets % of districts passing outlier safety checks.
-    district_outliers_summary = function(value) {
-      if (!missing(value)) cd_abort(c("x" = "Read-only field."))
-      private$depend("countdown_data")
-
-      data <- private$getter("district_outliers_summary", value)
-      if (is.null(data)) {
-        data <- self$calculate_district_outlier_summary()
-        private$update_field("district_outliers_summary", data)
-      }
-      return(data)
-    },
+    district_outliers_summary = function(value) private$kept("district_outliers_summary", value),
 
     #' @field list_outlier_units Active Binding: Generates a table of facilities identified as severe outliers.
-    list_outlier_units = function(value) {
-      if (!missing(value)) cd_abort(c("x" = "Read-only field."))
-      private$depend("countdown_data")
-
-      data <- private$getter("list_outlier_units", value)
-      if (is.null(data)) {
-        data <- list_outlier_units(.data = self$countdown_data)
-        private$update_field("list_outlier_units", data)
-      }
-      return(data)
-    },
+    list_outlier_units = function(value) private$kept("list_outlier_units", value),
 
     #' @field ratios_summary Active Binding: Summarizes adequacy ratios (like ANC1/Penta1) over time.
-    ratios_summary = function(value) {
-      if (!missing(value)) cd_abort(c("x" = "Read-only field."))
-      private$depend("countdown_data")
-      private$depend("ratios_summary")
-
-      data <- private$getter("ratios_summary", value)
-      if (is.null(data)) {
-        data <- self$adequacy_ratios %>% calculate_ratios_summary(self$survey_estimates)
-        private$update_field("ratios_summary", data)
-      }
-      return(data)
-    },
+    ratios_summary = function(value) private$kept("ratios_summary", value),
 
     #' @field adequacy_ratios Active Binding: Calculates district-by-district chronological indicator consistency.
-    adequacy_ratios = function(value) {
-      if (!missing(value)) cd_abort(c("x" = "Read-only field."))
-      private$depend("countdown_data")
-
-      data <- private$getter("adequacy_ratios", value)
-      if (is.null(data)) {
-        data <- self$calculate_ratios_and_adequacy()
-        private$update_field("adequacy_ratios", data)
-      }
-      return(data)
-    },
+    adequacy_ratios = function(value) private$kept("adequacy_ratios", value),
 
     #' @field overall_score Active Binding: Merges DQA tables to formulate the master health score grade.
-    overall_score = function(value) {
-      if (!missing(value)) cd_abort(c("x" = "Read-only field."))
-      private$depend("countdown_data")
-      private$depend("performance_threshold")
-
-      data <- private$getter("overall_score", value)
-      if (is.null(data)) {
-        data <- self$calculate_overall_score(admin_level = "national")
-        private$update_field("overall_score", data)
-      }
-      return(data)
-    },
+    overall_score = function(value) private$kept("overall_score", value),
 
     # -------------------------------------------------------------------------
     # Denominators & Coverage
     # -------------------------------------------------------------------------
 
     #' @field denominator_metrics Active Binding: Compiles demographic targets from DHIS2 and UN data.
-    denominator_metrics = function(value) {
-      if (!missing(value)) cd_abort(c("x" = "Read-only field."))
-      private$depend("un_estimates")
-      private$depend("adjusted_data")
-
-      data <- private$getter("denominator_metrics", value)
-      if (is.null(data) && !is.null(self$adjusted_data)) {
-        data <- self$adjusted_data %>% prepare_population_metrics(un_estimates = self$un_estimates)
-        private$update_field("denominator_metrics", data)
-      }
-      return(data)
-    },
+    denominator_metrics = function(value) private$kept("denominator_metrics", value),
 
     #' @field indicator_coverage_national Active Binding: Gets national-level indicator coverage calculations.
-    indicator_coverage_national = function(value) {
-      if (missing(value)) {
-        private$depend("derivation_population")
-        private$depend("adjusted_data")
-        private$depend("national_estimates")
-        private$depend("un_estimates")
-        
-        cov <- private$getter("indicator_coverage_national", value)
-        if (is.null(cov)) {
-          cov <- self$calculate_indicator_coverage("national")
-          private$update_field("indicator_coverage_national", cov)
-        }
-        return(cov)
-      }
-      cd_abort(c("x" = "{.field indicator_coverage_national} is readonly."))
-    },
+    indicator_coverage_national = function(value) private$kept("indicator_coverage_national", value),
 
     #' @field indicator_coverage_admin1 Active Binding: Gets region-level indicator coverage calculations.
-    indicator_coverage_admin1 = function(value) {
-      if (missing(value)) {
-        private$depend("derivation_population")
-        private$depend("adjusted_data")
-        private$depend("national_estimates")
-        
-        cov <- private$getter("indicator_coverage_admin1", value)
-        if (is.null(cov)) {
-          cov <- self$calculate_indicator_coverage("adminlevel_1")
-          private$update_field("indicator_coverage_admin1", cov)
-        }
-        return(cov)
-      }
-      cd_abort(c("x" = "{.field indicator_coverage_admin1} is readonly."))
-    },
+    indicator_coverage_admin1 = function(value) private$kept("indicator_coverage_admin1", value),
 
     #' @field indicator_coverage_district Active Binding: Gets district-level indicator coverage calculations.
-    indicator_coverage_district = function(value) {
-      if (missing(value)) {
-        private$depend("derivation_population")
-        private$depend("adjusted_data")
-        private$depend("national_estimates")
-        
-        cov <- private$getter("indicator_coverage_district", value)
-        if (is.null(cov)) {
-          cov <- self$calculate_indicator_coverage("district")
-          private$update_field("indicator_coverage_district", cov)
-        }
-        return(cov)
-      }
-      cd_abort(c("x" = "{.field indicator_coverage_district} is readonly."))
-    },
+    indicator_coverage_district = function(value) private$kept("indicator_coverage_district", value),
 
     # -------------------------------------------------------------------------
     # Extracted Estimates & Raw Data Sources
@@ -1921,11 +1710,13 @@ CacheConnection <- R6::R6Class(
     #' @field survey_estimates Active Binding: Extracts and formats targeted rates from the master survey.
     survey_estimates = function(value) {
       estimates <- private$getter("survey_estimates", value)
+      local_data_group(private$.in_memory_data$countdown_data)
       group <- get_selected_group()
       if (group == "vaccine") {
-        estimates[c("anc1", "instlivebirths", "bcg", "penta1", "penta3", "measles1", "opv1", "opv3", "measles1")]
+        estimates[c("anc1", "instlivebirths", "bcg", "penta1", "penta3", "measles1", "opv1", "opv3")]
       } else {
-        estimates[which(!estimates %in% c("opv1", "opv3"))]
+        # by name: compared with the values, nothing was ever left out
+        estimates[!names(estimates) %in% c("opv1", "opv3")]
       }
     },
 
@@ -2021,7 +1812,8 @@ CacheConnection <- R6::R6Class(
     #'   `set_report_theme()`).
     report_themes = function(value) private$getter("report_themes", value),
 
-    #' @field fpet_data Active Binding: Fetches FPET metrics (loads from global if missing).
+    #' @field fpet_data Active Binding: Fetches FPET metrics (the package's built-in data for the country when
+    #'   none was set).
     fpet_data = function(value) {
       iso <- self$country_iso
       dt <- private$getter("fpet_data", value)
@@ -2064,11 +1856,9 @@ CacheConnection <- R6::R6Class(
       private$filter_survey(survey)
     },
 
-    #' @field shapefile Active Binding: Fetches the shapefile to use for this country -- a
-    #'   user-uploaded override (`set_shapefile()`) if one exists, otherwise the package-bundled
-    #'   default for `country_iso`, same override-with-fallback pattern as `regional_survey` above.
-    #'   `NULL` if `country_iso` isn't known yet (mid-wizard, before the admin sheet's country
-    #'   resolves) -- there's nothing to fetch a bundled shapefile FOR yet.
+    #' @field shapefile Active Binding: Fetches the shapefile for the country: the one uploaded with
+    #'   `set_shapefile()` when there is one, otherwise the package's built-in admin level 1 shapefile for
+    #'   `country_iso`. `NULL` when none was uploaded and `country_iso` is not known yet.
     shapefile = function(value) {
       uploaded <- private$getter("shapefile", value)
       if (!is.null(uploaded)) return(uploaded)
@@ -2076,9 +1866,8 @@ CacheConnection <- R6::R6Class(
       get_country_shapefile(self$country_iso, level = "admin_level_1")
     },
 
-    #' @field shapefile_name_field Active Binding: Which column of `self$shapefile` holds admin-1
-    #'   names -- `"NAME_1"` (the bundled shapefile's own column) unless a user-uploaded one set a
-    #'   different field via `set_shapefile_name_field()`.
+    #' @field shapefile_name_field Active Binding: The column of `shapefile` that holds the admin level 1 names:
+    #'   `"NAME_1"` (the column of the built-in shapefiles) unless `set_shapefile_name_field()` set another.
     shapefile_name_field = function(value) private$getter("shapefile_name_field", value) %||% "NAME_1",
 
     #' @field wiq_survey Active Binding: Fetches wealth inequality (WIQ) survey raw frame.
@@ -2108,7 +1897,7 @@ CacheConnection <- R6::R6Class(
       survey <- private$getter("education_survey", value)
       if (is.null(survey)) {
         survey <- survey_data$meduc %>%
-          mutate(levels = factor(level, levels = c('none', 'primary', 'secondary+'))) %>%
+          mutate(level = factor(level, levels = c('none', 'primary', 'secondary+'))) %>%
           new_tibble(class = 'cd_equity_data')
       }
       private$filter_survey(survey)
@@ -2160,141 +1949,36 @@ CacheConnection <- R6::R6Class(
     # Derived Layers (Inequality, Health Systems, Mortality)
     # -------------------------------------------------------------------------
 
-    #' @field inequality_admin1 Active Binding: Automatically calculates and caches Admin1 inequality matrices.
-    inequality_admin1 = function(value) {
-      if (missing(value)) {
-        private$depend("adjusted_data")
-        private$depend("un_estimates")
-        private$depend("national_estimates")
-
-        data <- private$getter("inequality_admin1", value)
-        if (is.null(data)) {
-          data <- self$calculate_inequality(admin_level = "adminlevel_1")
-          private$update_field("inequality_admin1", data)
-        }
-        return(data)
-      }
-      cd_abort(c("x" = "{.field inequality_admin1} is readonly."))
-    },
+    #' @field inequality_admin1 Active Binding: Automatically calculates and caches Admin level 1 inequality matrices.
+    inequality_admin1 = function(value) private$kept("inequality_admin1", value),
 
     #' @field inequality_district Active Binding: Automatically calculates and caches District inequality matrices.
-    inequality_district = function(value) {
-      if (missing(value)) {
-        private$depend("adjusted_data")
-        private$depend("un_estimates")
-        private$depend("national_estimates")
+    inequality_district = function(value) private$kept("inequality_district", value),
 
-        data <- private$getter("inequality_district", value)
-        if (is.null(data)) {
-          data <- self$calculate_inequality(admin_level = "district")
-          private$update_field("inequality_district", data)
-        }
-        return(data)
-      }
-      cd_abort(c("x" = "{.field inequality_district} is readonly."))
-    },
+    #' @field adjustment_values Active Binding: The yearly numbers as reported and after each step of the dataset's
+    #'   adjustment (completeness, outliers, missing values), for every indicator. Computed once and kept.
+    adjustment_values = function(value) private$kept("adjustment_values", value),
 
     #' @field mortality_summary Active Binding: Calculates mortality summaries combining live births and still births.
-    mortality_summary = function(value) {
-      if (missing(value)) {
-        private$depend("adjusted_data")
-        summary <- private$getter("mortality_summary", value)
-        if (is.null(summary) && !is.null(self$adjusted_data)) {
-          summary <- create_mortality_summary(self$adjusted_data)
-          private$update_field("mortality_summary", summary)
-        }
-        return(summary)
-      }
-      cd_abort(c("x" = "{.field mortality_summary} is readonly."))
-    },
+    mortality_summary = function(value) private$kept("mortality_summary", value),
 
     #' @field mortality_ratios Active Binding: Calculates precise mortality ratios comparing internal data with UN estimates.
-    mortality_ratios = function(value) {
-      if (missing(value)) {
-        private$depend("mortality_summary")
-        ratios <- private$getter("mortality_ratios", value)
-        if (is.null(ratios)) {
-          ratios <- self$mortality_summary %>% create_mortality_ratios(self$un_mortality_estimates)
-          private$update_field("mortality_ratios", ratios)
-        }
-        return(ratios)
-      }
-      cd_abort(c("x" = "{.field mortality_ratios} is readonly."))
-    },
+    mortality_ratios = function(value) private$kept("mortality_ratios", value),
 
     #' @field service_utilization_national Active Binding: Caches OPD/IPD utilizations summed to the National scale.
-    service_utilization_national = function(value) {
-      if (missing(value)) {
-        private$depend("adjusted_data")
-        cov <- private$getter("service_utilization_national", value)
-        if (is.null(cov)) {
-          cov <- self$compute_service_utilization("national")
-          private$update_field("service_utilization_national", cov)
-        }
-        return(cov)
-      }
-      cd_abort(c("x" = "{.field service_utilization_national} is readonly."))
-    },
+    service_utilization_national = function(value) private$kept("service_utilization_national", value),
 
-    #' @field service_utilization_admin1 Active Binding: Caches OPD/IPD utilizations parsed by Admin 1 level.
-    service_utilization_admin1 = function(value) {
-      if (missing(value)) {
-        private$depend("adjusted_data")
-        cov <- private$getter("service_utilization_admin1", value)
-        if (is.null(cov)) {
-          cov <- self$compute_service_utilization("adminlevel_1")
-          private$update_field("service_utilization_admin1", cov)
-        }
-        return(cov)
-      }
-      cd_abort(c("x" = "{.field service_utilization_admin1} is readonly."))
-    },
+    #' @field service_utilization_admin1 Active Binding: Caches OPD/IPD utilizations parsed at admin level 1.
+    service_utilization_admin1 = function(value) private$kept("service_utilization_admin1", value),
 
     #' @field health_system_comparison Active Binding: Summarizes health system efficiency linking resources to coverage.
-    health_system_comparison = function(value) {
-      if (missing(value)) {
-        private$depend("adjusted_data")
-        private$depend("indicator_coverage_admin1")
-        private$depend("indicator_coverage_district")
-        
-        cov <- private$getter("health_system_comparison", value)
-        if (is.null(cov) && !is.null(self$adjusted_data)) {
-          cov <- self$adjusted_data %>%
-            calculate_health_system_comparison(self$indicator_coverage_admin1, self$indicator_coverage_district)
-          private$update_field("health_system_comparison", cov)
-        }
-        return(cov)
-      }
-      cd_abort(c("x" = "{.field health_system_comparison} is readonly."))
-    },
+    health_system_comparison = function(value) private$kept("health_system_comparison", value),
 
     #' @field health_system_metrics_national Active Binding: Compiles core indicators (staff density, beds) at the National scale.
-    health_system_metrics_national = function(value) {
-      if (missing(value)) {
-        private$depend("adjusted_data")
-        cov <- private$getter("health_system_metrics_national", value)
-        if (is.null(cov) && !is.null(self$adjusted_data)) {
-          cov <- self$adjusted_data %>% calculate_health_system_metrics('national')
-          private$update_field("health_system_metrics_national", cov)
-        }
-        return(cov)
-      }
-      cd_abort(c("x" = "{.field health_system_metrics_national} is readonly."))
-    },
+    health_system_metrics_national = function(value) private$kept("health_system_metrics_national", value),
 
-    #' @field health_system_metrics_admin1 Active Binding: Compiles core indicators (staff density, beds) at the Admin 1 scale.
-    health_system_metrics_admin1 = function(value) {
-      if (missing(value)) {
-        private$depend("adjusted_data")
-        cov <- private$getter("health_system_metrics_admin1", value)
-        if (is.null(cov) && !is.null(self$adjusted_data)) {
-          cov <- self$adjusted_data %>% calculate_health_system_metrics('adminlevel_1')
-          private$update_field("health_system_metrics_admin1", cov)
-        }
-        return(cov)
-      }
-      cd_abort(c("x" = "{.field health_system_metrics_admin1} is readonly."))
-    },
+    #' @field health_system_metrics_admin1 Active Binding: Compiles core indicators (staff density, beds) at the Admin level 1 scale.
+    health_system_metrics_admin1 = function(value) private$kept("health_system_metrics_admin1", value),
 
     #' @field national_private_share Active Binding: Returns baseline metrics regarding private sector operations (National).
     national_private_share = function(value) {
@@ -2428,6 +2112,7 @@ CacheConnection <- R6::R6Class(
       csection_national_estimates = NULL,
       csection_area_estimates = NULL,
       
+      adjustment_values = NULL,
       mortality_summary = NULL,
       mortality_ratios = NULL,
       service_utilization_national = NULL,
@@ -2453,10 +2138,38 @@ CacheConnection <- R6::R6Class(
         private$.has_changed <<- TRUE
         private$trigger(field_name)
         private$trigger("revision")
-        self$save_to_disk()
+        private$request_save()
         return(TRUE)
       }
       return(FALSE)
+    },
+
+    # One change of setting clears many tables, and each cleared table is a changed field: writing the file for each
+    # of them made a change of threshold 14 writes (1.7 s measured). In a running app the writes of one change are
+    # gathered into one, made a moment later, after the page has had its answer. Outside an app (a script, a test)
+    # nothing would run a later callback, so there the file is written at once, as before.
+    .save_pending = FALSE,
+    .save_on_stop = FALSE,
+    request_save = function() {
+      if (isTRUE(private$.read_only)) return(invisible(FALSE))
+      if (!isTRUE(getOption("cd2030.defer_saves", shiny::isRunning()))) return(self$save_to_disk())
+      if (isTRUE(private$.save_pending)) return(invisible(TRUE))
+      private$.save_pending <- TRUE
+      # a session or an app that ends within that moment still writes what changed
+      if (!isTRUE(private$.save_on_stop)) {
+        private$.save_on_stop <- TRUE
+        try(shiny::onStop(function() try(self$save_to_disk(), silent = TRUE)), silent = TRUE)
+      }
+      later::later(function() {
+        private$.save_pending <- FALSE
+        try(self$save_to_disk(), silent = TRUE)
+      }, getOption("cd2030.save_delay", 0.2))
+      invisible(TRUE)
+    },
+
+    # an object dropped (or R closing) with a write still waiting makes it
+    finalize = function() {
+      if (isTRUE(private$.has_changed)) try(self$save_to_disk(), silent = TRUE)
     },
 
     getter = function(field_name, value) {
@@ -2494,86 +2207,36 @@ CacheConnection <- R6::R6Class(
     # Invalidation Cascades (The Core Reactive Engine)
     # -------------------------------------------------------------------------
 
-    #' Invalidate entirely (Usually triggered on initial data load)
+    # A table kept by the dataset (see R/cache-tables.R): a dependency on what it is computed from, the table as kept,
+    # or computed now and kept.
+    kept = function(name, value) {
+      if (!missing(value)) cd_abort(c("x" = "{.field {name}} is read-only: it is computed from the dataset."))
+      table <- .cd_kept_tables[[name]]
+      for (field in table$reads) private$depend(field)
+      data <- private$getter(name)
+      if (is.null(data) && (is.null(table$when) || isTRUE(table$when(self)))) {
+        local_data_group(private$.in_memory_data$countdown_data)
+        data <- table$compute(self)
+        private$update_field(name, data)
+      }
+      data
+    },
+
+    # `fields` changed: every kept table computed from them, directly or through another kept table, is cleared.
+    changed = function(fields) {
+      for (name in .cd_kept_dependents(fields)) private$update_field(name, NULL)
+      invisible()
+    },
+
+    # New data: every kept table, and what was derived from the old data outside the table (the FPET data and the
+    # sector estimates).
     invalidate_cached_data = function() {
-      private$invalidate_dqa_cache()
-      private$invalidate_downstream_adjusted()
+      for (name in names(.cd_kept_tables)) private$update_field(name, NULL)
       private$update_field("fpet_data", NULL)
       private$update_field("sector_national_estimates", NULL)
       private$update_field("sector_area_estimates", NULL)
       private$update_field("csection_national_estimates", NULL)
       private$update_field("csection_area_estimates", NULL)
-    },
-
-    #' Invalidate downstream computations (Coverage, Mortality, etc.) derived from adjustments
-    invalidate_downstream_adjusted = function() {
-      private$invalidate_denominator_cache()
-      private$invalidate_coverage_cache()
-      private$invalidate_mortality_cache()
-      private$invalidate_utilization_cache()
-    },
-
-    #' Invalidate Data Quality Cache
-    invalidate_dqa_cache = function() {
-      private$update_field("reporting_rate_national", NULL)
-      private$update_field("reporting_rate_admin1", NULL)
-      private$update_field("reporting_rate_district", NULL)
-      private$update_field("district_reporting_rate", NULL)
-      private$update_field("completeness_national", NULL)
-      private$update_field("completeness_admin1", NULL)
-      private$update_field("completeness_district", NULL)
-      private$update_field("district_completeness", NULL)
-      private$update_field("outliers_national", NULL)
-      private$update_field("outliers_admin1", NULL)
-      private$update_field("outliers_district", NULL)
-      private$update_field("district_outliers_summary", NULL)
-      private$update_field("list_outlier_units", NULL)
-      private$update_field("ratios_summary", NULL)
-      private$update_field("adequacy_ratios", NULL)
-      private$update_field("overall_score", NULL)
-    },
-
-    #' Invalidate Denominator Cache
-    invalidate_denominator_cache = function() {
-      private$update_field("denominator_metrics", NULL)
-    },
-
-    #' Invalidate Coverage Cache (Automatically cascades to Inequality & Health Systems)
-    invalidate_coverage_cache = function() {
-      private$update_field("indicator_coverage_national", NULL)
-      private$update_field("indicator_coverage_admin1", NULL)
-      private$update_field("indicator_coverage_district", NULL)
-
-      private$update_field("bayesian_models", NULL)
-      
-      # Implicit Cascade: If Coverage drops, dependent matrices drop too.
-      private$invalidate_inequality_cache()
-      private$invalidate_health_systems_cache()
-    },
-
-    #' Invalidate Inequality Cache
-    invalidate_inequality_cache = function() {
-      private$update_field("inequality_admin1", NULL)
-      private$update_field("inequality_district", NULL)
-    },
-
-    #' Invalidate Mortality Cache
-    invalidate_mortality_cache = function() {
-      private$update_field("mortality_summary", NULL)
-      private$update_field("mortality_ratios", NULL)
-    },
-
-    #' Invalidate Utilization Cache
-    invalidate_utilization_cache = function() {
-      private$update_field("service_utilization_national", NULL)
-      private$update_field("service_utilization_admin1", NULL)
-    },
-
-    #' Invalidate Health Systems Cache
-    invalidate_health_systems_cache = function() {
-      private$update_field("health_system_comparison", NULL)
-      private$update_field("health_system_metrics_national", NULL)
-      private$update_field("health_system_metrics_admin1", NULL)
     },
 
     # -------------------------------------------------------------------------
@@ -2591,7 +2254,7 @@ CacheConnection <- R6::R6Class(
       nat_vals <- parsed$values[names(parsed$values) %in% c("nmr", "pnmr", "sbr")]
       
       # Feed the parsed data directly into our newly bulletproofed public setters!
-      private$update_field("survey_year", parsed$year)
+      if (private$update_field("survey_year", parsed$year)) private$changed("survey_year")
       if (length(survey_vals) > 0) self$set_survey_estimates(survey_vals)
       if (length(nat_vals) > 0) self$set_national_estimates(as.list(nat_vals))
     },

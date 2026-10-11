@@ -85,6 +85,26 @@ get_selected_group <- function() {
   val
 }
 
+# The group a dataset was loaded as (it is kept on the data): NULL when the data does not say, or names a group that
+# is not registered in this session.
+cd_data_group <- function(.data) {
+  group <- attr(.data, "indicator_group", exact = TRUE)
+  if (is_string(group) && group %in% names(.get_all_groups())) group else NULL
+}
+
+# For the rest of the calling function the selected group is the dataset's own, and what it was before once the
+# function returns. The indicators of a computation are then those of the data it is given, whichever group the
+# session last selected (two datasets of different groups can be open in one session: the pooled analysis).
+local_data_group <- function(.data, .local_envir = parent.frame()) {
+  group <- cd_data_group(.data)
+  old <- get_selected_group()
+  if (is.null(group) || identical(group, old)) return(invisible(old))
+  set_selected_group(group)
+  withr::defer(set_selected_group(old), envir = .local_envir)
+  invisible(group)
+}
+
+
 #' Register or override an indicator group (profile)
 #'
 #' Adds or modifies a group definition by **name**. If the name already exists,
@@ -121,6 +141,9 @@ get_selected_group <- function() {
 #'   list(hiv = c("hiv_test","pmtct1")),
 #'   on_conflict = "merge"
 #' )
+#'
+#' # Back to the built-in group
+#' reset_indicator_group("rmncah")
 #'
 #' @export
 register_indicator_group <- function(name, value, on_conflict = c('replace', 'merge', 'error')) {
@@ -199,8 +222,17 @@ list_indicator_groups <- function() {
   sort(names(.get_all_groups()))
 }
 
-#' Get Indicator Group Names
+#' Get indicator group names
+#'
+#' Lists the names of the categories (such as `anc`, `idelv` or `vacc`) that the indicators of the
+#' selected indicator group are arranged in. These are the names of [get_indicator_groups()].
+#'
 #' @return Character vector of indicator group names
+#' @examples
+#' get_indicator_group_names()
+#'
+#' # the indicators of one of them
+#' get_indicator_groups()[["vacc"]]
 #' @export
 get_indicator_group_names <- function() names(get_indicator_groups())
 
@@ -333,12 +365,28 @@ resolve_indicator_group <- function(indicators, group = c('auto', 'rmncah', 'vac
 #' @title Get All Indicators
 #' @description Flatten all indicators from all groups
 #' @return Character vector of all indicators
+#' @examples
+#' get_all_indicators()
+#'
+#' # the indicators of another group (the selected group is put back afterwards)
+#' old <- get_selected_group()
+#' set_selected_group("vaccine")
+#' get_all_indicators()
+#' set_selected_group(old)
 #' @export
 get_all_indicators <- function() sort(list_c(get_indicator_groups()))
 
 #' @title Get Indicators for coverage calculation
 #' @description Flatten all indicators from all groups
 #' @return Character vector of all indicators
+#' @examples
+#' get_coverage_indicators()
+#'
+#' # the vaccine group calculates coverage for every indicator it has
+#' old <- get_selected_group()
+#' set_selected_group("vaccine")
+#' setequal(get_coverage_indicators(), get_all_indicators())
+#' set_selected_group(old)
 #' @export
 get_coverage_indicators <- function() {
   if (get_selected_group() == 'vaccine') {
@@ -351,6 +399,11 @@ get_coverage_indicators <- function() {
 #' @title Get Indicators excluding indicators without denominator
 #' @description Flatten all indicators from all groups
 #' @return Character vector of all indicators
+#' @examples
+#' get_analysis_indicators()
+#'
+#' # what the selected group has and the analysis leaves out
+#' setdiff(get_all_indicators(), get_analysis_indicators())
 #' @export
 get_analysis_indicators <- function()  {
   groups <- get_indicator_groups()
@@ -382,6 +435,12 @@ get_adjustment_indicators <- function() {
 #' @title Get Named Indicator Vector
 #' @description Each indicator is named by its group
 #' @return Named character vector of indicators
+#' @examples
+#' indicators <- get_named_indicators()
+#' head(indicators)
+#'
+#' # the indicators of one category
+#' unname(indicators[names(indicators) == "vacc"])
 #' @export
 get_named_indicators <- function() {
   groups <- get_indicator_groups()
@@ -390,7 +449,7 @@ get_named_indicators <- function() {
   out
 }
 
-#' List All Vaccine and Related Coverage Indicators
+#' List all vaccine and related coverage indicators
 #'
 #' Returns a vector of standard vaccine and related indicators used in coverage
 #' and dropout analysis. This includes routine immunizations, tracer indicators,
@@ -406,11 +465,17 @@ list_vaccine_indicators <- function() {
   get_indicator_groups()[['vacc']]
 }
 
-#' List Tracer Vaccines
+#' List tracer vaccines
 #'
 #' Returns a subset of vaccines used in tracer metrics
 #'
 #' @return A character vector of tracer vaccines
+#'
+#' @examples
+#' list_tracer_vaccines()
+#'
+#' # those the selected indicator group has
+#' intersect(list_tracer_vaccines(), get_all_indicators())
 #'
 #' @export
 list_tracer_vaccines  <- function() {

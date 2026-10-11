@@ -1,6 +1,8 @@
-#' Plot Missing Summary
+#' Plot missing summary
 #'
-#' This method visualizes missing results for immunization indicators
+#' Draws the share of missing values in a completeness summary as a heat map by unit, for one
+#' indicator by year or for all indicators averaged over the years. With `plot_type = "trend"` it
+#' draws the completeness of one indicator over time, one panel per unit.
 #'
 #' @param x A `cd_completeness_summary` object, as returned by
 #'   [calculate_completeness_summary()].
@@ -9,15 +11,9 @@
 #'   Default is `"heat_map"`.
 #' @param indicator Optional. One of the supported indicators (`'opv1'`, `'penta3'`, etc.)
 #'   to visualize in the plot. If `NULL` all indicators will be shown.
-#' @param title Optional plot title. Defaults to a title based on `plot_type`,
-#'   `indicator` and region.
-#' @param x_axis,y_axis Optional x- and y-axis titles. Default is `NULL`.
-#' @param legend Optional legend title. Default is `NULL`.
-#' @param ... Reserved for future use.
+#' @inheritParams cd_plot_arguments
 #'
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
-#' @return A `ggplot` or `plotly` object depending on the selection type.
+#' @return A `ggplot` object: a heat map or a faceted line chart, depending on `plot_type`.
 #'
 #' @examples
 #' \dontrun{
@@ -30,20 +26,23 @@ plot.cd_completeness_summary <- function(x,
                                          plot_type = c("heat_map", "trend"),
                                          indicator = NULL,
                                          title = NULL,
-                                         x_axis = NULL,
-                                         y_axis = NULL,
-                                         legend = NULL,
-                                         ..., options = NULL) {
-  cd_finish_plot(.plot_cd_completeness_summary_impl(x, plot_type = plot_type, indicator = indicator, title = title, x_axis = x_axis, y_axis = y_axis, legend = legend, ...), options, ..., .source = x)
+                                         subtitle = NULL,
+                                         caption = NULL,
+                                         x_title = NULL,
+                                         y_title = NULL,
+                                         legend_title = NULL,
+                                         ...,
+                                         options = NULL) {
+  .cd_draw(.plot_cd_completeness_summary_impl, x, list(plot_type = plot_type, indicator = indicator), ..., options = options)
 }
 
 .plot_cd_completeness_summary_impl <- function(x,
                                          plot_type = c("heat_map", "trend"),
                                          indicator = NULL,
                                          title = NULL,
-                                         x_axis = NULL,
-                                         y_axis = NULL,
-                                         legend = NULL,
+                                         x_title = NULL,
+                                         y_title = NULL,
+                                         legend_title = NULL,
                                          ...) {
   plot_type <- arg_match(plot_type)
   threshold <- attr_or_abort(x, "threshold")
@@ -85,9 +84,9 @@ plot.cd_completeness_summary <- function(x,
   }
 
   plot_title <- if (!is.null(title)) title else label$title
-  plot_x <- if (!is.null(x_axis)) x_axis else label$x
-  plot_y <- if (!is.null(y_axis)) y_axis else label$y
-  plot_leg <- if (!is.null(legend)) legend else label$legend
+  plot_x <- if (!is.null(x_title)) x_title else label$x
+  plot_y <- if (!is.null(y_title)) y_title else label$y
+  plot_leg <- if (!is.null(legend_title)) legend_title else label$legend_title
 
   if (plot_type == "heat_map") {
     d <- x %>%
@@ -105,9 +104,9 @@ plot.cd_completeness_summary <- function(x,
         y_col = "indicator",
         value_col = "value",
         threshold = threshold,
-        x_lab = plot_x,
-        y_lab = plot_y,
-        legend_lab = plot_leg,
+        x_title = plot_x,
+        y_title = plot_y,
+        legend_title = plot_leg,
         title = plot_title,
         reverse = TRUE
       )
@@ -123,9 +122,9 @@ plot.cd_completeness_summary <- function(x,
         y_col = "year",
         value_col = "value",
         threshold = threshold,
-        x_lab = plot_x,
-        y_lab = plot_y,
-        legend_lab = plot_leg,
+        x_title = plot_x,
+        y_title = plot_y,
+        legend_title = plot_leg,
         title = plot_title,
         reverse = TRUE
       )
@@ -138,7 +137,7 @@ plot.cd_completeness_summary <- function(x,
     x %>%
       mutate(across(starts_with("mis_"), ~ round(.x))) %>%
       group_by(!!sym(admin_level_col)) %>%
-      select(year, any_of(admin_level_col), where(~ any(.x < 100, na.rm = TRUE))) %>%
+      select(year, any_of(admin_level_col), starts_with("mis_")) %>%
       pivot_longer(
         cols = starts_with("mis_"),
         names_prefix = "mis_",
@@ -154,14 +153,14 @@ plot.cd_completeness_summary <- function(x,
       scale_y_continuous(limits = c(0, NA), expand = expansion(mult = c(0.05, 0.1))) +
       cd_plot_theme(
         title = plot_title,
-        x_axis = plot_x,
-        y_axis = plot_y
+        x_title = plot_x,
+        y_title = plot_y
       ) +
       theme(legend.position = "none")
   }
 }
 
-#' Plot Percent of Districts with Complete Data
+#' Plot percent of districts with complete data
 #'
 #' Visualizes the percentage of districts with complete data for a selected
 #' indicator over time.
@@ -171,17 +170,12 @@ plot.cd_completeness_summary <- function(x,
 #'   corresponding `mis_{indicator}` columns.
 #' @param indicator A character string specifying the indicator to plot.
 #'   Must be one of the values returned by `get_all_indicators()`.
-#' @param title Optional character string to override the default plot title.
-#' @param x_axis Optional character string to override the x-axis label.
-#' @param y_axis Optional character string to override the y-axis label.
-#' @param ... Additional arguments reserved for future use.
+#' @inheritParams cd_plot_arguments
 #'
 #' @details
 #' The function produces a column chart showing the percent of districts
 #' with complete data for the selected indicator by year.
 #'
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A `ggplot` object.
 #'
 #' @examples
@@ -193,23 +187,27 @@ plot.cd_completeness_summary <- function(x,
 plot.cd_missing_district <- function(x,
                                      indicator = NULL,
                                      title = NULL,
-                                     x_axis = NULL,
-                                     y_axis = NULL,
-                                     ..., options = NULL) {
-  cd_finish_plot(.plot_cd_missing_district_impl(x, indicator = indicator, title = title, x_axis = x_axis, y_axis = y_axis, ...), options, ..., .source = x)
+                                     subtitle = NULL,
+                                     caption = NULL,
+                                     x_title = NULL,
+                                     y_title = NULL,
+                                     legend_title = NULL,
+                                     ...,
+                                     options = NULL) {
+  .cd_draw(.plot_cd_missing_district_impl, x, list(indicator = indicator), ..., options = options)
 }
 
 .plot_cd_missing_district_impl <- function(x,
                                      indicator = NULL,
                                      title = NULL,
-                                     x_axis = NULL,
-                                     y_axis = NULL,
+                                     x_title = NULL,
+                                     y_title = NULL,
                                      ...) {
   indicator <- arg_match(indicator, get_all_indicators())
 
   plot_title <- if (!is.null(title)) title else "Percent of districts with complete data by vaccine"
-  plot_y <- if (!is.null(x_axis)) y_axis else "Completeness (%)"
-  plot_x <- if (!is.null(y_axis)) x_axis else "Year"
+  plot_y <- if (!is.null(y_title)) y_title else "Completeness (%)"
+  plot_x <- if (!is.null(x_title)) x_title else "Year"
 
   x %>%
     ggplot(aes(x = year, y = !!sym(paste0("mis_", indicator)))) +
@@ -222,7 +220,7 @@ plot.cd_missing_district <- function(x,
     scale_y_continuous(limits = c(0, NA), expand = expansion(mult = c(0, 0.1))) +
     cd_plot_theme(
       title = plot_title,
-      x_axis = plot_x,
-      y_axis = plot_y
+      x_title = plot_x,
+      y_title = plot_y
     )
 }

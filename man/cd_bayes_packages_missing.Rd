@@ -13,3 +13,10 @@ the model can run.
 \description{
 Checks without loading them (loading brings in Stan).
 }
+\examples{
+cd_bayes_packages_missing()
+
+if (length(cd_bayes_packages_missing()) == 0) {
+  message("The Bayesian model can run.")
+}
+}

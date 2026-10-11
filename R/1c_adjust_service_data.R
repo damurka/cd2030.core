@@ -1,4 +1,4 @@
-#' Adjust Service Data for Coverage Analysis
+#' Adjust service data for coverage analysis
 #'
 #' The `adjust_service_data` function processes DHIS-2 health service data, correcting
 #' for incomplete reporting, applying k-factor adjustments for accurate scaling, and managing
@@ -22,7 +22,7 @@
 #'   each changed (see [generate_adjustment_values()]).
 #'
 #' @details
-#' This function prepares service data through a series of steps to ensure data quality and consistency:
+#' Prepares service data through a series of steps to ensure data quality and consistency:
 #'
 #'   1. **Validation**: Checks the structure of `.data` and ensures that the `adjustment`
 #'      argument is valid. For `custom` adjustments, `k_factors` must be specified and contain valid values.
@@ -78,6 +78,7 @@ adjust_service_data <- function(.data,
   district = year = month = NULL
 
   check_cd_data(.data)
+  local_data_group(.data)
 
   adjustment <- arg_match(adjustment)
 

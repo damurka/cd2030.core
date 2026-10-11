@@ -2,29 +2,33 @@
 % Please edit documentation in R/0_import_load_data.R
 \name{generate_admin1_keys}
 \alias{generate_admin1_keys}
-\title{Generate a simple, stable-within-one-load synthetic key per admin-1 region}
+\title{Generate a key for each admin level 1 unit}
 \usage{
 generate_admin1_keys(admin1_names)
 }
 \arguments{
-\item{admin1_names}{Character vector of admin-1 names (typically \code{countdown_data$adminlevel_1}).}
+\item{admin1_names}{A character vector of admin level 1 names, usually the \code{adminlevel_1}
+column of the dataset.}
 }
 \value{
-A tibble with one row per distinct name: \code{adminlevel_1}, \code{admin1_key} (\code{"A1-001"}, ...).
+A tibble with one row per distinct name, sorted by name, and columns \code{adminlevel_1}
+(the name) and \code{admin1_key} (the key: \code{"A1-001"}, \code{"A1-002"} and so on).
 }
 \description{
-The Load Data wizard's own Finish step (Phase 3 of the wizard redesign, apps/rmncah) needs a key
-that consistently identifies the same admin-1 region across three separately-built tables
-(\code{countdown_data}, \code{survey_mapping}, \code{map_mapping}) -- there's no real ISO-3166-2 code available
-for sub-national regions in general, so this is intentionally arbitrary, not a real-world
-identifier: \code{sort(unique(...))} the dataset's own admin-1 names and number them off. Applied once,
-from one canonical source (the dataset's own \code{adminlevel_1} values), then joined onto the other
-two tables by name -- consistency across all three is structural (the same join key everywhere),
-not something that can drift.
+Gives each distinct admin level 1 name a short key, so that the same unit can be identified
+in several tables (for example the dataset, the survey mapping and the map mapping). Generate
+the keys once from the dataset's names, then join them to the other tables by name.
 }
 \details{
-Deliberately NOT stable across separate future re-uploads of the same country's data (e.g. next
-month's file) -- purely alphabetical, regenerated fresh every time this is called. Nothing
-downstream needs cross-session stability for this key today; if that's ever needed, it's a
-materially different feature (a persisted, append-only name-to-key lookup table), not this.
+The keys are arbitrary: the distinct names are sorted and numbered in that order. They are
+not standard codes, and they are not stable between datasets. A dataset with a different set
+of names can give a different key to the same unit. Missing names get no key.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+generate_admin1_keys(data$adminlevel_1)
+
+# Repeated and missing names get no key of their own
+generate_admin1_keys(c("Western", "Coast", "Western", NA))
 }

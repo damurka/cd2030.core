@@ -2,7 +2,7 @@
 % Please edit documentation in R/1_load_survey_data.R
 \name{load_un_estimates}
 \alias{load_un_estimates}
-\title{Load UN Estimates}
+\title{Load UN estimates}
 \usage{
 load_un_estimates(path = NULL, .data = NULL, country_iso, start_year, end_year)
 }
@@ -21,4 +21,15 @@ A tibble of class \code{cd_un_estimates}.
 \description{
 Loads and processes UN estimates from a \code{.dta} file or in-memory data.
 Filters by country and year, renames columns, and assigns a custom class.
+}
+\examples{
+\dontrun{
+un <- load_un_estimates(
+  path = "un_estimates.dta", country_iso = "KEN", start_year = 2019, end_year = 2023
+)
+
+# From data already read, then kept with the dataset
+un <- load_un_estimates(.data = all_un, country_iso = "KEN", start_year = 2019, end_year = 2023)
+cache$set_un_estimates(un)
+}
 }

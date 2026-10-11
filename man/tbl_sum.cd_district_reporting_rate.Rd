@@ -2,7 +2,7 @@
 % Please edit documentation in R/tbl_sum.reporting_summary.R
 \name{tbl_sum.cd_district_reporting_rate}
 \alias{tbl_sum.cd_district_reporting_rate}
-\title{Summary for District-Level Reporting Rates by Year}
+\title{Summary for district-level reporting rates by year}
 \usage{
 \method{tbl_sum}{cd_district_reporting_rate}(x, ...)
 }
@@ -19,4 +19,11 @@ district reporting rates by year.
 Provides a custom summary for the \code{cd_district_reporting_rate} object, displaying
 a message with the threshold used in calculating district-level reporting rates by year.
 This summary serves to validate which districts meet the defined threshold for reporting completeness.
+}
+\examples{
+data <- load_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+
+# the summary is the header printed above the table, with the threshold used
+calculate_district_reporting_rate(data, threshold = 90)
+
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/1a_checks_overall_score.R
 \name{calculate_overall_score}
 \alias{calculate_overall_score}
-\title{Calculate Overall Quality Score for Data Quality Metrics}
+\title{Calculate overall quality score for data quality metrics}
 \usage{
 calculate_overall_score(
   .data,
@@ -16,9 +16,10 @@ calculate_overall_score(
 \item{.data}{A data frame of type \code{cd_data} containing facility data
 including annual reporting rates, completeness, and consistency indicators.}
 
-\item{threshold}{The data reporting rate threshold.}
+\item{threshold}{Numeric. The performance threshold (in percent): the reporting rate and
+completeness a district is expected to reach. Required: it has no default.}
 
-\item{ratio_pairs}{description}
+\item{ratio_pairs}{Named list of indicator pairs whose ratios are scored (the default pairs when \code{NULL}).}
 
 \item{region}{Optional name of an \code{adminlevel_1} region. If supplied, all
 metrics are calculated for that region only. Default is \code{NULL}.}
@@ -35,7 +36,7 @@ a summary row for the annual quality score. The result is ordered by
 metric codes and ready for reporting in tabular or graphical form.
 }
 \description{
-This function calculates an overall quality score based on various data
+Calculates an overall quality score based on various data
 quality metrics. It summarizes completeness, outlier presence, and
 consistency of reporting in immunization health facility data.
 }

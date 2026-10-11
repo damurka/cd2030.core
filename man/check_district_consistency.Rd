@@ -2,18 +2,36 @@
 % Please edit documentation in R/0_data_quality_checks.R
 \name{check_district_consistency}
 \alias{check_district_consistency}
-\title{Check a district's admin-1 pairing and spelling are stable across years}
+\title{Check that districts are consistent across the dataset}
 \usage{
 check_district_consistency(.data)
 }
 \arguments{
-\item{.data}{The merged, standardized dataset (\code{countdown_data}-shaped: \code{district},
-\code{adminlevel_1}, \code{year} columns).}
+\item{.data}{A data frame. The merged and standardized dataset, with \code{district},
+\code{adminlevel_1} and \code{year} columns.}
+}
+\value{
+\code{NULL} if no problem is found. Otherwise a character vector with one or two messages,
+each named \code{"x"}: one that lists the districts with more than one admin level 1 name, and
+one that lists the districts missing from at least one year.
 }
 \description{
-Flags a district that maps to more than one \code{adminlevel_1} value (case/whitespace-insensitive
-first, so a genuine typo isn't hidden by two spellings happening to normalize the same way),
-and separately flags a district that isn't present in every year the dataset otherwise covers
-(service-data districts are expected to be stable across years; a district appearing in some
-years but not others is much more often a rename/typo than a legitimate gap).
+Checks two things in the merged data: that each district belongs to one admin level 1 unit,
+and that each district appears in every year of the data. A district that fails either test
+has usually been renamed or misspelled in part of the workbook.
+}
+\details{
+Admin level 1 names are compared without regard to case or extra spaces, so \code{"North  East"}
+and \code{"north east"} count as the same unit. The years a district must appear in are all the
+distinct years in \code{.data}.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+check_district_consistency(data)
+
+# A district spelled differently in one year
+renamed <- data
+renamed$district[renamed$district == "Baringo" & renamed$year == 2023] <- "Baringo County"
+check_district_consistency(renamed)
 }

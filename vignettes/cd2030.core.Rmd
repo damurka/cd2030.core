@@ -1,0 +1,140 @@
+---
+title: "Get started with cd2030.core"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Get started with cd2030.core}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", fig.width = 7, fig.height = 4, dpi = 96)
+options(width = 100, tibble.print_min = 5, tibble.print_max = 10, tibble.max_extra_cols = 6)
+```
+
+cd2030.core is the Countdown to 2030 analysis of routine health facility data. This guide loads a dataset, looks at
+its quality, computes coverage and saves the work, in about twenty lines of R. Each step has its own guide with the
+detail:
+
+| Step | Guide |
+|---|---|
+| What a dataset file must contain | `vignette("preparing-data")` |
+| Reporting rates, outliers, missing values, consistency | `vignette("data-quality")` |
+| Adjustment, denominators, coverage, reports | `vignette("coverage")` |
+| The Shiny apps built on this package | `vignette("building-an-app")` |
+
+## Install
+
+The package is published on r-universe, not CRAN. datasuite.ui, which it needs, is in the same repository.
+
+```{r, eval = FALSE}
+install.packages(
+  "cd2030.core",
+  repos = c("https://damurka.r-universe.dev", "https://alkemalab.r-universe.dev", "https://cloud.r-project.org")
+)
+```
+
+Add `dependencies = TRUE` for the optional features: PDF and PowerPoint export, and the Bayesian coverage model.
+
+## Load a dataset
+
+A dataset is the Countdown Excel workbook, a Stata `.dta` master file, or an `.rds` saved by this package. The
+package comes with an example workbook for Kenya.
+
+```{r}
+library(cd2030.core)
+
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+cache <- load_cache_data(path)
+```
+
+Loading reads the sheets, cleans the column names, merges them into one table with a row per district and month, and
+works out which indicator group the file holds (`"rmncah"` or `"vaccine"`). It also names the columns that are empty.
+
+`cache` is a `CacheConnection`: the data together with every choice made about it (years removed, adjustment
+factors, denominators, surveys). The data itself is a tibble of class `cd_data`.
+
+```{r}
+data <- cache$countdown_data
+data
+```
+
+For the country it found, the package fills in the reference data it holds: UN population estimates, WUENIC
+immunization estimates and the household surveys.
+
+```{r}
+cache$country
+cache$survey_years
+```
+
+If you only want the data, `load_data(path)` returns the `cd_data` tibble without the `CacheConnection`.
+
+## Look at the quality of the data
+
+The quality functions take the data and return a table. Most take an administrative level: `"national"`,
+`"adminlevel_1"` (region) or `"district"`.
+
+```{r}
+calculate_average_reporting_rate(data)
+```
+
+Most results have a `plot()` method.
+
+```{r}
+plot(calculate_district_reporting_rate(data, threshold = 90))
+```
+
+`calculate_overall_score()` puts the checks in one table: completeness, extreme outliers, consistency between
+related indicators, and a score for each year.
+
+```{r}
+calculate_overall_score(data, threshold = 90)[, c("no", "Data Quality Metrics", "2022", "2023")]
+```
+
+## Adjust the data and compute coverage
+
+Coverage is computed from adjusted data: counts scaled up for incomplete reporting, with extreme outliers and
+missing values replaced. The `CacheConnection` does this with the settings it holds and keeps the result.
+
+```{r}
+cache$set_k_factors(c(anc = 0.25, idelv = 0.25, vacc = 0.25, opd = 0.25, ipd = 0.25))
+cache$adjust_data()
+```
+
+Coverage also needs a few national rates. Those the country's latest survey has are already filled in; this
+survey has no stillbirth rate, so it is given here.
+
+```{r}
+cache$set_national_estimates(list(sbr = 0.02))
+
+coverage <- cache$get_filtered_coverage("penta3", "national")
+coverage
+```
+
+The table sets the facility-data estimate beside the survey and WUENIC estimates, and so does its chart.
+
+```{r}
+plot(coverage)
+```
+
+## Save the work
+
+Give the dataset a path and it saves itself there, now and after each later change. `load_cache_data()` opens the
+file again with every choice as it was.
+
+```{r}
+saved <- file.path(tempdir(), "kenya.rds")
+cache$set_cache_path(saved)
+
+reopened <- load_cache_data(saved)
+reopened$k_factors
+```
+
+## Where to go next
+
+- `vignette("preparing-data")` describes the workbook and how to check your own file.
+- `vignette("data-quality")` and `vignette("coverage")` follow the analysis step by step.
+- The reference lists every function by analysis step. `?CacheConnection` lists everything the dataset object holds
+  and computes.
+- The same analysis is available without writing R in the Countdown apps (cd2030.rmncah, cd2030.vaxx), which run
+  inside DataSuite. `vignette("building-an-app")` describes how they are built.

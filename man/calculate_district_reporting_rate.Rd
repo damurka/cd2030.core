@@ -2,7 +2,7 @@
 % Please edit documentation in R/1a_checks_reporting_rate.R
 \name{calculate_district_reporting_rate}
 \alias{calculate_district_reporting_rate}
-\title{District-Level Reporting Rates by Year}
+\title{District-level reporting rates by year}
 \usage{
 calculate_district_reporting_rate(
   .data,
@@ -13,7 +13,7 @@ calculate_district_reporting_rate(
 \arguments{
 \item{.data}{A tibble of class \code{cd_data}.}
 
-\item{threshold}{Minimum reporting rate (\%) for a district to be considered
+\item{threshold}{Numeric. The performance threshold: the minimum reporting rate (in percent) for a district to be considered
 compliant. Default is 90.}
 
 \item{region}{Optional. Filter results for a specific region (admin level 1 name).}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/7_health_systems.R
 \name{calculate_health_system_metrics}
 \alias{calculate_health_system_metrics}
-\title{Calculate Health System Metrics}
+\title{Calculate health system metrics}
 \usage{
 calculate_health_system_metrics(
   .data,
@@ -21,4 +21,15 @@ beds, workforce, service use) and performance scores.
 \description{
 Aggregates data at national, admin level 1, or district level and computes
 ratios and performance scores.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+
+national <- calculate_health_system_metrics(data, admin_level = "national")
+national[c("year", "ratio_fac_pop", "ratio_bed_pop", "ratio_hstaff_pop", "score_total")]
+
+regions <- calculate_health_system_metrics(data, admin_level = "adminlevel_1")
+regions[c("adminlevel_1", "ratio_fac_pop", "ratio_hstaff_pop", "score_total")]
+
 }

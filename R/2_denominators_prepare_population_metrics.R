@@ -1,4 +1,4 @@
-#' Compute Population Metrics for DHIS-2 and UN Data
+#' Compute population metrics for DHIS-2 and UN data
 #'
 #' `prepare_population_metrics` calculates demographic metrics such as total
 #' population, live births, growth rates, and related indicators using DHIS-2
@@ -56,6 +56,7 @@ prepare_population_metrics <- function(.data,
 
   # Validate inputs
   check_cd_data(.data)
+  local_data_group(.data)
 
   # Define grouping variables based on the administrative level
   admin_level <- arg_match(admin_level)

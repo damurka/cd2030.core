@@ -106,9 +106,8 @@
   ind <- b$indicator %||% "penta1"
   indicator <- .rb_ind_name(i18n, ind)
   fill <- function(text) gsub("{indicator}", indicator, text, fixed = TRUE)
-  cache$data_with_excluded_years %>%
-    generate_adjustment_values(settings = cache$adjustment_settings) %>%
-    filter_adjustment_value(ind) %>%
+  cache$adjustment_values %>%
+    select_adjustment_value(ind) %>%
     plot(
       title = fill(t("title_adj_changes_chart", "{indicator}: reported and adjusted, by year")),
       legend_labels = c(

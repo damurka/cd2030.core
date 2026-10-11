@@ -2,7 +2,7 @@
 % Please edit documentation in R/1a_checks_missing.R
 \name{calculate_completeness_summary}
 \alias{calculate_completeness_summary}
-\title{Summarize Data Completeness by Year}
+\title{Summarize data completeness by year}
 \usage{
 calculate_completeness_summary(
   .data,
@@ -16,7 +16,7 @@ calculate_completeness_summary(
 
 \item{admin_level}{One of \code{'national'}, \code{'adminlevel_1'}, or \code{'district'}.}
 
-\item{threshold}{Integer. Completeness threshold (in percent) stored as an
+\item{threshold}{Numeric. The performance threshold (in percent) stored as an
 attribute on the result and used when plotting. Default is \code{90}.}
 
 \item{region}{Optional name of an \code{adminlevel_1} region. If supplied, only

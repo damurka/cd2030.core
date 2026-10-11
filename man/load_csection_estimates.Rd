@@ -2,7 +2,7 @@
 % Please edit documentation in R/1_load_survey_data.R
 \name{load_csection_estimates}
 \alias{load_csection_estimates}
-\title{Load C-section Share Estimates}
+\title{Load C-section share estimates}
 \usage{
 load_csection_estimates(
   path = NULL,
@@ -16,7 +16,8 @@ load_csection_estimates(
 
 \item{.data}{Optional. A pre-loaded dataset. Used directly if provided.}
 
-\item{country_iso}{Required. ISO3 country code to filter the data.}
+\item{country_iso}{ISO3 country code. When the data holds several countries (an \code{iso} column with more than
+one code), the rows of this one are kept; data for one country is used as it is.}
 
 \item{level}{Either \code{"national"} or \code{"area"} indicating the data level.}
 }

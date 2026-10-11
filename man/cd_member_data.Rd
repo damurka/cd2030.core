@@ -20,3 +20,14 @@ A data frame.
 Reads an active binding, or calls a method with \code{args} (arguments it doesn't take are left out), and returns the
 result as a plain data frame (a map's geometry dropped).
 }
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+cache <- load_cache_data(path)
+
+# a precomputed result
+cd_member_data(cache, "reporting_rate_national")
+
+# a method, with its arguments
+rates <- cd_member_data(cache, "calculate_reporting_rate", args = list(admin_level = "adminlevel_1"))
+head(rates)
+}

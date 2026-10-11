@@ -1,4 +1,8 @@
-#' Generate Bayesian Coverage Model Object
+#' Generate Bayesian coverage model object
+#'
+#' Fits a Bayesian coverage model for one indicator, combining the survey estimates and the routine
+#' (DHIS2) coverage in `coverage_data` with the yearly data quality score in `overall_score`. The
+#' model is national or sub-national (admin level 1), following the admin level of `coverage_data`.
 #'
 #' @param coverage_data Survey data frame of class 'cd_coverage'.
 #' @param overall_score DHIS2 data frame of class 'cd_overall_score'.
@@ -6,9 +10,31 @@
 #' @param denominator The denominator type to use from DHIS2 (e.g., 'penta1', 'dhis2').
 #' @param keep_samples Whether the model keeps the sampler's draws and the compiled Stan model (`samples`,
 #'   `stan_model`). Default `FALSE`: the charts and [bayes_model_estimates()] read the summary of the draws, which is
-#'   kept either way, and without the draws a model is some 30 KB (national) to 170 KB (sub-national) where it was
-#'   13 MB to 41 MB. A model that size was brought back from the worker that fitted it, kept in the dataset and
-#'   written to its file with every later change, each of which held the app up for seconds.
+#'   kept either way, and a model without the draws is much smaller (tens to hundreds of KB
+#'   instead of tens of MB), so it is quicker to save and to pass between processes.
+#'
+#' @return An object of class `cd_bayes_model`: the fitted model returned by
+#'   `bayescoveragedeploy::fit_local_model()` (a list, with its `posteriors` summary), without `samples` and
+#'   `stan_model` unless `keep_samples = TRUE`. It carries the attributes `indicator`, `model_indicator` (the
+#'   name the model uses for the indicator), `iso` and `is_national`.
+#'
+#' @examples
+#' \dontrun{
+#' # needs the Bayesian model packages (see cd_bayes_packages_missing()); a fit takes minutes
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' cache <- load_cache_data(path)
+#' cache$set_national_estimates(list(sbr = 0.02))
+#' cache$adjust_data()
+#'
+#' model <- generate_bayes_model(
+#'   coverage_data = cache$calculate_coverage("national"),
+#'   overall_score = cache$overall_score,
+#'   indicator = "penta3",
+#'   denominator = "penta1"
+#' )
+#' bayes_model_estimates(model)
+#' plot(model)
+#' }
 #'
 #' @export
 generate_bayes_model <- function(coverage_data,
@@ -16,7 +42,9 @@ generate_bayes_model <- function(coverage_data,
                                  indicator = c('anc4', 'anc_1trimester', 'ideliv', 'measles1', 'penta3'), 
                                  denominator = c('anc1', 'dhis2', 'penta1', 'penta1derived', 'anc1derived'),
                                  keep_samples = FALSE) {
-  
+  # keep_samples = FALSE: with the draws a model is 13 MB to 41 MB (30 KB to 170 KB without), and a model that
+  # size, sent back from the worker and written to the dataset's file on every change, holds the app up for seconds.
+
   # Validate inputs
   check_cd_coverage(coverage_data)
   check_cd_class(overall_score, 'cd_overall_score')
@@ -42,9 +70,19 @@ generate_bayes_model <- function(coverage_data,
   iso_val <- attr_or_abort(coverage_data, 'iso3')
   
   # Construct the column names dynamically based on the ROUTINE indicator name
-  r_col   <- paste0("r_", indicator)
-  se_col  <- paste0("se_", indicator)
-  cov_col <- paste0("cov_", indicator, "_", denominator)
+  # Institutional deliveries are named in more than one way: a survey table and a coverage table hold them as
+  # `instdeliveries` or `instlivebirths` (the built-in surveys have r_instlivebirths, the coverage tables
+  # cov_instdeliveries_* and cov_instlivebirths_*), and none has `ideliv`, so that tab's fit stopped with
+  # "object 'r_ideliv' not found". The first name the data has is used.
+  data_name <- function(prefix, suffix = "") {
+    names_to_try <- if (indicator == "ideliv") c("ideliv", "instdeliveries", "instlivebirths") else indicator
+    columns <- paste0(prefix, names_to_try, suffix)
+    found <- columns[columns %in% names(coverage_data)]
+    if (length(found)) found[[1]] else columns[[1]]
+  }
+  r_col   <- data_name("r_")
+  se_col  <- sub("^r_", "se_", r_col)
+  cov_col <- data_name("cov_", paste0("_", denominator))
   
   # ---------------------------------------------------------
   # 1. Prepare Survey Data 
@@ -146,6 +184,17 @@ generate_bayes_model <- function(coverage_data,
 #'
 #' @param model A fitted model.
 #' @return The model without them, its class and attributes kept.
+#' @examples
+#' # a stand-in for a model fitted with keep_samples = TRUE
+#' model <- structure(
+#'   list(posteriors = list(), samples = matrix(0, 1000, 50), stan_model = "the compiled model"),
+#'   class = c("cd_bayes_model", "list"),
+#'   indicator = "penta3"
+#' )
+#' slim <- slim_bayes_model(model)
+#' names(slim)
+#' attr(slim, "indicator")
+#' object.size(slim) < object.size(model)
 #' @export
 slim_bayes_model <- function(model) {
   heavy <- intersect(c("samples", "stan_model"), names(model))
@@ -167,6 +216,17 @@ slim_bayes_model <- function(model) {
 #' @param model A model from [generate_bayes_model()].
 #' @return A tibble: `indicator`, `adminlevel_1` (a sub-national model only), `year`, `estimate`, `lower` and
 #'   `upper` (95%), `lower_80` and `upper_80`.
+#' @examples
+#' \dontrun{
+#' # `cache` is a dataset with adjusted data; fitting needs the Bayesian model packages
+#' model <- cache$get_bayes_model("national", "penta3")
+#' estimates <- bayes_model_estimates(model)
+#' estimates[estimates$year >= 2020, c("year", "estimate", "lower", "upper")]
+#'
+#' # a sub-national model has a row per region and year
+#' regions <- bayes_model_estimates(cache$get_bayes_model("adminlevel_1", "penta3"))
+#' regions[regions$year == 2023, ]
+#' }
 #' @export
 bayes_model_estimates <- function(model) {
   check_cd_class(model, "cd_bayes_model")
@@ -185,36 +245,49 @@ bayes_model_estimates <- function(model) {
   dplyr::arrange(out, dplyr::across(dplyr::any_of(c("adminlevel_1", "year"))))
 }
 
-#' Plot S3 method for Bayesian Coverage Model
+#' Plot S3 method for Bayesian coverage model
 #'
 #' Leverages the bayescoveragemodel package's internal plotting function
 #' and applies the custom Countdown (CD) theme and translated labels.
 #'
 #' @param x An object of class `cd_bayes_model` returned by `generate_bayes_model()`.
-#' @param title (Optional) Custom translated title.
-#' @param x_axis (Optional) Custom translated x-axis label.
-#' @param y_axis (Optional) Custom translated y-axis label.
-#' @param caption (Optional) Custom translated caption.
+#' @inheritParams cd_plot_arguments
 #' @param region (Optional) Specific region code to plot for subnational data.
-#' @param ... Additional arguments.
 #'
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
+#'
+#' @return A `ggplot` object with the chart options applied: the estimated coverage by year for a national
+#'   model or for the `region` of a sub-national model, or a comparison of the regions in 2025 for a
+#'   sub-national model when `region` is `NULL`.
+#' @examples
+#' \dontrun{
+#' # `cache` is a dataset with adjusted data; fitting needs the Bayesian model packages
+#' national <- cache$get_bayes_model("national", "penta3")
+#' plot(national)
+#' plot(national, title = "Penta3 coverage, Kenya", y_title = "Coverage")
+#'
+#' # a sub-national model: the regions compared, or the trend of one region
+#' regional <- cache$get_bayes_model("adminlevel_1", "penta3")
+#' plot(regional)
+#' plot(regional, region = "Nairobi")
+#' }
 #' @export
 plot.cd_bayes_model <- function(x,
-                                title = NULL,
-                                x_axis = NULL,
-                                y_axis = NULL,
-                                caption = NULL,
                                 region = NULL,
-                                ..., options = NULL) {
-  cd_finish_plot(.plot_cd_bayes_model_impl(x, title = title, x_axis = x_axis, y_axis = y_axis, caption = caption, region = region, ...), options, ..., .source = x)
+                                title = NULL,
+                                subtitle = NULL,
+                                caption = NULL,
+                                x_title = NULL,
+                                y_title = NULL,
+                                legend_title = NULL,
+                                ...,
+                                options = NULL) {
+  .cd_draw(.plot_cd_bayes_model_impl, x, list(region = region), ..., options = options)
 }
 
 .plot_cd_bayes_model_impl <- function(x,
                                 title = NULL,
-                                x_axis = NULL,
-                                y_axis = NULL,
+                                x_title = NULL,
+                                y_title = NULL,
                                 caption = NULL,
                                 region = NULL,
                                 ...) {
@@ -234,20 +307,20 @@ plot.cd_bayes_model <- function(x,
   if (is_comparison) {
     # Scenario A: Subnational Comparison Plot
     t_title <- title %||% paste("Subnational Comparison (2025):", toupper(indicator))
-    t_x     <- x_axis %||% "Region"
-    t_y     <- y_axis %||% "Coverage"
+    t_x     <- x_title %||% "Region"
+    t_y     <- y_title %||% "Coverage"
     
   } else if (!is_national && !is.null(region)) {
     # Scenario B: Subnational Trend Plot for a specific region
     t_title <- title %||% paste("Bayesian Coverage Model Estimates:", toupper(indicator), "-", region)
-    t_x     <- x_axis %||% "Year"
-    t_y     <- y_axis %||% "Coverage"
+    t_x     <- x_title %||% "Year"
+    t_y     <- y_title %||% "Coverage"
     
   } else {
     # Scenario C: National Trend Plot
     t_title <- title %||% paste("Bayesian Coverage Model Estimates:", toupper(indicator))
-    t_x     <- x_axis %||% "Year"
-    t_y     <- y_axis %||% "Coverage"
+    t_x     <- x_title %||% "Year"
+    t_y     <- y_title %||% "Coverage"
   }
   
   t_cap <- caption %||% "Source: Survey Data & DHIS2 Routine Data"
@@ -274,8 +347,8 @@ plot.cd_bayes_model <- function(x,
   # 5. Extract Custom Theme Labels
   my_theme <- cd_plot_theme(
     title = t_title,
-    x_axis = t_x,
-    y_axis = t_y,
+    x_title = t_x,
+    y_title = t_y,
     caption = t_cap
   )
 

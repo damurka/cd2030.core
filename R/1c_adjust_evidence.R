@@ -6,13 +6,23 @@
 #' district's median) and empty months; each region's and district's lowest group reporting rate in `year`.
 #'
 #' @param .data A `cd_data` tibble (the data before adjustment, its removed years already left out).
-#' @param threshold The reporting threshold (percent) of the Reporting rate page.
+#' @param threshold Numeric. The performance threshold (in percent) of the Reporting rate page.
 #' @param year The year of the reporting rates (by default the latest).
 #' @return A list: `year`, `threshold`, `groups` (named by group: `rr`, `below`), `indicators` (named by indicator:
 #'   `outliers`, `missing`, months), `areas` (a list of `list(region, rr, districts = list(list(name, rr)))`).
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' data <- load_data(path)
+#' evidence <- adjustment_evidence(data)
+#' str(evidence$groups$opd)
+#' str(evidence$indicators$penta3)
+#'
+#' # Against a stricter threshold, for an earlier year
+#' adjustment_evidence(data, threshold = 95, year = 2021)$groups$opd
 #' @export
 adjustment_evidence <- function(.data, threshold = .cd_method$data_quality$reporting_threshold, year = NULL) {
   check_cd_data(.data)
+  local_data_group(.data)
   yr <- year %||% robust_max(.data$year)
   groups <- names(get_indicator_groups())
   rate_cols <- intersect(paste0(groups, "_rr"), names(.data))

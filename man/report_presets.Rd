@@ -21,3 +21,12 @@ service utilization, health system, private sector), then the synthesis chartboo
 Countdown report templates rebuilt as blocks, which the builder opens as editable copies. The one-pager is about one
 region: its blocks use the report's region (\code{region = "@report"}). It is a slide deck of one dense slide.
 }
+\examples{
+presets <- report_presets(lang = "en", group = "rmncah")
+names(presets)
+presets$mortality$name
+length(presets$mortality$blocks)
+
+# the vaccine group's reports, named in French
+vapply(report_presets("fr", group = "vaccine"), function(p) p$name, character(1))
+}

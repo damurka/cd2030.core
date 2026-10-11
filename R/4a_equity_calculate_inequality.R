@@ -1,4 +1,4 @@
-#' Analyze Subnational Health Coverage Data with Inequality Metrics
+#' Analyze subnational health coverage data with inequality metrics
 #'
 #' `calculate_inequality` computes subnational health coverage metrics and evaluates
 #' disparities compared to reference averages (either national or regional).
@@ -11,6 +11,19 @@
 #'   - Subnational health coverage metrics.
 #'   - Population shares.
 #'   - MADM, MRDM, and related disparity metrics.
+#'
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' cache <- load_cache_data(path)
+#' cache$set_national_estimates(list(sbr = 0.02))
+#' cache$adjust_data()
+#'
+#' # regions against the national coverage
+#' inequality <- calculate_inequality(
+#'   subnational_data = cache$indicator_coverage_admin1,
+#'   reference_data = cache$indicator_coverage_national
+#' )
+#' select_inequality(inequality, indicator = "instlivebirths", denominator = "dhis2")
 #'
 #' @export
 calculate_inequality <- function(subnational_data,
@@ -44,7 +57,7 @@ calculate_inequality <- function(subnational_data,
 
   if (!is.null(sub_region)) {
     if (!sub_region %in% unique(subnational_data$adminlevel_1)) {
-      cd_warn(c('!' = 'Region {.val sub_region} not found in subnational data.'))
+      cd_warn(c('!' = 'Region {.val {sub_region}} not found in subnational data.'))
       return(NULL)
     }
   }
@@ -130,9 +143,9 @@ calculate_inequality <- function(subnational_data,
   )
 }
 
-#' Filter Subnational Inequality Metrics
+#' Select one indicator's inequality metrics
 #'
-#' `filter_inequality` refines the output of `calculate_inequality` by selecting
+#' `select_inequality` refines the output of `calculate_inequality` by selecting
 #' specific indicators and denominators for analysis. It extracts and renames relevant
 #' columns to streamline further analyses.
 #'
@@ -147,11 +160,11 @@ calculate_inequality <- function(subnational_data,
 #' \dontrun{
 #' # Filter for Penta-3 coverage using DHIS-2 denominator
 #' filtered_data <- inequality_metrics %>%
-#'   filter_inequality(indicator = "penta3", denominator = "dhis2")
+#'   select_inequality(indicator = "penta3", denominator = "dhis2")
 #' }
 #'
 #' @export
-filter_inequality <- function(.data,
+select_inequality <- function(.data,
                               indicator,
                               denominator = c("dhis2", "anc1", "penta1", "penta1derived", "anc1derived")) {
 

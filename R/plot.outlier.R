@@ -1,4 +1,4 @@
-#' Visualize Summary of Outlier Detection
+#' Visualize summary of outlier detection
 #'
 #' Plots annual trends or heat maps of non-outlier rates for immunization indicators
 #' at subnational levels.
@@ -12,21 +12,13 @@
 #'    for `"region"` view.
 #' @param threshold Numeric. Upper cut-off (in percent) of the middle colour
 #'   band; values above it are shown as good. Default is `90`.
-#' @param title Optional plot title. Defaults to a title based on
-#'   `selection_type`.
-#' @param x_axis,y_axis Optional x- and y-axis titles. Default to `"Year"` and
-#'   a "Percent non-outliers" label.
-#' @param legend Optional legend title. Defaults to a "Percent non-outliers"
-#'   label.
-#' @param ... Not used.
+#' @inheritParams cd_plot_arguments
 #'
 #' @details
 #' - Values are assumed to be percentages of non-outliers (i.e., 100 = no outliers).
 #' - `"region"` and `"indicator"` use bar plots with gradient fill.
 #' - `"heat_map"` shows indicator values by year and region.
 #'
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A `ggplot` object.
 #'
 #' @examples
@@ -40,11 +32,14 @@ plot.cd_outlier <- function(x,
                             indicator = NULL,
                             threshold = .cd_method$data_quality$reporting_threshold,
                             title = NULL,
-                            x_axis = NULL,
-                            y_axis = NULL,
-                            legend = NULL,
-                            ..., options = NULL) {
-  cd_finish_plot(.plot_cd_outlier_impl(x, selection_type = selection_type, indicator = indicator, threshold = threshold, title = title, x_axis = x_axis, y_axis = y_axis, legend = legend, ...), options, ..., .source = x)
+                            subtitle = NULL,
+                            caption = NULL,
+                            x_title = NULL,
+                            y_title = NULL,
+                            legend_title = NULL,
+                            ...,
+                            options = NULL) {
+  .cd_draw(.plot_cd_outlier_impl, x, list(selection_type = selection_type, indicator = indicator, threshold = threshold), ..., options = options)
 }
 
 .plot_cd_outlier_impl <- function(x,
@@ -52,9 +47,9 @@ plot.cd_outlier <- function(x,
                             indicator = NULL,
                             threshold = .cd_method$data_quality$reporting_threshold,
                             title = NULL,
-                            x_axis = NULL,
-                            y_axis = NULL,
-                            legend = NULL,
+                            x_title = NULL,
+                            y_title = NULL,
+                            legend_title = NULL,
                             ...) {
   check_scalar_integerish(threshold)
 
@@ -81,9 +76,10 @@ plot.cd_outlier <- function(x,
   )
 
   plot_title <- if (!is.null(title)) title else default_title
-  plot_x <- if (!is.null(x_axis)) x_axis else "Year"
-  plot_y <- if (!is.null(y_axis)) y_axis else "Percent non-outliers (%)"
-  plot_leg <- if (!is.null(legend)) legend else "Percent non-outliers (%)"
+  heat_map <- selection_type == "heat_map"
+  plot_x <- if (!is.null(x_title)) x_title else if (heat_map) admin_level_col else "Year"
+  plot_y <- if (!is.null(y_title)) y_title else if (!heat_map) "Percent non-outliers (%)" else if (is.null(indicator)) "Indicator" else "Year"
+  plot_leg <- if (!is.null(legend_title)) legend_title else "Percent non-outliers (%)"
 
   if (selection_type %in% c("region", "indicator")) {
     cut_low <- 70
@@ -132,9 +128,9 @@ plot.cd_outlier <- function(x,
       .cd_category_fill(lvl) +
       cd_plot_theme(
         title = plot_title,
-        x_axis = plot_x,
-        y_axis = plot_y,
-        legend = plot_leg
+        x_title = plot_x,
+        y_title = plot_y,
+        legend_title = plot_leg
       ) +
       # theme_minimal() +
       theme(
@@ -163,9 +159,9 @@ plot.cd_outlier <- function(x,
         value_col = "value",
         threshold = threshold,
         title = plot_title,
-        x_lab = plot_x,
-        y_lab = plot_y,
-        legend_lab = plot_leg,
+        x_title = plot_x,
+        y_title = plot_y,
+        legend_title = plot_leg,
       )
     } else {
       column_name <- paste0(indicator, "_outlier5std")
@@ -183,15 +179,15 @@ plot.cd_outlier <- function(x,
         value_col = "value",
         threshold = threshold,
         title = plot_title,
-        x_lab = plot_x,
-        y_lab = plot_y,
-        legend_lab = plot_leg
+        x_title = plot_x,
+        y_title = plot_y,
+        legend_title = plot_leg
       )
     }
   }
 }
 
-#' Plot Outlier Time Series for a Region
+#' Plot outlier time series for a region
 #'
 #' Displays a time-series plot of one indicator for a single region or district,
 #' with outlier highlights.
@@ -201,21 +197,14 @@ plot.cd_outlier <- function(x,
 #' @param year Optional single year to plot. If `NULL` (the default), all
 #'   years are shown.
 #' @param region The name of the unit to plot.
-#' @param title Optional plot title. Defaults to a title naming the indicator,
-#'   unit and year.
-#' @param x_axis,y_axis Optional x- and y-axis titles. Default to `"Month"` and
-#'   the indicator name.
-#' @param legend Optional legend title. Default is `NULL` (no title).
+#' @inheritParams cd_plot_arguments
 #' @param label Optional named character vector overriding the legend labels.
 #'   Recognised names are `reported`, `median`, `bounds` and `outliers`.
-#' @param ... Not used.
 #'
 #' @details
 #' - Plots observed values, median trend, and 5xMAD range.
 #' - Flags outliers in red.
 #'
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A `ggplot` object.
 #'
 #' @examples
@@ -228,13 +217,16 @@ plot.cd_outlier_list <- function(x,
                                  indicator = NULL,
                                  year = NULL,
                                  region = NULL,
-                                 title = NULL,
-                                 x_axis = NULL,
-                                 y_axis = NULL,
-                                 legend = NULL,
                                  label = NULL,
-                                 ..., options = NULL) {
-  cd_finish_plot(.plot_cd_outlier_list_impl(x, indicator = indicator, year = year, region = region, title = title, x_axis = x_axis, y_axis = y_axis, legend = legend, label = label, ...), options, ..., .source = x)
+                                 title = NULL,
+                                 subtitle = NULL,
+                                 caption = NULL,
+                                 x_title = NULL,
+                                 y_title = NULL,
+                                 legend_title = NULL,
+                                 ...,
+                                 options = NULL) {
+  .cd_draw(.plot_cd_outlier_list_impl, x, list(indicator = indicator, year = year, region = region, label = label), ..., options = options)
 }
 
 .plot_cd_outlier_list_impl <- function(x,
@@ -242,9 +234,9 @@ plot.cd_outlier_list <- function(x,
                                  year = NULL,
                                  region = NULL,
                                  title = NULL,
-                                 x_axis = NULL,
-                                 y_axis = NULL,
-                                 legend = NULL,
+                                 x_title = NULL,
+                                 y_title = NULL,
+                                 legend_title = NULL,
                                  label = NULL,
                                  ...) {
   admin_level <- attr_or_abort(x, "admin_level")
@@ -272,9 +264,9 @@ plot.cd_outlier_list <- function(x,
   }
 
   plot_title <- title %||% default_title
-  plot_x <- x_axis %||% "Month"
-  plot_y <- y_axis %||% indicator
-  plot_leg <- legend %||% NULL
+  plot_x <- x_title %||% "Month"
+  plot_y <- y_title %||% indicator
+  plot_leg <- legend_title %||% NULL
 
   default_labels <- c(
     reported = "Reported value",
@@ -325,9 +317,9 @@ plot.cd_outlier_list <- function(x,
     ) +
     cd_plot_theme(
       title = plot_title,
-      x_axis = plot_x,
-      y_axis = plot_y,
-      legend = plot_leg
+      x_title = plot_x,
+      y_title = plot_y,
+      legend_title = plot_leg
     ) +
     theme(
       axis.text.x = element_text(angle = 45, hjust = 1),

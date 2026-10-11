@@ -32,6 +32,7 @@
 #' @import flextable
 #' @import ggplot2
 #' @import rlang
+#' @importFrom later later
 #' @import tidyr
 #' @importFrom stats as.formula lm median na.omit quantile reorder setNames
 #' @importFrom utils modifyList

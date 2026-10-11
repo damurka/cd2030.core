@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.health_system.R
 \name{plot_national_health_metric}
 \alias{plot_national_health_metric}
-\title{Plot National Health System Metrics}
+\title{Plot national health system metrics}
 \usage{
 plot_national_health_metric(.data, metric = c("performance", "density"))
 }
@@ -17,4 +17,13 @@ A ggplot object.
 \description{
 Creates a horizontal bar plot for either health system performance or density
 metrics at national level.
+}
+\examples{
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+cache$adjust_data()
+national <- cache$health_system_metrics_national
+
+plot_national_health_metric(national, metric = "performance")
+plot_national_health_metric(national, metric = "density")
+
 }

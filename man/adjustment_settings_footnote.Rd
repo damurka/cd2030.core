@@ -2,7 +2,7 @@
 % Please edit documentation in R/1c_adjust_settings.R
 \name{adjustment_settings_footnote}
 \alias{adjustment_settings_footnote}
-\title{What the adjustment settings say, as the reports' footnote}
+\title{Describe the adjustment settings as a report footnote}
 \usage{
 adjustment_settings_footnote(
   settings,
@@ -16,8 +16,25 @@ adjustment_settings_footnote(
 \item{group_labels, indicator_labels}{Named character: how groups and indicators are called (by default their ids).}
 }
 \value{
-A character vector, one sentence per rule (none for the Countdown default).
+A character vector, one sentence per rule. The Countdown default is one rule (each group's k,
+everywhere); settings that change nothing give none.
 }
 \description{
-What the adjustment settings say, as the reports' footnote
+Writes the adjustment settings out in sentences, for the footnote of a report: the years and
+areas removed, then the rules that apply everywhere and those of each area (k factors, and
+whether outliers are corrected and missing values filled).
+}
+\examples{
+settings <- adjustment_settings_default(k = 0.1, groups = c("anc", "vacc"))
+settings$removed_years <- 2020
+settings$everywhere$outliers <- list(penta3 = FALSE)
+settings$areas <- list(list(area = "Coast", level = "adminlevel_1", all_missing = FALSE))
+adjustment_settings_footnote(settings)
+
+# With the names a report uses
+adjustment_settings_footnote(
+  settings,
+  group_labels = c(anc = "Antenatal care", vacc = "Immunization"),
+  indicator_labels = c(penta3 = "Penta 3")
+)
 }

@@ -1,6 +1,6 @@
-#' Plot Ratios Summary for Indicator Ratios Summary Object
+#' Plot ratios summary for indicator ratios summary object
 #'
-#' This function generates a bar plot for a `cd_ratios_summary` object,
+#' Generates a bar plot for a `cd_ratios_summary` object,
 #' displaying the calculated indicator ratios for each year. It allows
 #' for visual comparison across years, showing how each indicator ratio
 #' changes over time.
@@ -8,16 +8,11 @@
 #' @param x A `cd_ratios_summary` object created by the `calculate_ratios_summary` function.
 #'   It should contain a `year` column and one or more columns with names starting with `"Ratio"`,
 #'   representing the calculated indicator ratios.
-#' @param title Optional plot title. Defaults to a title describing the ANC1 to
-#'   Penta1 and Penta1 to Penta3 ratios.
-#' @param x_axis,y_axis Optional x- and y-axis titles. Default is `NULL`.
+#' @inheritParams cd_plot_arguments
 #' @param x_labels Optional named list or vector of x-axis category labels,
 #'   keyed by ratio name (`anc1_penta1`, `opv1_opv3`, `penta1_penta3`).
 #'   Supplied entries replace the defaults.
-#' @param ... Additional arguments passed to other methods (currently unused).
 #'
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A `ggplot` object representing a bar plot of indicator ratios by year.
 #'
 #' @details
@@ -33,17 +28,22 @@
 #' }
 #'
 #' @export
-plot.cd_ratios_summary <- function(x, title = NULL,
-                                   x_axis = NULL,
-                                   y_axis = NULL,
+plot.cd_ratios_summary <- function(x,
                                    x_labels = NULL,
-                                   ..., options = NULL) {
-  cd_finish_plot(.plot_cd_ratios_summary_impl(x, title = title, x_axis = x_axis, y_axis = y_axis, x_labels = x_labels, ...), options, ..., .source = x)
+                                   title = NULL,
+                                   subtitle = NULL,
+                                   caption = NULL,
+                                   x_title = NULL,
+                                   y_title = NULL,
+                                   legend_title = NULL,
+                                   ...,
+                                   options = NULL) {
+  .cd_draw(.plot_cd_ratios_summary_impl, x, list(x_labels = x_labels), ..., options = options)
 }
 
 .plot_cd_ratios_summary_impl <- function(x, title = NULL,
-                                   x_axis = NULL,
-                                   y_axis = NULL,
+                                   x_title = NULL,
+                                   y_title = NULL,
                                    x_labels = NULL,
                                    ...) {
   year <- name <- value <- NULL
@@ -80,8 +80,8 @@ plot.cd_ratios_summary <- function(x, title = NULL,
   }
 
   plot_title <- if (!is.null(title)) title else "Ratio of number of facility reported ANC1 to penta1, and penta1 to penta3 compared to expected ratios"
-  plot_x <- if (!is.null(x_axis)) x_axis else NULL
-  plot_y <- if (!is.null(y_axis)) y_axis else NULL
+  plot_x <- if (!is.null(x_title)) x_title else NULL
+  plot_y <- if (!is.null(y_title)) y_title else NULL
 
   color_mapping <- cd_year_colours(years)
 
@@ -101,8 +101,8 @@ plot.cd_ratios_summary <- function(x, title = NULL,
     scale_x_discrete(labels = x_labels_used) +
     cd_plot_theme(
       title = plot_title,
-      x_axis = plot_x,
-      y_axis = plot_y
+      x_title = plot_x,
+      y_title = plot_y
     ) +
     cd_dashed_grid_theme(x = FALSE) +
     theme(plot.title = element_text(size = 14, hjust = 0.5))

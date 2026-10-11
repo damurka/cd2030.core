@@ -18,3 +18,10 @@ The settings list (see \code{\link[=adjust_service_data]{adjust_service_data()}}
 Every indicator group adjusted for completeness with the method's k (0.25), outliers corrected and missing values
 filled everywhere, no year or area removed.
 }
+\examples{
+settings <- adjustment_settings_default()
+str(settings)
+
+# No completeness adjustment for any group
+adjustment_settings_default(k = 0)$everywhere$group_k
+}

@@ -2,7 +2,7 @@
 % Please edit documentation in R/3_generate_fpet_summary.R
 \name{interpret}
 \alias{interpret}
-\title{Generic Interpretation Method}
+\title{Generic interpretation method}
 \usage{
 interpret(x, ...)
 }
@@ -11,6 +11,18 @@ interpret(x, ...)
 
 \item{...}{Additional arguments passed to methods.}
 }
+\value{
+What the method for the class of \code{x} returns. The method for \code{cd_fpet_data}
+(\code{\link[=interpret.cd_fpet_data]{interpret.cd_fpet_data()}}) returns a character string.
+}
 \description{
 A generic method to extract narrative interpretation from structured data objects.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+cache <- load_cache_data(path)
+
+# the family planning estimates that come with the dataset
+interpret(cache$fpet_data)
+
 }

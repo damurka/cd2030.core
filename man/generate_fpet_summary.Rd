@@ -2,7 +2,7 @@
 % Please edit documentation in R/3_generate_fpet_summary.R
 \name{generate_fpet_summary}
 \alias{generate_fpet_summary}
-\title{Load and Generate FPET Output}
+\title{Load and generate FPET output}
 \usage{
 generate_fpet_summary(.data)
 }
@@ -16,4 +16,15 @@ A \code{cd_fpet_data} object.
 Processes raw FPET data (e.g., from Track20 or UNFPA) into a structured tibble
 for visualization and interpretation of modern contraceptive prevalence and
 demand satisfied.
+}
+\examples{
+\dontrun{
+# an FPET results file (.csv) for the country
+fpet <- load_fpet_data(path = "fpet_kenya.csv", country_iso = "KEN")
+
+summary <- generate_fpet_summary(fpet)
+plot(summary)
+interpret(summary)
+}
+
 }

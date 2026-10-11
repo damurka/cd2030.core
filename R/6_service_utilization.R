@@ -1,10 +1,10 @@
-#' Compute Service Utilization Metrics
+#' Compute service utilization metrics
 #'
 #' Calculates annualized service utilization statistics including outpatient (OPD), inpatient (IPD),
-#' case fatality rates, and under-5 service use, aggregated either at national or admin level 1.
+#' case fatality rates, and under-5 service use, aggregated at national, admin level 1 or district level.
 #'
 #' @param .data A data frame containing service and population indicators.
-#' @param admin_level Either `"national"` or `"adminlevel_1"` to define the aggregation level.
+#' @param admin_level One of `"national"`, `"adminlevel_1"` or `"district"` to define the aggregation level.
 #'
 #' @return A `cd_service_utilization` object (tibble subclass) with summarized and derived indicators:
 #' - OPD/IPD totals and rates
@@ -20,6 +20,7 @@
 #' @export
 compute_service_utilization <- function(.data, admin_level = c('national', 'adminlevel_1', 'district')) {
   check_cd_data(.data)
+  local_data_group(.data)
   iso3 <- attr_or_abort(.data, 'iso3')
   admin_level <- arg_match(admin_level)
   admin_level_cols <- get_admin_columns(admin_level)
@@ -83,9 +84,9 @@ compute_service_utilization <- function(.data, admin_level = c('national', 'admi
   )
 }
 
-#' Filter and Prepare Service Utilization Data for Mapping
+#' Filter and prepare service utilization data for mapping
 #'
-#' Filters a `cd_service_utilization` object by country, indicator, and year.
+#' Selects one under-five indicator from a `cd_service_utilization` object, optionally for given years.
 #' Joins spatial data for subnational mapping and renames geometry for use with `ggplot2::geom_sf()`.
 #'
 #' @param .data A `cd_service_utilization` object returned by [compute_service_utilization()].
@@ -99,24 +100,22 @@ compute_service_utilization <- function(.data, admin_level = c('national', 'admi
 #' @return A tibble of class `cd_service_utilization_prepared`, ready for faceted spatial plotting.
 #'
 #' @details
-#' This function:
-#' - Selects the under-five service indicator (`ratio_ipd_u5_pop` or `ratio_opd_u5_pop`)
-#' - Joins the appropriate admin level 1 shapefile using the specified country ISO
-#' - Filters to specified `plot_years` if provided
-#' - Renames the geometry column for compatibility with `geom_sf()`
+#' Selects the under-five service indicator (`ratio_ipd_u5_pop` or `ratio_opd_u5_pop`) and joins the
+#' admin level 1 shapefile of the country whose ISO3 code is stored on `.data`. Keeps only
+#' `plot_years` when they are given, and renames the geometry column to `geometry` for `geom_sf()`.
 #'
 #' Only `adminlevel_1` data is currently supported for mapping.
 #'
 #' @examples
 #' \dontrun{
-#' prepare_service_utlization_mapping(service_data, "UGA", indicator = "opd", plot_years = 2019:2022)
+#' prepare_mapping_service_utlization(service_data, indicator = "opd", plot_years = 2019:2022)
 #' }
 #'
 #' @export
 prepare_mapping_service_utlization <- function(.data, indicator = c('ipd', 'opd'), plot_years = NULL, subnational_map = NULL,
                                                palette = c('Purples', 'Blues', 'Greens', 'Reds', 'YlGnBu')) {
 
-  check_cd_class(.data, expected_class = 'cd_service_utilization')
+  check_cd_service_utilization(.data)
   indicator <- arg_match(indicator)
   indicator <- paste0('ratio_', indicator, '_u5_pop')
   palette <- arg_match(palette)
@@ -151,7 +150,7 @@ prepare_mapping_service_utlization <- function(.data, indicator = c('ipd', 'opd'
   )
 }
 
-#' Filter Service Utilization Data for a Specific Region and Indicator
+#' Select one service utilization indicator
 #'
 #' Prepares a `cd_service_utilization` object for non-spatial plotting (e.g., time series)
 #' by filtering by administrative region and indicator type.
@@ -159,36 +158,35 @@ prepare_mapping_service_utlization <- function(.data, indicator = c('ipd', 'opd'
 #' @param .data A `cd_service_utilization` object created by [compute_service_utilization()].
 #' @param indicator Character. The indicator to visualize. Options include `"opd"`, `"ipd"`,
 #' `"under5"` (proportion under 5), `"cfr"` (case fatality rate), or `"deaths"` (proportion of under-5 deaths).
-#' @param region Optional. A single region name to filter when data is subnational (`adminlevel_1` or `district`).
+#' @param region A single unit name to filter by. Required when data is subnational
+#'   (`adminlevel_1` or `district`); must be `NULL` for national data.
 #'
 #' @return A tibble of class `cd_service_utilization_filtered`, with an attached `indicator` attribute for plotting.
 #'
 #' @details
-#' This function:
-#' - Validates the `.data` class and `indicator` input
-#' - If data is subnational, filters it by the specified `region`
-#' - If data is national, ensures `region` is not provided
-#' - Returns a filtered tibble tagged with `cd_service_utilization_filtered` class for downstream plotting
+#' Checks the class of `.data` and the `indicator` value. Subnational data is filtered to the unit
+#' named by `region`; for national data `region` must not be given. The result keeps every column of
+#' `.data` and is tagged with the `cd_service_utilization_filtered` class for plotting.
 #'
 #' @examples
 #' \dontrun{
 #' # Filter IPD indicator for Central region
-#' filtered <- filter_service_utilization(service_data, indicator = "ipd", region = "Central")
+#' filtered <- select_service_utilization(service_data, indicator = "ipd", region = "Central")
 #' }
 #'
 #' @export
-filter_service_utilization <- function(.data, indicator = c('opd', 'ipd', 'under5', 'cfr', 'deaths'), region = NULL) {
-  check_cd_class(.data, expected_class = 'cd_service_utilization')
+select_service_utilization <- function(.data, indicator = c('opd', 'ipd', 'under5', 'cfr', 'deaths'), region = NULL) {
+  check_cd_service_utilization(.data)
   indicator <- arg_match(indicator)
 
   admin_level <- attr_or_abort(.data, 'admin_level')
 
   if (admin_level == 'national' && !is.null(region)) {
-    cd_abort('x' = '{.arg region} cannot be specified in {.field national} data.')
+    cd_abort(c('x' = '{.arg region} cannot be specified in {.field national} data.'))
   }
 
   if (admin_level != 'national' && is.null(region) && !is_scalar_character(region)) {
-    cd_abort('x' = '{.arg region} must be a scalar string.')
+    cd_abort(c('x' = '{.arg region} must be a scalar string.'))
   }
 
   data <- if (admin_level != 'national') {
@@ -205,7 +203,7 @@ filter_service_utilization <- function(.data, indicator = c('opd', 'ipd', 'under
   )
 }
 
-#' Format Service Utilization Data for Excel Export
+#' Format service utilization data for Excel export
 #'
 #' Transforms a `cd_service_utilization` object into a wide-format table
 #' with labeled indicators, suitable for export to Excel.
@@ -231,7 +229,7 @@ filter_service_utilization <- function(.data, indicator = c('opd', 'ipd', 'under
 #' @export
 
 get_excel_version <- function(.data) {
-  check_service_utilization(.data)
+  check_cd_service_utilization(.data)
 
   admin_level <- attr_or_abort(.data, 'admin_level')
   admin_level_col <- get_admin_columns(admin_level)
@@ -270,7 +268,12 @@ get_excel_version <- function(.data) {
     relocate(!!!syms(admin_level_col), indiclabel)
 }
 
-#' Generate Service DQA Summary
+#' Generate service DQA summary
+#'
+#' Combines the reporting rate, completeness, outlier and service utilization results for
+#' outpatient (OPD) and inpatient (IPD) services into one data quality table, with a row per
+#' indicator and a column per year. The rows are numbered and grouped under three section headers,
+#' ready for [plot.cd_utilization_dqa()].
 #'
 #' @param average_reporting_rate Dataframe. Reporting rate data.
 #' @param district_reporting_rate Dataframe. District reporting rate data.
@@ -279,9 +282,22 @@ get_excel_version <- function(.data) {
 #' @param outliers_summary Dataframe. National outliers data.
 #' @param district_outliers_summary Dataframe. District outliers summary data.
 #' @param service_utilization Dataframe. Output of compute_service_utilization('national').
-#' @param threshold Numeric. The threshold to display in the label (default: 90).
+#' @param threshold Numeric. The performance threshold (in percent) shown in the label. Default is `90`.
 #' @param labels List. Optional custom labels for sections and indicators.
 #' @return A wide-format tibble with summarized DQA indicators grouped by section.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' data <- load_data(path)
+#'
+#' generate_service_dqa_summary(
+#'   average_reporting_rate = calculate_average_reporting_rate(data),
+#'   district_reporting_rate = calculate_district_reporting_rate(data),
+#'   completeness_national = calculate_completeness_summary(data),
+#'   district_completeness = calculate_district_completeness_summary(data),
+#'   outliers_summary = calculate_outliers_summary(data),
+#'   district_outliers_summary = calculate_district_outlier_summary(data),
+#'   service_utilization = compute_service_utilization(data, admin_level = "national")
+#' )
 #' @export
 generate_service_dqa_summary <- function(average_reporting_rate,
                                          district_reporting_rate,
@@ -418,14 +434,30 @@ generate_service_dqa_summary <- function(average_reporting_rate,
   )
 }
 
-#' Generate Service Utilization Admin 1 Data
+#' Generate service utilization admin level 1 data
 #'
-#' @param service_utilization Dataframe containing admin1 service utilization.
+#' Keeps the latest year of subnational service utilization data and the under-five utilization
+#' rate of one service: OPD visits per child (`ratio_opd_u5_pop`) or IPD admissions per 100
+#' children (`ratio_ipd_u5_pop`). The result is ready for [plot.cd_service_utilization_admin1()].
+#'
+#' @param service_utilization Dataframe containing admin level 1 service utilization.
 #' @param metric_type Character. Either "opd" or "ipd".
-#' @return A tibble with class `cd_service_util_admin1`.
+#' @return A tibble with class `cd_service_utilization_admin1` and the columns `adminlevel_1`, `year`
+#'   and the selected rate. The attribute `metric_type` holds `metric_type`.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' data <- load_data(path)
+#' utilization <- compute_service_utilization(data, admin_level = "adminlevel_1")
+#'
+#' # outpatient visits per child under five, by region, in the latest year
+#' generate_admin1_service_utilization(utilization, metric_type = "opd")
+#'
+#' # inpatient admissions per 100 children under five
+#' admissions <- generate_admin1_service_utilization(utilization, metric_type = "ipd")
+#' plot(admissions)
 #' @export
 generate_admin1_service_utilization <- function(service_utilization, metric_type = c("opd", "ipd")) {
-  check_cd_class(service_utilization, 'cd_service_utilization')
+  check_cd_service_utilization(service_utilization)
   if (!'adminlevel_1' %in% colnames(service_utilization)) {
     cd_abort('{.arg service_utilization} must be a subnational dataset')
   }
@@ -444,13 +476,25 @@ generate_admin1_service_utilization <- function(service_utilization, metric_type
   )
 }
 
-#' Generate MCH vs Curative Index Data
+#' Generate MCH vs curative index data
 #'
-#' @param service_utilization Dataframe containing admin1 service utilization.
+#' Keeps the latest year of subnational service utilization data and its two service indices: the
+#' MCH preventive services index and the curative services index. The result is ready for
+#' [plot.cd_mch_curative_index()].
+#'
+#' @param service_utilization Dataframe containing admin level 1 service utilization.
 #' @return A tibble with class `cd_mch_curative_index`.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' data <- load_data(path)
+#' utilization <- compute_service_utilization(data, admin_level = "adminlevel_1")
+#'
+#' index <- generate_admin1_mch_curative_index(utilization)
+#' index
+#' plot(index)
 #' @export
 generate_admin1_mch_curative_index <- function(service_utilization) {
-  check_cd_class(service_utilization, 'cd_service_utilization')
+  check_cd_service_utilization(service_utilization)
   if (!'adminlevel_1' %in% colnames(service_utilization)) {
     cd_abort('{.arg service_utilization} must be a subnational dataset')
   }

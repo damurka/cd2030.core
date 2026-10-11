@@ -2,16 +2,35 @@
 % Please edit documentation in R/0_data_quality_checks.R
 \name{check_month_presence_presheet}
 \alias{check_month_presence_presheet}
-\title{Check every district-year has all 12 calendar months present, pre-merge}
+\title{Check that every district-year has all 12 months, before merging}
 \usage{
 check_month_presence_presheet(parts, service_sheet_names)
 }
 \arguments{
-\item{parts}{Named list of cleaned per-sheet tibbles.}
+\item{parts}{A named list of cleaned per-sheet tibbles (\code{load_excel_parts()$parts}).}
 
-\item{service_sheet_names}{Names of the service-data sheets within \code{parts}.}
+\item{service_sheet_names}{A character vector. The names of the service data sheets within
+\code{parts}.}
+}
+\value{
+\code{NULL} if no month is missing. Otherwise a character vector of length one, named
+\code{"x"}, with a message that lists the missing months as \verb{district year/month}. The message
+lists the first 10 and gives a count of the rest.
 }
 \description{
-Service sheets already carry \code{district}/\code{year}/\code{month} natively -- reuses \code{check_month_presence()}
-unchanged, just called against the row-bound service sheets instead of merged \code{countdown_data}.
+Runs \code{\link[=check_month_presence]{check_month_presence()}} on the service sheets, stacked together, before the sheets
+are merged. A district-year passes when its 12 months are present across the service sheets
+taken together.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+sheets <- load_excel_parts(path)
+check_month_presence_presheet(sheets$parts, sheets$service_sheet_names)
+
+# March left out of every service sheet
+parts <- sheets$parts
+for (sheet in sheets$service_sheet_names) {
+  parts[[sheet]] <- parts[[sheet]][parts[[sheet]]$month != "March", ]
+}
+check_month_presence_presheet(parts, sheets$service_sheet_names)
 }

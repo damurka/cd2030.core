@@ -2,7 +2,7 @@
 % Please edit documentation in R/1a_checks_missing.R
 \name{calculate_district_completeness_summary}
 \alias{calculate_district_completeness_summary}
-\title{District-Level Completeness Summary}
+\title{District-level completeness summary}
 \usage{
 calculate_district_completeness_summary(.data, region = NULL)
 }
@@ -13,7 +13,7 @@ calculate_district_completeness_summary(.data, region = NULL)
 districts in that region are included. Default is \code{NULL} (all districts).}
 }
 \value{
-A \code{cd_district_completeness_summary} tibble:
+A \code{cd_missing_district} tibble:
 \itemize{
 \item One row per year
 \item \verb{\% non-missing} per indicator

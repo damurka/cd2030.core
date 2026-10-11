@@ -1,4 +1,4 @@
-#' Add Outlier Flags Based on 5-MAD Bounds
+#' Add outlier flags based on 5-MAD bounds
 #'
 #' `add_outlier5std_column` calculates and appends outlier flags for specified
 #' indicators in a dataset. An outlier is defined as a value falling outside the
@@ -76,7 +76,7 @@ add_outlier5std_column <- function(.data, indicators, group_by = "district") {
     )
 }
 
-#' Add Median and MAD Columns for Indicators
+#' Add median and MAD columns for indicators
 #'
 #' `add_mad_med_columns` calculates and appends the median and Median Absolute
 #' Deviation (MAD) for specified indicators in a dataset. These statistics are
@@ -154,7 +154,7 @@ add_mad_med_columns <- function(.data, indicators, group_by = "district") {
     )
 }
 
-#' Add Missing Value Flags to Health Indicators
+#' Add missing value flags to health indicators
 #'
 #' `add_missing_column` assesses data quality by identifying missing values for
 #' specified health indicators. It generates new columns for each indicator,
@@ -207,7 +207,7 @@ add_missing_column <- function(.data, indicators) {
     )
 }
 
-#' Robust Maximum Value Calculation
+#' Robust maximum value calculation
 #'
 #' `robust_max` calculates the maximum value of a numeric vector while handling
 #' missing values. If all values in the vector are `NA`, the function returns `NA`

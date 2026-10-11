@@ -1,4 +1,4 @@
-#' Calculate Health Coverage Indicators
+#' Calculate health coverage indicators
 #'
 #' `calculate_indicator_coverage` computes key health coverage indicators across
 #' specified administrative levels (national, adminlevel_1, and district). The function
@@ -80,6 +80,7 @@ calculate_indicator_coverage <- function(.data,
                                          preg_loss = .cd_method$denominators$preg_loss) {
 
   check_cd_data(.data)
+  local_data_group(.data)
   check_scalar_integerish(survey_year)
   derivation_population <- arg_match(derivation_population)
   admin_level <- arg_match(admin_level)
@@ -106,6 +107,49 @@ calculate_indicator_coverage <- function(.data,
   )
 }
 
+#' Get the rates the denominators use from survey data
+#'
+#' Takes the most recent survey value of ANC1 coverage, Penta1 coverage and the stillbirth,
+#' neonatal and post-neonatal mortality rates, and converts each to a proportion. A rate the
+#' survey data does not have is filled with the value given in the matching argument. The result
+#' has the rates that [calculate_indicator_coverage()] takes as arguments.
+#'
+#' @param .data A `cd_survey_data` object with `year` and `r_*` columns (`r_anc1` and `r_penta1`
+#'   in percent, and optionally `r_sbr`, `r_nmr` and `r_pnmr` per 1,000). National survey data
+#'   for `admin_level = "national"`, regional survey data (with an `adminlevel_1` column)
+#'   otherwise.
+#' @param admin_level Character. The administrative level of the survey data: `"national"`,
+#'   `"adminlevel_1"` or `"district"`.
+#' @param anc1survey Numeric. ANC1 coverage (a proportion) to use where the survey has no value.
+#' @param dpt1survey Numeric. Penta1 coverage (a proportion) to use where the survey has no value.
+#' @param sbr Numeric. Stillbirth rate (a proportion) to use where the survey has no value.
+#' @param nmr Numeric. Neonatal mortality rate (a proportion) to use where the survey has no value.
+#' @param pnmr Numeric. Post-neonatal mortality rate (a proportion) to use where the survey has no
+#'   value.
+#' @param twin Numeric. Twin birth rate (a proportion). It is not read from the survey data, so
+#'   this value is always the one returned.
+#' @param preg_loss Numeric. Pregnancy loss rate (a proportion). It is not read from the survey
+#'   data, so this value is always the one returned.
+#' @param subnational_map Optional. A data frame mapping survey regions to `adminlevel_1` units,
+#'   used for subnational levels. Default is `NULL`.
+#'
+#' @return A tibble with one row for national data, or one row per unit for subnational data,
+#'   and the columns `pnmr`, `nmr`, `sbr`, `preg_loss`, `twin`, `anc1survey` and `dpt1survey`, all
+#'   as proportions. Subnational results also have the admin column or columns.
+#'
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' cache <- load_cache_data(path)
+#' rates <- get_national_rates(cache$national_survey)
+#' rates
+#'
+#' # A stillbirth rate of your own, used because the survey has none
+#' get_national_rates(cache$national_survey, sbr = 0.015)$sbr
+#'
+#' # The rates of each survey region
+#' regional <- get_national_rates(cache$regional_survey, admin_level = "adminlevel_1")
+#' regional
+#'
 #' @export
 get_national_rates <- function(.data,
                                admin_level = c("national", "adminlevel_1", "district"),
@@ -124,7 +168,7 @@ get_national_rates <- function(.data,
   .data <- .data %>% 
     join_subnational_map(admin_level, subnational_map)
 
-  est <- .data %>%
+  .data %>%
     # select(year, any_of(admin_level_cols), starts_with('r_')) %>%
     rename_with(~ str_remove(.x, 'r_'), starts_with('r_')) %>%
     select(year, any_of(admin_level_cols), penta1, anc1, any_of(c('pnmr', 'nmr', 'sbr'))) %>%
@@ -153,6 +197,88 @@ ensure_cols <- function(df) {
   mutate(df, !!!setNames(rep(list(NA_real_), length(missing)), missing))
 }
 
+# What each coverage is a share of: `cov_<name>_<source>` is 100 * numerator / population, the population being the
+# column of that kind in the source (.cd_coverage_population()). 2_denominators.do writes these once per source (UN,
+# DHIS2, ANC1, Penta1) and per level; here they are written once. `all` is computed for every dataset, the others for
+# their indicator group.
+.cd_coverage_defs <- list(
+  all = list(
+    anc1 = c("anc1", "preg"),
+    instlivebirths = c("instlivebirths", "lbirths"),
+    # the live births in facilities over the deliveries, as in Stata (not the deliveries in facilities)
+    instdeliveries = c("instlivebirths", "deliv"),
+    bcg = c("bcg", "lbirths"),
+    penta1 = c("penta1", "inftpenta"),
+    penta3 = c("penta3", "inftpenta"),
+    measles1 = c("measles1", "inftmeasles"),
+    measles2 = c("measles2", "measles2")
+  ),
+  rmncah = list(
+    anc_1trimester = c("anc_1trimester", "preg"),
+    anc4 = c("anc4", "preg"),
+    ipt2 = c("ipt2", "preg"),
+    ipt3 = c("ipt3", "preg"),
+    ifa90 = c("ifa90", "preg"),
+    syphilis_test = c("syphilis_test", "preg"),
+    hiv_test = c("hiv_test", "preg"),
+    sba = c("sba", "lbirths"),
+    low_bweight = c("low_bweight", "lbirths"),
+    csection = c("csection", "deliv"),
+    pnc48h = c("pnc48h", "lbirths")
+  ),
+  vaccine = list(
+    penta2 = c("penta2", "inftpenta"),
+    opv1 = c("opv1", "inftpenta"),
+    opv2 = c("opv2", "inftpenta"),
+    opv3 = c("opv3", "inftpenta"),
+    pcv1 = c("pcv1", "inftpenta"),
+    pcv2 = c("pcv2", "inftpenta"),
+    pcv3 = c("pcv3", "inftpenta"),
+    rota1 = c("rota1", "inftpenta"),
+    rota2 = c("rota2", "inftpenta"),
+    ipv1 = c("ipv1", "inftpenta"),
+    ipv2 = c("ipv2", "inftpenta")
+  )
+)
+
+# The column holding a kind of population in a source: tot<kind>_<source>, but the live births, which the UN and
+# DHIS2 give as they are (the ANC1 and Penta1 denominators estimate them).
+.cd_coverage_population <- function(kind, source) {
+  if (kind == "lbirths") {
+    return(switch(source, un = "un_births", dhis2 = "totlivebirths_dhis2", paste0("totlbirths_", source)))
+  }
+  paste0("tot", kind, "_", source)
+}
+
+# The coverage columns of one source, as expressions for mutate().
+.cd_coverage_exprs <- function(source, group = get_selected_group()) {
+  # the UN's and DHIS2's populations are in thousands
+  population <- function(kind) {
+    column <- sym(.cd_coverage_population(kind, source))
+    if (source %in% c("un", "dhis2")) expr(!!column * 1000) else column
+  }
+  defs <- c(.cd_coverage_defs$all, .cd_coverage_defs[[group]])
+  out <- lapply(defs, function(def) expr(100 * !!sym(def[1]) / !!population(def[2])))
+  names(out) <- paste0("cov_", names(defs), "_", source)
+  if (group == "vaccine") out <- c(out, .cd_coverage_gap_exprs(population("inftpenta"), source))
+  out
+}
+
+# The vaccine group's children not reached (of the `infants` expected) and its dropouts between two doses, which are
+# the same on every denominator.
+.cd_coverage_gap_exprs <- function(infants, source) {
+  out <- exprs(
+    zerodose = 100 * (!!infants - penta1) / !!infants,
+    undervax = 100 * (!!infants - penta3) / !!infants,
+    dropout_penta13 = ((penta1 - penta3) / penta1) * 100,
+    dropout_measles12 = ((measles1 - measles2) / measles1) * 100,
+    dropout_penta3mcv1 = ((penta3 - measles1) / penta3) * 100,
+    dropout_penta1mcv1 = ((penta1 - measles1) / penta1) * 100
+  )
+  names(out) <- paste0("cov_", names(out), "_", source)
+  out
+}
+
 calculate_populations <- function(.data,
                                   admin_level = c("national", "adminlevel_1", "district"),
                                   derivation_population = c('totbirths_dhis2', 'totlivebirths_dhis2', 'totunder1_dhis2', 'totpop_dhis2',
@@ -174,11 +300,12 @@ calculate_populations <- function(.data,
                                   preg_loss = .cd_method$denominators$preg_loss) {
 
   check_cd_data(.data)
+  local_data_group(.data)
 
   admin_level <- arg_match(admin_level)
   derivation_population <- arg_match(derivation_population)
   if (admin_level == 'national' && !is_integerish(survey_year)) {
-    cd_abort("x" = "{.arg survey_year} should be an integer")
+    cd_abort(c("x" = "{.arg survey_year} should be an integer"))
   }
 
   iso3 <- attr_or_abort(.data, 'iso3')
@@ -237,254 +364,14 @@ calculate_populations <- function(.data,
         totbirths_un = un_births / (1 - sbr),
         totinftpenta_un = un_births - un_births * nmr,
         totinftmeasles_un = totinftpenta_un - totinftpenta_un * pnmr,
-        totmeasles2_un = totinftpenta_un - totinftpenta_un * (2 * pnmr),
-
-        cov_anc1_un = 100 * anc1/(totpreg_un * 1000),
-        cov_instlivebirths_un = 100 * instlivebirths/(un_births * 1000),
-        cov_instdeliveries_un = 100 * instlivebirths/(totdeliv_un * 1000),
-        cov_bcg_un = 100 * bcg/(un_births * 1000),
-        cov_penta1_un = 100 * penta1/(totinftpenta_un * 1000),
-        cov_penta3_un = 100 * penta3/(totinftpenta_un * 1000),
-        cov_measles1_un = 100 * measles1/(totinftmeasles_un * 1000),
-        cov_measles2_un = 100 * measles2/(totmeasles2_un * 1000)
-      )
-
-      if (get_selected_group() == 'rmncah') {
-        output_data <- output_data %>%
-          mutate(
-            cov_anc_1trimester_un = 100 * anc_1trimester/(totpreg_un * 1000),
-            cov_anc4_un = 100 * anc4/(totpreg_un * 1000),
-
-            cov_ipt2_un = 100 * ipt2/(totpreg_un * 1000),
-            cov_ipt3_un = 100 * ipt3/(totpreg_un * 1000),
-            cov_ifa90_un = 100 * ifa90/(totpreg_un * 1000),
-            cov_syphilis_test_un = 100 * syphilis_test/(totpreg_un * 1000),
-            cov_hiv_test_un = 100 * hiv_test/(totpreg_un * 1000),
-
-            cov_sba_un = 100 * sba/(un_births * 1000),
-
-            cov_low_bweight_un = 100 * low_bweight/(un_births * 1000),
-            cov_csection_un = 100 * csection/(totdeliv_un * 1000),
-            cov_pnc48h_un = 100 * pnc48h/(un_births * 1000)
-          )
-      }
-
-    if (get_selected_group() == 'vaccine') {
-      output_data <- output_data %>%
-        mutate(
-          cov_penta2_un = 100 * penta2/(totinftpenta_un * 1000),
-
-          cov_opv1_un = 100 * opv1/(totinftpenta_un * 1000),
-          cov_opv2_un = 100 * opv2/(totinftpenta_un * 1000),
-          cov_opv3_un = 100 * opv3/(totinftpenta_un * 1000),
-
-          cov_pcv1_un = 100 * pcv1/(totinftpenta_un * 1000),
-          cov_pcv2_un = 100 * pcv2/(totinftpenta_un * 1000),
-          cov_pcv3_un = 100 * pcv3/(totinftpenta_un * 1000),
-
-          cov_rota1_un = 100 * rota1/(totinftpenta_un * 1000),
-          cov_rota2_un = 100 * rota2/(totinftpenta_un * 1000),
-
-          cov_ipv1_un = 100 * ipv1/(totinftpenta_un * 1000),
-          cov_ipv2_un = 100 * ipv2/(totinftpenta_un * 1000),
-
-          cov_zerodose_un = 100 * (totinftpenta_un * 1000 - penta1) / (totinftpenta_un * 1000),
-          cov_undervax_un = 100 * (totinftpenta_un * 1000 - penta3) / (totinftpenta_un * 1000),
-          cov_dropout_penta13_un = ((penta1 - penta3)/penta1) * 100,
-          cov_dropout_measles12_un = ((measles1 - measles2)/measles1) * 100,
-          cov_dropout_penta3mcv1_un = ((penta3 - measles1)/penta3) * 100,
-          cov_dropout_penta1mcv1_un = ((penta1-measles1)/penta1) * 100
-        )
-    }
-  }
-
-  # From DHIS2 Derived Denominators
-  output_data <- output_data %>%
-    # Compute coverage  based on projected lives births in DHIS-2
-    mutate(
-      cov_anc1_dhis2 = 100 * anc1/(totpreg_dhis2 * 1000),
-      cov_instlivebirths_dhis2 = 100 * instlivebirths/(totlivebirths_dhis2 * 1000),
-      cov_instdeliveries_dhis2 = 100 * instlivebirths/(totdeliv_dhis2 * 1000),
-      cov_bcg_dhis2 = 100 * bcg/(totlivebirths_dhis2 * 1000),
-      cov_penta1_dhis2 = 100 * penta1/(totinftpenta_dhis2 * 1000),
-      cov_penta3_dhis2 = 100 * penta3/(totinftpenta_dhis2 * 1000),
-      cov_measles1_dhis2 = 100 * measles1/(totinftmeasles_dhis2 * 1000),
-      cov_measles2_dhis2 = 100 * measles2/(totmeasles2_dhis2 * 1000)
-    )
-
-  if (get_selected_group() == 'rmncah') {
-    output_data <- output_data %>%
-      mutate(
-        cov_anc_1trimester_dhis2 = 100 * anc_1trimester/(totpreg_dhis2 * 1000),
-        cov_anc4_dhis2 = 100 * anc4/(totpreg_dhis2 * 1000),
-
-        cov_ipt2_dhis2 = 100 * ipt2/(totpreg_dhis2 * 1000),
-        cov_ipt3_dhis2 = 100 * ipt3/(totpreg_dhis2 * 1000),
-        cov_ifa90_dhis2 = 100 * ifa90/(totpreg_dhis2 * 1000),
-        cov_syphilis_test_dhis2 = 100 * syphilis_test/(totpreg_dhis2 * 1000),
-        cov_hiv_test_dhis2 = 100 * hiv_test/(totpreg_dhis2 * 1000),
-
-        cov_sba_dhis2 = 100 * sba/(totlivebirths_dhis2 * 1000),
-
-        cov_low_bweight_dhis2 = 100 * low_bweight/(totlivebirths_dhis2 * 1000),
-        cov_csection_dhis2 = 100 * csection/(totdeliv_dhis2 * 1000),
-        cov_pnc48h_dhis2 = 100 * pnc48h/(totlivebirths_dhis2 * 1000)
+        totmeasles2_un = totinftpenta_un - totinftpenta_un * (2 * pnmr)
       )
   }
 
-  if (get_selected_group() == 'vaccine') {
-    output_data <- output_data %>%
-      mutate(
-        cov_penta2_dhis2 = 100 * penta2/(totinftpenta_dhis2 * 1000),
-
-        cov_opv1_dhis2 = 100 * opv1/(totinftpenta_dhis2 * 1000),
-        cov_opv2_dhis2 = 100 * opv2/(totinftpenta_dhis2 * 1000),
-        cov_opv3_dhis2 = 100 * opv3/(totinftpenta_dhis2 * 1000),
-
-        cov_pcv1_dhis2 = 100 * pcv1/(totinftpenta_dhis2 * 1000),
-        cov_pcv2_dhis2 = 100 * pcv2/(totinftpenta_dhis2 * 1000),
-        cov_pcv3_dhis2 = 100 * pcv3/(totinftpenta_dhis2 * 1000),
-
-        cov_rota1_dhis2 = 100 * rota1/(totinftpenta_dhis2 * 1000),
-        cov_rota2_dhis2 = 100 * rota2/(totinftpenta_dhis2 * 1000),
-
-        cov_ipv1_dhis2 = 100 * ipv1/(totinftpenta_dhis2 * 1000),
-        cov_ipv2_dhis2 = 100 * ipv2/(totinftpenta_dhis2 * 1000),
-
-        cov_zerodose_dhis2 = 100 * (totinftpenta_dhis2 * 1000 - penta1) / (totinftpenta_dhis2 * 1000),
-        # generating undervax indicators
-        cov_undervax_dhis2 = 100 * (totinftpenta_dhis2 * 1000 - penta3) / (totinftpenta_dhis2 * 1000),
-        # generating drop-out indicators
-        cov_dropout_penta13_dhis2 = ((penta1 - penta3)/penta1) * 100,
-        cov_dropout_measles12_dhis2 = ((measles1 - measles2)/measles1) * 100,
-        cov_dropout_penta3mcv1_dhis2 = ((penta3 - measles1)/penta3) * 100,
-        cov_dropout_penta1mcv1_dhis2 = ((penta1 - measles1)/penta1) * 100
-      )
-  }
-
-    # From ANC-1 Derived Denominators
-  output_data <- output_data %>%
-    mutate(
-      cov_anc1_anc1 = 100 * anc1/totpreg_anc1,
-      cov_instlivebirths_anc1 = 100 * instlivebirths/totlbirths_anc1,
-      cov_instdeliveries_anc1 = 100 * instlivebirths/totdeliv_anc1,
-      cov_bcg_anc1 = 100 * bcg/totlbirths_anc1,
-      cov_penta1_anc1 = 100 * penta1/totinftpenta_anc1,
-      cov_penta3_anc1 = 100 * penta3/totinftpenta_anc1,
-      cov_measles1_anc1 = 100 * measles1/totinftmeasles_anc1,
-      cov_measles2_anc1 = 100 * measles2/totmeasles2_anc1
-    )
-
-  if (get_selected_group() == 'rmncah') {
-    output_data <- output_data %>%
-      mutate(
-        cov_anc_1trimester_anc1 = 100 * anc_1trimester/totpreg_anc1,
-        cov_anc4_anc1 = 100 * anc4/totpreg_anc1,
-
-        cov_ipt2_anc1 = 100 * ipt2/totpreg_anc1,
-        cov_ipt3_anc1 = 100 * ipt3/totpreg_anc1,
-        cov_ifa90_anc1 = 100 * ifa90/totpreg_anc1,
-        cov_syphilis_test_anc1 = 100 * syphilis_test/totpreg_anc1,
-        cov_hiv_test_anc1 = 100 * hiv_test/totpreg_anc1,
-
-        cov_sba_anc1 = 100 * sba/totlbirths_anc1,
-        cov_low_bweight_anc1 = 100 * low_bweight/totlbirths_anc1,
-        cov_csection_anc1 = 100 * csection/totdeliv_anc1,
-        cov_pnc48h_anc1 = 100 * pnc48h/totlbirths_anc1,
-      )
-  }
-
-  if (get_selected_group() == 'vaccine') {
-    output_data <- output_data %>%
-      mutate(
-        cov_penta2_anc1 = 100 * penta2/totinftpenta_anc1,
-
-        cov_opv1_anc1 = 100 * opv1/totinftpenta_anc1,
-        cov_opv2_anc1 = 100 * opv2/totinftpenta_anc1,
-        cov_opv3_anc1 = 100 * opv3/totinftpenta_anc1,
-
-        cov_pcv1_anc1 = 100 * pcv1/totinftpenta_anc1,
-        cov_pcv2_anc1 = 100 * pcv2/totinftpenta_anc1,
-        cov_pcv3_anc1 = 100 * pcv3/totinftpenta_anc1,
-
-        cov_rota1_anc1 = 100 * rota1/totinftpenta_anc1,
-        cov_rota2_anc1 = 100 * rota2/totinftpenta_anc1,
-
-        cov_ipv1_anc1 = 100 * ipv1/totinftpenta_anc1,
-        cov_ipv2_anc1 = 100 * ipv2/totinftpenta_anc1,
-
-        cov_zerodose_anc1 = 100 * (totinftpenta_anc1 - penta1) / totinftpenta_anc1,
-        # generating undervax indicators
-        cov_undervax_anc1 = 100 * (totinftpenta_anc1 - penta3) / totinftpenta_anc1,
-        # generating drop-out indicators
-        cov_dropout_penta13_anc1 = ((penta1 - penta3)/penta1) * 100,
-        cov_dropout_measles12_anc1 = ((measles1 - measles2)/measles1) * 100,
-        cov_dropout_penta3mcv1_anc1 = ((penta3-measles1)/penta3) * 100,
-        cov_dropout_penta1mcv1_anc1 = ((penta1 - measles1)/penta1) * 100
-      )
-  }
-
-    # From PENTA-1 Derived Denominators
-  output_data <- output_data %>%
-    mutate(
-      cov_anc1_penta1 = 100 * anc1/totpreg_penta1,
-      cov_instlivebirths_penta1 = 100 * instlivebirths/totlbirths_penta1,
-      cov_instdeliveries_penta1 = 100 * instlivebirths/totdeliv_penta1,
-      cov_bcg_penta1 = 100 * bcg/totlbirths_penta1,
-      cov_penta1_penta1 = 100 * penta1/totinftpenta_penta1,
-      cov_penta3_penta1 = 100 * penta3/totinftpenta_penta1,
-      cov_measles1_penta1 = 100 * measles1/totinftmeasles_penta1,
-      cov_measles2_penta1 = 100 * measles2/totmeasles2_penta1
-    )
-
-  if (get_selected_group() == 'rmncah') {
-    output_data <- output_data %>%
-      mutate(
-        cov_anc_1trimester_penta1 = 100 * anc_1trimester/totpreg_penta1,
-        cov_anc4_penta1 = 100 * anc4/totpreg_penta1,
-
-        cov_ipt2_penta1 = 100 * ipt2/totpreg_penta1,
-        cov_ipt3_penta1 = 100 * ipt3/totpreg_penta1,
-        cov_ifa90_penta1 = 100 * ifa90/totpreg_penta1,
-        cov_syphilis_test_penta1 = 100 * syphilis_test/totpreg_penta1,
-        cov_hiv_test_penta1 = 100 * hiv_test/totpreg_penta1,
-
-        cov_sba_penta1 = 100 * sba/totlbirths_penta1,
-
-        cov_low_bweight_penta1 = 100 * low_bweight/totlbirths_penta1,
-        cov_csection_penta1 = 100 * csection/totdeliv_penta1,
-        cov_pnc48h_penta1 = 100 * pnc48h/totlbirths_penta1,
-      )
-  }
-
-  if (get_selected_group() == 'vaccine') {
-    output_data <- output_data %>%
-      mutate(
-        cov_penta2_penta1 = 100 * penta2/totinftpenta_penta1,
-
-        cov_opv1_penta1 = 100 * opv1/totinftpenta_penta1,
-        cov_opv2_penta1 = 100 * opv2/totinftpenta_penta1,
-        cov_opv3_penta1 = 100 * opv3/totinftpenta_penta1,
-
-        cov_pcv1_penta1 = 100 * pcv1/totinftpenta_penta1,
-        cov_pcv2_penta1 = 100 * pcv2/totinftpenta_penta1,
-        cov_pcv3_penta1 = 100 * pcv3/totinftpenta_penta1,
-
-        cov_rota1_penta1 = 100 *rota1/totinftpenta_penta1,
-        cov_rota2_penta1 = 100 * rota2/totinftpenta_penta1,
-
-        cov_ipv1_penta1 = 100 * ipv1/totinftpenta_penta1,
-        cov_ipv2_penta1 = 100 * ipv2/totinftpenta_penta1,
-
-        cov_zerodose_penta1 = 100 * (totinftpenta_penta1 - penta1) / totinftpenta_penta1,
-        # generating undervax indicators
-        cov_undervax_penta1 = 100 * (totinftpenta_penta1 - penta3) / totinftpenta_penta1,
-        # generating drop-out indicators
-        cov_dropout_penta13_penta1 = ((penta1 - penta3)/penta1) * 100,
-        cov_dropout_measles12_penta1 = ((measles1 - measles2)/measles1) * 100,
-        cov_dropout_penta3mcv1_penta1 = ((penta3 - measles1)/penta3) * 100,
-        cov_dropout_penta1mcv1_penta1 = ((penta1 - measles1)/penta1) * 100
-      )
+  # The coverage of every indicator on every denominator: defined once (.cd_coverage_defs), computed for each source.
+  group <- get_selected_group()
+  for (source in c(if (admin_level == "national") "un", "dhis2", "anc1", "penta1")) {
+    output_data <- mutate(output_data, !!!.cd_coverage_exprs(source, group))
   }
 
   # =========================================================================
@@ -639,28 +526,10 @@ calculate_populations <- function(.data,
       # }, .names = 'cov_{.col}_penta1derived_diff')
     )
 
-  if (get_selected_group() == 'vaccine') {
-
-    output_data <- output_data %>%
-      mutate(
-        cov_zerodose_penta1derived = 100 * (totinftpenta_penta1derived - penta1) / totinftpenta_penta1derived,
-        # generating undervax indicators
-        cov_undervax_penta1derived = 100 * (totinftpenta_penta1derived - penta3) / totinftpenta_penta1derived,
-        # generating drop-out indicators
-        cov_dropout_penta13_penta1derived = ((penta1 - penta3)/penta1) * 100,
-        cov_dropout_measles12_penta1derived = ((measles1 - measles2)/measles1) * 100,
-        cov_dropout_penta3mcv1_penta1derived = ((penta3 - measles1)/penta3) * 100,
-        cov_dropout_penta1mcv1_penta1derived = ((penta1 - measles1)/penta1) * 100,
-
-        cov_zerodose_anc1derived = 100 * (totinftpenta_anc1derived - penta1) / totinftpenta_anc1derived,
-        # generating undervax indicators
-        cov_undervax_anc1derived = 100 * (totinftpenta_anc1derived - penta3) / totinftpenta_anc1derived,
-        # generating drop-out indicators
-        cov_dropout_penta13_anc1derived = ((penta1 - penta3)/penta1) * 100,
-        cov_dropout_measles12_anc1derived = ((measles1 - measles2)/measles1) * 100,
-        cov_dropout_penta3mcv1_anc1derived = ((penta3 - measles1)/penta3) * 100,
-        cov_dropout_penta1mcv1_anc1derived = ((penta1 - measles1)/penta1) * 100
-      )
+  if (group == "vaccine") {
+    for (source in c("penta1derived", "anc1derived")) {
+      output_data <- mutate(output_data, !!!.cd_coverage_gap_exprs(sym(paste0("totinftpenta_", source)), source))
+    }
   }
 
   new_tibble(
@@ -672,35 +541,4 @@ calculate_populations <- function(.data,
     region = region,
     iso3 = iso3
   )
-}
-
-coalesce_join <- function(x, y, by = NULL, suffix = c(".x", ".y"), join = left_join, ...) {
-  joined <- join(x, y, by = by, suffix = suffix, ...)
-
-  # Identify columns with suffixes
-  x_cols_suffix <- names(joined)[str_ends(names(joined), fixed(suffix[1]))]
-  y_cols_suffix <- names(joined)[str_ends(names(joined), fixed(suffix[2]))]
-
-  # Base names (remove suffix)
-  x_base <- str_remove(x_cols_suffix, fixed(suffix[1]))
-  y_base <- str_remove(y_cols_suffix, fixed(suffix[2]))
-
-  # Columns truly common to x and y
-  common_cols <- intersect(x_base, y_base)
-
-  # Build coalesced columns
-  coalesced_cols <- map(common_cols, function(col) {
-    coalesce(
-      joined[[paste0(col, suffix[1])]],
-      joined[[paste0(col, suffix[2])]]
-    )
-  }) %>% set_names(common_cols)
-
-  # Build final tibble
-  joined %>%
-    mutate(!!!coalesced_cols) %>%
-    select(
-      -any_of(paste0(common_cols, suffix[1])),
-      -any_of(paste0(common_cols, suffix[2]))
-    )
 }

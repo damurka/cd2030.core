@@ -2,18 +2,20 @@
 % Please edit documentation in R/plot.outlier.R
 \name{plot.cd_outlier_list}
 \alias{plot.cd_outlier_list}
-\title{Plot Outlier Time Series for a Region}
+\title{Plot outlier time series for a region}
 \usage{
 \method{plot}{cd_outlier_list}(
   x,
   indicator = NULL,
   year = NULL,
   region = NULL,
-  title = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
-  legend = NULL,
   label = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
   options = NULL
 )
@@ -28,21 +30,26 @@ years are shown.}
 
 \item{region}{The name of the unit to plot.}
 
-\item{title}{Optional plot title. Defaults to a title naming the indicator,
-unit and year.}
-
-\item{x_axis, y_axis}{Optional x- and y-axis titles. Default to \code{"Month"} and
-the indicator name.}
-
-\item{legend}{Optional legend title. Default is \code{NULL} (no title).}
-
 \item{label}{Optional named character vector overriding the legend labels.
 Recognised names are \code{reported}, \code{median}, \code{bounds} and \code{outliers}.}
 
-\item{...}{Not used.}
+\item{title}{The chart's title.}
 
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{subtitle}{The line under the title.}
+
+\item{caption}{The note under the chart.}
+
+\item{x_title}{The title of the horizontal axis.}
+
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
 }
 \value{
 A \code{ggplot} object.

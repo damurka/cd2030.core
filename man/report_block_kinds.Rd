@@ -23,3 +23,11 @@ The kinds are listed in the order of the analysis (their \code{group}: data qual
 sub-national, region, mortality, service utilization, health system). The standard report files add their own kinds
 (see the top of the standard reports section).
 }
+\examples{
+kinds <- report_block_kinds("rmncah")
+head(names(kinds))
+str(kinds$reporting_rate)
+
+# the kinds the vaccine group does not have
+setdiff(names(kinds), names(report_block_kinds("vaccine")))
+}

@@ -330,6 +330,9 @@
       grain = "one row per district x year", unit = "coverage %; differences in percentage points", key_columns = c("iso3", "adminlevel_1", "district", "year"),
       depends_on = c("indicator_coverage_district", "indicator_coverage_national"), shown_on = c(P$subnational_inequality, P$reports),
       method = m("subnational", "inequality")),
+    adjustment_values = .cd_def("data", "The yearly numbers of every indicator as reported (after the years and areas removed) and after each step of the dataset's adjustment: completeness, outliers, missing values (the adjusted numbers).",
+      grain = "one row per year", unit = "counts", key_columns = "year",
+      depends_on = c("countdown_data", "adjusted_data"), shown_on = c(P$adjustment_changes, P$reports)),
     mortality_summary = .cd_def("data", "Institutional mortality per first-level region and year: live births, stillbirths (total, fresh), maternal and neonatal deaths, and the institutional rates (iMMR, iSBR, neonatal) and ratios (stillbirths and neonatal deaths per maternal death).",
       grain = "one row per adminlevel_1 x year (and national)", unit = "counts; per 100,000 live births (iMMR); per 1,000 (iSBR)", key_columns = c("adminlevel_1", "year"),
       default = c("mort_mmr_low", "mort_sbr_low"), depends_on = "adjusted_data",
@@ -516,9 +519,8 @@
       grain = "one row per unit x year reaching the target", unit = "coverage %", key_columns = c("adminlevel_1", "district", "year"),
       default = c("cov_target_vaccine_national", "sub_target_vaccine", "cov_target_anc4", "cov_target_instlivebirths", "cov_target_dropout", "cov_target_other"),
       depends_on = c("get_base_indicator_coverage", "get_denominator"), shown_on = P$target, method = m("subnational", "global-coverage-targets")),
-    get_regional_estimates = .cd_def("method", "The national rates with a region's own survey values in their place, for calculations restricted to one region.",
-      unit = "proportion", depends_on = c("national_estimates", "subnational_regions"), status = "draft",
-      note = "Fails when called for a region: it reads an object (reg_data) that is not defined; the regional rates in use come from admin1_estimates."),
+    get_regional_estimates = .cd_def("method", "One region's rates from the survey files: its own mortality rates and survey coverage (the latest survey value of each). A rate its surveys do not give keeps the national value; the national rates are returned whole only when the region is not in the survey files.",
+      unit = "proportion", depends_on = c("national_estimates", "regional_survey", "survey_mapping", "subnational_regions", "start_survey_year")),
     generate_health_system_table = .cd_def("method", "The national health-system table: facility, hospital and bed densities, workforce density and skills mix, and the private and NGO shares of facilities, each with its unit.",
       grain = "one row per health-system indicator", unit = "per 10,000 or 100,000 population; %", key_columns = c("section", "indicator"),
       depends_on = "health_system_metrics_national", shown_on = c(P$hs_national, P$reports),
@@ -547,7 +549,10 @@
       depends_on = c("bayes_model_key", "get_denominator"), shown_on = P$bayesian)
   )
 
-  c(defs, methods)
+  all <- c(defs, methods)
+  # what a kept table is computed from is said once, in R/cache-tables.R
+  for (name in intersect(names(.cd_kept_tables), names(all))) all[[name]]$depends_on <- .cd_kept_tables[[name]]$reads
+  all
 }
 
 # The definition of a setter or clearer, from the member it changes.

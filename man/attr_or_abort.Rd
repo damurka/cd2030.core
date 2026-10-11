@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils-cd-data.R
 \name{attr_or_abort}
 \alias{attr_or_abort}
-\title{Retrieve an Attribute or Abort with Error}
+\title{Retrieve an attribute or abort with error}
 \usage{
 attr_or_abort(.data, attr_name)
 }

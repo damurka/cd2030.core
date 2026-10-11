@@ -13,6 +13,13 @@
 #' @param .source The data the plot was made from; its [cd_chart_id()] says which chart this is.
 #'
 #' @return The ggplot with the options applied.
+#'
+#' @examples
+#' p <- ggplot2::ggplot(mtcars, ggplot2::aes(wt, mpg)) + ggplot2::geom_point()
+#' cd_finish_plot(p, title = "Weight and fuel use", x_title = "Weight", y_title = "Miles per gallon")
+#'
+#' # the same as one options object, the way a plot method receives it
+#' cd_finish_plot(p, cd_chart_options(title = "Weight and fuel use", legend_position = "bottom"))
 #' @export
 cd_finish_plot <- function(p, options = NULL, ..., .source = NULL) {
   merged <- merge_chart_options(.report_options_for(p, .source), resolve_chart_options(options, ...))
@@ -32,6 +39,13 @@ cd_finish_plot <- function(p, options = NULL, ..., .source = NULL) {
 #' @param x The data a plot method was given.
 #'
 #' @return A string, or `NULL` when the data does not say what it is.
+#'
+#' @examples
+#' data <- load_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#' cd_chart_id(calculate_average_reporting_rate(data))
+#'
+#' # plain data does not say what it is
+#' cd_chart_id(mtcars)
 #' @export
 cd_chart_id <- function(x) {
   generic <- c("tbl_df", "tbl", "data.frame", "data.table", "list", "numeric", "character", "integer", "double", "logical", "factor")
@@ -67,6 +81,16 @@ cd_chart_id <- function(x) {
 #'
 #' @return A tibble with `id`, `target` (`"screen"`, `"report"` or `"dataset"`), `group`, `n_options` and `options` (a
 #'   one-line summary).
+#'
+#' @examples
+#' cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#' cache$set_chart_options("default", cd_chart_options(legend_position = "bottom"))
+#' cache$set_chart_options(
+#'   "report/coverage_filtered.national.penta3",
+#'   cd_chart_options(title = "Penta3 coverage")
+#' )
+#'
+#' cd_chart_catalog(cache)
 #' @export
 cd_chart_catalog <- function(cache) {
   saved <- cache$chart_options

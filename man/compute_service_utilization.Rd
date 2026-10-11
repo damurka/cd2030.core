@@ -2,7 +2,7 @@
 % Please edit documentation in R/6_service_utilization.R
 \name{compute_service_utilization}
 \alias{compute_service_utilization}
-\title{Compute Service Utilization Metrics}
+\title{Compute service utilization metrics}
 \usage{
 compute_service_utilization(
   .data,
@@ -12,7 +12,7 @@ compute_service_utilization(
 \arguments{
 \item{.data}{A data frame containing service and population indicators.}
 
-\item{admin_level}{Either \code{"national"} or \code{"adminlevel_1"} to define the aggregation level.}
+\item{admin_level}{One of \code{"national"}, \code{"adminlevel_1"} or \code{"district"} to define the aggregation level.}
 }
 \value{
 A \code{cd_service_utilization} object (tibble subclass) with summarized and derived indicators:
@@ -25,7 +25,7 @@ A \code{cd_service_utilization} object (tibble subclass) with summarized and der
 }
 \description{
 Calculates annualized service utilization statistics including outpatient (OPD), inpatient (IPD),
-case fatality rates, and under-5 service use, aggregated either at national or admin level 1.
+case fatality rates, and under-5 service use, aggregated at national, admin level 1 or district level.
 }
 \examples{
 \dontrun{

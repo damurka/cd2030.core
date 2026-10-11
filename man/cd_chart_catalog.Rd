@@ -19,3 +19,13 @@ chart's place in the app), whether they are for the screen or for reports, how m
 belongs to (the first two parts of its id, e.g. \code{coverage_filtered.national}). Use it to see which chart ids a report will
 pick options up for.
 }
+\examples{
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+cache$set_chart_options("default", cd_chart_options(legend_position = "bottom"))
+cache$set_chart_options(
+  "report/coverage_filtered.national.penta3",
+  cd_chart_options(title = "Penta3 coverage")
+)
+
+cd_chart_catalog(cache)
+}

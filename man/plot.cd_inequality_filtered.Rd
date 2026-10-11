@@ -2,40 +2,44 @@
 % Please edit documentation in R/plot.inequality.R
 \name{plot.cd_inequality_filtered}
 \alias{plot.cd_inequality_filtered}
-\title{Plot Subnational Health Coverage Analysis}
+\title{Plot subnational health coverage analysis}
 \usage{
 \method{plot}{cd_inequality_filtered}(
   x,
   title = NULL,
   subtitle = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
   caption = NULL,
-  legend_labels = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
+  legend_labels = NULL,
   options = NULL
 )
 }
 \arguments{
-\item{x}{A \code{cd_inequality_filtered} object returned by \code{\link[=filter_inequality]{filter_inequality()}}.}
+\item{x}{A \code{cd_inequality_filtered} object returned by \code{\link[=select_inequality]{select_inequality()}}.}
 
-\item{title}{(Optional) A scalar character string to override the default plot title. Defaults to \code{NULL}.}
+\item{title}{The chart's title.}
 
-\item{subtitle}{(Optional) A scalar character string to override the default plot subtitle. Defaults to \code{NULL}.}
+\item{subtitle}{The line under the title.}
 
-\item{x_axis}{(Optional) A scalar character string to override the default x-axis label. Defaults to \code{NULL}.}
+\item{caption}{The note under the chart.}
 
-\item{y_axis}{(Optional) A scalar character string to override the default y-axis label. Defaults to \code{NULL}.}
+\item{x_title}{The title of the horizontal axis.}
 
-\item{caption}{(Optional) A scalar character string to override the default denominator caption. Defaults to \code{NULL}.}
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
 
 \item{legend_labels}{(Optional) A named list or vector to override the legend keys and MADM label for translation.
 Valid keys: \code{subnational}, \code{national}, \code{madm}. Defaults to \code{NULL}.}
 
-\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}); other arguments are ignored.}
-
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes the user changed. Applied last, so it wins over
-\code{title} and the other arguments above. Any chart option can also be given by name in \code{...}.}
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
 }
 \value{
 A \code{ggplot} object displaying the subnational health coverage plot.
@@ -45,4 +49,15 @@ Generates a plot to visualize health coverage data across subnational units,
 distinguishing between the national mean and subnational coverage. The Mean
 Absolute Difference to the Mean (MADM) is displayed as an indicator on the
 y-axis.
+}
+\examples{
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+cache$set_national_estimates(list(sbr = 0.02))
+cache$adjust_data()
+inequality <- cache$get_filtered_inequality("penta3", "adminlevel_1")
+
+plot(inequality)
+plot(inequality, title = "Penta3 coverage by region", y_title = "Coverage (\%)",
+     legend_labels = list(subnational = "Regions", national = "Kenya"))
+
 }

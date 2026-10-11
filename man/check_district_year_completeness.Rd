@@ -2,14 +2,31 @@
 % Please edit documentation in R/0_data_quality_checks.R
 \name{check_district_year_completeness}
 \alias{check_district_year_completeness}
-\title{Check every district appears in every year present in the Population sheet}
+\title{Check that every district has every year in the Population sheet}
 \usage{
 check_district_year_completeness(population_data)
 }
 \arguments{
-\item{population_data}{The raw Population sheet (\code{parts[[population_sheet_name]]}).}
+\item{population_data}{A data frame. The cleaned Population sheet, before the sheets are
+merged, with \code{district} and \code{year} columns.}
+}
+\value{
+\code{NULL} if every district appears in every year, or if the sheet lacks either column.
+Otherwise a character vector of length one, named \code{"x"}, with a message that lists the
+districts missing from at least one year.
 }
 \description{
-Pre-merge half of the old \code{check_district_consistency()} -- district+year is the Population
-sheet's own natural grain, no merge needed.
+Checks that each district in the Population sheet has a row for every year the sheet
+covers. This is the part of \code{\link[=check_district_consistency]{check_district_consistency()}} that can run before the sheets
+are merged.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+sheets <- load_excel_parts(path)
+population <- sheets$parts[[sheets$population_sheet_name]]
+check_district_year_completeness(population)
+
+# A district with no population row for one year
+gap <- population$district == "Baringo" & population$year == 2023
+check_district_year_completeness(population[!gap, ])
 }

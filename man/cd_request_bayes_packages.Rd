@@ -16,3 +16,14 @@ cd_request_bayes_packages(packages = cd_bayes_packages_missing())
 Inside DataSuite (an app it started), asks it to install them: it shows the progress in its status bar and then
 offers to restart the app. Outside DataSuite it does nothing; install them with \code{\link[=cd_bayes_install_command]{cd_bayes_install_command()}}.
 }
+\examples{
+\dontrun{
+# in an app DataSuite started, before the model is first used
+if (length(cd_bayes_packages_missing()) > 0) {
+  cd_request_bayes_packages()
+}
+
+# one package only
+cd_request_bayes_packages("bayescoveragedeploy")
+}
+}

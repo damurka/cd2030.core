@@ -2,7 +2,7 @@
 % Please edit documentation in R/1a_checks_reporting_rate.R
 \name{calculate_average_reporting_rate}
 \alias{calculate_average_reporting_rate}
-\title{Reporting Rate Summary by Administrative Level}
+\title{Reporting rate summary by administrative level}
 \usage{
 calculate_average_reporting_rate(
   .data,

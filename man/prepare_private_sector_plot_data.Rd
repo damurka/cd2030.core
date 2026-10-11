@@ -2,7 +2,7 @@
 % Please edit documentation in R/7_private_urban.R
 \name{prepare_private_sector_plot_data}
 \alias{prepare_private_sector_plot_data}
-\title{Prepare Private Sector Plot Data}
+\title{Prepare private sector plot data}
 \usage{
 prepare_private_sector_plot_data(.data, csection_data)
 }
@@ -30,13 +30,10 @@ Processes reshaped private sector data and c-section correction estimates
 to produce a tidy dataset for plotting public/private sector shares.
 }
 \details{
-This function:
-\itemize{
-\item Joins private sector data with correction estimates using \code{iso}, \code{year}, and \code{indic}.
-\item For \code{"csection"} rows, applies adjustment: \code{r_raw = estimate * share_csection}.
-\item Drops intermediate columns and reshapes data to wide format.
-\item Calculates private sector share and total prevalence.
-}
+Joins private sector data with correction estimates using \code{iso}, \code{year}, and \code{indic} (and \code{area}
+for area data). For \code{"csection"} rows, applies the adjustment \code{r_raw = estimate * share_csection}.
+Drops intermediate columns, reshapes the data to one row per indicator with a set of columns for
+each sector, and calculates private sector share and total prevalence.
 
 Used as input to \code{\link[=plot.cd_private_sector_plot_data]{plot.cd_private_sector_plot_data()}} for visualisation.
 }

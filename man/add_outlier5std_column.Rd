@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils-quality_checks.R
 \name{add_outlier5std_column}
 \alias{add_outlier5std_column}
-\title{Add Outlier Flags Based on 5-MAD Bounds}
+\title{Add outlier flags based on 5-MAD bounds}
 \usage{
 add_outlier5std_column(.data, indicators, group_by = "district")
 }

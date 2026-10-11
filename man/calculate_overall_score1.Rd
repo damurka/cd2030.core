@@ -2,7 +2,7 @@
 % Please edit documentation in R/1a_checks_overall_score.R
 \name{calculate_overall_score1}
 \alias{calculate_overall_score1}
-\title{Calculate Overall Quality Score from Summaries}
+\title{Calculate overall quality score from summaries}
 \usage{
 calculate_overall_score1(
   average_reporting_rate,
@@ -35,7 +35,7 @@ year.}
 \code{header}, \code{section} and \code{metric} sub-lists (see
 \code{\link[=calculate_overall_score]{calculate_overall_score()}}). Default is \code{NULL}.}
 
-\item{threshold}{Numeric. The district reporting rate threshold shown in the
+\item{threshold}{Numeric. The performance threshold (in percent) shown in the
 label of row 1b. Default is \code{90}.}
 }
 \value{
@@ -45,4 +45,18 @@ row for the annual quality score.
 \description{
 Builds the same score table as \code{\link[=calculate_overall_score]{calculate_overall_score()}}, but from
 summaries that have already been calculated.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+calculate_overall_score1(
+  average_reporting_rate = calculate_average_reporting_rate(data),
+  district_reporting_rate = calculate_district_reporting_rate(data, threshold = 90),
+  district_completeness = calculate_district_completeness_summary(data),
+  outliers_summary = calculate_outliers_summary(data),
+  district_outliers_summary = calculate_district_outlier_summary(data),
+  ratios_summary = calculate_ratios_and_adequacy(data),
+  threshold = 90
+)
+
 }

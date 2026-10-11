@@ -2,21 +2,44 @@
 % Please edit documentation in R/plot.service_utlization.R
 \name{plot.cd_service_utilization_filtered}
 \alias{plot.cd_service_utilization_filtered}
-\title{Plot Service Utilization Indicators}
+\title{Plot service utilization indicators}
 \usage{
-\method{plot}{cd_service_utilization_filtered}(x, labels = NULL, ..., options = NULL)
+\method{plot}{cd_service_utilization_filtered}(
+  x,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
+  ...,
+  legend_labels = NULL,
+  options = NULL
+)
 }
 \arguments{
-\item{x}{A \code{cd_service_utilization_filtered} object created by \code{\link[=filter_service_utilization]{filter_service_utilization()}}.}
+\item{x}{A \code{cd_service_utilization_filtered} object created by \code{\link[=select_service_utilization]{select_service_utilization()}}.}
 
-\item{labels}{(Optional) A named list to override the default English text of the chart drawn, e.g. with translations. Valid
-keys: \code{title}, \code{x_axis}, \code{y_axis}, and the legend entries \code{y1} and \code{y2} of its two series (for \code{opd} and \code{ipd}: under-5 and
-all ages). Defaults to \code{NULL}.}
+\item{title}{The chart's title.}
 
-\item{...}{not used}
+\item{subtitle}{The line under the title.}
 
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{caption}{The note under the chart.}
+
+\item{x_title}{The title of the horizontal axis.}
+
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{legend_labels}{(Optional) A named list to override the legend's entries, e.g. with translations: \code{y1} and \code{y2}, the
+chart's two series (for \code{opd} and \code{ipd}: under-5 and all ages). Defaults to \code{NULL}.}
+
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
 }
 \value{
 A \code{ggplot2} plot object.
@@ -26,7 +49,7 @@ Visualizes service utilization over time from a \code{cd_service_utilization_fil
 }
 \examples{
 \dontrun{
-plot(filter_service_utilization(dat, indicator = 'opd'))
+plot(select_service_utilization(dat, indicator = 'opd'))
 }
 
 }

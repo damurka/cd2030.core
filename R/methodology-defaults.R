@@ -132,7 +132,7 @@
       entry("dq_reporting_threshold_picks", "data_quality", "both", dq$reporting_threshold_picks, "%",
             "Reporting threshold quick picks",
             "The values the Reporting Rate page offers as quick picks for the district reporting threshold.",
-            "R/ui-page-1a_checks_reporting_rate.R"),
+            "R/page-reporting_rate.R"),
       entry("dq_outlier_mad_multiplier", "data_quality", "both", dq$outlier_mad_multiplier, "x MAD",
             "Extreme outlier bound",
             paste0("A monthly value is an extreme outlier when it lies more than ", dq$outlier_mad_multiplier,
@@ -183,7 +183,7 @@
       entry("adj_k_options", "adjustment", "both", adj$k_options, "",
             "k values offered",
             "The k values the Data Adjustment page offers for each indicator group.",
-            "R/ui-page-1c_data_adjustment.R"),
+            "R/page-data_adjustment.R"),
       entry("adj_reporting_rate_cutoff", "adjustment", "both", adj$reporting_rate_cutoff, "%",
             "Reporting rate cutoff",
             paste0("Before adjusting, a reporting rate below ", adj$reporting_rate_cutoff,
@@ -258,7 +258,7 @@
   )
 }
 
-#' The Constants of the Countdown Methodology
+#' The constants of the Countdown methodology
 #'
 #' Lists the constants the package's methodology uses (cutoffs, thresholds,
 #' default rates and targets) with the values the code runs with, so the

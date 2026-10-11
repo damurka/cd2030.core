@@ -1,4 +1,4 @@
-#' Save Processed Countdown 2030 Data to File
+#' Save processed Countdown 2030 data to file
 #'
 #' `save_data` saves processed Countdown 2030 data to either an RDS or DTA file.
 #' It checks that the input data is of class `cd_data` before saving.
@@ -26,6 +26,7 @@
 #' @export
 save_data <- function(.data, file = "master_dataset.dta") {
   check_cd_data(.data)
+  local_data_group(.data)
 
   # Get file extension and determine save format
   file_extension <- tools::file_ext(file)
@@ -33,14 +34,19 @@ save_data <- function(.data, file = "master_dataset.dta") {
   # Save based on the specified extension
   switch(file_extension,
     "rds" = saveRDS(.data, file = file),
-    "dta" = haven::write_dta(.data, path = file),
+    # a dataset saved before 1.4.0 may still hold raw_month.x / raw_month.y, which Stata cannot name
+    "dta" = haven::write_dta(select(.data, -starts_with("raw_month")), path = file),
     cd_abort(
       c("x" = 'Unsupported file format. Please use an ".rds" or ".dta" extension.')
     )
   )
 }
 
-#' Save DHIS2 Data to an Excel Workbook
+#' Save DHIS2 data to an Excel workbook
+#'
+#' Writes the admin, population, completeness and service data downloaded from DHIS2 to one Excel
+#' workbook, with styled sheets for each type of data. A file that already exists at `filename`
+#' is overwritten.
 #'
 #' @param .data A list containing the structured DHIS2 data, including `admin`,
 #'    `population`, `completeness`, and `service` datasets.
@@ -51,8 +57,7 @@ save_data <- function(.data, file = "master_dataset.dta") {
 #'   followed by `year` and `month` where relevant.
 #'
 #' @details
-#' This function generates an Excel workbook containing multiple sheets for
-#'   different types of DHIS2 data:
+#' The workbook contains sheets for the different types of DHIS2 data:
 #' - **Admin Data**: Maps health districts to administrative units.
 #' - **Population Data**: Contains official population data for denominators in
 #'   health reporting.
@@ -101,22 +106,25 @@ save_dhis2_excel <- function(.data, filename, last_org) {
   saveWorkbook(wb, filename, overwrite = TRUE)
 }
 
-#' Create a Master Dataset from DHIS2 Data
+#' Create a master dataset from DHIS2 data
+#'
+#' Combines the service, completeness, population and admin data downloaded from DHIS2 into one
+#' Countdown dataset, with a row per district, year and month and a column per data element.
 #'
 #' @param .data A list containing the structured DHIS2 data, including `admin`,
 #'   `population`, `completeness`, and `service` datasets.
 #'
 #' @details
-#' This function combines all DHIS2 data types into a single dataset. It pivots
-#' data to a wide format, merges datasets on common keys, and ensures completeness
-#' by filtering out rows with missing values in critical columns. The final dataset
-#' is standardized for consistency and usability.
+#' Pivots the service, completeness and population data to a wide format and merges them on
+#' their common keys (`district`, `year` and, where present, `month`), then adds the admin data
+#' by `district`. The merged data is standardized and made into a `cd_data` object, which checks
+#' that the required columns are present.
 #'
-#' @return A data frame representing the combined and cleaned DHIS2 dataset.
+#' @return A tibble of class `cd_data` holding the combined and standardized DHIS2 dataset.
 #'
 #' @examples
 #' \dontrun{
-#' master_dataset <- create_master_dataset(data)
+#' master_dataset <- save_dhis2_master_data(data)
 #' }
 #'
 #' @export
@@ -138,7 +146,7 @@ save_dhis2_master_data <- function(.data) {
   merged_data <- service_data %>%
     left_join(completeness_data, by = c("district", "year", "month")) %>%
     left_join(population_data, by = c("district", "year")) %>%
-    left_join(admin_data, by = "district", relationship = "many-to-many") %>%
+    left_join(.data$admin, by = "district", relationship = "many-to-many") %>%
     rename_with(~ tolower(gsub(" ", "", .))) %>%
     standardize_data()
 

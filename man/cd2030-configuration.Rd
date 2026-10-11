@@ -3,7 +3,7 @@
 \name{with_cd_quiet}
 \alias{with_cd_quiet}
 \alias{local_cd_quiet}
-\title{Execute Code in Quiet Mode}
+\title{Execute code in quiet mode}
 \usage{
 with_cd_quiet(code)
 
@@ -23,4 +23,18 @@ No return value, called for side effects.
 Temporarily suppress messages by enabling quiet mode within the provided code block.
 
 Temporarily suppress messages within the specified environment.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+
+# no progress messages while the data loads
+data <- with_cd_quiet(load_data(path))
+
+# quiet until the function returns
+load_quietly <- function(path) {
+  local_cd_quiet()
+  load_data(path)
+}
+data <- load_quietly(path)
+
 }

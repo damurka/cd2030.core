@@ -2,7 +2,7 @@
 % Please edit documentation in R/save_data.R
 \name{save_dhis2_master_data}
 \alias{save_dhis2_master_data}
-\title{Create a Master Dataset from DHIS2 Data}
+\title{Create a master dataset from DHIS2 data}
 \usage{
 save_dhis2_master_data(.data)
 }
@@ -11,20 +11,21 @@ save_dhis2_master_data(.data)
 \code{population}, \code{completeness}, and \code{service} datasets.}
 }
 \value{
-A data frame representing the combined and cleaned DHIS2 dataset.
+A tibble of class \code{cd_data} holding the combined and standardized DHIS2 dataset.
 }
 \description{
-Create a Master Dataset from DHIS2 Data
+Combines the service, completeness, population and admin data downloaded from DHIS2 into one
+Countdown dataset, with a row per district, year and month and a column per data element.
 }
 \details{
-This function combines all DHIS2 data types into a single dataset. It pivots
-data to a wide format, merges datasets on common keys, and ensures completeness
-by filtering out rows with missing values in critical columns. The final dataset
-is standardized for consistency and usability.
+Pivots the service, completeness and population data to a wide format and merges them on
+their common keys (\code{district}, \code{year} and, where present, \code{month}), then adds the admin data
+by \code{district}. The merged data is standardized and made into a \code{cd_data} object, which checks
+that the required columns are present.
 }
 \examples{
 \dontrun{
-master_dataset <- create_master_dataset(data)
+master_dataset <- save_dhis2_master_data(data)
 }
 
 }

@@ -2,13 +2,19 @@
 % Please edit documentation in R/plot.mortality.R
 \name{plot.cd_mortality_summary}
 \alias{plot.cd_mortality_summary}
-\title{Plot Mortality Rate Indicators}
+\title{Plot mortality rate indicators}
 \usage{
 \method{plot}{cd_mortality_summary}(
   x,
   indicator = c("mmr_inst", "ratio_md_sb", "sbr_inst", "nn_inst"),
-  labels = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
+  legend_labels = NULL,
   options = NULL
 )
 }
@@ -17,17 +23,41 @@
 
 \item{indicator}{One of \code{"mmr_inst"}, \code{"ratio_md_sb"}, \code{"sbr_inst"}, or \code{"nn_inst"}.}
 
-\item{labels}{(Optional) A named list to override the default English text, e.g. with translations. Valid keys: \code{title},
-\code{national} (legend entry for the national line) and \code{regions} (legend entry for the regional points). Defaults to \code{NULL}.}
+\item{title}{The chart's title.}
 
-\item{...}{Additional arguments passed to methods.}
+\item{subtitle}{The line under the title.}
 
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{caption}{The note under the chart.}
+
+\item{x_title}{The title of the horizontal axis.}
+
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{legend_labels}{(Optional) A named list to override the legend's entries, e.g. with translations: \code{national} (the
+national line) and \code{regions} (the regional points). Defaults to \code{NULL}.}
+
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
 }
 \value{
 A ggplot object.
 }
 \description{
 Produces line plots for national mortality indicators with regional points for comparison.
+}
+\examples{
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+cache$set_national_estimates(list(sbr = 0.02))
+cache$adjust_data()
+mortality <- cache$mortality_summary
+
+plot(mortality, indicator = "mmr_inst")
+plot(mortality, indicator = "sbr_inst", title = "Institutional stillbirth rate",
+     legend_labels = list(national = "Kenya", regions = "Regions"), legend_position = "bottom")
+
 }

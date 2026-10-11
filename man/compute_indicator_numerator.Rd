@@ -2,7 +2,7 @@
 % Please edit documentation in R/2_denominators_compute_indicator_numerator.R
 \name{compute_indicator_numerator}
 \alias{compute_indicator_numerator}
-\title{Compute Aggregated Numerators for Health Indicators}
+\title{Compute aggregated numerators for health indicators}
 \usage{
 compute_indicator_numerator(
   .data,

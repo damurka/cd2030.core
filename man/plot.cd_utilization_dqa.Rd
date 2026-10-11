@@ -2,14 +2,15 @@
 % Please edit documentation in R/plot.cd_utilization_dqa.R
 \name{plot.cd_utilization_dqa}
 \alias{plot.cd_utilization_dqa}
-\title{Plot S3 method for Service DQA Summary}
+\title{Plot S3 method for service DQA summary}
 \usage{
 \method{plot}{cd_utilization_dqa}(x, years = NULL, title = NULL, width = NULL, ..., options = NULL)
 }
 \arguments{
-\item{x}{The score dataframe (needs class 'cd_utilization_dqa')}
+\item{x}{The score dataframe (needs class 'cd_utilization_dqa'), as returned by
+\code{\link[=generate_service_dqa_summary]{generate_service_dqa_summary()}}.}
 
-\item{years}{Vector of years to display (e.g., 2020:2024)}
+\item{years}{Vector of years to display (e.g., 2020:2024). Required.}
 
 \item{title}{(Optional) Custom title for the table}
 
@@ -20,6 +21,22 @@
 \item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
 arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
 }
+\value{
+A \code{flextable} object (from the flextable package), not a ggplot. Chart options change
+ggplots only, so \code{options} has no effect on this table.
+}
 \description{
-Plot S3 method for Service DQA Summary
+Draws the service utilization data quality summary as a formatted table, with the indicators
+grouped by section and a column for each year. Completeness and outlier percentages are shaded
+green at or above the threshold stored with the summary, yellow from 70 up to the threshold and
+red below 70.
+}
+\examples{
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+cache$adjust_data()
+dqa <- cache$calculate_service_dqa_summary("national")
+
+plot(dqa, years = cache$data_years)
+plot(dqa, years = 2021:2023, title = "Quality of OPD and IPD data", width = 7)
+
 }

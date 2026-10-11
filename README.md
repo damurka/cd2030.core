@@ -93,6 +93,10 @@ export_report(cache, reports[["data_quality"]], "data_quality.docx", format = "d
 cache$set_cache_path("kenya.rds")
 ```
 
+The guides go through this step by step, with the output and charts each step gives: `vignette("cd2030.core")` to
+get started, then `vignette("preparing-data")`, `vignette("data-quality")` and `vignette("coverage")`.
+`vignette("building-an-app")` describes how the apps are built.
+
 The functions are grouped by analysis step in the reference
 (`help(package = "cd2030.core")`, and the package overview
 `?cd2030.core`). A few things worth knowing:

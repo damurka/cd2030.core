@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils-cd-data.R
 \name{get_country_name}
 \alias{get_country_name}
-\title{Get Country Name}
+\title{Get country name}
 \usage{
 get_country_name(.data)
 }
@@ -13,5 +13,13 @@ get_country_name(.data)
 The country name as a character string
 }
 \description{
-Get Country Name
+Reads the name of the country a Countdown dataset is for. The name is stored with the data when
+it is loaded.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+
+get_country_name(data)
+
 }

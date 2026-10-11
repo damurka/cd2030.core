@@ -5,47 +5,59 @@
 \alias{plot_comparison_anc1_penta1}
 \alias{plot_comparison_penta1_penta3}
 \alias{plot_comparison_opv1_opv3}
-\title{Internal Consistency Plot Functions for Indicator Comparisons}
+\title{Internal consistency plot functions for indicator comparisons}
 \usage{
 plot_comparison(
   .data,
   x_var,
   y_var,
   title = NULL,
-  x_label = NULL,
-  y_label = NULL,
-  legend = NULL,
-  call = caller_env(),
-  ...
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
+  ...,
+  legend_labels = NULL,
+  call = caller_env()
 )
 
 plot_comparison_anc1_penta1(
   .data,
-  title = "Comparison of numbers of ANC1 and Penta1 by year",
-  x_label = "ANC1",
-  y_label = "Penta1",
-  legend = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
+  legend_labels = NULL,
   options = NULL
 )
 
 plot_comparison_penta1_penta3(
   .data,
-  title = "Comparison of numbers of Penta1 and Penta3 by year",
-  x_label = "Penta1",
-  y_label = "Penta3",
-  legend = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
+  legend_labels = NULL,
   options = NULL
 )
 
 plot_comparison_opv1_opv3(
   .data,
-  title = "Comparison of numbers of Penta1 and Penta3 by year",
-  x_label = "Penta1",
-  y_label = "Penta3",
-  legend = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
+  legend_labels = NULL,
   options = NULL
 )
 }
@@ -56,21 +68,28 @@ plot_comparison_opv1_opv3(
 
 \item{y_var}{Character. The name of the indicator variable to plot on the y-axis.}
 
-\item{title}{Character. The title for the plot. Defaults to a title based on \code{x_var} and \code{y_var}.}
+\item{title}{The chart's title.}
 
-\item{x_label}{Character. Label for the x-axis. Defaults to \code{x_var}.}
+\item{subtitle}{The line under the title.}
 
-\item{y_label}{Character. Label for the y-axis. Defaults to \code{y_var}.}
+\item{caption}{The note under the chart.}
 
-\item{legend}{Optional named list or vector overriding the legend labels.
+\item{x_title}{The title of the horizontal axis.}
+
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{legend_labels}{Optional named list or vector overriding the legend labels.
 Recognised names are \code{district}, \code{linear_fit} and \code{diagonale}. Default is
 \code{NULL}.}
 
 \item{call}{The calling environment, used for error handling. Default is \code{caller_env()}.}
 
-\item{...}{Additional parameters for further customization, such as point size, line type, or color.}
-
-\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object; see \code{\link[=plot_comparison]{plot_comparison()}}.}
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object; see \link{cd_plot_arguments}.}
 }
 \value{
 A \code{ggplot2} object, comprising:
@@ -88,11 +107,11 @@ These functions generate scatter plots that compare two health indicators across
 through visualization of linear regression fits and R-squared values by year. Each function is designed to compare a specific
 pair of indicators, with options for customizing plot titles, axis labels, and the inclusion of trend information.
 
-\code{plot_comparison_penta1_anc1} compares Penta1 and ANC1 indicators across.
+\code{plot_comparison_anc1_penta1()} compares ANC1 and Penta1. Its title is "Comparison of numbers of ANC1 and Penta1 by year" and its axes are titled "ANC1" and "Penta1" unless others are given; the two functions below are the same for their pairs.
 
-\code{plot_comparison_penta1_penta3} compares Penta1 and Penta23 indicators.
+\code{plot_comparison_penta1_penta3()} compares Penta1 and Penta3.
 
-\code{plot_comparison_opv1_opv3} compares OPV1 and OPV3 indicators.
+\code{plot_comparison_opv1_opv3()} compares OPV1 and OPV3.
 }
 \details{
 \itemize{

@@ -2,35 +2,60 @@
 % Please edit documentation in R/plot.health_system.R
 \name{plot.cd_phc_scatter}
 \alias{plot.cd_phc_scatter}
-\title{Plot S3 method for PHC Performance Scatter}
+\title{Plot S3 method for PHC performance scatter}
 \usage{
 \method{plot}{cd_phc_scatter}(
   x,
-  title = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
   quad_labels = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
   options = NULL
 )
 }
 \arguments{
-\item{x}{An object of class \code{cd_phc_scatter}}
-
-\item{title}{(Optional) Custom title for the entire plot.}
-
-\item{x_axis}{(Optional) Custom label for the x-axis.}
-
-\item{y_axis}{(Optional) Custom label for the y-axis.}
+\item{x}{An object of class \code{cd_phc_scatter}, as returned by \code{\link[=generate_phc_scatter_data]{generate_phc_scatter_data()}}.}
 
 \item{quad_labels}{(Optional) Named list to override quadrant text.
 Expected keys: \code{high_high}, \code{low_high}, \code{high_low}, \code{low_low}.}
 
-\item{...}{Additional arguments}
+\item{title}{The chart's title.}
 
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{subtitle}{The line under the title.}
+
+\item{caption}{The note under the chart.}
+
+\item{x_title}{The title of the horizontal axis.}
+
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
+}
+\value{
+A \code{ggplot} object, with the chart options applied.
 }
 \description{
-Plot S3 method for PHC Performance Scatter
+Draws a scatter plot of the service coverage index against facility density or health workforce
+density, with one point per admin level 1 unit. Dashed lines at the two medians split the plot
+into four labelled quadrants, and the units flagged as outliers are named.
+}
+\examples{
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+cache$adjust_data()
+scatter <- cache$generate_phc_scatter_data("ratio_fac_pop")
+
+plot(scatter)
+plot(scatter, title = "Facilities and services by region", y_title = "Service index",
+     quad_labels = list(low_low = "Few facilities, few services"))
+
 }

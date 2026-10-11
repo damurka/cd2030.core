@@ -2,7 +2,7 @@
 % Please edit documentation in R/4a_equity_calculate_inequality.R
 \name{calculate_inequality}
 \alias{calculate_inequality}
-\title{Analyze Subnational Health Coverage Data with Inequality Metrics}
+\title{Analyze subnational health coverage data with inequality metrics}
 \usage{
 calculate_inequality(subnational_data, reference_data)
 }
@@ -23,4 +23,18 @@ A tibble (\code{cd_inequality} object) containing:
 \description{
 \code{calculate_inequality} computes subnational health coverage metrics and evaluates
 disparities compared to reference averages (either national or regional).
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+cache <- load_cache_data(path)
+cache$set_national_estimates(list(sbr = 0.02))
+cache$adjust_data()
+
+# regions against the national coverage
+inequality <- calculate_inequality(
+  subnational_data = cache$indicator_coverage_admin1,
+  reference_data = cache$indicator_coverage_national
+)
+select_inequality(inequality, indicator = "instlivebirths", denominator = "dhis2")
+
 }

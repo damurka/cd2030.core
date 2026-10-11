@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils-cd-data.R
 \name{attr_or_null}
 \alias{attr_or_null}
-\title{Retrieve Attribute or Return NULL if Missing}
+\title{Retrieve attribute or return NULL if missing}
 \usage{
 attr_or_null(.data, attr_name)
 }

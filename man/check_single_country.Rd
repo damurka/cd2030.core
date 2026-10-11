@@ -2,17 +2,32 @@
 % Please edit documentation in R/0_data_quality_checks.R
 \name{check_single_country}
 \alias{check_single_country}
-\title{Check the Admin_data sheet names exactly one country}
+\title{Check that the Admin sheet names one country}
 \usage{
 check_single_country(admin_data)
 }
 \arguments{
-\item{admin_data}{The raw, cleaned Admin_data sheet.}
+\item{admin_data}{A data frame. The cleaned Admin sheet, with a \code{country} column.}
+}
+\value{
+\code{NULL} if the sheet has at most one country value. Otherwise a character vector of
+length one, named \code{"x"}, with a message that lists the values.
 }
 \description{
-\code{new_countdown()} later does \code{distinct(country) \%>\% pull(country)} and passes the result
-straight to \code{match_country()}, which itself only handles a length-1 input gracefully (a longer
-vector aborts with a generic "contains multiple names" message, no detail on what the mixed
-values actually are). Catching it here, on the raw sheet, gives a specific, actionable message
-before any of the rest of the pipeline runs.
+Checks that the \code{country} column of the Admin sheet holds no more than one distinct value.
+A dataset must belong to one country, so run this before the sheets are merged to get a
+message that lists the values found.
+}
+\details{
+Missing values are ignored. A sheet with no country value at all passes this check.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+sheets <- load_excel_parts(path)
+admin <- sheets$parts[[sheets$admin_sheet_name]]
+check_single_country(admin)
+
+# A row that belongs to another country
+admin$country[1] <- "Uganda"
+check_single_country(admin)
 }

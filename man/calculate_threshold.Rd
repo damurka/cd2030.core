@@ -2,7 +2,7 @@
 % Please edit documentation in R/3_calculate_threshold.R
 \name{calculate_threshold}
 \alias{calculate_threshold}
-\title{Calculate Coverage/Dropout Threshold Attainment}
+\title{Calculate coverage/dropout threshold attainment}
 \usage{
 calculate_threshold(
   .data,
@@ -15,7 +15,7 @@ calculate_threshold(
 
 \item{denominator}{Character. The denominator used (e.g., \code{'dhis2'}, \code{'anc1'}).}
 
-\item{indicator}{Character. The health indicator group to evaluate (\code{'anc4'}, \code{'ideliv'}, \code{'vaccine'}, \code{'dropout'}).}
+\item{indicator}{Character. The health indicator group to evaluate (\code{'anc4'}, \code{'instlivebirths'}, \code{'vaccine'}, \code{'dropout'}).}
 }
 \value{
 A \code{cd_threshold} object summarizing the percentage of regions meeting the criteria by year.
@@ -23,4 +23,18 @@ A \code{cd_threshold} object summarizing the percentage of regions meeting the c
 \description{
 Evaluates administrative regions to determine the percentage that meet specific
 coverage targets or fall below specific dropout thresholds for a given year.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+cache <- load_cache_data(path)
+cache$set_national_estimates(list(sbr = 0.02))
+cache$adjust_data()
+coverage <- cache$indicator_coverage_admin1
+
+# the percentage of regions that reach the target for institutional live births, by year
+calculate_threshold(coverage, denominator = "dhis2", indicator = "instlivebirths")
+
+# for the three tracer vaccines, with the penta1 denominator
+calculate_threshold(coverage, denominator = "penta1", indicator = "vaccine")
+
 }

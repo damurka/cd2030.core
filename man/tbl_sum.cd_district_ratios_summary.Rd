@@ -24,3 +24,11 @@ includes the percentage of districts meeting the adequacy criteria (e.g., ratios
 within the range of 1.0 to 1.5) across specified indicator pairs by year. This
 summary aids in monitoring health indicator alignment at a district level over time.
 }
+\examples{
+data <- load_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+ratios <- calculate_ratios_and_adequacy(data)
+
+# the summary is the header printed above the table
+calculate_district_ratios_summary(ratios)
+
+}

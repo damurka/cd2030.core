@@ -2,7 +2,7 @@
 % Please edit documentation in R/equiplot.R
 \name{equiplot}
 \alias{equiplot}
-\title{Create Dot Plots for Equity Analysis}
+\title{Create dot plots for equity analysis}
 \usage{
 equiplot(
   .data,
@@ -55,4 +55,17 @@ A \code{ggplot} object.
 different groups (e.g., countries, regions, or interventions). It is designed for
 equity analysis by plotting values for variables like health intervention coverage
 across subgroups, allowing insights into disparities.
+}
+\examples{
+coverage <- data.frame(
+  region = c("North", "Centre", "South"),
+  poorest = c(42, 55, 61),
+  richest = c(78, 83, 90)
+)
+equiplot(coverage, variables = c("poorest", "richest"), group_by = region)
+
+equiplot(coverage, c("poorest", "richest"), group_by = region,
+         title = "Skilled birth attendance by wealth", legend_title = "Wealth quintile",
+         legend_labels = c(poorest = "Poorest", richest = "Richest"), connect_dots = FALSE)
+
 }

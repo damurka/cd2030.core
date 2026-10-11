@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.health_system.R
 \name{plot.cd_health_system_metric}
 \alias{plot.cd_health_system_metric}
-\title{Plot Health Metrics for Admin 1 Units}
+\title{Plot health metrics for admin level 1 units}
 \usage{
 \method{plot}{cd_health_system_metric}(
   x,
@@ -10,37 +10,58 @@
     "skill_mix"),
   national_value = NA_real_,
   title = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
-  legend_labels = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
+  legend_labels = NULL,
   options = NULL
 )
 }
 \arguments{
-\item{x}{Data frame containing admin 1 level indicators.}
+\item{x}{Data frame containing admin level 1 indicators.}
 
 \item{indicator}{A single metric to plot. Options include ratio_fac_pop, ratio_hos_pop, ratio_bed_pop, ratio_hstaff_pop, skill_mix.}
 
 \item{national_value}{A numeric value representing the national average to plot as a vertical line. Can be NA.}
 
-\item{title}{(Optional) Custom title for the plot.}
+\item{title}{The chart's title.}
 
-\item{x_axis}{(Optional) Custom label for the x-axis.}
+\item{subtitle}{The line under the title.}
 
-\item{y_axis}{(Optional) Custom label for the y-axis.}
+\item{caption}{The note under the chart.}
+
+\item{x_title}{The title of the horizontal axis.}
+
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
 
 \item{legend_labels}{(Optional) A named list to override default legend labels (e.g. for translation).}
 
-\item{...}{Chart options (see \code{\link[=cd_chart_options]{cd_chart_options()}}) given by name, applied as
-with \code{options}.}
-
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
 }
 \value{
 A ggplot object.
 }
 \description{
-Plots individual health system indicators by admin 1 level and compares with national value or target.
+Plots individual health system indicators by admin level 1 and compares with national value or target.
+}
+\examples{
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+cache$adjust_data()
+regions <- cache$health_system_metrics_admin1
+national <- cache$health_system_metrics_national
+
+plot(regions, indicator = "ratio_fac_pop", national_value = national$ratio_fac_pop)
+plot(regions, indicator = "ratio_hstaff_pop", national_value = national$ratio_hstaff_pop,
+     title = "Health workers per 10,000 people", x_title = "Health workers",
+     legend_labels = list(threshold_line = "Benchmark (44.5)"))
+
 }

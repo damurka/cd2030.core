@@ -2,7 +2,7 @@
 % Please edit documentation in R/6_service_utilization.R
 \name{get_excel_version}
 \alias{get_excel_version}
-\title{Format Service Utilization Data for Excel Export}
+\title{Format service utilization data for Excel export}
 \usage{
 get_excel_version(.data)
 }

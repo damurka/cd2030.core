@@ -1,4 +1,4 @@
-#' Generate Coverage Data with Derived Denominators
+#' Generate coverage data with derived denominators
 #'
 #' Calculates trend-adjusted and subnationally-redistributed coverage estimates
 #' using the DTP1-derived denominator logic described in CD2030. It estimates

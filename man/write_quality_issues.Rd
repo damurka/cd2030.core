@@ -7,16 +7,24 @@
 write_quality_issues(results, path, labels = NULL)
 }
 \arguments{
-\item{results}{What \code{run_all_quality_checks()} returns.}
+\item{results}{A named list. What \code{\link[=run_all_quality_checks]{run_all_quality_checks()}} returns.}
 
 \item{path}{Where to write the \code{.xlsx}.}
 
-\item{labels}{Optional named character vector: a check's key (\code{names(results)}) to the name to show for
-it (the wizard passes its translated ones). A check without one gets a plain English name.}
+\item{labels}{An optional named character vector that maps a check's key (\code{names(results)})
+to the name to show for it, for example a translated name. A check without a label gets a
+plain English name.}
 }
 \value{
 \code{path}, invisibly.
 }
 \description{
 Two sheets: \code{Summary} (each check, whether it passed, how many issues) and \code{Issues} (one row per issue).
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+cache <- load_cache_data(path)
+results <- run_all_quality_checks(cache)
+file <- write_quality_issues(results, tempfile(fileext = ".xlsx"))
+openxlsx::read.xlsx(file, sheet = "Issues")
 }

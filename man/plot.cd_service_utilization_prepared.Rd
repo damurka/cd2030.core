@@ -2,20 +2,40 @@
 % Please edit documentation in R/plot.service_utlization.R
 \name{plot.cd_service_utilization_prepared}
 \alias{plot.cd_service_utilization_prepared}
-\title{Plot Filtered Service Utilization Indicators}
+\title{Plot filtered service utilization indicators}
 \usage{
-\method{plot}{cd_service_utilization_prepared}(x, labels = NULL, ..., options = NULL)
+\method{plot}{cd_service_utilization_prepared}(
+  x,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
+  ...,
+  options = NULL
+)
 }
 \arguments{
 \item{x}{A \code{cd_service_utilization_prepared} object returned by \code{\link[=prepare_mapping_service_utlization]{prepare_mapping_service_utlization()}}.}
 
-\item{labels}{(Optional) A named list to override the default English text, e.g. with translations. Valid keys: \code{title} and
-\code{legend} (the legend title). Defaults to \code{NULL}.}
+\item{title}{The chart's title.}
 
-\item{...}{Additional arguments (currently unused).}
+\item{subtitle}{The line under the title.}
 
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{caption}{The note under the chart.}
+
+\item{x_title}{The title of the horizontal axis.}
+
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
 }
 \value{
 A \code{ggplot2} object representing faceted service utilization maps by year.
@@ -25,13 +45,9 @@ Generates a faceted map of service utilization metrics across subnational units
 (admin level 1) for each available year. Uses spatial polygons filled by the selected indicator.
 }
 \details{
-This function:
-\itemize{
-\item Extracts the appropriate indicator (\code{ratio_opd_u5_pop} or \code{ratio_ipd_u5_pop})
-\item Projects the data to WGS84 for map consistency
-\item Renders the spatial data using \code{geom_sf()} with a sequential purple color scale
-\item Facets by year and applies the package's custom plot theme
-}
+Reads the indicator stored on \code{x} (\code{ratio_opd_u5_pop} or \code{ratio_ipd_u5_pop}) and sets the data to
+WGS84 coordinates. Draws the units with \code{geom_sf()}, filled on a sequential colour scale from the
+palette stored on \code{x} (purple by default), with one panel per year and the package's map theme.
 }
 \examples{
 \dontrun{

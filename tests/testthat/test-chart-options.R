@@ -9,16 +9,16 @@ simple_plot <- function() {
     theme(plot.title = element_text(size = 16), axis.text = element_text(size = 12))
 }
 
-test_that("cd_chart_options keeps only what is set and understands the older names", {
+test_that("cd_chart_options keeps only what is set, and takes either spelling of colours", {
   expect_length(cd_chart_options(), 0)
-  o <- cd_chart_options(title = "T", x_axis = "Year", y_label = "Coverage", legend = "Source", legend_position = "bottom")
+  o <- cd_chart_options(title = "T", x_title = "Year", y_title = "Coverage", legend_title = "Source", legend_position = "bottom")
   expect_s3_class(o, "cd_chart_options")
   expect_identical(o$x_title, "Year")
   expect_identical(o$y_title, "Coverage")
   expect_identical(o$legend_title, "Source")
   expect_named(o, c("title", "x_title", "y_title", "legend_title", "legend_position"), ignore.order = TRUE)
-  # an explicit field wins over its alias
-  expect_identical(cd_chart_options(x_title = "A", x_axis = "B")$x_title, "A")
+  expect_identical(cd_chart_options(colours = c(a = "red", b = "blue"))$colors, c(a = "red", b = "blue"))
+  expect_error(cd_chart_options(x_axis = "Year"), "Unknown chart option")
   expect_identical(cd_chart_options(title_align = "centre")$title_align, "center")
 })
 
@@ -45,7 +45,7 @@ test_that("merge_chart_options layers later over earlier and merges the named ve
 })
 
 test_that("resolve_chart_options takes options plus fields named in ..., and ignores unrelated arguments", {
-  r <- resolve_chart_options(cd_chart_options(title = "From options"), subtitle = "S", x_axis = "X", region = "Zou", unrelated = 1)
+  r <- resolve_chart_options(cd_chart_options(title = "From options"), subtitle = "S", x_title = "X", region = "Zou", unrelated = 1)
   expect_identical(r$title, "From options")
   expect_identical(r$subtitle, "S")
   expect_identical(r$x_title, "X")

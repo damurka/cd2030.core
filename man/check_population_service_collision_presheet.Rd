@@ -2,7 +2,7 @@
 % Please edit documentation in R/0_data_quality_checks.R
 \name{check_population_service_collision_presheet}
 \alias{check_population_service_collision_presheet}
-\title{Flag district-years where a service indicator looks mixed up with population data, pre-merge}
+\title{Flag service births that equal population births, before merging}
 \usage{
 check_population_service_collision_presheet(
   parts,
@@ -11,17 +11,45 @@ check_population_service_collision_presheet(
 )
 }
 \arguments{
-\item{parts}{Named list of cleaned per-sheet tibbles.}
+\item{parts}{A named list of cleaned per-sheet tibbles (\code{load_excel_parts()$parts}).}
 
-\item{population_sheet_name}{Name of the population sheet within \code{parts}.}
+\item{population_sheet_name}{A string. The name of the Population sheet within \code{parts}.}
 
-\item{service_sheet_names}{Names of the service-data sheets within \code{parts}.}
+\item{service_sheet_names}{A character vector. The names of the service data sheets within
+\code{parts}.}
+}
+\value{
+A tibble with columns \code{district} and \code{year}, one row per flagged district-year. It
+has no rows if nothing is flagged, if the Population sheet lacks \code{district}, \code{year} or
+\code{live_births}, or if the service sheets lack \code{instlivebirths}.
 }
 \description{
-\code{check_population_service_collision()} needs \code{instlivebirths} (service) and \code{live_births}
-(population) on the same rows -- pre-merge these live on different sheets, so this does a narrow,
-purpose-built \code{district}+\code{year} left join (service data is the left side -- every service row is
-kept regardless of whether a matching population row exists, unlike \code{merge_data()}'s
-admin-anchored join, so nothing is silently dropped here either) just to bring the two columns
-together for this one comparison, then delegates to the existing check.
+Runs \code{\link[=check_population_service_collision]{check_population_service_collision()}} on the unmerged sheets. It finds district-years
+where the monthly institutional live births in the service sheets equal the annual live
+births in the Population sheet in every month, which suggests that population figures were
+entered in a service data sheet.
+}
+\details{
+The service sheets are stacked and the Population sheet's \code{live_births} is added to each
+service row by \code{district} and \code{year}. Every service row is kept. A district-year is flagged
+when it has at least three months with both values present and the two values are equal in
+all of them.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+sheets <- load_excel_parts(path)
+check_population_service_collision_presheet(
+  sheets$parts, sheets$population_sheet_name, sheets$service_sheet_names
+)
+
+# Baringo's 2023 population births entered in every month of the service sheet
+parts <- sheets$parts
+population <- parts[[sheets$population_sheet_name]]
+births <- population$live_births[population$district == "Baringo" & population$year == 2023]
+service <- parts[[sheets$service_sheet_names[1]]]
+service$instlivebirths[service$district == "Baringo" & service$year == 2023] <- births
+parts[[sheets$service_sheet_names[1]]] <- service
+check_population_service_collision_presheet(
+  parts, sheets$population_sheet_name, sheets$service_sheet_names
+)
 }

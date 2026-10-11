@@ -2,7 +2,7 @@
 % Please edit documentation in R/2_denominators_prepare_population_metrics.R
 \name{prepare_population_metrics}
 \alias{prepare_population_metrics}
-\title{Compute Population Metrics for DHIS-2 and UN Data}
+\title{Compute population metrics for DHIS-2 and UN data}
 \usage{
 prepare_population_metrics(
   .data,

@@ -12,3 +12,10 @@ Named character vector of indicators
 \description{
 Each indicator is named by its group
 }
+\examples{
+indicators <- get_named_indicators()
+head(indicators)
+
+# the indicators of one category
+unname(indicators[names(indicators) == "vacc"])
+}

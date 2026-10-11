@@ -2,14 +2,15 @@
 % Please edit documentation in R/plot.cd_overall_score.R
 \name{plot.cd_overall_score}
 \alias{plot.cd_overall_score}
-\title{Plot S3 method for Overall Score}
+\title{Plot S3 method for overall score}
 \usage{
 \method{plot}{cd_overall_score}(x, years = NULL, title = NULL, width = NULL, ..., options = NULL)
 }
 \arguments{
-\item{x}{The score dataframe (class cs_overall_score)}
+\item{x}{The score dataframe (class \code{cd_overall_score}), as returned by
+\code{\link[=calculate_overall_score]{calculate_overall_score()}}.}
 
-\item{years}{Vector of years to display}
+\item{years}{Vector of years to display. Required: each must be a year column of \code{x}.}
 
 \item{title}{(Optional) Custom title for the table}
 
@@ -20,6 +21,20 @@
 \item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
 arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
 }
+\value{
+A \code{flextable} object (from the flextable package), not a ggplot. Chart options change
+ggplots only, so \code{options} has no effect on this table.
+}
 \description{
-Plot S3 method for Overall Score
+Draws the overall data quality score as a formatted table, with the metrics grouped by type and a
+column for each year. Percentage scores are shaded green at or above the threshold stored with
+the scores, yellow from 70 up to the threshold and red below 70.
+}
+\examples{
+data <- load_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+score <- calculate_overall_score(data, threshold = 90)
+
+plot(score, years = 2019:2023)
+plot(score, years = 2021:2023, title = "Data quality, last three years", width = 7)
+
 }

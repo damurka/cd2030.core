@@ -18,6 +18,13 @@
 #' @seealso [generate_adjustment_values()] for generating the `cd_adjustment_values`
 #'   object.
 #'
+#' @examples
+#' cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#' cache$adjust_data()
+#'
+#' # the summary is the header printed above the table
+#' cache$adjustment_values
+#'
 #' @export
 tbl_sum.cd_adjustment_values <- function(x, ...) {
   c(

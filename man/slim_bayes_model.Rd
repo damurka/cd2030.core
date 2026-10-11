@@ -16,3 +16,15 @@ The model without them, its class and attributes kept.
 What makes a fitted model large (\code{samples}, \code{stan_model}) and no chart or table reads: see
 \code{\link[=generate_bayes_model]{generate_bayes_model()}}'s \code{keep_samples}. A model that has neither is returned as it is.
 }
+\examples{
+# a stand-in for a model fitted with keep_samples = TRUE
+model <- structure(
+  list(posteriors = list(), samples = matrix(0, 1000, 50), stan_model = "the compiled model"),
+  class = c("cd_bayes_model", "list"),
+  indicator = "penta3"
+)
+slim <- slim_bayes_model(model)
+names(slim)
+attr(slim, "indicator")
+object.size(slim) < object.size(model)
+}

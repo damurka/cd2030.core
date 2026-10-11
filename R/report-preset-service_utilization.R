@@ -61,12 +61,12 @@
   v <- b$variant %||% "opd"
   labels <- if (identical(v, "ipd")) {
     list(title = t("plt_su_map_title_ipd", "IPD under-five by Region"),
-         legend = t("plt_su_map_legend_ipd", "Mean IPD per 100 children per year"))
+         legend_title = t("plt_su_map_legend_ipd", "Mean IPD per 100 children per year"))
   } else {
     list(title = t("plt_su_map_title_opd", "OPD under-five by Region"),
-         legend = t("plt_su_map_legend_opd", "Mean OPD per child per year"))
+         legend_title = t("plt_su_map_legend_opd", "Mean OPD per child per year"))
   }
-  plot(cache$prepare_mapping_service_utlization(v, year), labels = labels)
+  plot(cache$prepare_mapping_service_utlization(v, year), title = labels$title, legend_title = labels$legend_title)
 }
 
 .rb_service_utilization_blocks <- function() {

@@ -2,24 +2,56 @@
 % Please edit documentation in R/plot.service_utlization.R
 \name{plot.cd_service_utilization_admin1}
 \alias{plot.cd_service_utilization_admin1}
-\title{Plot S3 method for Service Utilization Admin1}
+\title{Plot S3 method for service utilization at admin level 1}
 \usage{
-\method{plot}{cd_service_utilization_admin1}(x, title = NULL, x_axis = NULL, legend = NULL, ..., options = NULL)
+\method{plot}{cd_service_utilization_admin1}(
+  x,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
+  ...,
+  options = NULL
+)
 }
 \arguments{
-\item{x}{Object of class cd_service_utilization_admin1.}
+\item{x}{Object of class cd_service_utilization_admin1, as returned by
+\code{\link[=generate_admin1_service_utilization]{generate_admin1_service_utilization()}}.}
 
-\item{title}{Character. Optional translated title.}
+\item{title}{The chart's title.}
 
-\item{x_axis}{Character. Optional translated x-axis label.}
+\item{subtitle}{The line under the title.}
 
-\item{legend}{Character. Optional translated legend label.}
+\item{caption}{The note under the chart.}
 
-\item{...}{Additional arguments.}
+\item{x_title}{The title of the horizontal axis.}
 
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
+}
+\value{
+A \code{ggplot} object, with the chart options applied.
 }
 \description{
-Plot S3 method for Service Utilization Admin1
+Draws a horizontal bar for each admin level 1 unit showing its under-five OPD visits per child or
+IPD admissions per 100 children in the latest year. The bars are ordered by value and labelled
+with it.
+}
+\examples{
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+cache$adjust_data()
+
+plot(cache$generate_admin1_service_utilization("opd"))
+plot(cache$generate_admin1_service_utilization("ipd"), title = "Admissions of children under five",
+     x_title = "Admissions per 100 children", show_legend = FALSE)
+
 }

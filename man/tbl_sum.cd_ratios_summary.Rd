@@ -24,3 +24,11 @@ the calculated indicator ratios across specified pairs (e.g., ANC1/Penta1,
 Penta1/Penta3, OPV1/OPV3) by year. This summary facilitates understanding of
 inter-indicator consistency over time.
 }
+\examples{
+data <- load_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+ratios <- calculate_ratios_and_adequacy(data)
+
+# the summary is the header printed above the table
+calculate_ratios_summary(ratios)
+
+}

@@ -2,24 +2,41 @@
 % Please edit documentation in R/plot.mapping.R
 \name{plot.cd_mapping_filtered}
 \alias{plot.cd_mapping_filtered}
-\title{Plot Subnational Coverage Maps by Indicator}
+\title{Plot subnational coverage maps by indicator}
 \usage{
-\method{plot}{cd_mapping_filtered}(x, title = NULL, caption = NULL, legend = NULL, ..., options = NULL)
+\method{plot}{cd_mapping_filtered}(
+  x,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
+  ...,
+  options = NULL
+)
 }
 \arguments{
-\item{x}{A \code{cd_mapping_filtered} object. Created using \code{\link[=filter_mapping_data]{filter_mapping_data()}}, and must
+\item{x}{A \code{cd_mapping_filtered} object. Created using \code{\link[=select_mapping_data]{select_mapping_data()}}, and must
 include spatial geometry and metadata attributes (\code{indicator}, \code{palette}, \code{column}).}
 
-\item{title}{(Optional) A scalar character string to override the default plot title. Defaults to \code{NULL}.}
+\item{title}{The chart's title.}
 
-\item{caption}{(Optional) A scalar character string to override the default plot caption. Defaults to \code{NULL}.}
+\item{subtitle}{The line under the title.}
 
-\item{legend}{(Optional) A scalar character string to override the default legend title. Defaults to \code{NULL}.}
+\item{caption}{The note under the chart.}
 
-\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}); other arguments are ignored.}
+\item{x_title}{The title of the horizontal axis.}
 
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes the user changed. Applied last, so it wins over
-\code{title} and the other arguments above. Any chart option can also be given by name in \code{...}.}
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
 }
 \value{
 A \code{ggplot} object visualizing the spatial distribution of the selected indicator by region and year.
@@ -31,7 +48,7 @@ object, typically filtered for a specific indicator and denominator.
 }
 \examples{
 \dontrun{
-# Assuming `map_data` is filtered with filter_mapping_data()
+# Assuming `map_data` is filtered with select_mapping_data()
 plot(
   map_data,
   title = "Penta 1 Coverage by Region",
@@ -42,5 +59,5 @@ plot(
 
 }
 \seealso{
-\code{\link[=filter_mapping_data]{filter_mapping_data()}}, \code{\link[=get_mapping_data]{get_mapping_data()}}
+\code{\link[=select_mapping_data]{select_mapping_data()}}, \code{\link[=get_mapping_data]{get_mapping_data()}}
 }

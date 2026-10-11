@@ -2,15 +2,17 @@
 % Please edit documentation in R/plot.threshold.R
 \name{plot.cd_threshold}
 \alias{plot.cd_threshold}
-\title{Plot Target Threshold Attainment Over Time}
+\title{Plot target threshold attainment over time}
 \usage{
 \method{plot}{cd_threshold}(
   x,
-  title = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
-  legend_title = NULL,
   x_labels = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
   options = NULL
 )
@@ -18,21 +20,26 @@
 \arguments{
 \item{x}{A \code{cd_threshold} object returned by \code{\link[=calculate_threshold]{calculate_threshold()}}.}
 
-\item{title}{(Optional) A scalar character string to override the default plot title. Defaults to \code{NULL}.}
-
-\item{x_axis}{(Optional) A scalar character string to override the default x-axis label. Defaults to \code{NULL}.}
-
-\item{y_axis}{(Optional) A scalar character string to override the default y-axis label. Defaults to \code{NULL}.}
-
-\item{legend_title}{(Optional) A scalar character string to override the default legend title. Defaults to \code{NULL}.}
-
 \item{x_labels}{(Optional) A named list or vector to translate the raw indicator names
 on the x-axis (e.g., \code{list(penta1 = "Penta 1", dropout_penta13 = "Penta 1-3 Dropout")}).}
 
-\item{...}{Additional arguments passed to the plotting function.}
+\item{title}{The chart's title.}
 
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{subtitle}{The line under the title.}
+
+\item{caption}{The note under the chart.}
+
+\item{x_title}{The title of the horizontal axis.}
+
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
 }
 \value{
 A \code{ggplot} object displaying a grouped bar chart of threshold attainment.
@@ -40,4 +47,15 @@ A \code{ggplot} object displaying a grouped bar chart of threshold attainment.
 \description{
 Generates a grouped bar chart showing the percentage of administrative regions
 that meet specific health coverage or dropout thresholds over time.
+}
+\examples{
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+cache$set_national_estimates(list(sbr = 0.02))
+cache$adjust_data()
+reached <- cache$get_filtered_threshold("vaccine", "district")
+
+plot(reached)
+plot(reached, x_labels = list(bcg = "BCG", penta3 = "Penta 3", measles1 = "Measles 1"),
+     title = "Districts reaching the vaccination target", y_title = "Districts (\%)", legend_title = "Year")
+
 }

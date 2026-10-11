@@ -1,4 +1,4 @@
-#' Create Dot Plots for Equity Analysis
+#' Create dot plots for equity analysis
 #'
 #' `equiplot` generates a dot plot to visualize the distribution of variables across
 #' different groups (e.g., countries, regions, or interventions). It is designed for
@@ -24,6 +24,18 @@
 #' @param dot_size Optional dot size, clamped to 1-5. Defaults to 4.
 #'
 #' @return A `ggplot` object.
+#'
+#' @examples
+#' coverage <- data.frame(
+#'   region = c("North", "Centre", "South"),
+#'   poorest = c(42, 55, 61),
+#'   richest = c(78, 83, 90)
+#' )
+#' equiplot(coverage, variables = c("poorest", "richest"), group_by = region)
+#'
+#' equiplot(coverage, c("poorest", "richest"), group_by = region,
+#'          title = "Skilled birth attendance by wealth", legend_title = "Wealth quintile",
+#'          legend_labels = c(poorest = "Poorest", richest = "Richest"), connect_dots = FALSE)
 #'
 #' @export
 equiplot <- function(.data, variables, group_by,
@@ -94,8 +106,8 @@ equiplot <- function(.data, variables, group_by,
       title = title,
       subtitle = subtitle,
       caption = caption,
-      x_axis = x_title %||% "Percentage (%)",
-      y_axis = ""
+      x_title = x_title %||% "Percentage (%)",
+      y_title = ""
     ) +
     cd_dashed_grid_theme() +
     theme(
@@ -119,7 +131,7 @@ equiplot <- function(.data, variables, group_by,
   p
 }
 
-#' A Specialized Dot Plot for Area of Residence Analysis
+#' A specialized dot plot for area of residence analysis
 #'
 #' Plots rural and urban survey estimates of an indicator by year.
 #'
@@ -127,24 +139,37 @@ equiplot <- function(.data, variables, group_by,
 #'   columns.
 #' @param indicator Character. The indicator to plot; its `r_<indicator>` column
 #'   is used.
-#' @param title,subtitle,caption Optional plot title, subtitle and caption.
-#' @param x_title Optional x-axis title. Defaults to the indicator name
-#'   followed by "Coverage".
-#' @param legend_title Optional legend title. Defaults to a title describing the
-#'   grouping (for example `"Area of residence"`).
+#' @inheritParams cd_plot_arguments
 #' @param legend_labels Optional named vector or list mapping group names to
 #'   display labels.
 #' @param dot_size Optional dot size, clamped to 1-5. Defaults to 4.
-#' @param ... Chart options (see [cd_chart_options()]) given by name, applied as
-#'   with `options`.
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
+#'
+#' @return A `ggplot` object: the dot plot drawn by [equiplot()], with one row per survey year and one
+#'   dot each for rural and urban, and the chart options applied.
+#'
+#' @examples
+#' cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#'
+#' # the dataset object gives the package's survey estimates for the country, by residence
+#' equiplot_area(cache$area_survey, "anc4")
+#'
+#' equiplot_area(cache$area_survey, "anc4", title = "Four antenatal visits by residence",
+#'               legend_title = "Residence", legend_labels = list(Rural = "Rural areas", Urban = "Towns"))
+#'
 #' @export
-equiplot_area <- function(.data, indicator,
-                          title = NULL, subtitle = NULL, caption = NULL,
-                          x_title = NULL, legend_title = NULL, legend_labels = NULL,
-                          dot_size = NULL, ..., options = NULL) {
-  cd_finish_plot(.equiplot_area_impl(.data, indicator = indicator, title = title, subtitle = subtitle, caption = caption, x_title = x_title, legend_title = legend_title, legend_labels = legend_labels, dot_size = dot_size), options, ..., .source = .data)
+equiplot_area <- function(.data,
+                          indicator,
+                          dot_size = NULL,
+                          title = NULL,
+                          subtitle = NULL,
+                          caption = NULL,
+                          x_title = NULL,
+                          y_title = NULL,
+                          legend_title = NULL,
+                          ...,
+                          legend_labels = NULL,
+                          options = NULL) {
+  .cd_draw(.equiplot_area_impl, .data, list(indicator = indicator, legend_labels = legend_labels, dot_size = dot_size), ..., options = options)
 }
 
 .equiplot_area_impl <- function(.data, indicator,
@@ -152,7 +177,7 @@ equiplot_area <- function(.data, indicator,
                           x_title = NULL, legend_title = NULL, legend_labels = NULL,
                           dot_size = NULL) {
   year <- NULL
-  check_equity_data(.data)
+  check_cd_equity_data(.data)
   indicator_arg <- arg_match(indicator, unique(c(get_all_indicators(), get_analysis_indicators())))
 
   indicator_col <- paste0("r_", indicator_arg)
@@ -175,20 +200,40 @@ equiplot_area <- function(.data, indicator,
     )
 }
 
-#' A Specialized Dot Plot for Maternal Education Analysis
+#' A specialized dot plot for maternal education analysis
 #'
 #' Plots survey estimates of an indicator by year for each level of maternal
 #' education.
 #'
 #' @inheritParams equiplot_area
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
+#' @inheritParams cd_plot_arguments
+#'
+#' @return A `ggplot` object: the dot plot drawn by [equiplot()], with one row per survey year and one
+#'   dot for each level of maternal education, and the chart options applied.
+#'
+#' @examples
+#' cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#'
+#' # the dataset object gives the package's survey estimates for the country, by maternal education
+#' equiplot_education(cache$education_survey, "penta3")
+#'
+#' equiplot_education(cache$education_survey, "penta3", title = "Penta3 by education of the mother",
+#'                    x_title = "Penta3 coverage (%)", dot_size = 3, legend_position = "bottom")
+#'
 #' @export
-equiplot_education <- function(.data, indicator,
-                               title = NULL, subtitle = NULL, caption = NULL,
-                               x_title = NULL, legend_title = NULL, legend_labels = NULL,
-                               dot_size = NULL, ..., options = NULL) {
-  cd_finish_plot(.equiplot_education_impl(.data, indicator = indicator, title = title, subtitle = subtitle, caption = caption, x_title = x_title, legend_title = legend_title, legend_labels = legend_labels, dot_size = dot_size), options, ..., .source = .data)
+equiplot_education <- function(.data,
+                               indicator,
+                               dot_size = NULL,
+                               title = NULL,
+                               subtitle = NULL,
+                               caption = NULL,
+                               x_title = NULL,
+                               y_title = NULL,
+                               legend_title = NULL,
+                               ...,
+                               legend_labels = NULL,
+                               options = NULL) {
+  .cd_draw(.equiplot_education_impl, .data, list(indicator = indicator, legend_labels = legend_labels, dot_size = dot_size), ..., options = options)
 }
 
 .equiplot_education_impl <- function(.data, indicator,
@@ -196,7 +241,7 @@ equiplot_education <- function(.data, indicator,
                                x_title = NULL, legend_title = NULL, legend_labels = NULL,
                                dot_size = NULL) {
   year <- NULL
-  check_equity_data(.data)
+  check_cd_equity_data(.data)
   indicator_arg <- arg_match(indicator, unique(c(get_all_indicators(), get_analysis_indicators())))
 
   indicator_col <- paste0("r_", indicator_arg)
@@ -226,19 +271,39 @@ equiplot_education <- function(.data, indicator,
     )
 }
 
-#' A Specialized Dot Plot for Wealth Quintile Analysis
+#' A specialized dot plot for wealth quintile analysis
 #'
 #' Plots survey estimates of an indicator by year for each wealth quintile.
 #'
 #' @inheritParams equiplot_area
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
+#' @inheritParams cd_plot_arguments
+#'
+#' @return A `ggplot` object: the dot plot drawn by [equiplot()], with one row per survey year and one
+#'   dot for each wealth quintile (Q1 to Q5), and the chart options applied.
+#'
+#' @examples
+#' cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#'
+#' # the dataset object gives the package's survey estimates for the country, by wealth quintile
+#' equiplot_wealth(cache$wiq_survey, "instlivebirths")
+#'
+#' equiplot_wealth(cache$wiq_survey, "instlivebirths", title = "Institutional live births by wealth",
+#'                 legend_title = "Quintile", caption = "Source: household surveys")
+#'
 #' @export
-equiplot_wealth <- function(.data, indicator,
-                            title = NULL, subtitle = NULL, caption = NULL,
-                            x_title = NULL, legend_title = NULL, legend_labels = NULL,
-                            dot_size = NULL, ..., options = NULL) {
-  cd_finish_plot(.equiplot_wealth_impl(.data, indicator = indicator, title = title, subtitle = subtitle, caption = caption, x_title = x_title, legend_title = legend_title, legend_labels = legend_labels, dot_size = dot_size), options, ..., .source = .data)
+equiplot_wealth <- function(.data,
+                            indicator,
+                            dot_size = NULL,
+                            title = NULL,
+                            subtitle = NULL,
+                            caption = NULL,
+                            x_title = NULL,
+                            y_title = NULL,
+                            legend_title = NULL,
+                            ...,
+                            legend_labels = NULL,
+                            options = NULL) {
+  .cd_draw(.equiplot_wealth_impl, .data, list(indicator = indicator, legend_labels = legend_labels, dot_size = dot_size), ..., options = options)
 }
 
 .equiplot_wealth_impl <- function(.data, indicator,
@@ -246,7 +311,7 @@ equiplot_wealth <- function(.data, indicator,
                             x_title = NULL, legend_title = NULL, legend_labels = NULL,
                             dot_size = NULL) {
   year <- NULL
-  check_equity_data(.data)
+  check_cd_equity_data(.data)
   indicator_arg <- arg_match(indicator, unique(c(get_all_indicators(), get_analysis_indicators())))
 
   indicator_col <- paste0("r_", indicator_arg)

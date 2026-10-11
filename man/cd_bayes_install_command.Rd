@@ -15,3 +15,10 @@ The command, as a string.
 \description{
 For R outside DataSuite.
 }
+\examples{
+cd_bayes_install_command(c("bayescoveragemodel", "bayescoveragedeploy"))
+
+# only what is missing
+missing <- cd_bayes_packages_missing()
+if (length(missing) > 0) cd_bayes_install_command(missing)
+}

@@ -1,13 +1,14 @@
-#' Calculate Overall Quality Score for Data Quality Metrics
+#' Calculate overall quality score for data quality metrics
 #'
-#' This function calculates an overall quality score based on various data
+#' Calculates an overall quality score based on various data
 #' quality metrics. It summarizes completeness, outlier presence, and
 #' consistency of reporting in immunization health facility data.
 #'
 #' @param .data A data frame of type `cd_data` containing facility data
 #'   including annual reporting rates, completeness, and consistency indicators.
-#' @param threshold The data reporting rate threshold.
-#' @param ratio_pairs description
+#' @param threshold Numeric. The performance threshold (in percent): the reporting rate and
+#'   completeness a district is expected to reach. Required: it has no default.
+#' @param ratio_pairs Named list of indicator pairs whose ratios are scored (the default pairs when `NULL`).
 #' @param region Optional name of an `adminlevel_1` region. If supplied, all
 #'   metrics are calculated for that region only. Default is `NULL`.
 #' @param labels Optional named list overriding the default row labels. May
@@ -44,6 +45,7 @@ calculate_overall_score <- function(.data,
                                     region = NULL,
                                     labels = NULL) {
   check_cd_data(.data)
+  local_data_group(.data)
 
   selected_group <- get_selected_group()
 
@@ -73,7 +75,7 @@ calculate_overall_score <- function(.data,
   )
 }
 
-#' Calculate Overall Quality Score from Summaries
+#' Calculate overall quality score from summaries
 #'
 #' Builds the same score table as [calculate_overall_score()], but from
 #' summaries that have already been calculated.
@@ -90,11 +92,24 @@ calculate_overall_score <- function(.data,
 #' @param labels Optional named list overriding the default row labels, with
 #'   `header`, `section` and `metric` sub-lists (see
 #'   [calculate_overall_score()]). Default is `NULL`.
-#' @param threshold Numeric. The district reporting rate threshold shown in the
+#' @param threshold Numeric. The performance threshold (in percent) shown in the
 #'   label of row 1b. Default is `90`.
 #'
 #' @return A tibble with calculated scores for each metric, including a summary
 #'   row for the annual quality score.
+#'
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' data <- load_data(path)
+#' calculate_overall_score1(
+#'   average_reporting_rate = calculate_average_reporting_rate(data),
+#'   district_reporting_rate = calculate_district_reporting_rate(data, threshold = 90),
+#'   district_completeness = calculate_district_completeness_summary(data),
+#'   outliers_summary = calculate_outliers_summary(data),
+#'   district_outliers_summary = calculate_district_outlier_summary(data),
+#'   ratios_summary = calculate_ratios_and_adequacy(data),
+#'   threshold = 90
+#' )
 #'
 #' @export
 calculate_overall_score1 <- function(average_reporting_rate,
@@ -110,7 +125,7 @@ calculate_overall_score1 <- function(average_reporting_rate,
   check_cd_class(district_completeness, "cd_missing_district")
   check_cd_class(outliers_summary, "cd_outlier")
   check_cd_class(district_outliers_summary, "cd_district_outliers_summary")
-  check_cd_class(ratios_summary, "cd_ratios_and_adequacy")
+  check_cd_ratios_and_adequacy(ratios_summary)
   is_bare_numeric(threshold)
 
   # threshold <- attr_or_abort(district_reporting_rate, "threshold")

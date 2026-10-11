@@ -2,7 +2,7 @@
 % Please edit documentation in R/0_data_quality_checks.R
 \name{check_population_vs_births}
 \alias{check_population_vs_births}
-\title{Check that estimated population live births aren't lower than reported institutional counts}
+\title{Check that population live births are not below reported births}
 \usage{
 check_population_vs_births(
   parts,
@@ -12,20 +12,48 @@ check_population_vs_births(
 )
 }
 \arguments{
-\item{parts}{Named list of cleaned per-sheet tibbles.}
+\item{parts}{A named list of cleaned per-sheet tibbles (\code{load_excel_parts()$parts}).}
 
-\item{population_sheet_name}{Name of the population sheet within \code{parts}.}
+\item{population_sheet_name}{A string. The name of the Population sheet within \code{parts}.}
 
-\item{service_sheet_names}{Names of the service-data sheets within \code{parts}.}
+\item{service_sheet_names}{A character vector. The names of the service data sheets within
+\code{parts}.}
 
-\item{margin}{Fraction (0-1) of headroom allowed before flagging. Default \code{0.10} (10\%).}
+\item{margin}{A number between 0 and 1. The fraction by which the population figure may
+fall short of the reported figure before it is flagged. Default is \code{0.10} (10\%).}
+}
+\value{
+\code{NULL} if no district-year is flagged, if the Population sheet lacks \code{district},
+\code{year} or \code{live_births}, or if the service sheets have neither births column. Otherwise a
+character vector of length one, named \code{"x"}, with a message that lists the first 10 flagged
+district-years and gives a count of the rest. Its \code{"rows"} attribute is a tibble of all the
+flagged district-years, with columns \code{district}, \code{year}, \code{live_births} and
+\code{total_delivered} (the reported sum).
 }
 \description{
-Per district-year, \code{Population_data$live_births} (an annual estimate) should be at least as large
-as the sum of the service sheets' own institutional counts (\code{instlivebirths}, or \code{instdeliveries}
-if that's what the sheet has instead -- the spec names both interchangeably) across that
-district-year's months -- not every birth happens in a facility, so the population estimate being
-\emph{lower} than what facilities alone reported is a real, actionable data problem, not just an
-interesting pattern. \code{margin} allows the population figure to fall a little short before flagging,
-since these are independent estimates, not the same count twice.
+Compares, for each district-year, the estimated live births in the Population sheet with
+the institutional births reported in the service sheets. Not every birth happens in a
+facility, so an estimate that is lower than what facilities reported points to a problem in
+one of the two figures.
+}
+\details{
+The reported figure is the sum over the months of a district-year of \code{instlivebirths}, or
+of \code{instdeliveries} if the service sheets have no \code{instlivebirths} column. A district-year
+is flagged when \code{live_births} is less than \code{(1 - margin)} times that sum. Only district-years
+that have both figures are compared.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+sheets <- load_excel_parts(path)
+found <- check_population_vs_births(
+  sheets$parts, sheets$population_sheet_name, sheets$service_sheet_names
+)
+found
+attr(found, "rows")
+
+# Flag any shortfall, however small
+check_population_vs_births(
+  sheets$parts, sheets$population_sheet_name, sheets$service_sheet_names,
+  margin = 0
+)
 }

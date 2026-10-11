@@ -2,7 +2,7 @@
 % Please edit documentation in R/1a_checks_outlier.R
 \name{list_outlier_units}
 \alias{list_outlier_units}
-\title{Identify Monthly Outliers by District}
+\title{Identify monthly outliers by district}
 \usage{
 list_outlier_units(.data)
 }

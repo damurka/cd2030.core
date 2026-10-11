@@ -1,4 +1,4 @@
-#' Load UN Estimates
+#' Load UN estimates
 #'
 #' Loads and processes UN estimates from a `.dta` file or in-memory data.
 #' Filters by country and year, renames columns, and assigns a custom class.
@@ -9,6 +9,16 @@
 #' @param start_year,end_year Integers. First and last year (inclusive) to include.
 #'
 #' @return A tibble of class `cd_un_estimates`.
+#' @examples
+#' \dontrun{
+#' un <- load_un_estimates(
+#'   path = "un_estimates.dta", country_iso = "KEN", start_year = 2019, end_year = 2023
+#' )
+#'
+#' # From data already read, then kept with the dataset
+#' un <- load_un_estimates(.data = all_un, country_iso = "KEN", start_year = 2019, end_year = 2023)
+#' cache$set_un_estimates(un)
+#' }
 #' @export
 load_un_estimates <- function(path = NULL, .data = NULL, country_iso, start_year, end_year) {
   year <- iso3 <- country <- countrycode <- iso2 <- NULL
@@ -24,7 +34,7 @@ load_un_estimates <- function(path = NULL, .data = NULL, country_iso, start_year
     new_tibble(class = "cd_un_estimates")
 }
 
-#' Load and Filter UN Mortality Estimates
+#' Load and filter UN mortality estimates
 #'
 #' Loads UN mortality data from a file path or existing data frame, filters it by the given country ISO3 code,
 #' and returns cleaned mortality data sorted by year.
@@ -53,7 +63,7 @@ load_un_mortality_data <- function(path = NULL, .data = NULL, country_iso) {
     new_tibble(class = "cd_un_mortality")
 }
 
-#' Load and Process Survey Data
+#' Load and process survey data
 #'
 #' Loads national or subnational survey data, cleans labels and codes, and applies
 #' country-specific adjustments for admin-level naming.
@@ -64,6 +74,17 @@ load_un_mortality_data <- function(path = NULL, .data = NULL, country_iso) {
 #' @param admin_level Character. One of `'national'` or `'adminlevel_1'`.
 #'
 #' @return A tibble of class `cd_survey_data`.
+#' @examples
+#' \dontrun{
+#' national <- load_survey_data(path = "all_data.dta", country_iso = "KEN")
+#' cache$set_national_survey(national)
+#'
+#' # The survey by region
+#' regional <- load_survey_data(
+#'   path = "gregion_data.dta", country_iso = "KEN", admin_level = "adminlevel_1"
+#' )
+#' cache$set_regional_survey(regional)
+#' }
 #' @export
 load_survey_data <- function(path = NULL, .data = NULL, country_iso, admin_level = c("national", "adminlevel_1")) {
   year <- iso <- adminlevel_1 <- admin1_code <- NULL
@@ -101,7 +122,7 @@ load_survey_data <- function(path = NULL, .data = NULL, country_iso, admin_level
   )
 }
 
-#' Load and Filter Equity Data
+#' Load and filter equity data
 #'
 #' Loads survey equity data, removes unnecessary variables, and filters by country.
 #'
@@ -110,6 +131,15 @@ load_survey_data <- function(path = NULL, .data = NULL, country_iso, admin_level
 #' @param country_iso Character. ISO3 country code to filter by.
 #'
 #' @return A tibble of class `cd_equity_data`.
+#' @examples
+#' \dontrun{
+#' wealth <- load_equity_data(path = "wiq_data.dta", country_iso = "KEN")
+#' cache$set_wiq_survey(wealth)
+#'
+#' # The same for the survey by area of residence and by mother's education
+#' cache$set_area_survey(load_equity_data(path = "area_data.dta", country_iso = "KEN"))
+#' cache$set_education_survey(load_equity_data(path = "meduc_data.dta", country_iso = "KEN"))
+#' }
 #' @export
 load_equity_data <- function(path = NULL, .data = NULL, country_iso) {
   year <- NULL
@@ -124,7 +154,7 @@ load_equity_data <- function(path = NULL, .data = NULL, country_iso) {
     new_tibble(class = "cd_equity_data")
 }
 
-#' Load WUENIC Immunization Data
+#' Load WUENIC immunization data
 #'
 #' Loads and processes WUENIC estimates, computes dropout and zero-dose indicators,
 #' and standardizes naming conventions.
@@ -134,6 +164,12 @@ load_equity_data <- function(path = NULL, .data = NULL, country_iso) {
 #' @param country_iso Character. ISO3 country code.
 #'
 #' @return A tibble of class `cd_wuenic_data`.
+#' @examples
+#' \dontrun{
+#' wuenic <- load_wuenic_data(path = "wuenic.dta", country_iso = "KEN")
+#' wuenic[c("year", "cov_penta3_wuenic", "cov_dropout_penta13_wuenic")]
+#' cache$set_wuenic_estimates(wuenic)
+#' }
 #' @export
 load_wuenic_data <- function(path = NULL, .data = NULL, country_iso) {
   check_required(country_iso)
@@ -167,7 +203,7 @@ load_wuenic_data <- function(path = NULL, .data = NULL, country_iso) {
     new_tibble(class = "cd_wuenic_data")
 }
 
-#' Load Data from File or Use Provided Data
+#' Load data from file or use provided data
 #'
 #' Loads data from a `.dta` file or uses provided data directly. Optionally
 #' assigns a custom class to the returned tibble.
@@ -198,7 +234,7 @@ load_data_or_file <- function(path = NULL, .data = NULL, country_iso = NULL) {
     filter(if (is.null(country_iso)) TRUE else iso3 == country_iso)
 }
 
-#' Load FPET Data from CSV File or Use Provided Data
+#' Load FPET data from CSV file or use provided data
 #'
 #' `load_fpet_data` loads Family Planning Estimation Tool (FPET) data from a `.csv`
 #' file, or uses a pre-supplied dataset. It assigns a country ISO code if specified,
@@ -246,25 +282,26 @@ load_fpet_data <- function(path = NULL, .data = NULL, country_iso = NULL) {
     new_tibble(class = "cd_fpet_data")
 }
 
-#' Load and Prepare Private Sector Data
+#' Load and prepare private sector data
 #'
 #' Loads raw prevalence data for public/private sector analysis and applies
 #' internal preprocessing for c-section share calculation.
 #'
 #' @param path Optional. File path to a `.dta` file. Required if `.data` is not provided.
 #' @param .data Optional. A pre-loaded dataset. Used directly if provided.
-#' @param country_iso Required. ISO3 country code to filter the data.
+#' @param country_iso ISO3 country code. When the data holds several countries (an `iso` column with more than
+#'   one code), the rows of this one are kept; data for one country is used as it is.
 #' @param level Either `"national"` or `"area"` indicating the data level.
 #'
 #' @return A tibble of class `"cd_private_sector_data"` with a `"level"` attribute.
 #'
 #' @details
-#' This function:
-#' - Loads and filters data for the specified `country_iso`.
+#' Loads the data from `path`, or uses `.data`, and checks that it matches `level`: area data has a
+#' `level` column and national data does not. Then:
 #' - Assigns `"Public"` or `"Private"` to the `sector` column based on `indic` suffix.
 #' - Removes sector suffix from `indic`.
 #' - Computes number of c-sections (`num_csection`) and sector share of c-sections (`share_csection`)
-#'   within groupings defined by `iso` or `iso + area`.
+#'   over the whole dataset, or within each value of the `level` column for area data.
 #' - If level is `"area"`, parses `level` string into `area = "Urban"` or `"Rural"`.
 #'
 #' @section Output columns:
@@ -304,8 +341,7 @@ load_private_sector_data  <- function(path = NULL, .data = NULL, country_iso = N
     cd_abort(c('x' = 'National data loaded with the {.arg {level}} level.'))
   }
 
-  data <- data %>%
-    # filter(iso == country_iso) %>%
+  data <- .cd_one_country(data, country_iso) %>%
     mutate(
       sector = case_when(
         str_ends(indic, 'pub') ~ 'Public',
@@ -329,13 +365,14 @@ load_private_sector_data  <- function(path = NULL, .data = NULL, country_iso = N
     new_tibble(class = "cd_private_sector_data", level = level)
 }
 
-#' Load C-section Share Estimates
+#' Load C-section share estimates
 #'
 #' Loads c-section correction estimates for national or area-level adjustment.
 #'
 #' @param path Optional. File path to a `.dta` file. Required if `.data` is not provided.
 #' @param .data Optional. A pre-loaded dataset. Used directly if provided.
-#' @param country_iso Required. ISO3 country code to filter the data.
+#' @param country_iso ISO3 country code. When the data holds several countries (an `iso` column with more than
+#'   one code), the rows of this one are kept; data for one country is used as it is.
 #' @param level Either `"national"` or `"area"` indicating the data level.
 #'
 #' @return A tibble of class `"cd_csection_estimates"` with a `"level"` attribute.
@@ -372,8 +409,7 @@ load_csection_estimates <- function(path = NULL, .data = NULL, country_iso = NUL
     cd_abort(c('x' = 'National data loaded with the {.arg {level}} level.'))
   }
 
-  # data <- data %>%
-  #   filter(iso == country_iso)
+  data <- .cd_one_country(data, country_iso)
 
   if (level == 'area') {
     data <- data %>%
@@ -385,3 +421,9 @@ load_csection_estimates <- function(path = NULL, .data = NULL, country_iso = NUL
     new_tibble(class = "cd_csection_estimates", level = level)
 }
 
+# The rows of one country, when a file of estimates holds several and a country is given. A file for one country is
+# returned as it is, whatever `country_iso` is: the code in it need not be written the same way.
+.cd_one_country <- function(data, country_iso) {
+  if (is.null(country_iso) || !"iso" %in% names(data) || length(unique(data$iso)) < 2) return(data)
+  data[data$iso %in% country_iso, , drop = FALSE]
+}

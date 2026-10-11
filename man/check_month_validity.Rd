@@ -2,19 +2,35 @@
 % Please edit documentation in R/0_data_quality_checks.R
 \name{check_month_validity}
 \alias{check_month_validity}
-\title{Check every row's month string parsed to a real calendar month}
+\title{Check that every month value is a recognized month}
 \usage{
 check_month_validity(.data)
 }
 \arguments{
-\item{.data}{The merged, standardized dataset.}
+\item{.data}{A data frame. The merged and standardized dataset, with a \code{month} column and
+optionally a \code{raw_month} column.}
+}
+\value{
+\code{NULL} if every month is recognized, or if \code{.data} has no \code{month} column. Otherwise
+a character vector of length one, named \code{"x"}, with the message.
 }
 \description{
-\code{standardize_data()} turns any month string that doesn't match one of its 12 recognized
-patterns into \code{NA} silently (no warning, the row stays in the data) -- this surfaces that
-silently-dropped information instead of letting it pass unnoticed. Relies on \code{raw_month}
-(the pre-cleaning value \code{standardize_data()} now preserves specifically for this check); if
-\code{.data} doesn't have that column (e.g. a \code{.dta} master dataset, which skips
-\code{standardize_data()} entirely), this falls back to just checking for \code{NA} months with no
-detail on the original unparseable text.
+Checks the merged data for rows whose month could not be read as a calendar month, for
+example because of a typo or a month name in a language that is not supported. Such rows
+have a missing \code{month} and would otherwise stay in the data unnoticed.
+}
+\details{
+A row is a problem when its \code{month} is \code{NA}. If \code{.data} has a \code{raw_month} column (the month
+text as it was in the workbook), the message lists the distinct unrecognized values. If it
+does not, as with a Stata master dataset, or if those values are all missing, the message
+gives the number of affected rows instead.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+check_month_validity(data)
+
+# Months that could not be read are missing after loading
+data$month[1:3] <- NA
+check_month_validity(data)
 }

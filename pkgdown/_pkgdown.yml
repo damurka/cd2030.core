@@ -11,7 +11,7 @@ template:
 
 navbar:
   structure:
-    left:  [reference, news]
+    left:  [intro, articles, reference, news]
     right: [search, github]
   components:
     reference:
@@ -31,9 +31,26 @@ home:
     Core tools for importing, validating, adjusting, and analysing Countdown 2030 country data.
   links:
   - text: Get started
-    href: index.html
+    href: articles/cd2030.core.html
   - text: Reference
     href: reference/index.html
+
+articles:
+  - title: "Analysing a dataset"
+    desc: >
+      From a country's file to coverage, step by step, on the example dataset.
+    navbar: ~
+    contents:
+      - cd2030.core
+      - preparing-data
+      - data-quality
+      - coverage
+  - title: "The apps"
+    desc: >
+      How the Countdown Shiny apps are built on this package.
+    navbar: ~
+    contents:
+      - building-an-app
 
 reference:
   - title: "Data Import & Preparation"
@@ -116,7 +133,8 @@ reference:
       - calculate_district_completeness_summary
       - plot.cd_completeness_summary
       - tbl_sum.cd_completeness_summary
-      - tbl_sum.cd_district_completeness_summary
+      - tbl_sum.cd_missing_district
+      - list_missing_units
 
   - subtitle: "Consistency Checks"
     contents:
@@ -130,15 +148,16 @@ reference:
     contents:
       - calculate_outliers_summary
       - calculate_district_outlier_summary
-      - filter_adjustment_value
+      - select_adjustment_value
       - list_outlier_units
       - plot.cd_outlier
       - plot.cd_outlier_list
-      - tbl_sum.cd_outliers_summary
+      - tbl_sum.cd_outlier
       - tbl_sum.cd_district_outliers_summary
 
   - subtitle: "Ratio Analysis"
     contents:
+      - calculate_ratios_and_adequacy
       - calculate_ratios_summary
       - calculate_district_ratios_summary
       - plot.cd_ratios_summary
@@ -177,6 +196,7 @@ reference:
       - compute_indicator_numerator
       - prepare_population_metrics
       - calculate_indicator_coverage
+      - get_national_rates
       - calculate_threshold
       - filter_high_performers
       - calculate_derived_coverage
@@ -185,13 +205,13 @@ reference:
       - plot.cd_population_metrics
       - plot.cd_derived_coverage
       - tbl_sum.cd_indicator_coverage
-      - tbl_sum.cd_national_denominators
+      - tbl_sum.cd_population_metrics
 
   - title: "Coverage & Inequality"
     desc: >
       Estimate coverage levels and inequity by geography and subgroup.
     contents:
-      - filter_coverage
+      - select_coverage
       - calculate_coverage
       - get_coverage_indicators
       - generate_coverage_data
@@ -199,7 +219,7 @@ reference:
       - plot.cd_coverage_selected
       - plot.cd_threshold
       - calculate_inequality
-      - filter_inequality
+      - select_inequality
       - equiplot
       - equiplot_area
       - equiplot_education
@@ -207,7 +227,7 @@ reference:
       - plot.cd_coverage_filtered
       - plot.cd_inequality_filtered
       - get_mapping_data
-      - filter_mapping_data
+      - select_mapping_data
       - get_country_shapefile
       - plot.cd_mapping_filtered
 
@@ -217,7 +237,7 @@ reference:
     contents:
       - create_mortality_summary
       - create_mortality_ratios
-      - filter_mortality_summary
+      - select_mortality_summary
       - summarise_completeness_ratio
       - plot.cd_mortality_summary
       - plot.cd_mortality_summary_filtered
@@ -229,7 +249,7 @@ reference:
       Analyze use of health services and trends over time.
     contents:
       - compute_service_utilization
-      - filter_service_utilization
+      - select_service_utilization
       - prepare_private_sector_plot_data
       - get_excel_version
       - plot.cd_service_utilization_filtered
@@ -286,6 +306,7 @@ reference:
       Countdown's content for datasuite.ui's report builder: the standard reports, the charts and tables a report can
       hold, a dataset's report context; and the saved chart options every chart is finished with.
     contents:
+      - cd_plot_arguments
       - report_presets
       - report_block_kinds
       - cd_report_context
@@ -293,13 +314,6 @@ reference:
       - cd_chart_id
       - cd_finish_plot
       - cd_minimal_theme
-
-  - title: "Shiny Apps"
-    desc: >
-      The Countdown pages, Load Data wizard, filters and app frame (cd_app()) the apps are built from.
-    contents:
-      - '`countdown-pages`'
-      - cd_scope
 
   - title: "The Countdown AI"
     desc: >
@@ -322,6 +336,42 @@ reference:
       - notebook_data
       - cd_denominator_labels
       - cd_methodology_defaults
+
+  - title: "App: building an app"
+    desc: >
+      The app itself and its per-app settings, with the guide to the interface (countdown-pages).
+    contents:
+      - has_concept("Countdown app frame")
+
+  - title: "App: pages"
+    desc: >
+      The analysis pages every Countdown app shares, each a ui/server pair.
+    contents:
+      - has_concept("Countdown app pages")
+
+  - title: "App: Load Data wizard"
+    desc: >
+      The Load Data screen: its steps, the tests of what is complete and the builders of an app's own fields.
+    contents:
+      - has_concept("Countdown app wizard")
+
+  - title: "App: filters"
+    desc: >
+      The filter chips pages share: indicator, admin level, denominator, population, years, palette.
+    contents:
+      - has_concept("Countdown app filters")
+
+  - title: "App: layout"
+    desc: >
+      The dataset header, sidebar sections, scoped pages and tabbed charts.
+    contents:
+      - has_concept("Countdown app layout")
+
+  - title: "App: charts and tables"
+    desc: >
+      Chart and table cards with their downloads.
+    contents:
+      - has_concept("Countdown app charts and tables")
 
   - title: "Utility Functions"
     desc: >

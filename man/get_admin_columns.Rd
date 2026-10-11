@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils-cd-data.R
 \name{get_admin_columns}
 \alias{get_admin_columns}
-\title{Determine Grouping Columns for Administrative Levels}
+\title{Determine grouping columns for administrative levels}
 \usage{
 get_admin_columns(admin_level, region = NULL, show_district = TRUE)
 }

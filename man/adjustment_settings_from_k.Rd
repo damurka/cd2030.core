@@ -18,3 +18,8 @@ The settings list.
 A dataset saved before the settings existed has only its k per group and its removed years: they become the
 settings, everything else as the default.
 }
+\examples{
+settings <- adjustment_settings_from_k(c(anc = 0.1, vacc = 0), excluded_years = 2020)
+settings$everywhere$group_k
+settings$removed_years
+}

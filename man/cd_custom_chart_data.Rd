@@ -15,5 +15,21 @@ cd_custom_chart_data(cache, spec)
 The data frame after the spec's transforms.
 }
 \description{
-The table a custom chart draws
+Checks a custom chart description, reads the data of the dataset member it names and applies the
+transforms it lists. The result is the table the chart is drawn from.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+cache <- load_cache_data(path)
+
+spec <- list(
+  title = "Antenatal care reporting rate by region, 2023",
+  data = list(member = "reporting_rate_admin1"),
+  transform = list(
+    list(filter = list(year = 2023)),
+    list(select = c("adminlevel_1", "anc_rr"))
+  ),
+  plot = list(geom = "col", x = "adminlevel_1", y = "anc_rr")
+)
+cd_custom_chart_data(cache, spec)
 }

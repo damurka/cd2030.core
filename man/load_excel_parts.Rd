@@ -2,7 +2,7 @@
 % Please edit documentation in R/0_import_load_data.R
 \name{load_excel_parts}
 \alias{load_excel_parts}
-\title{Read & clean every Countdown 2030 Excel sheet, without merging them}
+\title{Read and clean the sheets of a Countdown 2030 workbook}
 \usage{
 load_excel_parts(
   path,
@@ -14,7 +14,7 @@ load_excel_parts(
 )
 }
 \arguments{
-\item{path}{Path to \code{.xlsx}, \code{.xls}, or \code{.dta}.}
+\item{path}{Path to an \code{.xlsx} or \code{.xls} file.}
 
 \item{start_year}{Optional integer filter for minimum year.}
 
@@ -28,21 +28,42 @@ load_excel_parts(
 Default: all sheets matching \code{"Service_data"} if not supplied.}
 }
 \value{
-A list: \code{parts} (named list of cleaned per-sheet tibbles), \code{sheet_names}, \code{sheet_ids},
-\code{admin_sheet_name}, \code{population_sheet_name}, \code{reporting_sheet_name}, \code{service_sheet_names},
-\code{path}, \code{start_year} -- everything \code{merge_and_standardize()} needs to finish the job later,
-and everything the wizard's own per-sheet quality checks need in the meantime.
+A list with these elements:
+\itemize{
+\item \code{parts}: a named list of cleaned tibbles, one per sheet, named by sheet.
+\item \code{sheet_names}: a character vector of the sheet names, in the order the sheets are merged.
+\item \code{sheet_ids}: a named list of the key columns of the Admin sheet, the Population sheet
+and (as \code{service_data}) every other sheet.
+\item \code{admin_sheet_name}, \code{population_sheet_name}, \code{reporting_sheet_name},
+\code{service_sheet_names}: the sheet names used, with defaults filled in.
+\item \code{path}, \code{start_year}: the arguments as given.
+}
 }
 \description{
-Split out of what used to be the front half of \code{.load_excel_data()} (Phase 3 of the Load Data
-wizard redesign, \code{apps/rmncah}): reads and cleans every sheet, keyed by sheet name, and returns
-them SEPARATE -- no \code{merge_data()}/\code{standardize_data()}/\code{new_countdown()} here. This is what lets
-the wizard run its Data Quality checks per-sheet (which sheet a problem actually came from, not
-just "somewhere in the merged data") BEFORE committing to a merge. The only things that still
-abort immediately, unconditionally, here: the sheets named don't exist at all, or a sheet is
-missing the join-key columns \code{read_and_clean_sheet()} itself requires (district/year/month) --
-both are "there is nothing coherent to even display per-sheet" failures, not a data-QUALITY
-finding the way a missing indicator column or a district name mismatch is (see
-\code{merge_and_standardize()}'s own Tier A checks, and \verb{0_data_quality_checks.R}'s new per-sheet
-checks, for where those now live instead).
+Reads and cleans each sheet of a Countdown 2030 Excel workbook and returns the sheets
+separately, without merging them. Use it to run data quality checks on each sheet before
+the merge, then pass the result to \code{\link[=merge_and_standardize]{merge_and_standardize()}} to finish loading.
+}
+\details{
+Month names are standardized to English on every sheet that has a \code{month} column, and the
+original text is kept in a \code{raw_month} column. The sheets can then be joined on \code{month} even
+if they name the months in different languages.
+
+The function stops with an error if a named sheet is not in the workbook, if a sheet is
+empty, or if a sheet lacks its key columns (\code{district} for the Admin sheet, \code{district} and
+\code{year} for the Population sheet, and \code{district}, \code{year} and \code{month} for the others). Other
+problems with the data are left to the data quality checks.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+sheets <- load_excel_parts(path)
+names(sheets$parts)
+sheets$service_sheet_names
+sheets$parts[[sheets$population_sheet_name]]
+
+# Month names are in English, the workbook's own text is kept beside them
+unique(sheets$parts[[sheets$service_sheet_names[1]]][c("month", "raw_month")])
+}
+\seealso{
+\code{\link[=merge_and_standardize]{merge_and_standardize()}}, \code{\link[=run_all_quality_checks]{run_all_quality_checks()}}
 }

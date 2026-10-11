@@ -2,7 +2,7 @@
 % Please edit documentation in R/5_mapping_get_mapping_data.R
 \name{get_mapping_data}
 \alias{get_mapping_data}
-\title{Get Mapping Data for Subnational Coverage Analysis}
+\title{Get mapping data for subnational coverage analysis}
 \usage{
 get_mapping_data(.data, subnational_map = NULL)
 }
@@ -18,8 +18,8 @@ A \code{tibble} of class \code{"cd_mapping"} that combines the input data with s
 }
 \description{
 Merges coverage data with a country's shapefile to enable spatial visualization
-of health indicators. It computes subnational indicator coverage using
-UN estimates and survey rates, and joins results with geographic features.
+of health indicators. It joins subnational (admin level 1) indicator coverage
+that has already been calculated with the geographic features of each unit.
 }
 \examples{
 \dontrun{

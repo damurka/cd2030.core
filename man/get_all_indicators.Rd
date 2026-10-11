@@ -12,3 +12,12 @@ Character vector of all indicators
 \description{
 Flatten all indicators from all groups
 }
+\examples{
+get_all_indicators()
+
+# the indicators of another group (the selected group is put back afterwards)
+old <- get_selected_group()
+set_selected_group("vaccine")
+get_all_indicators()
+set_selected_group(old)
+}

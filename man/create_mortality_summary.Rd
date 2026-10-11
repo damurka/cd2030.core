@@ -2,7 +2,7 @@
 % Please edit documentation in R/5_mortality.R
 \name{create_mortality_summary}
 \alias{create_mortality_summary}
-\title{Create Mortality Summary Object}
+\title{Create mortality summary object}
 \usage{
 create_mortality_summary(.data)
 }
@@ -10,8 +10,19 @@ create_mortality_summary(.data)
 \item{.data}{An object of class \code{cd_data}.}
 }
 \value{
-A \code{cd_mortality_rare} tibble.
+A \code{cd_mortality_summary} tibble.
 }
 \description{
-Combines national and admin1 summaries and formats as a custom class for plotting.
+Combines national and admin level 1 summaries and formats as a custom class for plotting.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+
+mortality <- create_mortality_summary(data)
+mortality
+
+# the national rates
+mortality[mortality$adminlevel_1 == "National", c("year", "mmr_inst", "sbr_inst", "nn_inst")]
+
 }

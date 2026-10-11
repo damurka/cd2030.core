@@ -2,7 +2,7 @@
 % Please edit documentation in R/3_calculate_threshold.R
 \name{filter_high_performers}
 \alias{filter_high_performers}
-\title{Filter High-Performing Areas by Coverage}
+\title{Filter high-performing areas by coverage}
 \usage{
 filter_high_performers(
   .data,
@@ -27,4 +27,15 @@ A filtered data frame retaining regions meeting the threshold.
 \description{
 Filters a dataset to retain administrative areas with coverage values
 above a specified threshold for a given indicator and denominator.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+cache <- load_cache_data(path)
+cache$set_national_estimates(list(sbr = 0.02))
+cache$adjust_data()
+coverage <- cache$indicator_coverage_admin1
+
+filter_high_performers(coverage, indicator = "instlivebirths", denominator = "dhis2")
+filter_high_performers(coverage, indicator = "instlivebirths", denominator = "dhis2", threshold = 100)
+
 }

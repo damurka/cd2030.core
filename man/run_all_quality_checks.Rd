@@ -2,33 +2,56 @@
 % Please edit documentation in R/0_data_quality_checks.R
 \name{run_all_quality_checks}
 \alias{run_all_quality_checks}
-\title{Run every non-structural quality check against an already-loaded cache, without aborting}
+\title{Run all data quality checks and report every result}
 \usage{
 run_all_quality_checks(cache)
 }
 \arguments{
-\item{cache}{A \code{CacheConnection} (or anything exposing \verb{$wizard_parts}, \verb{$countdown_data},
-\verb{$check_survey_admin_names()}, \verb{$check_shapefile_admin_names()} the same way).}
+\item{cache}{A \code{CacheConnection}, or an object with the same \code{wizard_parts},
+\code{wizard_quality_results} and \code{countdown_data} fields and \code{check_survey_admin_names()} and
+\code{check_shapefile_admin_names()} methods.}
 }
 \value{
-A named list, one entry per check: \code{list(ok, severity, detail)}. \code{severity} is one of
-\code{"blocking"} (these gate progression past the Data Quality step), \code{"informational"} (shown,
-never block), or \code{"mapping"} (survey/shapefile admin-name matches -- shown, never block, point
-instead at the relevant mapping step).
+A named list with one element per check. Each element is a list with:
+\itemize{
+\item \code{ok}: \code{TRUE} if the check passed.
+\item \code{severity}: \code{"blocking"} (the caller should not go on until the problem is fixed),
+\code{"informational"} (shown, but does not block) or \code{"mapping"} (an admin level 1 name with
+no match in the survey or the shapefile; shown, but does not block).
+\item \code{detail}: what the check returned, which is \code{NULL}, a character vector or a tibble,
+depending on the check.
+}
 }
 \description{
-Counterpart to \code{run_quality_checks()} above (which collects several checks and aborts once if
-any fail -- the shape \code{new_countdown()}'s Tier B and \code{merge_and_standardize()}'s Tier A both need
-at load time). This one never aborts: it runs every non-structural check and returns a full
-report, for a caller that wants to show every result -- pass or fail -- rather than stop at the
-first problem. Built for the Load Data wizard's Data Quality step (apps/rmncah).
+Runs the data quality checks on the data held in a cache and returns the result of each
+one, whether it passed or not. It does not stop on a problem, so a caller can show the
+whole report.
 }
 \details{
-Branches on whether \code{cache} still holds unmerged wizard parts (\code{cache$wizard_parts}, set by
-\code{load_excel_parts()} + \code{CacheConnection$set_wizard_parts()} -- the normal case for a fresh
-Excel/Stata upload going through the wizard, Phase 3 of the Load Data wizard redesign) or already
-has merged \code{countdown_data} (a resumed \code{.rds}, edit mode, or any non-wizard caller) -- the
-pre-merge branch runs the sheet-scoped checks above, attributing problems to the specific sheet
-they came from; the post-merge branch is the original, unchanged set of checks against the fully
-merged data.
+Which checks run depends on what the cache holds:
+\itemize{
+\item If it holds unmerged sheets (\code{cache$wizard_parts}), the checks run on the separate sheets,
+so a problem can be traced to the sheet it comes from.
+\item Otherwise, if it holds results saved when the sheets were merged
+(\code{cache$wizard_quality_results}), those saved results are returned and no check is run.
+\item Otherwise the checks run on the merged dataset (\code{cache$countdown_data}). This set has
+fewer checks than the one for unmerged sheets.
+}
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+
+# On a loaded dataset
+cache <- load_cache_data(path)
+results <- run_all_quality_checks(cache)
+names(results)
+results$indicator_emptiness
+
+# On the sheets of a workbook, before they are merged
+sheets <- load_excel_parts(path)
+results <- run_all_quality_checks(init_CacheConnection(wizard_parts = sheets))
+Filter(function(result) !result$ok, results)
+}
+\seealso{
+\code{\link[=quality_issues_table]{quality_issues_table()}} and \code{\link[=write_quality_issues]{write_quality_issues()}} to tabulate or save the result.
 }

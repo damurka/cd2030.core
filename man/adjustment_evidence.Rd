@@ -13,7 +13,7 @@ adjustment_evidence(
 \arguments{
 \item{.data}{A \code{cd_data} tibble (the data before adjustment, its removed years already left out).}
 
-\item{threshold}{The reporting threshold (percent) of the Reporting rate page.}
+\item{threshold}{Numeric. The performance threshold (in percent) of the Reporting rate page.}
 
 \item{year}{The year of the reporting rates (by default the latest).}
 }
@@ -26,4 +26,14 @@ The numbers the Data Adjustment page shows beside its settings, from the same co
 (Reporting rate, Outlier detection, Data completeness): each indicator group's national reporting rate in \code{year}
 and how many districts report below \code{threshold}; each indicator's outlier months (more than 5 x MAD from the
 district's median) and empty months; each region's and district's lowest group reporting rate in \code{year}.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+evidence <- adjustment_evidence(data)
+str(evidence$groups$opd)
+str(evidence$indicators$penta3)
+
+# Against a stricter threshold, for an earlier year
+adjustment_evidence(data, threshold = 95, year = 2021)$groups$opd
 }

@@ -1,24 +1,44 @@
-#' Plot Derived vs Traditional Coverage Over Time
+#' Plot derived vs traditional coverage over time
 #'
-#' This function generates a line plot comparing traditional (`coverage_old`)
+#' Generates a line plot comparing traditional (`coverage_old`)
 #' and derived (`coverage_new`) coverage estimates over time for a single indicator.
 #' It supports both national and subnational views.
 #'
 #' @param x A `cd_derived_coverage` object.
 #' @param type A character string specifying the plot type: `"bar"` or `"trend"`. 
 #'   `"trend"` can only be applied nationally or to a specific region. Defaults to `"bar"`.
-#' @param title (Optional) A scalar character string to override the default plot title. Defaults to `NULL`.
-#' @param x_label (Optional) A scalar character string to override the default x-axis label. Defaults to `NULL`.
-#' @param y_label (Optional) A scalar character string to override the default y-axis label. Defaults to `NULL`.
+#' @inheritParams cd_plot_arguments
 #' @param legend_labels (Optional) A named list of character strings to override specific
 #'   default legend labels (e.g., `list(penta1derived = "Custom Penta1")`).
-#' @param ... Chart options by name (see [cd_chart_options()]); other arguments are ignored.
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes the user changed. Applied last, so it wins over
-#'   `title` and the other arguments above. Any chart option can also be given by name in `...`.
 #'
 #' @return A `ggplot` object showing coverage trends over time.
+#'
+#' @examples
+#' cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#' cache$set_national_estimates(list(sbr = 0.02))
+#' cache$adjust_data()
+#' derived <- cache$calculate_derived_coverage("penta3", "national")
+#'
+#' plot(derived)
+#' plot(derived, type = "trend", title = "Penta3: usual and derived denominators",
+#'      y_title = "Coverage (%)", legend_position = "bottom")
+#'
 #' @export
-plot.cd_derived_coverage <- function(x, type = c('bar', 'trend'), title = NULL, x_label = NULL, y_label = NULL, legend_labels = list(), ..., options = NULL) {
+plot.cd_derived_coverage <- function(x,
+                                     type = c("bar", "trend"),
+                                     title = NULL,
+                                     subtitle = NULL,
+                                     caption = NULL,
+                                     x_title = NULL,
+                                     y_title = NULL,
+                                     legend_title = NULL,
+                                     ...,
+                                     legend_labels = list(),
+                                     options = NULL) {
+  .cd_draw(.plot_cd_derived_coverage_impl, x, list(type = type, legend_labels = legend_labels), ..., options = options)
+}
+
+.plot_cd_derived_coverage_impl <- function(x, type = c('bar', 'trend'), title = NULL, x_title = NULL, y_title = NULL, legend_labels = list(), ...) {
   
   # 1. Metadata Extraction & Validation
   admin_level <- attr_or_abort(x, "admin_level")
@@ -63,11 +83,11 @@ plot.cd_derived_coverage <- function(x, type = c('bar', 'trend'), title = NULL, 
   if (!is.null(title) && (!is.character(title) || length(title) != 1)) {
     cd_abort(c("x" = "{.arg title} must be a scalar character or NULL."))
   }
-  if (!is.null(x_label) && (!is.character(x_label) || length(x_label) != 1)) {
-    cd_abort(c("x" = "{.arg x_label} must be a scalar character or NULL."))
+  if (!is.null(x_title) && (!is.character(x_title) || length(x_title) != 1)) {
+    cd_abort(c("x" = "{.arg x_title} must be a scalar character or NULL."))
   }
-  if (!is.null(y_label) && (!is.character(y_label) || length(y_label) != 1)) {
-    cd_abort(c("x" = "{.arg y_label} must be a scalar character or NULL."))
+  if (!is.null(y_title) && (!is.character(y_title) || length(y_title) != 1)) {
+    cd_abort(c("x" = "{.arg y_title} must be a scalar character or NULL."))
   }
 
   # 2. Setup Legend Mapping
@@ -111,11 +131,11 @@ plot.cd_derived_coverage <- function(x, type = c('bar', 'trend'), title = NULL, 
   final_title <- title %||% title_text
   
   if (type == "bar") {
-    final_x_label <- x_label %||% if (is_dot_plot) 'Coverage (%)' else NULL
-    final_y_label <- y_label %||% if (is_dot_plot) 'Region/Location' else "Coverage (%)"
+    final_x_label <- x_title %||% if (is_dot_plot) 'Coverage (%)' else NULL
+    final_y_label <- y_title %||% if (is_dot_plot) 'Region/Location' else "Coverage (%)"
   } else {
-    final_x_label <- x_label %||% "Year"
-    final_y_label <- y_label %||% str_glue("{indicator_title} Coverage (%)")
+    final_x_label <- x_title %||% "Year"
+    final_y_label <- y_title %||% str_glue("{indicator_title} Coverage (%)")
   }
 
   # 5. Generate the Plot
@@ -154,8 +174,8 @@ plot.cd_derived_coverage <- function(x, type = c('bar', 'trend'), title = NULL, 
         facet_wrap(~ method_lbl, ncol = 3) +
         cd_plot_theme(
           title = final_title,
-          x_axis = final_x_label,
-          y_axis = final_y_label
+          x_title = final_x_label,
+          y_title = final_y_label
         ) +
         theme(legend.position = "none")
         
@@ -181,8 +201,8 @@ plot.cd_derived_coverage <- function(x, type = c('bar', 'trend'), title = NULL, 
         scale_color_manual(values = legend_colors, name = NULL) +
         cd_plot_theme(
           title = final_title,
-          x_axis = final_x_label,
-          y_axis = final_y_label
+          x_title = final_x_label,
+          y_title = final_y_label
         )
     }
       
@@ -217,10 +237,10 @@ plot.cd_derived_coverage <- function(x, type = c('bar', 'trend'), title = NULL, 
       scale_color_manual(values = pal, name = NULL) +
       cd_plot_theme(
         title = final_title,
-        x_axis = final_x_label, 
-        y_axis = final_y_label  
+        x_title = final_x_label, 
+        y_title = final_y_label  
       )
   }
 
-  cd_finish_plot(p, options, ..., .source = x)
+  p
 }

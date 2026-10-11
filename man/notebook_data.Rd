@@ -2,7 +2,7 @@
 % Please edit documentation in R/notebook-data.R
 \name{notebook_data}
 \alias{notebook_data}
-\title{Notebook data: a folder's Countdown datasets for DataSuite's notebooks}
+\title{Give DataSuite's notebooks a folder's Countdown datasets}
 \usage{
 notebook_data(
   action = c("list", "prepare", "attach", "describe"),
@@ -23,10 +23,11 @@ code; read from the \code{.rds}, which is not changed).}
 
 \item{folder}{The folder holding the Excel files, the \code{.rds} files and their workspaces.}
 
-\item{workspace}{The notebook's workspace (\verb{<stem>.shiny-workspace}): its \code{.rds} is the notebook's own dataset.}
+\item{workspace}{The notebook's workspace folder (\verb{<stem>.shiny-workspace}). The \code{.rds} file with the same
+stem is the dataset the notebook belongs to.}
 
-\item{datasets}{For \code{"prepare"}: the datasets (their \code{.rds} file names without \code{.rds}, or \code{"ref"}) to prepare;
-the workspace's own is always included.}
+\item{datasets}{For \code{"prepare"}: the datasets (their \code{.rds} file names without \code{.rds}, or \code{"ref"}) to prepare.
+The dataset of \code{workspace} is always included.}
 
 \item{force}{For \code{"prepare"}: check the \code{.rds} files now, not only when the last check is older than \code{period}.}
 
@@ -41,7 +42,31 @@ For \code{"list"}, \code{"prepare"} and \code{"describe"}, a list (DataSuite rea
 invisibly the names attached.
 }
 \description{
-What DataSuite's notebooks call (an app's \code{notebookData}): the datasets of a folder -- each app's saved \code{.rds}
-next to its Excel file, and its workspace -- by name, in R, Python and Stata. Never writes to an \code{.xlsx} or an
-\code{.rds}; only the workspace's \verb{data/} folder.
+Lists, prepares, attaches or describes the datasets of a folder for notebooks in R, Python and
+Stata. A dataset is the \code{.rds} file an app saved next to a country's Excel file, together with
+its workspace. DataSuite calls this function for the apps that declare it as their
+\code{notebookData}. It does not write to an \code{.xlsx} or \code{.rds} file: it writes only to the
+workspace's \verb{data/} folder.
+}
+\examples{
+# a folder with a country's Excel file that no app has opened yet
+folder <- tempfile("countdown_")
+dir.create(folder)
+file.copy(system.file("extdata", "kenya.xlsx", package = "cd2030.core"), folder)
+
+listing <- notebook_data("list", folder = folder)
+listing$datasets[[1]]$status
+vapply(listing$ref$tables, function(t) t$name, character(1))
+unlink(folder, recursive = TRUE)
+
+\dontrun{
+# in a notebook of the workspace of kenya_rmncah.rds: its tables by name, and ds_list()
+workspace <- file.path("data", "kenya_rmncah.shiny-workspace")
+notebook_data("attach", folder = "data", workspace = workspace)
+head(adjusted_data)
+
+# for Python and Stata: Stata files of two of its tables in the workspace's data/ folder
+notebook_data("prepare", folder = "data", workspace = workspace,
+              tables = c("adjusted_data", "national_survey"))
+}
 }

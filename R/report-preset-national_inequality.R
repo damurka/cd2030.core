@@ -135,8 +135,8 @@
     title = name,
     subtitle = if (level == "district") t("lbl_inequ_subnat_district", "Subnational unit: district level")
                else t("lbl_inequ_subnat_admin1", "Subnational unit: admin 1 level"),
-    x_axis = t("title_global_year", "Year"),
-    y_axis = .rb_ni_fill(t("lbl_axis_y_coverage", "{indicator} Coverage (%)"), name),
+    x_title = t("title_global_year", "Year"),
+    y_title = .rb_ni_fill(t("lbl_axis_y_coverage", "{indicator} Coverage (%)"), name),
     caption = t(paste0("plt_caption_equity_", cache$get_denominator(ind) %||% ""), NULL),
     legend_labels = list(subnational = t("lbl_inequ_coverage_subnat", "Coverage at subnational unit"),
                          national = t("title_coverage_national", "National Coverage"))
@@ -154,7 +154,7 @@
     cache$get_filtered_mapping_data(ind, "adminlevel_1", b$variant %||% "Blues", plot_year = year),
     title = .rb_ni_fill(t("plt_title_map_dist", "Distribution of {indicator} by Regions"), name),
     caption = t("plt_caption_map_dhis2", "Source: DHIS2"),
-    legend = .rb_ni_fill(t("lbl_axis_y_coverage", "{indicator} Coverage (%)"), name)
+    legend_title = .rb_ni_fill(t("lbl_axis_y_coverage", "{indicator} Coverage (%)"), name)
   )
 }
 

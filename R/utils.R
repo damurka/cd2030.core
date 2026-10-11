@@ -1,5 +1,5 @@
 check_file_path <- function(path, call = caller_env()) {
-  check_required(.data, call = call)
+  check_required(path, call = call)
   # Validate if the file exists
   if (!file.exists(path)) {
     cd_abort(
@@ -80,40 +80,29 @@ check_cd_class <- function(.data,
   invisible(TRUE)
 }
 
-
-check_cd_population_metrics <- function(.data, arg = caller_arg(.data), call = caller_env()) {
-  check_cd_class(.data, "cd_population_metrics", arg = arg, call = call)
+# The check of one class, by name: check_<class>(x) aborts unless `x` is of that class (check_cd_data() checks for
+# `cd_data`). There is one for each class checked in more than one place, and its name is always the class's after
+# "check_"; a class checked in one place is checked there, with check_cd_class(x, "<class>"). The checks further
+# down that look at more than the class (the columns, the level) have names of their own.
+.cd_class_check <- function(class) {
+  force(class)
+  function(.data, arg = caller_arg(.data), call = caller_env()) check_cd_class(.data, class, arg = arg, call = call)
 }
 
-check_cd_indicator_coverage <- function(.data, arg = caller_arg(.data), call = caller_env()) {
-  check_cd_class(.data, "cd_indicator_coverage", arg = arg, call = call)
-}
+check_cd_data                 <- .cd_class_check("cd_data")
+check_cd_population           <- .cd_class_check("cd_population")
+check_cd_indicator_coverage   <- .cd_class_check("cd_indicator_coverage")
+check_cd_coverage             <- .cd_class_check("cd_coverage")
+check_cd_mapping              <- .cd_class_check("cd_mapping")
+check_cd_equity_data          <- .cd_class_check("cd_equity_data")
+check_cd_fpet_data            <- .cd_class_check("cd_fpet_data")
+check_cd_un_mortality         <- .cd_class_check("cd_un_mortality")
+check_cd_service_utilization  <- .cd_class_check("cd_service_utilization")
+check_cd_ratios_and_adequacy  <- .cd_class_check("cd_ratios_and_adequacy")
+check_cd_mortality_summary    <- .cd_class_check("cd_mortality_summary")
+check_cd_health_system_metric <- .cd_class_check("cd_health_system_metric")
 
-check_cd_population <- function(.data, arg = caller_arg(.data), call = caller_env()) {
-  check_cd_class(.data, "cd_population", arg = arg, call = call)
-}
-
-check_cd_reporting_rate <- function(.data, arg = caller_arg(.data), call = caller_env()) {
-  check_cd_class(.data, "cd_average_reporting_rate", arg = arg, call = call)
-}
-
-check_cd_data <- function(.data, arg = caller_arg(.data), call = caller_env()) {
-  check_cd_class(.data, "cd_data", arg = arg, call = call)
-}
-
-check_cd_fpet <- function(.data, arg = caller_arg(.data), call = caller_env()) {
-  check_cd_class(.data, "cd_fpet_data", arg = arg, call = call)
-}
-
-check_cd_mapping <- function(.data, arg = caller_arg(.data), call = caller_env()) {
-  check_cd_class(.data, "cd_mapping", arg = arg, call = call)
-}
-
-check_cd_coverage <- function(.data, arg = caller_arg(.data), call = caller_env()) {
-  check_cd_class(.data, "cd_coverage", arg = arg, call = call)
-}
-
-#' Validate UN Estimates Data for Population Metrics
+#' Validate UN estimates data for population metrics
 #'
 #' Ensures the provided UN estimates data is valid and appropriate for the selected
 #' administrative level.
@@ -138,14 +127,6 @@ check_un_estimates_data <- function(.data = NULL,
   }
 
   invisible(TRUE)
-}
-
-check_un_mortality_data <- function(.data, arg = caller_arg(.data), call = caller_env()) {
-  check_cd_class(.data, "cd_un_mortality", arg = arg, call = call)
-}
-
-check_fpet_data <- function(.data, arg = caller_arg(.data), call = caller_env()) {
-  check_cd_class(.data, "cd_fpet_data", arg = arg, call = call)
 }
 
 check_wuenic_data <- function(.data, arg = caller_arg(.data), call = caller_env()) {
@@ -178,20 +159,8 @@ check_survey_data <- function(.data,
   invisible(TRUE)
 }
 
-check_equity_data <- function(.data, arg = caller_arg(.data), call = caller_env()) {
-  check_cd_class(.data, "cd_equity_data", arg = arg, call = call)
-}
-
-check_service_utilization <- function(.data, arg = caller_arg(.data), call = caller_env()) {
-  check_cd_class(.data, "cd_service_utilization", arg = arg, call = call)
-}
-
-check_un_mortality <- function(.data, arg = caller_arg(.data), call = caller_env()) {
-  check_cd_class(.data, "cd_un_mortality", arg = arg, call = call)
-}
-
-check_ratio_pairs <- function(.list, arg = call_args(.list), call = caller_env()) {
-  check_required(.data, call = call)
+check_ratio_pairs <- function(.list, arg = caller_arg(.list), call = caller_env()) {
+  check_required(.list, call = call)
 
   # Check that ratio_pairs is a named list with each element as a character vector of length 2
   is_ratio_pairs <- all(
@@ -201,7 +170,7 @@ check_ratio_pairs <- function(.list, arg = call_args(.list), call = caller_env()
   )
 
   if (!is_ratio_pairs) {
-    cd_abort(c("x" = "{.arg arg} is not a proper ratio pair."), call = call)
+    cd_abort(c("x" = "{.arg {arg}} is not a proper ratio pair."), call = call)
   }
 
   invisible(TRUE)
@@ -215,20 +184,6 @@ check_scalar_integerish <- function(vec, arg = caller_arg(vec), call = caller_en
       message = c(
         "x" = "{.arg {arg}} is not an integer",
         "!" = "Provide a scalar integer value"
-      ),
-      call = call
-    )
-  }
-}
-
-check_scalar_character <- function(vec, arg = caller_arg(vec), call = caller_env()) {
-  check_required(vec, arg = arg, call = call)
-
-  if (!is_scalar_character(vec)) {
-    cd_abort(
-      message = c(
-        "x" = "{.arg {arg}} is not a scalar string",
-        "!" = "Provide a scalar string value"
       ),
       call = call
     )

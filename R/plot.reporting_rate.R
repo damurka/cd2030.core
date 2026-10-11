@@ -1,4 +1,4 @@
-#' Plot Sub-National Reporting Rates by Year and Unit
+#' Plot sub-national reporting rates by year and unit
 #'
 #' Visualizes reporting rates for selected health service indicators at sub-national levels,
 #' using heat maps or bar plots. Intended for use with outputs from
@@ -17,16 +17,7 @@
 #'   - `"ipd_rr"`: Inpatient admissions
 #' @param threshold Numeric value (default = 90). Used only in `"heat_map"` mode to define
 #'   the boundary for high reporting rates.
-#' @param title Optional plot title. Defaults to a title naming the unit and
-#'   region.
-#' @param x_axis,y_axis Optional x- and y-axis titles. Default to labels suited
-#'   to `plot_type`.
-#' @param legend Optional legend title. Defaults to a label suited to
-#'   `plot_type`.
-#' @param ... Chart options (see [cd_chart_options()]) given by name, applied as
-#'   with `options`.
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set.
+#' @inheritParams cd_plot_arguments
 #'
 #' @details
 #' Only subnational objects are accepted. If the data was computed at `"adminlevel_1"` with a
@@ -66,11 +57,14 @@ plot.cd_average_reporting_rate <- function(x,
                                            indicator = c("anc_rr", "idelv_rr", "vacc_rr", "opd_rr", "ipd_rr"),
                                            threshold = .cd_method$data_quality$reporting_threshold,
                                            title = NULL,
-                                           x_axis = NULL,
-                                           y_axis = NULL,
-                                           legend = NULL,
-                                           ..., options = NULL) {
-  cd_finish_plot(.plot_cd_average_reporting_rate_impl(x, plot_type = plot_type, indicator = indicator, threshold = threshold, title = title, x_axis = x_axis, y_axis = y_axis, legend = legend, ...), options, ..., .source = x)
+                                           subtitle = NULL,
+                                           caption = NULL,
+                                           x_title = NULL,
+                                           y_title = NULL,
+                                           legend_title = NULL,
+                                           ...,
+                                           options = NULL) {
+  .cd_draw(.plot_cd_average_reporting_rate_impl, x, list(plot_type = plot_type, indicator = indicator, threshold = threshold), ..., options = options)
 }
 
 .plot_cd_average_reporting_rate_impl <- function(x,
@@ -78,9 +72,9 @@ plot.cd_average_reporting_rate <- function(x,
                                            indicator = c("anc_rr", "idelv_rr", "vacc_rr", "opd_rr", "ipd_rr"),
                                            threshold = .cd_method$data_quality$reporting_threshold,
                                            title = NULL,
-                                           x_axis = NULL,
-                                           y_axis = NULL,
-                                           legend = NULL,
+                                           x_title = NULL,
+                                           y_title = NULL,
+                                           legend_title = NULL,
                                            ...) {
   check_scalar_integerish(threshold)
 
@@ -89,7 +83,7 @@ plot.cd_average_reporting_rate <- function(x,
 
   admin_level <- attr_or_abort(x, "admin_level")
   if (admin_level == "national") {
-    cd_abort(c("x" = "{.fun plot.cd_average_reporting_ratee} does not support national-level data."))
+    cd_abort(c("x" = "{.fun plot.cd_average_reporting_rate} does not support national-level data."))
   }
 
   region <- attr_or_null(x, "region")
@@ -97,13 +91,13 @@ plot.cd_average_reporting_rate <- function(x,
 
   labels <- list(
     heat_map = list(
-      legend = str_glue("{indicator} Category"),
+      legend_title = str_glue("{indicator} Category"),
       x = if (admin_level_col == "district") "District" else "Admin Level 1",
       y = "Year",
       title = str_glue("Reporting rates by years and {str_to_title(admin_level_col)} in {region}")
     ),
     bar = list(
-      legend = "Reporting Rate",
+      legend_title = "Reporting Rate",
       x = "Year",
       y = "Reporting Rate",
       title = str_glue("Reporting rates by years and {str_to_title(admin_level_col)} in {region}")
@@ -112,9 +106,9 @@ plot.cd_average_reporting_rate <- function(x,
   label <- labels[[plot_type]]
 
   plot_title <- if (!is.null(title)) title else label$title
-  plot_x <- if (!is.null(x_axis)) x_axis else label$x
-  plot_y <- if (!is.null(y_axis)) y_axis else label$y
-  plot_leg <- if (!is.null(legend)) legend else label$legend
+  plot_x <- if (!is.null(x_title)) x_title else label$x
+  plot_y <- if (!is.null(y_title)) y_title else label$y
+  plot_leg <- if (!is.null(legend_title)) legend_title else label$legend_title
 
   all_years <- sort(unique(x$year))
 
@@ -144,9 +138,9 @@ plot.cd_average_reporting_rate <- function(x,
       geom_text(aes(label = !!sym(indicator)), color = "black", size = 4, vjust = 0.5) +
       cd_heatmap_theme(
         title = plot_title,
-        x_axis = plot_x,
-        y_axis = plot_y,
-        legend = plot_leg
+        x_title = plot_x,
+        y_title = plot_y,
+        legend_title = plot_leg
       )
   } else {
     ggplot(dt, aes(year, !!sym(indicator), fill = color_category)) +
@@ -156,14 +150,14 @@ plot.cd_average_reporting_rate <- function(x,
       scale_x_discrete( drop = FALSE, expand = expansion(mult = c(0, 0.05))) +
       cd_bar_theme(
         title = plot_title,
-        x_axis = plot_x,
-        y_axis = plot_y,
-        legend = plot_leg
+        x_title = plot_x,
+        y_title = plot_y,
+        legend_title = plot_leg
       )
   }
 }
 
-#' Plot District Reporting Rate Summary
+#' Plot district reporting rate summary
 #'
 #' Generates a bar plot displaying the percentage of districts with reporting rates below
 #' the defined threshold for multiple indicators across various years. This plot provides
@@ -172,21 +166,15 @@ plot.cd_average_reporting_rate <- function(x,
 #'
 #' @param x A `cd_district_reporting_rate` data frame containing reporting rate data,
 #'   processed by [calculate_district_reporting_rate()].
-#' @param title Optional plot title. Defaults to a title that includes the
-#'   reporting-rate threshold.
-#' @param x_axis,y_axis Optional x- and y-axis titles. By default the x axis
-#'   has no title and the y axis is labelled with a percent sign.
-#' @param caption Optional plot caption. Defaults to a note stating the
-#'   low-reporting threshold.
+#' @inheritParams cd_plot_arguments
 #' @param indicator_labels Optional named character vector of panel titles,
 #'   keyed by short indicator name (`anc`, `idelv`, `vacc`, `pnc`, `opd`,
 #'   `ipd`). Supplied entries replace the defaults.
-#' @param ... Additional parameters passed to the plotting function.
 #'
 #' @details
-#' This function inverts reporting rate percentages to display the proportion of
-#' districts with rates below the threshold for each indicator (e.g., if a district
-#' achieves a 95% rate, it shows as 5% below threshold). Each indicator is visualized
+#' Inverts the percentages in `x` (the percentage of districts at or above the threshold) to
+#' display the percentage of districts with rates below the threshold for each indicator (e.g.,
+#' if 95% of districts reach the threshold, 5% are shown as below it). Each indicator is visualized
 #' in a separate panel with data grouped by year, providing an overview of performance
 #' trends over time.
 #'
@@ -201,8 +189,6 @@ plot.cd_average_reporting_rate <- function(x,
 #' The plot output includes a title, axis labels, and a legend for year, allowing
 #' users to identify service areas with low reporting compliance.
 #'
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A ggplot object visualizing reporting rates across indicators and years.
 #'
 #' @examples
@@ -210,29 +196,32 @@ plot.cd_average_reporting_rate <- function(x,
 #' # Generate a plot of district reporting rates below a threshold of 90%
 #' plot(cd_district_reporting_rate(data), threshold = 90)
 #' }
-#' @param facet_ncol How many service-panel columns the facet grid uses (default 3, unchanged from before this
-#'   param existed -- e.g. 4 services lay out 3-then-1). Additive: every existing caller keeps its current
-#'   layout unless it explicitly asks for a different one.
+#' @param facet_ncol Integer. The number of columns the service panels are laid out in. Default is `3`,
+#'   so four services are drawn as a row of three and a row of one.
 #' @export
 plot.cd_district_reporting_rate <- function(x,
-                                            title = NULL,
-                                            x_axis = NULL,
-                                            y_axis = NULL,
-                                            caption = NULL,
                                             indicator_labels = NULL,
                                             facet_ncol = 3,
-                                            ..., options = NULL) {
-  cd_finish_plot(.plot_cd_district_reporting_rate_impl(x, title = title, x_axis = x_axis, y_axis = y_axis, caption = caption, indicator_labels = indicator_labels, facet_ncol = facet_ncol, ...), options, ..., .source = x)
+                                            title = NULL,
+                                            subtitle = NULL,
+                                            caption = NULL,
+                                            x_title = NULL,
+                                            y_title = NULL,
+                                            legend_title = NULL,
+                                            ...,
+                                            options = NULL) {
+  .cd_draw(.plot_cd_district_reporting_rate_impl, x, list(indicator_labels = indicator_labels, facet_ncol = facet_ncol), ..., options = options)
 }
 
 .plot_cd_district_reporting_rate_impl <- function(x,
                                             title = NULL,
-                                            x_axis = NULL,
-                                            y_axis = NULL,
+                                            x_title = NULL,
+                                            y_title = NULL,
                                             caption = NULL,
                                             indicator_labels = NULL,
                                             facet_ncol = 3,
                                             ...) {
+  # facet_ncol = 3 is the layout from before the argument existed: callers that do not pass it are unchanged.
   year = value = indicator = low_mean_rr = NULL
 
   threshold <- attr(x, "threshold")
@@ -243,8 +232,8 @@ plot.cd_district_reporting_rate <- function(x,
   colors <- cd_year_colours(years, .cd_palette$years_reporting)
 
   plot_title <- if (!is.null(title)) title else paste("Percentage of districts with low reporting rate (<", threshold, "%) by service and by year")
-  plot_x <- if (!is.null(x_axis)) x_axis else NULL
-  plot_y <- if (!is.null(y_axis)) y_axis else "%"
+  plot_x <- if (!is.null(x_title)) x_title else NULL
+  plot_y <- if (!is.null(y_title)) y_title else "%"
   plot_cap <- if (!is.null(caption)) caption else paste("Low reporting rate (<", threshold, "%)")
 
   default_labels <- c(
@@ -283,8 +272,8 @@ plot.cd_district_reporting_rate <- function(x,
     ) +
     cd_plot_theme(
       title = plot_title,
-      x_axis = plot_x,
-      y_axis = plot_y,
+      x_title = plot_x,
+      y_title = plot_y,
       caption = plot_cap
     ) +
     theme(

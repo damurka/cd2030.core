@@ -1,6 +1,6 @@
-#' Calculate Yearly Indicator Ratios Summary with Expected Ratios
+#' Calculate yearly indicator ratios summary with expected ratios
 #'
-#' This function computes yearly summaries for specified indicator ratios,
+#' Computes yearly summaries for specified indicator ratios,
 #' assessing trends across years and providing both actual and expected ratios
 #' for each indicator. It evaluates specified indicator pairs to calculate
 #' ratios and compares actual values with expected ratios, based on predefined
@@ -48,7 +48,7 @@ calculate_ratios_summary <- function(.data,
                                      anc1_penta1_mortality = .cd_method$data_quality$ratio_anc1_penta1_mortality) {
   year = NULL
 
-  check_cd_class(.data, 'cd_ratios_and_adequacy')
+  check_cd_ratios_and_adequacy(.data)
 
   ratio_pairs <- attr_or_null(.data, 'ratio_pairs')
 
@@ -103,9 +103,9 @@ calculate_ratios_summary <- function(.data,
   new_tibble(data_summary, class = "cd_ratios_summary")
 }
 
-#' Calculate District Adequacy Summary
+#' Calculate district adequacy summary
 #'
-#' This function calculates and summarizes the adequacy of specified indicator
+#' Calculates and summarizes the adequacy of specified indicator
 #' ratios by year, evaluating the consistency of key health indicators across
 #' districts. It computes the percentage of districts meeting the adequacy criteria
 #' for each indicator ratio, based on the specified range.
@@ -128,12 +128,12 @@ calculate_ratios_summary <- function(.data,
 #' @examples
 #' \dontrun{
 #' # Calculate adequacy summary for ANC1/Penta1 and other indicator ratios
-#' calculate_district_ratio_summary(cd_data)
+#' calculate_district_ratios_summary(cd_data)
 #' }
 #'
 #' @export
 calculate_district_ratios_summary <- function(.data) {
-  check_cd_class(.data, 'cd_ratios_and_adequacy')
+  check_cd_ratios_and_adequacy(.data)
 
   data_summary <- .data %>%
     select(-starts_with("Ratio"))
@@ -142,7 +142,7 @@ calculate_district_ratios_summary <- function(.data) {
 }
 
 
-#' Calculate Indicator Ratios and Adequacy Flags
+#' Calculate indicator ratios and adequacy flags
 #'
 #' Computes ratios for specified pairs of indicators dynamically and flags whether
 #' each calculated ratio falls within an adequate range, per district and year.
@@ -195,7 +195,8 @@ calculate_district_ratios_summary <- function(.data) {
 #' )
 #' }
 #'
-#' @noRd
+#' @seealso [calculate_ratios_summary()] and [calculate_district_ratios_summary()], which summarise the result.
+#' @export
 calculate_ratios_and_adequacy <- function(.data,
                                           ratio_pairs = NULL,
                                           adequate_range = .cd_method$data_quality$ratio_adequate_range,
@@ -203,6 +204,7 @@ calculate_ratios_and_adequacy <- function(.data,
   district <- year <- NULL
 
   check_cd_data(.data)
+  local_data_group(.data)
   check_required(adequate_range)
 
   if (is.null(ratio_pairs)) {
@@ -213,7 +215,7 @@ calculate_ratios_and_adequacy <- function(.data,
 
   # Check that adequate_range is a numeric vector of length 2
   if (!is.numeric(adequate_range) || length(adequate_range) != 2) {
-    cd_abort(c("x" = "Adequate range must be a numeric vector of length 2."), call = call)
+    cd_abort(c("x" = "Adequate range must be a numeric vector of length 2."))
   }
 
   all_pairs <- list_c(ratio_pairs)

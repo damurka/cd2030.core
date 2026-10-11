@@ -2,7 +2,7 @@
 % Please edit documentation in R/6_service_utilization.R
 \name{prepare_mapping_service_utlization}
 \alias{prepare_mapping_service_utlization}
-\title{Filter and Prepare Service Utilization Data for Mapping}
+\title{Filter and prepare service utilization data for mapping}
 \usage{
 prepare_mapping_service_utlization(
   .data,
@@ -29,23 +29,19 @@ the map fill: one of \code{"Purples"} (default), \code{"Blues"}, \code{"Greens"}
 A tibble of class \code{cd_service_utilization_prepared}, ready for faceted spatial plotting.
 }
 \description{
-Filters a \code{cd_service_utilization} object by country, indicator, and year.
+Selects one under-five indicator from a \code{cd_service_utilization} object, optionally for given years.
 Joins spatial data for subnational mapping and renames geometry for use with \code{ggplot2::geom_sf()}.
 }
 \details{
-This function:
-\itemize{
-\item Selects the under-five service indicator (\code{ratio_ipd_u5_pop} or \code{ratio_opd_u5_pop})
-\item Joins the appropriate admin level 1 shapefile using the specified country ISO
-\item Filters to specified \code{plot_years} if provided
-\item Renames the geometry column for compatibility with \code{geom_sf()}
-}
+Selects the under-five service indicator (\code{ratio_ipd_u5_pop} or \code{ratio_opd_u5_pop}) and joins the
+admin level 1 shapefile of the country whose ISO3 code is stored on \code{.data}. Keeps only
+\code{plot_years} when they are given, and renames the geometry column to \code{geometry} for \code{geom_sf()}.
 
 Only \code{adminlevel_1} data is currently supported for mapping.
 }
 \examples{
 \dontrun{
-prepare_service_utlization_mapping(service_data, "UGA", indicator = "opd", plot_years = 2019:2022)
+prepare_mapping_service_utlization(service_data, indicator = "opd", plot_years = 2019:2022)
 }
 
 }

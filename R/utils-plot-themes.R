@@ -1,12 +1,12 @@
-cd_plot_theme <- function(title = NULL, subtitle = NULL, x_axis = NULL, y_axis = NULL, legend = NULL, caption = NULL) {
+cd_plot_theme <- function(title = NULL, subtitle = NULL, x_title = NULL, y_title = NULL, legend_title = NULL, caption = NULL) {
   list(
     labs(
       title = title,
       subtitle = subtitle,
-      x = x_axis,
-      y = y_axis,
+      x = x_title,
+      y = y_title,
       caption = caption,
-      fill = legend
+      fill = legend_title
     ),
     theme(
       panel.background = element_blank(),
@@ -135,14 +135,18 @@ cd_report_theme <- function(base_size = 10, base_family = "",
     )
 }
 
-#' Plot Line Graph for Multiple Series with Dynamic Y-axis Scaling
+#' Plot a line graph of several series
+#'
+#' Draws one line with points for each of several columns of a data frame against a shared x
+#' column, in the package's plot theme. The y axis is scaled to the data: it starts at zero when
+#' all values are positive and leaves some room above the highest value.
 #'
 #' @param .data A data frame.
 #' @param x The column name for the x-axis (e.g., "year").
 #' @param y_vars Vector of column names for the y-axis data.
 #' @param title Plot title.
-#' @param y_axis Label for the y-axis.
-#' @param x_axis Label for the x-axis.
+#' @param y_title Label for the y-axis.
+#' @param x_title Label for the x-axis.
 #' @param legend_labels Vector of labels for the legend (must match y_vars length).
 #' @param hline Optional numeric value for a horizontal reference line.
 #' @param hline_style Style of the horizontal line.
@@ -153,8 +157,22 @@ cd_report_theme <- function(base_size = 10, base_family = "",
 #'   with `options`.
 #'
 #' @return A ggplot object.
+#'
+#' @examples
+#' births <- data.frame(
+#'   year = 2019:2023,
+#'   un = c(1445, 1451, 1469, 1483, 1500),
+#'   dhis2 = c(1390, 1402, 1455, 1478, 1461)
+#' )
+#' plot_line_graph(births, x = "year", y_vars = c("un", "dhis2"), title = "Live births (thousands)",
+#'                 y_title = "Live births", x_title = "Year", legend_labels = c("UN estimate", "DHIS2"))
+#'
+#' plot_line_graph(births, x = "year", y_vars = c("un", "dhis2"), title = "Live births (thousands)",
+#'                 y_title = "Live births", x_title = "Year", legend_labels = c("UN estimate", "DHIS2"),
+#'                 hline = 1500, legend_position = "right")
+#'
 #' @export
-plot_line_graph <- function(.data, x, y_vars, title, y_axis, x_axis, legend_labels, hline = NULL, hline_style = "dashed", options = NULL, ...) {
+plot_line_graph <- function(.data, x, y_vars, title, y_title, x_title, legend_labels, hline = NULL, hline_style = "dashed", options = NULL, ...) {
   variable <- value <- NULL
 
   # 1. Validation
@@ -199,8 +217,8 @@ plot_line_graph <- function(.data, x, y_vars, title, y_axis, x_axis, legend_labe
     scale_color_manual(values = set_names(.cd_palette$series[1:length(y_vars)], legend_labels)) +
     cd_plot_theme(
       title = title,
-      x_axis = x_axis,
-      y_axis = y_axis
+      x_title = x_title,
+      y_title = y_title
     )
 
   # Add horizontal line if specified
@@ -213,13 +231,13 @@ plot_line_graph <- function(.data, x, y_vars, title, y_axis, x_axis, legend_labe
 }
 
 
-cd_heatmap_theme <- function(title = NULL, x_axis = NULL, y_axis = NULL, legend = NULL) {
+cd_heatmap_theme <- function(title = NULL, x_title = NULL, y_title = NULL, legend_title = NULL) {
   list(
     cd_plot_theme(
       title = title,
-      x_axis = x_axis,
-      y_axis = y_axis,
-      legend = legend
+      x_title = x_title,
+      y_title = y_title,
+      legend_title = legend_title
     ),
     theme(
       panel.border = element_blank(),
@@ -231,13 +249,13 @@ cd_heatmap_theme <- function(title = NULL, x_axis = NULL, y_axis = NULL, legend 
   )
 }
 
-cd_bar_theme <- function(title = NULL, x_axis = NULL, y_axis = NULL, legend = NULL) {
+cd_bar_theme <- function(title = NULL, x_title = NULL, y_title = NULL, legend_title = NULL) {
   list(
     cd_plot_theme(
       title = title,
-      x_axis = x_axis,
-      y_axis = y_axis,
-      legend = legend
+      x_title = x_title,
+      y_title = y_title,
+      legend_title = legend_title
     ),
     theme(
       panel.grid.major = element_line(colour = "gray95"),
@@ -365,9 +383,9 @@ cd_categorized_heatmap <- function(data,
                                    value_col,
                                    threshold = 90,
                                    title = NULL,
-                                   x_lab = NULL,
-                                   y_lab = NULL,
-                                   legend_lab = NULL,
+                                   x_title = NULL,
+                                   y_title = NULL,
+                                   legend_title = NULL,
                                    reverse = FALSE,
                                    text_size = 4) {
   check_scalar_integerish(threshold)
@@ -403,9 +421,9 @@ cd_categorized_heatmap <- function(data,
     scale_y_discrete(expand = expansion(mult = 0)) +
     cd_heatmap_theme(
       title = title,
-      x_axis = x_lab %||% x_col,
-      y_axis = y_lab %||% y_col,
-      legend = legend_lab %||% paste0(value_col, " Category")
+      x_title = x_title %||% x_col,
+      y_title = y_title %||% y_col,
+      legend_title = legend_title %||% paste0(value_col, " Category")
     )
 }
 

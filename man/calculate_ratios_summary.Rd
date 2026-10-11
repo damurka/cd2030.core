@@ -2,7 +2,7 @@
 % Please edit documentation in R/1a_checks_ratios.R
 \name{calculate_ratios_summary}
 \alias{calculate_ratios_summary}
-\title{Calculate Yearly Indicator Ratios Summary with Expected Ratios}
+\title{Calculate yearly indicator ratios summary with expected ratios}
 \usage{
 calculate_ratios_summary(
   .data,
@@ -33,7 +33,7 @@ and an expected value row based on \code{survey_coverage}.
 }
 }
 \description{
-This function computes yearly summaries for specified indicator ratios,
+Computes yearly summaries for specified indicator ratios,
 assessing trends across years and providing both actual and expected ratios
 for each indicator. It evaluates specified indicator pairs to calculate
 ratios and compares actual values with expected ratios, based on predefined

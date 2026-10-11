@@ -2,20 +2,34 @@
 % Please edit documentation in R/0_data_quality_checks.R
 \name{check_population_service_collision}
 \alias{check_population_service_collision}
-\title{Flag district-years where a service indicator looks like it was mixed up with population data}
+\title{Flag district-years where service births equal population births}
 \usage{
 check_population_service_collision(.data)
 }
 \arguments{
-\item{.data}{The dataset (\code{countdown_data}-shaped).}
+\item{.data}{A data frame. The merged dataset, with \code{district}, \code{year}, \code{instlivebirths} and
+\code{live_births} columns.}
 }
 \value{
-A tibble of flagged \code{district}/\code{year} rows, or a zero-row tibble if none found.
+A tibble with columns \code{district} and \code{year}, one row per flagged district-year. It
+has no rows if nothing is flagged or if \code{.data} lacks \code{instlivebirths} or \code{live_births}.
 }
 \description{
-\code{instlivebirths} (institutional live births, a monthly service indicator) is expected to vary
-month to month; \code{live_births} (the Population_data sheet's own live-births figure) is joined
-in by \code{district}+\code{year} only, so it's constant across all 12 months of a given district-year.
-A district-year where \code{instlivebirths} is identical to \code{live_births} in every month is the
-signature of the two having been pasted into the wrong sheet.
+Finds district-years where the monthly institutional live births (\code{instlivebirths}) equal the
+annual population live births (\code{live_births}) in every month. Monthly counts normally vary,
+so this pattern suggests that population figures were entered in a service data sheet.
+}
+\details{
+Only months where both values are present are compared. A district-year is flagged when it
+has at least three such months and the two values are equal in all of them.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+check_population_service_collision(data)
+
+# Annual population births entered as the monthly service figure
+copied <- data$district == "Baringo" & data$year == 2023
+data$instlivebirths[copied] <- data$live_births[copied]
+check_population_service_collision(data)
 }

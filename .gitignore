@@ -5,3 +5,6 @@
 .DS_Store
 .quarto
 docs
+Rplots.pdf
+tests/testthat/_problems/
+tests/testthat/testthat-problems.rds

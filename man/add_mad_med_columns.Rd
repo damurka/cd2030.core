@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils-quality_checks.R
 \name{add_mad_med_columns}
 \alias{add_mad_med_columns}
-\title{Add Median and MAD Columns for Indicators}
+\title{Add median and MAD columns for indicators}
 \usage{
 add_mad_med_columns(.data, indicators, group_by = "district")
 }

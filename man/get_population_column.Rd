@@ -2,18 +2,31 @@
 % Please edit documentation in R/utils-cd-data.R
 \name{get_population_column}
 \alias{get_population_column}
-\title{Get Population Denominator Column Based on Indicator Only}
+\title{Get the population column for an indicator and denominator}
 \usage{
 get_population_column(indicator, denominator)
 }
 \arguments{
 \item{indicator}{Character scalar. Indicator name (e.g., 'penta1', 'measles1')}
 
-\item{denominator}{Character scalar. The denominator for the indicator}
+\item{denominator}{Character scalar. The denominator for the indicator: one of \code{"dhis2"},
+\code{"anc1"}, \code{"penta1"}, \code{"penta1derived"} or \code{"anc1derived"}.}
 }
 \value{
-A string naming the corresponding population column
+A string naming the corresponding population column, or \code{NA} when the indicator has no
+target population defined.
 }
 \description{
-Get Population Denominator Column Based on Indicator Only
+Names the column that holds the target population of an indicator for a denominator option. The
+name is the indicator's target population followed by the denominator, for example
+\code{"totinftpenta_penta1"} for \code{penta3} with the \code{penta1} denominator.
+}
+\examples{
+get_population_column("penta3", "penta1")
+get_population_column("anc4", "dhis2")
+
+# births are total births with the DHIS2 denominator, live births with the others
+get_population_column("bcg", "dhis2")
+get_population_column("bcg", "anc1")
+
 }

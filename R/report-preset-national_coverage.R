@@ -39,8 +39,8 @@
   plot(
     d,
     title = paste0(t("title_graph_fpet", "Family planning among currently married women 15-49 years"), ", ", cache$country),
-    x_axis = t("title_global_year", "Year"),
-    y_axis = t("ylab_fpet", "Percent of currently married women 15-49"),
+    x_title = t("title_global_year", "Year"),
+    y_title = t("ylab_fpet", "Percent of currently married women 15-49"),
     caption = t("caption_fpet", "Lines show the median estimates. Shaded bands represent the 95% credible interval.\nSource: FPET Track20 modeling"),
     indicator_labels = list(
       prevalence = t("lbl_fpet_mcpr", "Prevalence of Modern Methods (mCPR)"),
@@ -60,9 +60,9 @@
     type = "heatmap",
     title = t("title_cov_profile", "National continuum-of-care profile"),
     subtitle = t("subtitle_cov_profile", "Latest facility, latest survey, and WUENIC where relevant"),
-    x_axis = NULL,
-    y_axis = t("opt_coverage", "Coverage"),
-    fill_label = t("opt_coverage", "Coverage"),
+    x_title = NULL,
+    y_title = t("opt_coverage", "Coverage"),
+    legend_title = t("opt_coverage", "Coverage"),
     source_labels = list(facility = t("lbl_src_facility", "Facility"), survey = t("lbl_src_survey", "Survey"),
                          wuenic = t("lbl_src_wuenic", "WUENIC")),
     indicator_labels = labels

@@ -2,7 +2,7 @@
 % Please edit documentation in R/1c_adjust_generate_adjustment_values.R
 \name{generate_adjustment_values}
 \alias{generate_adjustment_values}
-\title{Generate Adjusted and Unadjusted Service Counts by Year}
+\title{Generate adjusted and unadjusted service counts by year}
 \usage{
 generate_adjustment_values(
   .data,
@@ -47,7 +47,7 @@ for each indicator within a \code{cd_data} dataset, applying the specified adjus
 It provides a comparison of raw and adjusted values for analysis purposes.
 }
 \details{
-This function performs the following steps:
+Performs the following steps:
 \enumerate{
 \item \strong{Data Validation}: Ensures \code{.data} is of the \code{cd_data} class and \code{adjustment}
 is correctly specified.

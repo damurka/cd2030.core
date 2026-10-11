@@ -1,8 +1,8 @@
-#' Get Mapping Data for Subnational Coverage Analysis
+#' Get mapping data for subnational coverage analysis
 #'
 #' Merges coverage data with a country's shapefile to enable spatial visualization
-#' of health indicators. It computes subnational indicator coverage using
-#' UN estimates and survey rates, and joins results with geographic features.
+#' of health indicators. It joins subnational (admin level 1) indicator coverage
+#' that has already been calculated with the geographic features of each unit.
 #'
 #' @param .data A `cd_population` object (for example the output of
 #'        [calculate_indicator_coverage()]) calculated at `admin_level = "adminlevel_1"`.
@@ -51,7 +51,7 @@ get_mapping_data <- function(.data,
   )
 }
 
-#' Filter Mapping Data for Specific Indicator and Denominator
+#' Select one indicator's mapping data
 #'
 #' Extracts and filters indicator coverage data by year, denominator type, and
 #' color palette for visualization.
@@ -67,13 +67,13 @@ get_mapping_data <- function(.data,
 #'
 #' @examples
 #' \dontrun{
-#' filtered <- filter_mapping_data(
+#' filtered <- select_mapping_data(
 #'   data, indicator = "anc4", denominator = "anc1", palette = "Blues", plot_year = 2021
 #' )
 #' }
 #'
 #' @export
-filter_mapping_data <- function(.data,
+select_mapping_data <- function(.data,
                                 indicator,
                                 denominator = c("dhis2", "anc1", "penta1", "penta1derived", "anc1derived"),
                                 palette = c("Reds", "Blues", "Greens", "Purples", "YlGnBu"),
@@ -103,17 +103,17 @@ filter_mapping_data <- function(.data,
   )
 }
 
-#' Load Country Shapefile for Mapping
+#' Load country shapefile for mapping
 #'
-#' Loads the shapefile of administrative boundaries for a given country and level.
+#' Loads the admin level 1 boundaries of a country from the shapefiles that come with the package.
 #' Ensures geometries are valid and standardized to WGS84 (EPSG:4326).
 #'
 #' @param country_iso A string with the ISO3 code of the country (e.g., `"KEN"`).
-#' @param level A character string specifying the admin level. One of:
-#'   - `"admin_level_1"` (default): First-level admin areas
-#'   - `"district"`: District-level admin areas
+#' @param level A character string specifying the admin level: `"admin_level_1"` (default) or
+#'   `"district"`. The package has admin level 1 boundaries only, so both values give the
+#'   admin level 1 areas.
 #'
-#' @return An `sf` object containing valid geometries for the specified country and level.
+#' @return An `sf` object containing valid geometries of the country's admin level 1 areas.
 #'
 #' @examples
 #' shapefile <- get_country_shapefile("KEN", level = "admin_level_1")
@@ -147,19 +147,31 @@ validate_shapefile <- function(sf_data) {
 
 #' Read a user-uploaded shapefile folder
 #'
-#' Takes the same `name`/`datapath` shape a Shiny multi-file/folder `fileInput()` already produces
-#' (`apps/rmncah`'s `cdDirectoryUpload()`/`input$directory_select`) -- Shiny scatters each uploaded
-#' file into its own randomly-named temp subdirectory, but `sf::st_read()` needs a shapefile's
-#' `.shp`/`.dbf`/`.shx`/`.prj` parts physically colocated with their original basenames, so this
-#' reassembles them into one fresh temp directory first.
+#' Reads a shapefile from the files of an uploaded folder, as a Shiny multi-file or folder
+#' `fileInput()` gives them: a data frame with each file's original `name` and the `datapath` it
+#' was saved to. The `.shp`, `.dbf`, `.shx` and `.prj` files are all required; they are copied
+#' under their original names into one temporary directory and read from there. Other files are
+#' ignored.
 #'
 #' @param files_df A data frame with `name` and `datapath` columns, one row per uploaded file.
 #' @param call The calling environment, forwarded to `cd_abort()`.
 #' @return The uploaded shapefile as a valid `sf` object, reprojected to EPSG:4326. Column names are
-#'   exactly as uploaded -- no forced rename to `NAME_1`, since a real shapefile won't necessarily
-#'   use that name (see `check_shapefile_admin_names()`'s own `name_field` parameter).
+#'   exactly as uploaded: the column holding the unit names is not renamed to `NAME_1`.
+#' @examples
+#' \dontrun{
+#' # in a Shiny server, for fileInput("shapefile", "Shapefile", multiple = TRUE) in the page
+#' boundaries <- read_shapefile_folder(input$shapefile)
+#'
+#' # outside Shiny: the parts of a shapefile kept in one folder
+#' parts <- list.files("boundaries", full.names = TRUE)
+#' boundaries <- read_shapefile_folder(data.frame(name = basename(parts), datapath = parts))
+#' names(boundaries)
+#' }
 #' @export
 read_shapefile_folder <- function(files_df, call = caller_env()) {
+  # Shiny puts each uploaded file in its own randomly named temp subdirectory, but sf::st_read() needs a shapefile's
+  # parts side by side under their original names, so they are copied into one directory first. Columns are not
+  # renamed: check_shapefile_admin_names() takes the name column as `name_field`.
   check_required(files_df, call = call)
   required_ext <- c("shp", "dbf", "shx", "prj")
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/1_load_survey_data.R
 \name{load_equity_data}
 \alias{load_equity_data}
-\title{Load and Filter Equity Data}
+\title{Load and filter equity data}
 \usage{
 load_equity_data(path = NULL, .data = NULL, country_iso)
 }
@@ -18,4 +18,14 @@ A tibble of class \code{cd_equity_data}.
 }
 \description{
 Loads survey equity data, removes unnecessary variables, and filters by country.
+}
+\examples{
+\dontrun{
+wealth <- load_equity_data(path = "wiq_data.dta", country_iso = "KEN")
+cache$set_wiq_survey(wealth)
+
+# The same for the survey by area of residence and by mother's education
+cache$set_area_survey(load_equity_data(path = "area_data.dta", country_iso = "KEN"))
+cache$set_education_survey(load_equity_data(path = "meduc_data.dta", country_iso = "KEN"))
+}
 }

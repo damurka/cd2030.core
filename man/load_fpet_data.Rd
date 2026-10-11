@@ -2,7 +2,7 @@
 % Please edit documentation in R/1_load_survey_data.R
 \name{load_fpet_data}
 \alias{load_fpet_data}
-\title{Load FPET Data from CSV File or Use Provided Data}
+\title{Load FPET data from CSV file or use provided data}
 \usage{
 load_fpet_data(path = NULL, .data = NULL, country_iso = NULL)
 }

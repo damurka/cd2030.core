@@ -2,7 +2,7 @@
 % Please edit documentation in R/tbl_sum.reporting_summary.R
 \name{tbl_sum.cd_average_reporting_rate}
 \alias{tbl_sum.cd_average_reporting_rate}
-\title{Summary for Average Reporting Rates by Year}
+\title{Summary for average reporting rates by year}
 \usage{
 \method{tbl_sum}{cd_average_reporting_rate}(x, ...)
 }
@@ -19,4 +19,11 @@ A character vector describing the content and purpose of the
 Provides a custom summary for the \code{cd_average_reporting_rate} object, indicating
 that the data represents annual average reporting rates across all indicators.
 This summary is useful for quickly verifying the consistency of indicator reporting rates.
+}
+\examples{
+data <- load_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+
+# the summary is the header printed above the table
+calculate_average_reporting_rate(data)
+
 }

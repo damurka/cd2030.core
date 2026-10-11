@@ -108,9 +108,9 @@
   }
   plot(d, plot_type = type, indicator = column, threshold = cache$performance_threshold %||% .cd_method$data_quality$reporting_threshold,
        title = .rbx_fill(title, admin_level = admin_level, indicator = indicator, region_name = region %||% ""),
-       x_axis = if (type == "bar") t("title_global_year", "Year") else admin_level,
-       y_axis = if (type == "bar") t("title_rr_main", "Reporting rate") else t("title_global_year", "Year"),
-       legend = .rbx_fill(t("lbl_leg_rr_heatmap", "{indicator} reporting rate"), indicator = indicator))
+       x_title = if (type == "bar") t("title_global_year", "Year") else admin_level,
+       y_title = if (type == "bar") t("title_rr_main", "Reporting rate") else t("title_global_year", "Year"),
+       legend_title = .rbx_fill(t("lbl_leg_rr_heatmap", "{indicator} reporting rate"), indicator = indicator))
 }
 
 # Completeness of reporting (percent of values not missing), by region (or district): for one indicator by year, the
@@ -131,17 +131,17 @@
     if (!any(d[[paste0("mis_", ind)]] < 100, na.rm = TRUE)) cd_abort(c("i" = "{indicator} has no missing values: there is no trend to show."))
     plot(d, plot_type = "trend", indicator = ind,
          title = fill(t("plt_title_complete_trend", "Trend in reporting completeness (%) for {indicator} by {admin_level}")),
-         x_axis = t("title_global_year", "Year"), y_axis = t("lbl_axis_y_complete_trend", "Completeness (%)"))
+         x_title = t("title_global_year", "Year"), y_title = t("lbl_axis_y_complete_trend", "Completeness (%)"))
   } else if (variant == "all_indicators") {
     title <- if (is.null(region)) t("plt_title_complete_heatmap_all", "Average reporting missingness (%) by {admin_level}")
              else t("plt_title_complete_heatmap_all_reg", "Average reporting missingness (%) by {admin_level} in {region}")
-    plot(d, plot_type = "heat_map", indicator = NULL, title = fill(title), x_axis = admin_level,
-         y_axis = t("title_global_indicator", "Indicator"), legend = t("lbl_leg_complete_heatmap", "Missingness (%)"))
+    plot(d, plot_type = "heat_map", indicator = NULL, title = fill(title), x_title = admin_level,
+         y_title = t("title_global_indicator", "Indicator"), legend_title = t("lbl_leg_complete_heatmap", "Missingness (%)"))
   } else {
     title <- if (is.null(region)) t("plt_title_complete_heatmap_one", "Proportion of missing reports (%) for {indicator} by year and {admin_level}")
              else t("plt_title_complete_heatmap_one_reg", "Proportion of missing reports (%) for {indicator} by year and {admin_level} in {region}")
-    plot(d, plot_type = "heat_map", indicator = ind, title = fill(title), x_axis = admin_level,
-         y_axis = t("title_global_year", "Year"), legend = t("lbl_leg_complete_heatmap", "Missingness (%)"))
+    plot(d, plot_type = "heat_map", indicator = ind, title = fill(title), x_title = admin_level,
+         y_title = t("title_global_year", "Year"), legend_title = t("lbl_leg_complete_heatmap", "Missingness (%)"))
   }
 }
 
@@ -155,7 +155,7 @@
   title <- .rbx_fill(t("plt_title_complete_district_plot", "Percent of districts with complete data for {indicator}"),
                      indicator = .rb_ind_name(i18n, ind))
   plot(d, indicator = ind, title = paste0(title, if (!is.null(region)) paste0(": ", region) else ""),
-       x_axis = t("title_global_year", "Year"), y_axis = t("lbl_axis_y_complete_trend", "Completeness (%)"))
+       x_title = t("title_global_year", "Year"), y_title = t("lbl_axis_y_complete_trend", "Completeness (%)"))
 }
 
 # Percent of monthly values that are not extreme outliers, by region (or district): for one indicator by year, the
@@ -171,22 +171,22 @@
   d <- if (is.null(region)) cache$calculate_outliers_summary(level) else cache$calculate_outliers_summary("adminlevel_1", region)
   fill <- function(text) .rbx_fill(text, admin_level = admin_level, indicator = indicator)
   where <- if (!is.null(region)) paste0(": ", region) else ""
-  legend <- t("lbl_leg_outlier", "Percent non-outliers (%)")
+  legend_title <- t("lbl_leg_outlier", "Percent non-outliers (%)")
   threshold <- cache$performance_threshold %||% .cd_method$data_quality$reporting_threshold
   switch(
     variant,
     heat_map = plot(d, selection_type = "heat_map", indicator = ind, threshold = threshold,
                     title = paste0(fill(t("plt_title_outlier_heatmap_one", "Percent non-outliers for {indicator} by year and {admin_level}")), where),
-                    x_axis = admin_level, y_axis = t("title_global_year", "Year"), legend = legend),
+                    x_title = admin_level, y_title = t("title_global_year", "Year"), legend_title = legend_title),
     all_indicators = plot(d, selection_type = "heat_map", indicator = NULL, threshold = threshold,
                           title = paste0(fill(t("plt_title_outlier_heatmap_all", "Average percent non-outliers by {admin_level}")), where),
-                          x_axis = admin_level, y_axis = t("title_global_indicator", "Indicator"), legend = legend),
+                          x_title = admin_level, y_title = t("title_global_indicator", "Indicator"), legend_title = legend_title),
     by_unit = plot(d, selection_type = "region", indicator = ind, threshold = threshold,
                    title = paste0(fill(t("plt_title_outlier_region", "Percent non-outliers by year and {admin_level}")), " - ", indicator, where),
-                   x_axis = t("title_global_year", "Year"), y_axis = legend, legend = legend),
+                   x_title = t("title_global_year", "Year"), y_title = legend_title, legend_title = legend_title),
     by_indicator = plot(d, selection_type = "indicator", threshold = threshold,
                         title = paste0(t("plt_title_outlier_indicator", "Percent non-outliers by year and indicator"), where),
-                        x_axis = t("title_global_year", "Year"), y_axis = legend, legend = legend)
+                        x_title = t("title_global_year", "Year"), y_title = legend_title, legend_title = legend_title)
   )
 }
 
@@ -210,7 +210,7 @@
   plot(d, indicator = ind, region = district, year = year,
        title = .rbx_fill(t("plt_title_outlier_trend_year", "{indicator_name} trend for {region_name} in {year_val}"),
                          indicator_name = indicator, region_name = district, year_val = year),
-       x_axis = t("lbl_axis_x_outlier_trend", "Months"), y_axis = indicator, legend = t("lbl_leg_outlier_trend", "Series"),
+       x_title = t("lbl_axis_x_outlier_trend", "Months"), y_title = indicator, legend_title = t("lbl_leg_outlier_trend", "Series"),
        label = c(reported = t("lbl_outlier_series_reported", "Reported value"), median = t("lbl_outlier_series_median", "Median"),
                  bounds = t("lbl_outlier_series_bounds", "Median \u00b1 5 MAD"), outliers = t("lbl_outlier_series_outliers", "Outliers")))
 }
@@ -241,7 +241,7 @@
   title <- .rbx_fill(t("plt_rbx_indicator_coverage", "{set} coverage indicators, based on the {denominator} denominator"),
                      set = set_name, denominator = t(paste0("opt_", denom), unname(.rbx_denominator_names[denom] %|% denom)))
   plot_line_graph(d, x = "year", y_vars = cols[keep], legend_labels = unname(labels), title = title,
-                  y_axis = t("opt_coverage", "Coverage"), x_axis = t("title_global_year", "Year")) +
+                  y_title = t("opt_coverage", "Coverage"), x_title = t("title_global_year", "Year")) +
     ggplot2::labs(colour = NULL)
 }
 
@@ -259,7 +259,7 @@
   plot(d, type = "gap",
        title = t("plt_rbx_cov_gap_title", "Source comparison"),
        subtitle = t("plt_rbx_cov_gap_subtitle", "Latest facility estimate minus latest survey estimate"),
-       x_axis = t("plt_rbx_cov_gap_x", "Percentage-point difference"), y_axis = NULL,
+       x_title = t("plt_rbx_cov_gap_x", "Percentage-point difference"), y_title = NULL,
        indicator_labels = .rbx_continuum_labels(i18n, d))
 }
 
@@ -272,7 +272,7 @@
   year <- max(d$year, na.rm = TRUE)
   plot(d, type = "dot",
        title = .rbx_fill(t("plt_rbx_cov_dot_title", "Latest coverage by region ({year})"), year = year),
-       x_axis = t("opt_coverage", "Coverage"), y_axis = NULL,
+       x_title = t("opt_coverage", "Coverage"), y_title = NULL,
        indicator_labels = .rbx_continuum_labels(i18n, d))
 }
 
@@ -284,8 +284,8 @@
   model <- cache$get_bayes_model("national", ind)
   plot(model,
        title = paste(t("plot_title_bayes_coverage", "Bayesian Coverage Model Estimates"), "-", .rb_ind_name(i18n, ind)),
-       x_axis = t("title_global_year", "Year"),
-       y_axis = t("opt_coverage", "Coverage"),
+       x_title = t("title_global_year", "Year"),
+       y_title = t("opt_coverage", "Coverage"),
        caption = t("plot_legend_source", "Source: Survey Data & DHIS2 Routine Data"))
 }
 
@@ -306,8 +306,8 @@
            else t("plt_title_denom_subnat_trend", "{region_name} Coverage Over Time by Denominator")
   plot(data, type = "trend",
        title = paste0(.rbx_fill(title, region_name = region %||% ""), " - ", indicator),
-       x_label = t("title_global_year", "Year"),
-       y_label = .rbx_fill(t("lbl_axis_y_coverage", "{indicator} Coverage (%)"), indicator = indicator),
+       x_title = t("title_global_year", "Year"),
+       y_title = .rbx_fill(t("lbl_axis_y_coverage", "{indicator} Coverage (%)"), indicator = indicator),
        legend_labels = c(.rb_denominator_labels(t), list(survey = t("lbl_coverage_survey_est", "Survey estimate")))) +
     # the denominators' legend and the survey year's, one above the other: side by side they are wider than the page
     ggplot2::theme(legend.box = "vertical")
@@ -321,9 +321,9 @@
   v <- if (identical(b$variant, "ipd")) "ipd" else "opd"
   plot(cache$generate_admin1_service_utilization(v),
        title = t(paste0("opt_", v, "_capita_title"), if (v == "opd") "Sub-National OPD Distribution" else "Sub-National IPD Distribution"),
-       x_axis = t(paste0("opt_", v, "_capita_x_axis"),
+       x_title = t(paste0("opt_", v, "_capita_x_axis"),
                   if (v == "opd") "OPD per capita under 5, by adminlevel1" else "IPD per 100 children under 5, by adminlevel1"),
-       legend = t(paste0("opt_", v, "_capita_legend"), if (v == "opd") "OPD Under 5" else "IPD Under 5")) +
+       legend_title = t(paste0("opt_", v, "_capita_legend"), if (v == "opd") "OPD Under 5" else "IPD Under 5")) +
     ggplot2::labs(y = NULL)
 }
 
@@ -335,7 +335,7 @@
   if (is.null(d) || !nrow(d)) cd_abort(c("x" = "No health system data for this dataset."))
   # one point for each region (the data has a row for each district, with its region's figures)
   d <- d[!duplicated(d$adminlevel_1), , drop = FALSE]
-  plot(d, indicator = v, title = t(paste0("title_", v), NULL), x_axis = t(paste0("xlab_", v), NULL), y_axis = t(paste0("ylab_", v), NULL),
+  plot(d, indicator = v, title = t(paste0("title_", v), NULL), x_title = t(paste0("xlab_", v), NULL), y_title = t(paste0("ylab_", v), NULL),
        legend_labels = list(admin = t("lbl_admin1_units", "Admin1 units"), linear = t("lbl_linear_fit", "Linear fit")))
 }
 

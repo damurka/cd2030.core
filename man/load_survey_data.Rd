@@ -2,7 +2,7 @@
 % Please edit documentation in R/1_load_survey_data.R
 \name{load_survey_data}
 \alias{load_survey_data}
-\title{Load and Process Survey Data}
+\title{Load and process survey data}
 \usage{
 load_survey_data(
   path = NULL,
@@ -26,4 +26,16 @@ A tibble of class \code{cd_survey_data}.
 \description{
 Loads national or subnational survey data, cleans labels and codes, and applies
 country-specific adjustments for admin-level naming.
+}
+\examples{
+\dontrun{
+national <- load_survey_data(path = "all_data.dta", country_iso = "KEN")
+cache$set_national_survey(national)
+
+# The survey by region
+regional <- load_survey_data(
+  path = "gregion_data.dta", country_iso = "KEN", admin_level = "adminlevel_1"
+)
+cache$set_regional_survey(regional)
+}
 }

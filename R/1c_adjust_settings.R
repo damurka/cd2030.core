@@ -20,6 +20,12 @@
 #' @param k The k of every group (by default the method's, `0.25`).
 #' @param groups The groups that have a k (by default the app's, `cd_cfg("k_factors")`, else the method's).
 #' @return The settings list (see [adjust_service_data()]).
+#' @examples
+#' settings <- adjustment_settings_default()
+#' str(settings)
+#'
+#' # No completeness adjustment for any group
+#' adjustment_settings_default(k = 0)$everywhere$group_k
 #' @export
 adjustment_settings_default <- function(k = .cd_method$adjustment$k, groups = NULL) {
   groups <- groups %||% .adjust_k_groups()
@@ -48,6 +54,10 @@ adjustment_settings_default <- function(k = .cd_method$adjustment$k, groups = NU
 #' @param k_factors Named numeric k per group.
 #' @param excluded_years Numeric years removed.
 #' @return The settings list.
+#' @examples
+#' settings <- adjustment_settings_from_k(c(anc = 0.1, vacc = 0), excluded_years = 2020)
+#' settings$everywhere$group_k
+#' settings$removed_years
 #' @export
 adjustment_settings_from_k <- function(k_factors = NULL, excluded_years = numeric()) {
   s <- adjustment_settings_default()
@@ -64,6 +74,17 @@ adjustment_settings_from_k <- function(k_factors = NULL, excluded_years = numeri
 #'
 #' @param settings The settings list.
 #' @return The settings, tidied. An error says what is wrong.
+#' @examples
+#' # Settings as they arrive from JSON: numbers and flags inside lists
+#' settings <- list(
+#'   removed_years = list(2020, 2021),
+#'   everywhere = list(group_k = list(anc = 0.1), outliers = list(penta3 = list(FALSE))),
+#'   areas = list(list(area = "Coast", level = "adminlevel_1", all_missing = list(FALSE)))
+#' )
+#' str(adjustment_settings_check(settings))
+#'
+#' # What is wrong is refused with an error
+#' try(adjustment_settings_check(list(everywhere = list(group_k = list(anc = 2)))))
 #' @export
 adjustment_settings_check <- function(settings) {
   if (!is.list(settings)) cd_abort(c("x" = "The adjustment settings must be a list."))
@@ -182,16 +203,37 @@ adjustment_settings_check <- function(settings) {
   .data
 }
 
-#' What the adjustment settings say, as the reports' footnote
+#' Describe the adjustment settings as a report footnote
+#'
+#' Writes the adjustment settings out in sentences, for the footnote of a report: the years and
+#' areas removed, then the rules that apply everywhere and those of each area (k factors, and
+#' whether outliers are corrected and missing values filled).
 #'
 #' @param settings The settings list.
 #' @param group_labels,indicator_labels Named character: how groups and indicators are called (by default their ids).
-#' @return A character vector, one sentence per rule (none for the Countdown default).
+#' @return A character vector, one sentence per rule. The Countdown default is one rule (each group's k,
+#'   everywhere); settings that change nothing give none.
+#' @examples
+#' settings <- adjustment_settings_default(k = 0.1, groups = c("anc", "vacc"))
+#' settings$removed_years <- 2020
+#' settings$everywhere$outliers <- list(penta3 = FALSE)
+#' settings$areas <- list(list(area = "Coast", level = "adminlevel_1", all_missing = FALSE))
+#' adjustment_settings_footnote(settings)
+#'
+#' # With the names a report uses
+#' adjustment_settings_footnote(
+#'   settings,
+#'   group_labels = c(anc = "Antenatal care", vacc = "Immunization"),
+#'   indicator_labels = c(penta3 = "Penta 3")
+#' )
 #' @export
 adjustment_settings_footnote <- function(settings, group_labels = NULL, indicator_labels = NULL) {
   settings <- adjustment_settings_check(settings)
-  glab <- function(g) (group_labels %||% list())[[g]] %||% g
-  ilab <- function(i) (indicator_labels %||% list())[[i]] %||% i
+  # as lists: a named vector that does not name every group or indicator stopped with "subscript out of bounds"
+  group_labels <- as.list(group_labels)
+  indicator_labels <- as.list(indicator_labels)
+  glab <- function(g) group_labels[[g]] %||% g
+  ilab <- function(i) indicator_labels[[i]] %||% i
   out <- character()
   if (length(settings$removed_years)) out <- c(out, paste0(paste(sort(settings$removed_years), collapse = ", "), " removed everywhere."))
   for (r in settings$removals) {
@@ -228,6 +270,18 @@ adjustment_settings_footnote <- function(settings, group_labels = NULL, indicato
 #' @param indicator The indicator.
 #' @param area,level One area only (as [generate_adjustment_values()]); `NULL`, all.
 #' @return A named logical: `completeness`, `outliers`, `missing`.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' data <- load_data(path)
+#' settings <- adjustment_settings_default()
+#' adjustment_steps_used(settings, data, "penta3")
+#'
+#' # A region with its own settings: no completeness adjustment, outliers left as they are
+#' settings$areas <- list(
+#'   list(area = "Coast", level = "adminlevel_1", group_k = list(vacc = 0), all_outliers = FALSE)
+#' )
+#' adjustment_steps_used(settings, data, "penta3", area = "Coast")
+#' adjustment_steps_used(settings, data, "penta3")
 #' @export
 adjustment_steps_used <- function(settings, .data, indicator, area = NULL, level = c("adminlevel_1", "district")) {
   level <- arg_match(level)

@@ -1,36 +1,39 @@
-#' Compare District vs Admin 1 Health Metrics
+#' Compare district vs admin level 1 health metrics
 #'
-#' Generates scatterplots with linear fit and identity line comparing district to admin 1 metrics or coverage vs density.
+#' Generates scatterplots with linear fit and identity line comparing district to admin level 1 metrics or coverage vs density.
 #'
 #' @param x A data frame from `calculate_health_system_comparison()`.
 #' @param indicator One of ratio_* or cov_instdeliveries_* (requires `denominator`).
 #' @param denominator Optional for cov_ indicators. Must be one of 'dhis2', 'anc1', 'penta1'.
-#' @param title (Optional) Custom title for the plot.
-#' @param x_axis (Optional) Custom label for the x-axis.
-#' @param y_axis (Optional) Custom label for the y-axis.
-#' @param caption (Optional) Custom caption text (R-squared will automatically be prepended to this).
+#' @inheritParams cd_plot_arguments
 #' @param legend_labels (Optional) A named list to override default legend labels (keys: 'admin', 'linear').
-#' @param ... Chart options (see [cd_chart_options()]) given by name, applied as
-#'   with `options`.
 #'
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A ggplot object.
+#'
+#' @examples
+#' cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#' cache$set_national_estimates(list(sbr = 0.02))
+#' cache$adjust_data()
+#' comparison <- cache$health_system_comparison
+#'
+#' plot(comparison, indicator = "ratio_opd_u5_hstaff")
+#' plot(comparison, indicator = "ratio_ipd_u5_bed", title = "Admissions of children and hospital beds",
+#'      legend_labels = list(admin = "Regions", linear = "Trend"))
 #'
 #' @export
 plot.cd_health_system_comparison <- function(x,
-                                              indicator = c(
-                                                'cov_instdeliveries_hstaff',
-                                                'ratio_opd_u5_hstaff',
-                                                'ratio_ipd_u5_hos',
-                                                'ratio_ipd_u5_bed'),
-                                              denominator = NULL,
-                                              title = NULL,
-                                              x_axis = NULL,
-                                              y_axis = NULL,
-                                              caption = NULL,
-                                              legend_labels = NULL, ..., options = NULL) {
-  cd_finish_plot(.plot_cd_health_system_comparison_impl(x, indicator = indicator, denominator = denominator, title = title, x_axis = x_axis, y_axis = y_axis, caption = caption, legend_labels = legend_labels), options, ..., .source = x)
+                                             indicator = c("cov_instdeliveries_hstaff", "ratio_opd_u5_hstaff", "ratio_ipd_u5_hos", "ratio_ipd_u5_bed"),
+                                             denominator = NULL,
+                                             title = NULL,
+                                             subtitle = NULL,
+                                             caption = NULL,
+                                             x_title = NULL,
+                                             y_title = NULL,
+                                             legend_title = NULL,
+                                             ...,
+                                             legend_labels = NULL,
+                                             options = NULL) {
+  .cd_draw(.plot_cd_health_system_comparison_impl, x, list(indicator = indicator, denominator = denominator, legend_labels = legend_labels), ..., options = options)
 }
 
 .plot_cd_health_system_comparison_impl <- function(x,
@@ -41,8 +44,8 @@ plot.cd_health_system_comparison <- function(x,
                                                 'ratio_ipd_u5_bed'),
                                               denominator = NULL,
                                               title = NULL,
-                                              x_axis = NULL,
-                                              y_axis = NULL,
+                                              x_title = NULL,
+                                              y_title = NULL,
                                               caption = NULL,
                                               legend_labels = NULL) {
 
@@ -75,14 +78,14 @@ plot.cd_health_system_comparison <- function(x,
     ratio_ipd_u5_bed          = 'Under-5 IPD Admission by hospital beds density by admin level 1'
   )
   
-  t_x <- x_axis %||% switch(indicator,
+  t_x <- x_title %||% switch(indicator,
     cov_instdeliveries_hstaff = 'Institutional delivery coverage rate (%)',
     ratio_opd_u5_hstaff       = 'Number of under-5 OPD visits per child per year',
     ratio_ipd_u5_hos          = 'Number of under-5 IPD Admissions per child per year',
     ratio_ipd_u5_bed          = 'Number of Under-5 IPD Admission per 100 children per year'
   )
   
-  t_y <- y_axis %||% switch(indicator,
+  t_y <- y_title %||% switch(indicator,
     cov_instdeliveries_hstaff = "Number of core health workforce per 10,000 population",
     ratio_opd_u5_hstaff       = "Number of core health workforce per 10,000 population",
     ratio_ipd_u5_hos          = "Number of Hospitals per 100,000 population",
@@ -118,8 +121,8 @@ plot.cd_health_system_comparison <- function(x,
       
       cd_plot_theme(
         title = t_title,
-        x_axis = t_x,
-        y_axis = t_y,
+        x_title = t_x,
+        y_title = t_y,
         caption = final_caption
       ) +
       theme(
@@ -131,39 +134,43 @@ plot.cd_health_system_comparison <- function(x,
       )
 }
 
-#' Plot Health Metrics for Admin 1 Units
+#' Plot health metrics for admin level 1 units
 #'
-#' Plots individual health system indicators by admin 1 level and compares with national value or target.
+#' Plots individual health system indicators by admin level 1 and compares with national value or target.
 #'
-#' @param x Data frame containing admin 1 level indicators.
+#' @param x Data frame containing admin level 1 indicators.
 #' @param indicator A single metric to plot. Options include ratio_fac_pop, ratio_hos_pop, ratio_bed_pop, ratio_hstaff_pop, skill_mix.
 #' @param national_value A numeric value representing the national average to plot as a vertical line. Can be NA.
-#' @param title (Optional) Custom title for the plot.
-#' @param x_axis (Optional) Custom label for the x-axis.
-#' @param y_axis (Optional) Custom label for the y-axis.
+#' @inheritParams cd_plot_arguments
 #' @param legend_labels (Optional) A named list to override default legend labels (e.g. for translation).
-#' @param ... Chart options (see [cd_chart_options()]) given by name, applied as
-#'   with `options`.
 #'
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A ggplot object.
+#'
+#' @examples
+#' cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#' cache$adjust_data()
+#' regions <- cache$health_system_metrics_admin1
+#' national <- cache$health_system_metrics_national
+#'
+#' plot(regions, indicator = "ratio_fac_pop", national_value = national$ratio_fac_pop)
+#' plot(regions, indicator = "ratio_hstaff_pop", national_value = national$ratio_hstaff_pop,
+#'      title = "Health workers per 10,000 people", x_title = "Health workers",
+#'      legend_labels = list(threshold_line = "Benchmark (44.5)"))
 #'
 #' @export
 plot.cd_health_system_metric <- function(x,
-                                         indicator = c(
-                                           'ratio_fac_pop',
-                                           'ratio_hos_pop',
-                                           'ratio_bed_pop',
-                                           'ratio_hstaff_pop',
-                                           'skill_mix'
-                                         ),
+                                         indicator = c("ratio_fac_pop", "ratio_hos_pop", "ratio_bed_pop", "ratio_hstaff_pop", "skill_mix"),
                                          national_value = NA_real_,
                                          title = NULL,
-                                         x_axis = NULL,
-                                         y_axis = NULL,
-                                         legend_labels = NULL, ..., options = NULL) {
-  cd_finish_plot(.plot_cd_health_system_metric_impl(x, indicator = indicator, national_value = national_value, title = title, x_axis = x_axis, y_axis = y_axis, legend_labels = legend_labels), options, ..., .source = x)
+                                         subtitle = NULL,
+                                         caption = NULL,
+                                         x_title = NULL,
+                                         y_title = NULL,
+                                         legend_title = NULL,
+                                         ...,
+                                         legend_labels = NULL,
+                                         options = NULL) {
+  .cd_draw(.plot_cd_health_system_metric_impl, x, list(indicator = indicator, national_value = national_value, legend_labels = legend_labels), ..., options = options)
 }
 
 .plot_cd_health_system_metric_impl <- function(x,
@@ -176,8 +183,8 @@ plot.cd_health_system_metric <- function(x,
                                          ),
                                          national_value = NA_real_,
                                          title = NULL,
-                                         x_axis = NULL,
-                                         y_axis = NULL,
+                                         x_title = NULL,
+                                         y_title = NULL,
                                          legend_labels = NULL) {
 
   indicator <- arg_match(indicator)
@@ -233,7 +240,7 @@ plot.cd_health_system_metric <- function(x,
     skill_mix = "Skill mix ratio (Nurse/Physician)"
   )
   
-  t_x <- x_axis %||% switch(indicator,
+  t_x <- x_title %||% switch(indicator,
     ratio_fac_pop = "Facility density",
     ratio_hos_pop = "Hospital density",
     ratio_bed_pop = "Bed density",
@@ -241,7 +248,7 @@ plot.cd_health_system_metric <- function(x,
     skill_mix = "Skill mix ratio"
   )
   
-  t_y <- y_axis %||% ""
+  t_y <- y_title %||% ""
 
   # 7. Build the Base Plot
   p <- plot_data %>%
@@ -288,8 +295,8 @@ plot.cd_health_system_metric <- function(x,
   p + 
     cd_plot_theme(
       title = t_title,
-      x_axis = t_x,
-      y_axis = t_y
+      x_title = t_x,
+      y_title = t_y
     ) +
     theme(
       plot.title = element_text(face = "bold", hjust = 0.5),
@@ -300,7 +307,7 @@ plot.cd_health_system_metric <- function(x,
     )
 }
 
-#' Plot National Health System Metrics
+#' Plot national health system metrics
 #'
 #' Creates a horizontal bar plot for either health system performance or density
 #' metrics at national level.
@@ -309,6 +316,14 @@ plot.cd_health_system_metric <- function(x,
 #' @param metric Either 'performance' or 'density'.
 #'
 #' @return A ggplot object.
+#'
+#' @examples
+#' cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#' cache$adjust_data()
+#' national <- cache$health_system_metrics_national
+#'
+#' plot_national_health_metric(national, metric = "performance")
+#' plot_national_health_metric(national, metric = "density")
 #'
 #' @export
 plot_national_health_metric <- function(.data, metric = c('performance', 'density')) {
@@ -354,12 +369,17 @@ plot_national_health_metric <- function(.data, metric = c('performance', 'densit
     coord_flip() +
     geom_text(aes(label = sprintf("%.1f", value)), hjust = -0.1, size = 4) +
     scale_y_continuous(limits = limits, breaks = breaks, expand = expansion(mult = c(0, 0.1))) +
-    cd_plot_theme(title = labels$title, y_axis = NULL, x_axis = NULL, caption = labels$caption)
+    cd_plot_theme(title = labels$title, y_title = NULL, x_title = NULL, caption = labels$caption)
 }
 
-#' Plot S3 method for Health System Metrics
+#' Plot S3 method for health system metrics
 #'
-#' @param x An object of class `cd_health_system_table`
+#' Draws the national health system metrics as a formatted table. The indicators are grouped under
+#' their section, each with its value and unit, and the year is shown in a line above the column
+#' headers.
+#'
+#' @param x An object of class `cd_health_system_table`, as returned by
+#'   [generate_health_system_table()].
 #' @param year The year to display in the header (defaults to 2024)
 #' @param width (Optional) Total width in inches. If NULL, autofit is used.
 #' @param indicator_label (Optional) Translated label for the Indicator column header
@@ -369,6 +389,19 @@ plot_national_health_metric <- function(.data, metric = c('performance', 'densit
 #'
 #' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
 #'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
+#'
+#' @return A `flextable` object (from the flextable package), not a ggplot. Chart options change
+#'   ggplots only, so `options` has no effect on this table.
+#'
+#' @examples
+#' cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#' cache$adjust_data()
+#' metrics <- cache$generate_health_system_table()
+#'
+#' plot(metrics, year = 2023)
+#' plot(metrics, year = 2023, width = 6, indicator_label = "Indicateur", value_label = "Valeur",
+#'      unit_label = "Unite")
+#'
 #' @export
 plot.cd_health_system_table <- function(x, 
                                         year = 2024, 
@@ -456,32 +489,47 @@ plot.cd_health_system_table <- function(x,
   return(ft)
 }
 
-#' Plot S3 method for PHC Performance Scatter
+#' Plot S3 method for PHC performance scatter
 #'
-#' @param x An object of class `cd_phc_scatter`
-#' @param title (Optional) Custom title for the entire plot.
-#' @param x_axis (Optional) Custom label for the x-axis.
-#' @param y_axis (Optional) Custom label for the y-axis.
-#' @param quad_labels (Optional) Named list to override quadrant text. 
+#' Draws a scatter plot of the service coverage index against facility density or health workforce
+#' density, with one point per admin level 1 unit. Dashed lines at the two medians split the plot
+#' into four labelled quadrants, and the units flagged as outliers are named.
+#'
+#' @param x An object of class `cd_phc_scatter`, as returned by [generate_phc_scatter_data()].
+#' @inheritParams cd_plot_arguments
+#' @param quad_labels (Optional) Named list to override quadrant text.
 #'   Expected keys: `high_high`, `low_high`, `high_low`, `low_low`.
-#' @param ... Additional arguments
 #'
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
+#'
+#' @return A `ggplot` object, with the chart options applied.
+#'
+#' @examples
+#' cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#' cache$adjust_data()
+#' scatter <- cache$generate_phc_scatter_data("ratio_fac_pop")
+#'
+#' plot(scatter)
+#' plot(scatter, title = "Facilities and services by region", y_title = "Service index",
+#'      quad_labels = list(low_low = "Few facilities, few services"))
+#'
 #' @export
 plot.cd_phc_scatter <- function(x,
-                                title = NULL,
-                                x_axis = NULL,
-                                y_axis = NULL,
                                 quad_labels = NULL,
-                                ..., options = NULL) {
-  cd_finish_plot(.plot_cd_phc_scatter_impl(x, title = title, x_axis = x_axis, y_axis = y_axis, quad_labels = quad_labels, ...), options, ..., .source = x)
+                                title = NULL,
+                                subtitle = NULL,
+                                caption = NULL,
+                                x_title = NULL,
+                                y_title = NULL,
+                                legend_title = NULL,
+                                ...,
+                                options = NULL) {
+  .cd_draw(.plot_cd_phc_scatter_impl, x, list(quad_labels = quad_labels), ..., options = options)
 }
 
 .plot_cd_phc_scatter_impl <- function(x,
                                 title = NULL,
-                                x_axis = NULL,
-                                y_axis = NULL,
+                                x_title = NULL,
+                                y_title = NULL,
                                 quad_labels = NULL,
                                 ...) {
   
@@ -502,8 +550,8 @@ plot.cd_phc_scatter <- function(x,
   )
 
   t_title <- title %||% paste(default_x_lab, "vs MCH & Curative Service Index")
-  t_x <- x_axis %||% default_x_lab
-  t_y <- y_axis %||% "MCH & Curative Service Index"
+  t_x <- x_title %||% default_x_lab
+  t_y <- y_title %||% "MCH & Curative Service Index"
 
   # Setup default quadrant labels dynamically
   default_quads <- list(
@@ -549,8 +597,8 @@ plot.cd_phc_scatter <- function(x,
     # Theming
     cd_plot_theme(
       title = t_title,
-      x_axis = t_x,
-      y_axis = t_y
+      x_title = t_x,
+      y_title = t_y
     ) +
     theme(
       plot.title = element_text(face = "bold", hjust = 0.5),
@@ -558,29 +606,43 @@ plot.cd_phc_scatter <- function(x,
     )
 }
 
-#' Plot S3 method for Private Sector Ownership
+#' Plot S3 method for private sector ownership
 #'
-#' @param x An object of class `cd_private_sector`
-#' @param title (Optional) Custom title for the plot.
-#' @param x_axis (Optional) Custom label for the x-axis.
-#' @param y_axis (Optional) Custom label for the y-axis.
-#' @param ... Additional arguments
+#' Draws a stacked bar for each admin level 1 unit showing the percentage of health facilities that
+#' are private, NGO and public, with the percentage written inside each segment.
 #'
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
+#' @param x An object of class `cd_private_sector`, as returned by [generate_private_sector_data()].
+#' @inheritParams cd_plot_arguments
+#'
+#'
+#' @return A `ggplot` object, with the chart options applied.
+#'
+#' @examples
+#' cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#' cache$adjust_data()
+#' ownership <- cache$generate_private_sector_data()
+#'
+#' plot(ownership)
+#' plot(ownership, title = "Who owns the health facilities", y_title = "Facilities (%)",
+#'      legend_title = "Owner", legend_position = "right")
+#'
 #' @export
 plot.cd_private_sector <- function(x,
                                    title = NULL,
-                                   x_axis = NULL,
-                                   y_axis = NULL,
-                                   ..., options = NULL) {
-  cd_finish_plot(.plot_cd_private_sector_impl(x, title = title, x_axis = x_axis, y_axis = y_axis, ...), options, ..., .source = x)
+                                   subtitle = NULL,
+                                   caption = NULL,
+                                   x_title = NULL,
+                                   y_title = NULL,
+                                   legend_title = NULL,
+                                   ...,
+                                   options = NULL) {
+  .cd_draw(.plot_cd_private_sector_impl, x, list(), ..., options = options)
 }
 
 .plot_cd_private_sector_impl <- function(x,
                                    title = NULL,
-                                   x_axis = NULL,
-                                   y_axis = NULL,
+                                   x_title = NULL,
+                                   y_title = NULL,
                                    ...) {
   
   # Retrieve attributes saved during data generation
@@ -590,8 +652,8 @@ plot.cd_private_sector <- function(x,
   
   # 1. Setup default titles and axes
   t_title <- title %||% "Ownership of health facilities, 2024 (DHIS2)"
-  t_x <- x_axis %||% ""
-  t_y <- y_axis %||% "Percent of facilities"
+  t_x <- x_title %||% ""
+  t_y <- y_title %||% "Percent of facilities"
   
   # Dynamically map your specific colors to whatever the translated labels are
   fill_colors <- setNames(c("#b3d7ea", "#f4a641", "#dfe8df"), c(lbl_prv, lbl_ngo, lbl_pub))
@@ -622,8 +684,8 @@ plot.cd_private_sector <- function(x,
     # Theming
     cd_plot_theme(
       title = t_title,
-      x_axis = t_x,
-      y_axis = t_y
+      x_title = t_x,
+      y_title = t_y
     ) +
     theme(
       legend.position = "bottom",

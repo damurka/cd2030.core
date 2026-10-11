@@ -2,7 +2,7 @@
 % Please edit documentation in R/6_service_utilization.R
 \name{generate_admin1_service_utilization}
 \alias{generate_admin1_service_utilization}
-\title{Generate Service Utilization Admin 1 Data}
+\title{Generate service utilization admin level 1 data}
 \usage{
 generate_admin1_service_utilization(
   service_utilization,
@@ -10,13 +10,28 @@ generate_admin1_service_utilization(
 )
 }
 \arguments{
-\item{service_utilization}{Dataframe containing admin1 service utilization.}
+\item{service_utilization}{Dataframe containing admin level 1 service utilization.}
 
 \item{metric_type}{Character. Either "opd" or "ipd".}
 }
 \value{
-A tibble with class \code{cd_service_util_admin1}.
+A tibble with class \code{cd_service_utilization_admin1} and the columns \code{adminlevel_1}, \code{year}
+and the selected rate. The attribute \code{metric_type} holds \code{metric_type}.
 }
 \description{
-Generate Service Utilization Admin 1 Data
+Keeps the latest year of subnational service utilization data and the under-five utilization
+rate of one service: OPD visits per child (\code{ratio_opd_u5_pop}) or IPD admissions per 100
+children (\code{ratio_ipd_u5_pop}). The result is ready for \code{\link[=plot.cd_service_utilization_admin1]{plot.cd_service_utilization_admin1()}}.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+utilization <- compute_service_utilization(data, admin_level = "adminlevel_1")
+
+# outpatient visits per child under five, by region, in the latest year
+generate_admin1_service_utilization(utilization, metric_type = "opd")
+
+# inpatient admissions per 100 children under five
+admissions <- generate_admin1_service_utilization(utilization, metric_type = "ipd")
+plot(admissions)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/plot.indicator_coverage.R
 \name{plot.cd_indicator_coverage}
 \alias{plot.cd_indicator_coverage}
-\title{Plot National Denominators and Coverage Indicators}
+\title{Plot national denominators and coverage indicators}
 \usage{
 \method{plot}{cd_indicator_coverage}(
   x,
@@ -13,10 +13,13 @@
     "immunization_coverage_penta1"),
   admin_name = NULL,
   title = NULL,
-  x_label = NULL,
-  y_label = NULL,
-  legend_labels = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
+  legend_labels = NULL,
   options = NULL
 )
 }
@@ -33,18 +36,25 @@
 
 \item{admin_name}{Optional character. The specific admin area to filter by (required if data is subnational).}
 
-\item{title}{Optional character. Custom plot title.}
+\item{title}{The chart's title.}
 
-\item{x_label}{Optional character. Custom x-axis label (default "Year").}
+\item{subtitle}{The line under the title.}
 
-\item{y_label}{Optional character. Custom y-axis label (default "\%").}
+\item{caption}{The note under the chart.}
+
+\item{x_title}{The title of the horizontal axis.}
+
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
 
 \item{legend_labels}{Optional character vector. Custom labels for the legend items. Must match the number of lines in the selected plot type.}
 
-\item{...}{Additional arguments passed to the plotting function.}
-
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
 }
 \value{
 A ggplot object.
@@ -52,4 +62,17 @@ A ggplot object.
 \description{
 Generates specific plots for national denominators and health coverage indicators.
 It supports dynamic customization of titles and labels.
+}
+\examples{
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+cache$set_national_estimates(list(sbr = 0.02))
+cache$adjust_data()
+
+plot(cache$indicator_coverage_national, plot_type = "anc_coverage_penta1")
+plot(cache$indicator_coverage_national, plot_type = "immunization_coverage_dhis2",
+     title = "Immunization coverage, DHIS2 population", y_title = "Coverage (\%)", legend_position = "right")
+
+# subnational data: name the unit
+plot(cache$indicator_coverage_admin1, plot_type = "immunization_coverage_dhis2", admin_name = "Nairobi")
+
 }

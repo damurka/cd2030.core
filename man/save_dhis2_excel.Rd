@@ -2,7 +2,7 @@
 % Please edit documentation in R/save_data.R
 \name{save_dhis2_excel}
 \alias{save_dhis2_excel}
-\title{Save DHIS2 Data to an Excel Workbook}
+\title{Save DHIS2 data to an Excel workbook}
 \usage{
 save_dhis2_excel(.data, filename, last_org)
 }
@@ -21,11 +21,12 @@ followed by \code{year} and \code{month} where relevant.}
 Saves the workbook to the specified filename.
 }
 \description{
-Save DHIS2 Data to an Excel Workbook
+Writes the admin, population, completeness and service data downloaded from DHIS2 to one Excel
+workbook, with styled sheets for each type of data. A file that already exists at \code{filename}
+is overwritten.
 }
 \details{
-This function generates an Excel workbook containing multiple sheets for
-different types of DHIS2 data:
+The workbook contains sheets for the different types of DHIS2 data:
 \itemize{
 \item \strong{Admin Data}: Maps health districts to administrative units.
 \item \strong{Population Data}: Contains official population data for denominators in

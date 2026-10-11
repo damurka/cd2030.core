@@ -2,20 +2,61 @@
 % Please edit documentation in R/plot.service_utlization.R
 \name{plot.cd_mch_curative_index}
 \alias{plot.cd_mch_curative_index}
-\title{Plot S3 method for MCH vs Curative Index}
+\title{Plot S3 method for MCH vs curative index}
 \usage{
-\method{plot}{cd_mch_curative_index}(x, labels = NULL, ..., options = NULL)
+\method{plot}{cd_mch_curative_index}(
+  x,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
+  ...,
+  quad_labels = NULL,
+  options = NULL
+)
 }
 \arguments{
-\item{x}{Object of class cd_mch_curative_index.}
+\item{x}{Object of class cd_mch_curative_index, as returned by
+\code{\link[=generate_admin1_mch_curative_index]{generate_admin1_mch_curative_index()}}.}
 
-\item{labels}{List. Optional translations containing axes, title, and quadrant labels.}
+\item{title}{The chart's title.}
 
-\item{...}{Additional arguments.}
+\item{subtitle}{The line under the title.}
 
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{caption}{The note under the chart.}
+
+\item{x_title}{The title of the horizontal axis.}
+
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{quad_labels}{(Optional) A named list of the texts written in the four quadrants: \code{q_top_left},
+\code{q_top_right}, \code{q_bottom_left} and \code{q_bottom_right}.}
+
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
+}
+\value{
+A \code{ggplot} object, with the chart options applied.
 }
 \description{
-Plot S3 method for MCH vs Curative Index
+Draws a scatter plot of the curative services index against the MCH preventive services index,
+with one point per admin level 1 unit. Dashed lines at the two medians split the plot into four
+labelled quadrants, and the units with the highest and lowest value of either index are named.
+}
+\examples{
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+cache$adjust_data()
+index <- cache$generate_admin1_mch_curative_index()
+
+plot(index)
+plot(index, title = "Preventive and curative care", x_title = "Preventive index", y_title = "Curative index",
+     quad_labels = list(q_top_right = "High on both", q_bottom_left = "Low on both"))
+
 }

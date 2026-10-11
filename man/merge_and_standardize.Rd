@@ -2,7 +2,7 @@
 % Please edit documentation in R/0_import_load_data.R
 \name{merge_and_standardize}
 \alias{merge_and_standardize}
-\title{Merge and standardize an already-\code{load_excel_parts()}-ed set of sheets}
+\title{Merge and standardize sheets read by \code{load_excel_parts()}}
 \usage{
 merge_and_standardize(
   parts_result,
@@ -13,11 +13,7 @@ merge_and_standardize(
 )
 }
 \arguments{
-\item{parts_result}{The list returned by \code{load_excel_parts()}.
-Exported (not \verb{@noRd}) because the Load Data wizard's own Finish action
-(\code{apps/rmncah/ui/wizard_panels.R}) calls this directly, across the package boundary, once
-\code{step_quality_complete()} is satisfied -- it's not purely an internal implementation detail of
-\code{.load_excel_data()} any more.}
+\item{parts_result}{A list. What \code{\link[=load_excel_parts]{load_excel_parts()}} returns.}
 
 \item{indicator_group}{One of \code{"auto"}, \code{"vaccine"}, \code{"rmncah"}, \code{"custom"}.
 Default \code{"auto"}.}
@@ -35,23 +31,33 @@ For \code{"custom"}, the profile must resolve to \strong{one} concrete name.}
 used when resolving the indicator group (for example with
 \code{indicator_group = "custom"}). Default is \code{NULL}.}
 
-\item{validate}{Logical. Whether to run Tier B quality checks (district-name
-consistency, missing months, unrecognized months -- see
-\verb{R/0_data_quality_checks.R}) as part of loading. Default \code{TRUE}, matching
-the pipeline's long-standing behavior. \code{FALSE} lets a file with data-quality
-problems (as opposed to \emph{structural} ones -- Tier A, e.g. a missing admin
-column -- which always run regardless) load anyway, for a caller that wants
-to run those checks itself later, progressively, against the already-loaded
-data (see \code{run_all_quality_checks()}) rather than as an upfront hard stop.}
+\item{validate}{Logical. Whether to stop with an error when the merged data
+fails a data quality check: \code{\link[=check_district_consistency]{check_district_consistency()}},
+\code{\link[=check_month_presence]{check_month_presence()}} or \code{\link[=check_month_validity]{check_month_validity()}}. Default is \code{TRUE}.
+With \code{FALSE} a file that has such problems still loads, so the caller can
+run the checks later with \code{\link[=run_all_quality_checks]{run_all_quality_checks()}}. Structural checks,
+such as a missing Admin sheet column, always run.}
 }
 \value{
 A tibble of class \code{cd_data}.
 }
 \description{
-The back half of what used to be \code{.load_excel_data()}: the Tier A structural checks (admin
-columns present, exactly one country), \code{merge_data()} + \code{standardize_data()}, then
-\code{new_countdown()} for group resolution and the Tier B quality gate. Kept as a fail-fast backstop
-even for a caller (the Load Data wizard) that already ran these same Tier A checks non-abortingly,
-earlier, against the same \code{parts} -- the same defense-in-depth every other blocking check in this
-pipeline already has between its wizard-facing non-aborting form and its abort-on-call one.
+Merges the separate sheets returned by \code{\link[=load_excel_parts]{load_excel_parts()}} into one dataset, standardizes
+its columns and returns it as a \code{cd_data} tibble. This is the second half of loading an
+Excel workbook.
+}
+\details{
+Before merging, the function stops with an error if the Admin sheet fails
+\code{\link[=check_admin_columns]{check_admin_columns()}} or \code{\link[=check_single_country]{check_single_country()}}. The merged data then goes to
+\code{\link[=new_countdown]{new_countdown()}}, which resolves the indicator group and, when \code{validate} is \code{TRUE}, stops
+on a data quality problem.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+sheets <- load_excel_parts(path)
+data <- merge_and_standardize(sheets)
+data
+
+# Load even if a data quality check fails, to run the checks afterwards
+data <- merge_and_standardize(sheets, validate = FALSE)
 }

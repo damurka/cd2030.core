@@ -12,3 +12,12 @@ Character vector of all indicators
 \description{
 Flatten all indicators from all groups
 }
+\examples{
+get_coverage_indicators()
+
+# the vaccine group calculates coverage for every indicator it has
+old <- get_selected_group()
+set_selected_group("vaccine")
+setequal(get_coverage_indicators(), get_all_indicators())
+set_selected_group(old)
+}

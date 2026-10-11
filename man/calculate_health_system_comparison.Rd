@@ -2,7 +2,7 @@
 % Please edit documentation in R/7_health_systems.R
 \name{calculate_health_system_comparison}
 \alias{calculate_health_system_comparison}
-\title{Compare Health System Metrics Across Levels}
+\title{Compare health system metrics across levels}
 \usage{
 calculate_health_system_comparison(
   .data,
@@ -24,10 +24,24 @@ latest year defines the year kept in the result.}
 of \code{\link[=calculate_indicator_coverage]{calculate_indicator_coverage()}} for \code{admin_level = "district"}.}
 }
 \value{
-A data frame with admin 1 and district metrics joined side by side for
+A data frame with admin level 1 and district metrics joined side by side for
 comparison.
 }
 \description{
 Returns a merged dataset of health coverage and system metrics at district and
 admin level 1 for the latest year.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+cache <- load_cache_data(path)
+cache$set_national_estimates(list(sbr = 0.02))
+cache$adjust_data()
+
+comparison <- calculate_health_system_comparison(
+  cache$adjusted_data,
+  admin1_coverage_data = cache$indicator_coverage_admin1,
+  admin2_coverage_data = cache$indicator_coverage_district
+)
+comparison[c("adminlevel_1", "district", "ad1_ratio_fac_pop", "dis_ratio_fac_pop")]
+
 }

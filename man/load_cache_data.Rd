@@ -52,14 +52,12 @@ next to it. Default is \code{FALSE} (no cache file). Ignored for \code{.rds} inp
 \item{service_sheet_names}{Character vector of service-data sheets.
 Default: all sheets matching \code{"Service_data"} if not supplied.}
 
-\item{validate}{Logical. Whether to run Tier B quality checks (district-name
-consistency, missing months, unrecognized months -- see
-\verb{R/0_data_quality_checks.R}) as part of loading. Default \code{TRUE}, matching
-the pipeline's long-standing behavior. \code{FALSE} lets a file with data-quality
-problems (as opposed to \emph{structural} ones -- Tier A, e.g. a missing admin
-column -- which always run regardless) load anyway, for a caller that wants
-to run those checks itself later, progressively, against the already-loaded
-data (see \code{run_all_quality_checks()}) rather than as an upfront hard stop.}
+\item{validate}{Logical. Whether to stop with an error when the merged data
+fails a data quality check: \code{\link[=check_district_consistency]{check_district_consistency()}},
+\code{\link[=check_month_presence]{check_month_presence()}} or \code{\link[=check_month_validity]{check_month_validity()}}. Default is \code{TRUE}.
+With \code{FALSE} a file that has such problems still loads, so the caller can
+run the checks later with \code{\link[=run_all_quality_checks]{run_all_quality_checks()}}. Structural checks,
+such as a missing Admin sheet column, always run.}
 }
 \value{
 A cache/connection object as returned by \code{init_CacheConnection()}.

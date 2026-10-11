@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils-indicator-groups.R
 \name{get_indicator_group_names}
 \alias{get_indicator_group_names}
-\title{Get Indicator Group Names}
+\title{Get indicator group names}
 \usage{
 get_indicator_group_names()
 }
@@ -10,5 +10,12 @@ get_indicator_group_names()
 Character vector of indicator group names
 }
 \description{
-Get Indicator Group Names
+Lists the names of the categories (such as \code{anc}, \code{idelv} or \code{vacc}) that the indicators of the
+selected indicator group are arranged in. These are the names of \code{\link[=get_indicator_groups]{get_indicator_groups()}}.
+}
+\examples{
+get_indicator_group_names()
+
+# the indicators of one of them
+get_indicator_groups()[["vacc"]]
 }

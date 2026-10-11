@@ -2,7 +2,7 @@
 % Please edit documentation in R/2_calculate_derived_coverage.R
 \name{calculate_derived_coverage}
 \alias{calculate_derived_coverage}
-\title{Generate Coverage Data with Derived Denominators}
+\title{Generate coverage data with derived denominators}
 \usage{
 calculate_derived_coverage(.data, indicator)
 }

@@ -17,3 +17,15 @@ Validates settings as the Data Adjustment page sends them (JSON read with \code{
 in one shape: numbers as numbers, flags as logicals, empty maps as empty lists, unknown groups, indicators and
 levels refused.
 }
+\examples{
+# Settings as they arrive from JSON: numbers and flags inside lists
+settings <- list(
+  removed_years = list(2020, 2021),
+  everywhere = list(group_k = list(anc = 0.1), outliers = list(penta3 = list(FALSE))),
+  areas = list(list(area = "Coast", level = "adminlevel_1", all_missing = list(FALSE)))
+)
+str(adjustment_settings_check(settings))
+
+# What is wrong is refused with an error
+try(adjustment_settings_check(list(everywhere = list(group_k = list(anc = 2)))))
+}

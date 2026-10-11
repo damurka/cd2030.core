@@ -2,7 +2,7 @@
 % Please edit documentation in R/5_mortality.R
 \name{create_mortality_ratios}
 \alias{create_mortality_ratios}
-\title{Extract Latest Mortality Ratios for UN Comparison}
+\title{Extract latest mortality ratios for UN comparison}
 \usage{
 create_mortality_ratios(.data, mortality_data)
 }
@@ -16,4 +16,16 @@ A tibble of class \code{cd_mortality_ratio} with latest available values and UN 
 }
 \description{
 Joins computed national mortality indicators with UN estimates, returns latest value per indicator.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+cache <- load_cache_data(path)
+
+mortality <- create_mortality_summary(cache$countdown_data)
+ratios <- create_mortality_ratios(mortality, cache$un_mortality_estimates)
+ratios
+
+# the institutional ratio against the UN estimate, by assumed completeness
+summarise_completeness_ratio(ratios, plot_type = "mmr")
+
 }

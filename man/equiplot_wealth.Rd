@@ -2,19 +2,20 @@
 % Please edit documentation in R/equiplot.R
 \name{equiplot_wealth}
 \alias{equiplot_wealth}
-\title{A Specialized Dot Plot for Wealth Quintile Analysis}
+\title{A specialized dot plot for wealth quintile analysis}
 \usage{
 equiplot_wealth(
   .data,
   indicator,
+  dot_size = NULL,
   title = NULL,
   subtitle = NULL,
   caption = NULL,
   x_title = NULL,
+  y_title = NULL,
   legend_title = NULL,
-  legend_labels = NULL,
-  dot_size = NULL,
   ...,
+  legend_labels = NULL,
   options = NULL
 )
 }
@@ -25,25 +26,43 @@ columns.}
 \item{indicator}{Character. The indicator to plot; its \verb{r_<indicator>} column
 is used.}
 
-\item{title, subtitle, caption}{Optional plot title, subtitle and caption.}
+\item{dot_size}{Optional dot size, clamped to 1-5. Defaults to 4.}
 
-\item{x_title}{Optional x-axis title. Defaults to the indicator name
-followed by "Coverage".}
+\item{title}{The chart's title.}
 
-\item{legend_title}{Optional legend title. Defaults to a title describing the
-grouping (for example \code{"Area of residence"}).}
+\item{subtitle}{The line under the title.}
+
+\item{caption}{The note under the chart.}
+
+\item{x_title}{The title of the horizontal axis.}
+
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
 
 \item{legend_labels}{Optional named vector or list mapping group names to
 display labels.}
 
-\item{dot_size}{Optional dot size, clamped to 1-5. Defaults to 4.}
-
-\item{...}{Chart options (see \code{\link[=cd_chart_options]{cd_chart_options()}}) given by name, applied as
-with \code{options}.}
-
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
+}
+\value{
+A \code{ggplot} object: the dot plot drawn by \code{\link[=equiplot]{equiplot()}}, with one row per survey year and one
+dot for each wealth quintile (Q1 to Q5), and the chart options applied.
 }
 \description{
 Plots survey estimates of an indicator by year for each wealth quintile.
+}
+\examples{
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+
+# the dataset object gives the package's survey estimates for the country, by wealth quintile
+equiplot_wealth(cache$wiq_survey, "instlivebirths")
+
+equiplot_wealth(cache$wiq_survey, "instlivebirths", title = "Institutional live births by wealth",
+                legend_title = "Quintile", caption = "Source: household surveys")
+
 }

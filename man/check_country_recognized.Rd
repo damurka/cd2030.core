@@ -2,24 +2,40 @@
 % Please edit documentation in R/0_data_quality_checks.R
 \name{check_country_recognized}
 \alias{check_country_recognized}
-\title{Check the Admin sheet's single country value is actually a recognized country name, pre-merge}
+\title{Check that the country in the Admin sheet is recognized}
 \usage{
 check_country_recognized(parts, admin_sheet_name)
 }
 \arguments{
-\item{parts}{Named list of cleaned per-sheet tibbles.}
+\item{parts}{A named list of cleaned per-sheet tibbles (\code{load_excel_parts()$parts}).}
 
-\item{admin_sheet_name}{Name of the admin sheet within \code{parts}.}
+\item{admin_sheet_name}{A string. The name of the Admin sheet within \code{parts}.}
+}
+\value{
+\code{NULL} if the country is recognized, if the Admin sheet has no \code{country} column, or
+if the column does not hold exactly one value. Otherwise a character vector of length one,
+named \code{"x"}, with a message that gives the unrecognized name.
 }
 \description{
-\code{check_single_country()} (Tier A, above) only catches more than one distinct value -- the
-genuinely-one-value-but-unrecognized case is \code{match_country()}'s job, which normally only runs
-at Finish (\code{merge_and_standardize()}'s \code{new_countdown()} call) under the deferred-merge design.
-Left uncaught pre-merge, a user could walk the entire wizard only to hit a hard abort on the very
-last step -- this surfaces the same problem at Data Quality instead, non-abortingly, same as
-every other check here.
+Checks that the country named in the Admin sheet is one the package supports. Run it before
+the sheets are merged to report an unrecognized country early. \code{\link[=new_countdown]{new_countdown()}} stops with
+an error on the same problem.
 }
 \details{
-Its counterpart, "every column the selected group needs is present", is
-\code{check_required_columns_presheet()}.
+The check applies only when the \code{country} column holds exactly one distinct value, ignoring
+missing values. More than one value is reported by \code{\link[=check_single_country]{check_single_country()}}. The name is
+recognized when it is close to a name in the package's list of countries.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+sheets <- load_excel_parts(path)
+check_country_recognized(sheets$parts, sheets$admin_sheet_name)
+
+# A country the package has no reference data for
+parts <- sheets$parts
+parts[[sheets$admin_sheet_name]]$country <- "Atlantis"
+check_country_recognized(parts, sheets$admin_sheet_name)
+}
+\seealso{
+\code{\link[=check_required_columns_presheet]{check_required_columns_presheet()}}
 }

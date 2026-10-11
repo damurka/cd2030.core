@@ -1,4 +1,4 @@
-#' Calculate Health System Metrics
+#' Calculate health system metrics
 #'
 #' Aggregates data at national, admin level 1, or district level and computes
 #' ratios and performance scores.
@@ -9,9 +9,20 @@
 #' @return A summarized data frame with calculated metrics: ratios (facility,
 #'   beds, workforce, service use) and performance scores.
 #'
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' data <- load_data(path)
+#'
+#' national <- calculate_health_system_metrics(data, admin_level = "national")
+#' national[c("year", "ratio_fac_pop", "ratio_bed_pop", "ratio_hstaff_pop", "score_total")]
+#'
+#' regions <- calculate_health_system_metrics(data, admin_level = "adminlevel_1")
+#' regions[c("adminlevel_1", "ratio_fac_pop", "ratio_hstaff_pop", "score_total")]
+#'
 #' @export
 calculate_health_system_metrics <- function(.data, admin_level = c("national", "adminlevel_1", "district")) {
   check_cd_data(.data)
+  local_data_group(.data)
   admin_level <- arg_match(admin_level)
   admin_level_cols <- get_admin_columns(admin_level)
 
@@ -87,7 +98,7 @@ calculate_health_system_metrics <- function(.data, admin_level = c("national", "
   )
 }
 
-#' Compare Health System Metrics Across Levels
+#' Compare health system metrics across levels
 #'
 #' Returns a merged dataset of health coverage and system metrics at district and
 #' admin level 1 for the latest year.
@@ -102,12 +113,26 @@ calculate_health_system_metrics <- function(.data, admin_level = c("national", "
 #'   `year`, `adminlevel_1`, `district` and `cov_*` columns), such as the output
 #'   of [calculate_indicator_coverage()] for `admin_level = "district"`.
 #'
-#' @return A data frame with admin 1 and district metrics joined side by side for
+#' @return A data frame with admin level 1 and district metrics joined side by side for
 #'   comparison.
+#'
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' cache <- load_cache_data(path)
+#' cache$set_national_estimates(list(sbr = 0.02))
+#' cache$adjust_data()
+#'
+#' comparison <- calculate_health_system_comparison(
+#'   cache$adjusted_data,
+#'   admin1_coverage_data = cache$indicator_coverage_admin1,
+#'   admin2_coverage_data = cache$indicator_coverage_district
+#' )
+#' comparison[c("adminlevel_1", "district", "ad1_ratio_fac_pop", "dis_ratio_fac_pop")]
 #'
 #' @export
 calculate_health_system_comparison <- function(.data, admin1_coverage_data, admin2_coverage_data) {
   check_cd_data(.data)
+  local_data_group(.data)
 
   last_year <- robust_max(admin1_coverage_data$year)
 
@@ -115,12 +140,16 @@ calculate_health_system_comparison <- function(.data, admin1_coverage_data, admi
   #   select(year, matches('^cov_(anc1|sba|ideliv|csection|pnc48|penta3)_(anc1|dhis2|penta1)$')) %>%
   #   rename_with(~ paste0('nat_', .x), .cols = starts_with('cov_'))
 
+  # instdeliveries: the chart of delivery coverage against workforce reads it (it was left out, so that chart, the
+  # default one, stopped with "object 'ad1_cov_instdeliveries_...' not found")
+  cov_columns <- "^cov_(anc1|sba|ideliv|instdeliveries|csection|pnc48|penta3)_(anc1|dhis2|penta1)$"
+
   ad1_cov <- admin1_coverage_data %>%
-    select(year, adminlevel_1, matches("^cov_(anc1|sba|ideliv|csection|pnc48|penta3)_(anc1|dhis2|penta1)$")) %>%
+    select(year, adminlevel_1, matches(cov_columns)) %>%
     rename_with(~ paste0("ad1_", .x), .cols = starts_with("cov_"))
 
   dis_cov <- admin2_coverage_data %>%
-    select(year, adminlevel_1, district, matches("^cov_(anc1|sba|ideliv|csection|pnc48|penta3)_(anc1|dhis2|penta1)$")) %>%
+    select(year, adminlevel_1, district, matches(cov_columns)) %>%
     rename_with(~ paste0("dis_", .x), .cols = starts_with("cov_"))
 
   ad1_metric <- calculate_health_system_metrics(.data, admin_level = "adminlevel_1") %>%
@@ -144,18 +173,37 @@ calculate_health_system_comparison <- function(.data, admin1_coverage_data, admi
   )
 }
 
-#' Generate Health System Metrics Data
+#' Generate health system metrics data
 #'
-#' @param metric_data A dataframe or list containing the yearly health system values.
-#' @param labels (Optional) A nested list of localized labels for sections, indicators, and units.
+#' Arranges national health system metrics as a table of eight indicators in three sections: health
+#' infrastructure, health workforce and the role of the private sector. Each row has the indicator's
+#' label, its value and its unit, ready for [plot.cd_health_system_table()].
+#'
+#' @param metric_data A `cd_health_system_metric` object for the national level, as returned by
+#'   [calculate_health_system_metrics()] with `admin_level = "national"`.
+#' @param labels (Optional) A nested list of localized labels for sections, indicators, and units
+#'   (elements `section`, `indicator` and `unit`). English labels are used for whatever it does not set.
+#'
+#' @return A tibble of class `cd_health_system_table` with one row per indicator and the columns
+#'   `section`, `indicator`, `value` and `unit` (`NA` where the indicator has no unit).
+#'
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' data <- load_data(path)
+#' metrics <- calculate_health_system_metrics(data, admin_level = "national")
+#'
+#' generate_health_system_table(metrics)
+#'
+#' # labels in another language: what is not given stays in English
+#' generate_health_system_table(metrics, labels = list(section = list(workforce = "Personnel de sante")))
 #'
 #' @export
 generate_health_system_table <- function(metric_data, labels = NULL) {
-  check_cd_class(metric_data, 'cd_health_system_metric')
+  check_cd_health_system_metric(metric_data)
 
   admin_level <- attr_or_abort(metric_data, 'admin_level')
   if (admin_level != 'national') {
-    cd_abort(c('x' = 'Only national data can gener'))
+    cd_abort(c('x' = 'The health system table is made from national metrics only.'))
   }
   
   # 1. Define English Defaults (Matching overall_score structure)
@@ -235,16 +283,37 @@ generate_health_system_table <- function(metric_data, labels = NULL) {
   )
 }
 
-#' Generate PHC Performance Scatter Data
+#' Generate PHC performance scatter data
 #'
-#' @param .data Data frame containing subnational health indicators.
+#' Pairs a health system input (facility density or health workforce density) with a service
+#' coverage index for each admin level 1 unit, for [plot.cd_phc_scatter()]. The service coverage
+#' index is the mean of the MCH preventive services index and the curative services index.
+#'
+#' @param .data A `cd_health_system_metric` object, as returned by
+#'   [calculate_health_system_metrics()] with `admin_level = "adminlevel_1"`.
 #' @param x_indicator Independent variable ('ratio_fac_pop' or 'ratio_hstaff_pop').
+#'
+#' @return A tibble of class `cd_phc_scatter` with one row per admin level 1 unit and the columns
+#'   `adminlevel_1`, the column named by `x_indicator`, `service_coverage` and `is_outlier` (`TRUE`
+#'   when `service_coverage` is below the first quartile or above the third quartile). The
+#'   attribute `indicator` holds `x_indicator`.
+#'
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' data <- load_data(path)
+#' metrics <- calculate_health_system_metrics(data, admin_level = "adminlevel_1")
+#'
+#' generate_phc_scatter_data(metrics, x_indicator = "ratio_fac_pop")
+#'
+#' # against the density of health workers
+#' workforce <- generate_phc_scatter_data(metrics, x_indicator = "ratio_hstaff_pop")
+#' plot(workforce)
 #'
 #' @export
 generate_phc_scatter_data <- function(.data, 
                                       x_indicator = c("ratio_fac_pop", "ratio_hstaff_pop")) {
   
-  check_cd_class(.data, 'cd_health_system_metric')
+  check_cd_health_system_metric(.data)
   
   x_indicator <- arg_match(x_indicator)
 
@@ -271,10 +340,33 @@ generate_phc_scatter_data <- function(.data,
   )
 }
 
-#' Generate Private Sector Ownership Data
+#' Generate private sector ownership data
 #'
-#' @param .data Data frame containing subnational health indicators.
-#' @param legend_labels (Optional) A named list to override default legend labels.
+#' Reshapes health system metrics into the share of health facilities that are private, NGO and
+#' public in each admin level 1 unit, for [plot.cd_private_sector()]. The public share is what
+#' remains after the private and NGO shares.
+#'
+#' @param .data Data frame containing subnational health indicators, with the columns
+#'   `adminlevel_1`, `private_facility_share` and `ngo_facility_share`, such as the output of
+#'   [calculate_health_system_metrics()] with `admin_level = "adminlevel_1"`.
+#' @param legend_labels (Optional) A named list to override default legend labels (elements
+#'   `Private`, `NGO` and `Public`).
+#'
+#' @return A tibble of class `cd_private_sector` with one row per admin level 1 unit and facility
+#'   type, and the columns `adminlevel_1`, `facility_type` (a factor ordered private, NGO, public,
+#'   with the labels as its levels) and `share` (percent). The attributes `lbl_prv`, `lbl_ngo` and
+#'   `lbl_pub` hold the labels used.
+#'
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' data <- load_data(path)
+#' metrics <- calculate_health_system_metrics(data, admin_level = "adminlevel_1")
+#'
+#' generate_private_sector_data(metrics)
+#'
+#' # with another label in the legend
+#' shares <- generate_private_sector_data(metrics, legend_labels = list(Private = "For profit"))
+#' plot(shares)
 #'
 #' @export
 generate_private_sector_data <- function(.data, legend_labels = NULL) {

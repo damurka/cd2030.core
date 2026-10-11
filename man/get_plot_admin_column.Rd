@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils-cd-data.R
 \name{get_plot_admin_column}
 \alias{get_plot_admin_column}
-\title{Determine the Administrative Column to Use for Plotting}
+\title{Determine the administrative column to use for plotting}
 \usage{
 get_plot_admin_column(admin_level, region = NULL)
 }

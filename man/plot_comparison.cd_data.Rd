@@ -2,18 +2,21 @@
 % Please edit documentation in R/1a_checks_internal_consistency.R
 \name{plot_comparison.cd_data}
 \alias{plot_comparison.cd_data}
-\title{Plot Comparison with Linear Fit and R-squared}
+\title{Plot comparison with linear fit and R-squared}
 \usage{
 \method{plot_comparison}{cd_data}(
   .data,
   x_var,
   y_var,
   title = NULL,
-  x_label = NULL,
-  y_label = NULL,
-  legend = NULL,
-  call = caller_env(),
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
+  legend_labels = NULL,
+  call = caller_env(),
   options = NULL
 )
 }
@@ -24,22 +27,29 @@
 
 \item{y_var}{Character. Name of the variable to plot on the y-axis (e.g., 'penta1').}
 
-\item{title}{Character. The main title for the plot. Defaults to a title based on \code{x_var} and \code{y_var}.}
+\item{title}{The chart's title.}
 
-\item{x_label}{Character. Label for the x-axis. Defaults to the value of \code{x_var}.}
+\item{subtitle}{The line under the title.}
 
-\item{y_label}{Character. Label for the y-axis. Defaults to the value of \code{y_var}.}
+\item{caption}{The note under the chart.}
 
-\item{legend}{Optional named list or vector overriding the legend labels.
+\item{x_title}{The title of the horizontal axis.}
+
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{legend_labels}{Optional named list or vector overriding the legend labels.
 Recognised names are \code{district}, \code{linear_fit} and \code{diagonale}; unnamed
 entries keep their defaults. Default is \code{NULL}.}
 
 \item{call}{The calling environment.}
 
-\item{...}{Additional arguments for customization, such as \code{size}, \code{color}, or \code{linetype}, for finer control over plot appearance.}
-
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
 }
 \value{
 A ggplot2 object showing the comparison plot of two indicators with linear regression and R-squared values.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/tbl_sum.indicator_coverage.R
 \name{tbl_sum.cd_indicator_coverage}
 \alias{tbl_sum.cd_indicator_coverage}
-\title{Table Summary for National Coverage Estimates}
+\title{Table summary for national coverage estimates}
 \usage{
 \method{tbl_sum}{cd_indicator_coverage}(x, ...)
 }

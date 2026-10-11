@@ -2,7 +2,7 @@
 % Please edit documentation in R/1_load_survey_data.R
 \name{load_private_sector_data}
 \alias{load_private_sector_data}
-\title{Load and Prepare Private Sector Data}
+\title{Load and prepare private sector data}
 \usage{
 load_private_sector_data(
   path = NULL,
@@ -16,7 +16,8 @@ load_private_sector_data(
 
 \item{.data}{Optional. A pre-loaded dataset. Used directly if provided.}
 
-\item{country_iso}{Required. ISO3 country code to filter the data.}
+\item{country_iso}{ISO3 country code. When the data holds several countries (an \code{iso} column with more than
+one code), the rows of this one are kept; data for one country is used as it is.}
 
 \item{level}{Either \code{"national"} or \code{"area"} indicating the data level.}
 }
@@ -28,13 +29,13 @@ Loads raw prevalence data for public/private sector analysis and applies
 internal preprocessing for c-section share calculation.
 }
 \details{
-This function:
+Loads the data from \code{path}, or uses \code{.data}, and checks that it matches \code{level}: area data has a
+\code{level} column and national data does not. Then:
 \itemize{
-\item Loads and filters data for the specified \code{country_iso}.
 \item Assigns \code{"Public"} or \code{"Private"} to the \code{sector} column based on \code{indic} suffix.
 \item Removes sector suffix from \code{indic}.
 \item Computes number of c-sections (\code{num_csection}) and sector share of c-sections (\code{share_csection})
-within groupings defined by \code{iso} or \code{iso + area}.
+over the whole dataset, or within each value of the \code{level} column for area data.
 \item If level is \code{"area"}, parses \code{level} string into \code{area = "Urban"} or \code{"Rural"}.
 }
 }

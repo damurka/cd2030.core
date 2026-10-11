@@ -1,24 +1,43 @@
-#' Plot Mortality Rate Indicators
+#' Plot mortality rate indicators
 #'
 #' Produces line plots for national mortality indicators with regional points for comparison.
 #'
 #' @param x A `cd_mortality_summary` object.
 #' @param indicator One of `"mmr_inst"`, `"ratio_md_sb"`, `"sbr_inst"`, or `"nn_inst"`.
-#' @param labels (Optional) A named list to override the default English text, e.g. with translations. Valid keys: `title`,
-#'   `national` (legend entry for the national line) and `regions` (legend entry for the regional points). Defaults to `NULL`.
-#' @param ... Additional arguments passed to methods.
+#' @param legend_labels (Optional) A named list to override the legend's entries, e.g. with translations: `national` (the
+#'   national line) and `regions` (the regional points). Defaults to `NULL`.
+#' @inheritParams cd_plot_arguments
 #'
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A ggplot object.
 #'
+#' @examples
+#' cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#' cache$set_national_estimates(list(sbr = 0.02))
+#' cache$adjust_data()
+#' mortality <- cache$mortality_summary
+#'
+#' plot(mortality, indicator = "mmr_inst")
+#' plot(mortality, indicator = "sbr_inst", title = "Institutional stillbirth rate",
+#'      legend_labels = list(national = "Kenya", regions = "Regions"), legend_position = "bottom")
+#'
 #' @export
-plot.cd_mortality_summary <- function(x, indicator = c('mmr_inst', 'ratio_md_sb', 'sbr_inst', 'nn_inst'), labels = NULL, ..., options = NULL) {
-  cd_finish_plot(.plot_cd_mortality_summary_impl(x, indicator = indicator, labels = labels, ...), options, ..., .source = x)
+plot.cd_mortality_summary <- function(x,
+                                      indicator = c("mmr_inst", "ratio_md_sb", "sbr_inst", "nn_inst"),
+                                      title = NULL,
+                                      subtitle = NULL,
+                                      caption = NULL,
+                                      x_title = NULL,
+                                      y_title = NULL,
+                                      legend_title = NULL,
+                                      ...,
+                                      legend_labels = NULL,
+                                      options = NULL) {
+  .cd_draw(.plot_cd_mortality_summary_impl, x, list(indicator = indicator, legend_labels = legend_labels), ..., options = options)
 }
 
-.plot_cd_mortality_summary_impl <- function(x, indicator = c('mmr_inst', 'ratio_md_sb', 'sbr_inst', 'nn_inst'), labels = NULL, ...) {
+.plot_cd_mortality_summary_impl <- function(x, indicator = c('mmr_inst', 'ratio_md_sb', 'sbr_inst', 'nn_inst'), title = NULL, legend_labels = NULL, ...) {
   indicator <- arg_match(indicator)
+  labels <- as.list(legend_labels)[intersect(names(legend_labels), c('national', 'regions'))]
 
   default_labels <- list(
     title = switch(
@@ -40,7 +59,7 @@ plot.cd_mortality_summary <- function(x, indicator = c('mmr_inst', 'ratio_md_sb'
   final_labels <- utils::modifyList(default_labels, if (is.null(labels)) list() else as.list(labels))
 
   label <- final_labels$national
-  title <- final_labels$title
+  title <- title %||% final_labels$title
   lbl_regions <- final_labels$regions
 
   national <- x %>% filter(adminlevel_1 == 'National')
@@ -69,31 +88,47 @@ plot.cd_mortality_summary <- function(x, indicator = c('mmr_inst', 'ratio_md_sb'
 }
 
 
-#' Plot Completeness of Facility Reporting Ratios
+#' Plot completeness of facility reporting ratios
 #'
 #' Calculates and plots the estimated completeness of facility reporting
 #' for maternal deaths or stillbirths based on UN estimates and assumed
 #' community-to-institution ratios.
 #'
 #' @param x A `cd_mortality_ratio_summarised ` object from completeness estimation.
-#' @param labels (Optional) A named list to override the default English text, e.g. with translations. Valid keys: `title`,
-#'   `x_axis`, `y_axis`, and the legend entries `lower`, `best` and `upper` (the UN lower bound, best estimate and upper bound).
-#'   Defaults to `NULL`.
-#' @param ... Additional arguments (not used).
+#' @param legend_labels (Optional) A named list to override the legend's entries, e.g. with translations: `lower`, `best`
+#'   and `upper` (the UN lower bound, best estimate and upper bound). Defaults to `NULL`.
+#' @inheritParams cd_plot_arguments
 #'
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
 #' @return A ggplot object with ratio lines, labels, and reference points.
 #'
+#' @examples
+#' cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#' cache$set_national_estimates(list(sbr = 0.02))
+#' cache$adjust_data()
+#' completeness <- cache$summarise_completeness_ratio("mmr")
+#'
+#' plot(completeness)
+#' plot(completeness, title = "Completeness of maternal death reporting", y_title = "Completeness (%)",
+#'      legend_labels = list(lower = "UN lower bound", best = "UN best estimate", upper = "UN upper bound"))
+#'
 #' @export
-plot.cd_mortality_ratio_summarised <- function(x, labels = NULL, ..., options = NULL) {
-  cd_finish_plot(.plot_cd_mortality_ratio_summarised_impl(x, labels = labels, ...), options, ..., .source = x)
+plot.cd_mortality_ratio_summarised <- function(x,
+                                               title = NULL,
+                                               subtitle = NULL,
+                                               caption = NULL,
+                                               x_title = NULL,
+                                               y_title = NULL,
+                                               legend_title = NULL,
+                                               ...,
+                                               legend_labels = NULL,
+                                               options = NULL) {
+  .cd_draw(.plot_cd_mortality_ratio_summarised_impl, x, list(legend_labels = legend_labels), ..., options = options)
 }
 
-.plot_cd_mortality_ratio_summarised_impl <- function(x, labels = NULL, ...) {
+.plot_cd_mortality_ratio_summarised_impl <- function(x, title = NULL, x_title = NULL, y_title = NULL, legend_labels = NULL, ...) {
 
   plot_type <- attr_or_abort(x, 'plot_type')
-  user_labels <- if (is.null(labels)) list() else as.list(labels)
+  user_labels <- as.list(legend_labels)[intersect(names(legend_labels), c('lower', 'best', 'upper'))]
 
   lower_bound <- paste0('UN ', str_to_upper(plot_type),' lower bound')
   upper_bound <- paste0('UN ', str_to_upper(plot_type),' upper bound')
@@ -113,8 +148,9 @@ plot.cd_mortality_ratio_summarised <- function(x, labels = NULL, ..., options = 
   )
 
   label_values <- labels[[plot_type]]
-  label_values$x_axis <- label_values$x
-  label_values$y_axis <- label_values$y
+  label_values$title <- title %||% label_values$title
+  label_values$x_title <- x_title %||% label_values$x
+  label_values$y_title <- y_title %||% label_values$y
   label_values <- utils::modifyList(
     c(label_values, list(lower = lower_bound, best = best_estimates, upper = upper_bound)),
     user_labels
@@ -136,62 +172,61 @@ plot.cd_mortality_ratio_summarised <- function(x, labels = NULL, ..., options = 
     scale_y_continuous(limits = c(0, max_y), breaks = scales::pretty_breaks(n = 10), expand = expansion(mult = c(0,0.05))) +
     cd_plot_theme(
       title = label_values$title,
-      x_axis = label_values$x_axis,
-      y_axis = label_values$y_axis
+      x_title = label_values$x_title,
+      y_title = label_values$y_title
     )
 }
 
-#' Plot Filtered Institutional Mortality Rates
+#' Plot filtered institutional mortality rates
 #'
 #' Visualizes institutional mortality rates (`MMR` or `SBR`) across regions using filled
 #' geographic polygons. Facets the map by year and applies a color gradient by value.
 #'
 #' @param x A `cd_mortality_summary_filtered` object.
-#' @param labels (Optional) A named list to override the default English text, e.g. with translations. Valid keys: `title` and
-#'   `legend` (the legend title). Defaults to `NULL`.
-#' @param ... Additional arguments (not used).
+#' @inheritParams cd_plot_arguments
 #'
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
-#' @return A `ggplot2` object. This function is called for its side effect of rendering a map.
+#' @return A `ggplot2` object: the map, with the chart options applied.
 #'
 #' @details
-#' The function:
-#' - Determines the appropriate plot title and legend based on the `indicator` attribute
-#' - Projects the geometry to WGS84 for consistent map rendering
-#' - Facets by year and uses `geom_sf()` to draw filled polygons
-#' - Applies a sequential `Reds` color scale with gray for missing values
+#' Takes the default title and legend title from the `indicator` attribute of `x` and sets the
+#' geometry to WGS84 coordinates. Draws the regions as filled polygons with `geom_sf()`, one panel
+#' per year, on a sequential colour scale from the palette stored on `x` (`Reds` by default), with
+#' gray for missing values.
 #'
 #' @examples
 #' \dontrun{
-#' filtered <- filter_mortality_summary(mortality_data, "UGA", indicator = "mmr",
+#' filtered <- select_mortality_summary(mortality_data, "UGA", indicator = "mmr",
 #'                                      plot_year = 2020:2022)
 #' plot(filtered)
 #' }
 #'
 #' @export
-plot.cd_mortality_summary_filtered <- function(x, labels = NULL, ..., options = NULL) {
-  cd_finish_plot(.plot_cd_mortality_summary_filtered_impl(x, labels = labels, ...), options, ..., .source = x)
+plot.cd_mortality_summary_filtered <- function(x,
+                                               title = NULL,
+                                               subtitle = NULL,
+                                               caption = NULL,
+                                               x_title = NULL,
+                                               y_title = NULL,
+                                               legend_title = NULL,
+                                               ...,
+                                               options = NULL) {
+  .cd_draw(.plot_cd_mortality_summary_filtered_impl, x, list(), ..., options = options)
 }
 
-.plot_cd_mortality_summary_filtered_impl <- function(x, labels = NULL, ...) {
+.plot_cd_mortality_summary_filtered_impl <- function(x, title = NULL, legend_title = NULL, ...) {
   indicator <- attr_or_abort(x, 'indicator')
 
-  title <- switch (
+  title <- title %||% switch (
     indicator,
     mmr_inst = 'Institutional MMR by Region',
     sbr_inst = 'Institutional SBR by Region'
   )
 
-  legend <- switch (
+  legend_title <- legend_title %||% switch (
     indicator,
     mmr_inst = 'Institutional MMR per 100,000 livebirths',
     sbr_inst = 'Institutional SBR per 1000'
   )
-
-  labels <- as.list(labels)
-  title <- labels$title %||% title
-  legend <- labels$legend %||% legend
 
   x %>%
     .cd_as_map() %>%
@@ -201,36 +236,53 @@ plot.cd_mortality_summary_filtered <- function(x, labels = NULL, ..., options = 
       scale_fill_gradientn(
         colours = brewer.pal(9, attr_or_null(x, 'palette') %||% 'Reds'),
         na.value = 'gray90',
-        name = legend
+        name = legend_title
       ) +
       cd_plot_theme(title = title) +
       cd_map_theme() +
       theme(legend.key.size = unit(6, "mm"), legend.text = element_text(size = 9))
 }
 
-#' Plot Subnational Mortality Plausibility
+#' Plot subnational mortality plausibility
 #'
-#' Generates subnational scatter plots with annual medians and plausible ranges
-#' as requested for the CAM 2026 subnational mortality analysis.
+#' Draws one institutional mortality indicator by year, with a point for each admin level 1 unit,
+#' the median of the units in each year and the range of values considered plausible for the
+#' indicator. Use it to see whether subnational values are realistic.
 #'
 #' @param x A `cd_mortality_summary` object.
-#' @param indicator One of `"fresh_total_sb"`, `"ratio_md_sb"`, `"ratio_md_nd"`.
+#' @param indicator One of `"fresh_total_sb"` (fresh stillbirths as a percentage of all
+#'   stillbirths), `"ratio_md_sb"` (stillbirths per maternal death) or `"ratio_md_nd"` (neonatal
+#'   deaths per maternal death).
 #' @param title (Optional) Custom translated title.
-#' @param y_axis (Optional) Custom translated y-axis label.
-#' @param x_axis (Optional) Custom translated x-axis label.
-#' @param note (Optional) Custom translated footnote caption.
+#' @param y_title (Optional) Custom translated y-axis label.
+#' @param x_title (Optional) Custom translated x-axis label.
+#' @param caption (Optional) Custom translated footnote.
 #' @param legend_labels (Optional) A named list to override default legend labels (keys: 'median', 'plausible').
+#'
+#' @return A `ggplot` object. The function stops with an error when `x` has no subnational values
+#'   for the indicator.
+#'
+#' @examples
+#' cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#' cache$set_national_estimates(list(sbr = 0.02))
+#' cache$adjust_data()
+#' mortality <- cache$mortality_summary
+#'
+#' plot_mortality_plausibility(mortality, indicator = "fresh_total_sb")
+#' plot_mortality_plausibility(mortality, indicator = "ratio_md_sb", title = "Stillbirths per maternal death",
+#'                             x_title = "Year", legend_labels = list(median = "Median of the regions"))
 #'
 #' @export
 plot_mortality_plausibility <- function(x,
                                         indicator = c("fresh_total_sb", "ratio_md_sb", "ratio_md_nd"),
                                         title = NULL,
-                                        y_axis = NULL,
-                                        x_axis = NULL,
-                                        note = NULL,
+                                        y_title = NULL,
+                                        x_title = NULL,
+                                        caption = NULL,
                                         legend_labels = NULL) {
-  
-  check_cd_class(x, 'cd_mortality_summary')
+  # Made for the CAM 2026 subnational mortality analysis.
+
+  check_cd_mortality_summary(x)
 
   indicator <- arg_match(indicator)
 
@@ -249,21 +301,21 @@ plot_mortality_plausibility <- function(x,
   cfg <- switch(
     indicator,
     fresh_total_sb = list(
-      y_lab = "Fresh stillbirths (%)",
+      y_title = "Fresh stillbirths (%)",
       title = paste0("Institutional fresh stillbirths as % of total stillbirths, ", country_name, ", ", min_year, "-", max_year, "."),
       p_min = 30,
       p_max = 55,
       note  = "Note: Plausible range (30-55) is the range of values considered realistic and expected."
     ),
     ratio_md_sb = list(
-      y_lab = "Stillbirths per maternal death",
+      y_title = "Stillbirths per maternal death",
       title = paste0("Institutional stillbirth-to-maternal death ratio, ", country_name, ", ", min_year, "-", max_year, "."),
       p_min = 6,
       p_max = 15,
       note  = "Note: Plausible range (6-15) is the range of values considered realistic and expected."
     ),
     ratio_md_nd = list(
-      y_lab = "Neonatal death per maternal death",
+      y_title = "Neonatal death per maternal death",
       title = paste0("Institutional neonatal death-to-maternal death ratio, ", country_name, ", ", min_year, "-", max_year, "."),
       p_min = 5,
       p_max = 10,
@@ -273,9 +325,9 @@ plot_mortality_plausibility <- function(x,
 
   # Apply translations if provided
   t_title <- title %||% cfg$title
-  t_y     <- y_axis %||% cfg$y_lab
-  t_x     <- x_axis %||% 'Year'
-  t_note  <- note %||% cfg$note
+  t_y     <- y_title %||% cfg$y_title
+  t_x     <- x_title %||% 'Year'
+  t_note  <- caption %||% cfg$note
 
   # Setup Legend Overrides safely
   default_leg <- list(median = 'Median', plausible = 'Plausible range')
@@ -314,7 +366,7 @@ plot_mortality_plausibility <- function(x,
     scale_linetype_manual(name = NULL, values = setNames(c("solid", "dashed"), c(lbl_median, lbl_plausible))) +
     scale_x_continuous(breaks = min_year:max_year) +
     cd_plot_theme(
-      title = t_title, x_axis = t_x, y_axis = t_y, caption = t_note
+      title = t_title, x_title = t_x, y_title = t_y, caption = t_note
     ) +
     theme(
       plot.title = element_text(face = "bold", hjust = 0.5, margin = margin(b = 15)),

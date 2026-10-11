@@ -1,4 +1,4 @@
-#' Summary for Average Reporting Rates by Year
+#' Summary for average reporting rates by year
 #'
 #' Provides a custom summary for the `cd_average_reporting_rate` object, indicating
 #' that the data represents annual average reporting rates across all indicators.
@@ -9,6 +9,13 @@
 #'
 #' @return A character vector describing the content and purpose of the
 #'   `cd_average_reporting_rate` data.
+#'
+#' @examples
+#' data <- load_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#'
+#' # the summary is the header printed above the table
+#' calculate_average_reporting_rate(data)
+#'
 #' @export
 tbl_sum.cd_average_reporting_rate <- function(x, ...) {
   c(
@@ -18,7 +25,7 @@ tbl_sum.cd_average_reporting_rate <- function(x, ...) {
 }
 
 
-#' Summary for District-Level Reporting Rates by Year
+#' Summary for district-level reporting rates by year
 #'
 #' Provides a custom summary for the `cd_district_reporting_rate` object, displaying
 #' a message with the threshold used in calculating district-level reporting rates by year.
@@ -29,6 +36,13 @@ tbl_sum.cd_average_reporting_rate <- function(x, ...) {
 #'
 #' @return A character vector describing the reporting threshold applied and summarizing
 #' district reporting rates by year.
+#'
+#' @examples
+#' data <- load_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#'
+#' # the summary is the header printed above the table, with the threshold used
+#' calculate_district_reporting_rate(data, threshold = 90)
+#'
 #' @export
 tbl_sum.cd_district_reporting_rate <- function(x, ...) {
   threshold <- attr(x, "threshold")

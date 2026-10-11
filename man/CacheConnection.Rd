@@ -3,7 +3,7 @@
 \docType{class}
 \name{CacheConnection}
 \alias{CacheConnection}
-\title{CacheConnection Class}
+\title{CacheConnection class}
 \format{
 An \link[R6:R6Class]{R6::R6Class} generator object.
 }
@@ -15,2493 +15,2619 @@ analysis and reporting workflows.
 \itemize{
 \item \strong{Layer 0 (Core Data):} Raw \code{countdown_data}, thresholds, external surveys (\code{un_estimates}).
 \item \strong{Layer 1 (DQA & Adjustments):} Depends on Layer 0. Includes \code{adjusted_data}, reporting rates, completeness, overall scores.
-\item \strong{Layer 2 (Coverage & Denominators):} Depends on Layer 1. Includes derived coverages at national, admin1, and district levels.
+\item \strong{Layer 2 (Coverage & Denominators):} Depends on Layer 1. Includes derived coverages at national, admin level 1, and district levels.
 \item \strong{Layer 3 (Inequality & Health Systems):} Depends on Layer 2 (Coverage). Includes inequalities, mortality ratios, and service utilization summaries.
 }
 }
 \keyword{internal}
 \section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
-\describe{
-\item{\code{data_version}}{Defines the current internal data version to handle backward compatibility.}
-}
-\if{html}{\out{</div>}}
+  \if{html}{\out{<div class="r6-fields">}}
+  \describe{
+    \item{\code{data_version}}{Defines the current internal data version to handle backward compatibility.}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Active bindings}{
-\if{html}{\out{<div class="r6-active-bindings">}}
-\describe{
-\item{\code{language}}{Active Binding: Gets the UI language.}
+  \if{html}{\out{<div class="r6-active-bindings">}}
+  \describe{
+    \item{\code{language}}{Active Binding: Gets the UI language.}
 
-\item{\code{cache_path}}{Active Binding: Gets the physical disk path for the \code{.rds} cache.}
+    \item{\code{cache_path}}{Active Binding: Gets the physical disk path for the \code{.rds} cache.}
 
-\item{\code{countdown_data}}{Active Binding: Gets the raw, unadjusted countdown tibble.}
+    \item{\code{countdown_data}}{Active Binding: Gets the raw, unadjusted countdown tibble.}
 
-\item{\code{data_years}}{Active Binding: Extracts unique years present in the raw data. Before
-Finish (\code{wizard_parts} still set, no \code{countdown_data} yet), falls back to the raw Population
-sheet's own \code{year} column -- confirmed live this matters: several other page modules read
-\code{cache()$data_years} unconditionally the moment \code{cache()} itself becomes non-NULL (e.g.
-\verb{modules/1b_remove_years.R}'s own \code{req(cache()$data_years)}), and those page modules are
-instantiated at app startup the same "always running" way the wizard's own step servers are
--- reachable well before Finish, not just after.}
+    \item{\code{data_years}}{Active Binding: Gets the years present in the raw data, in ascending order. While the
+Load Data wizard's sheets are not yet merged (\code{wizard_parts} set, no \code{countdown_data}), the years come
+from the population sheet's \code{year} column. \code{NULL} when neither gives any.}
 
-\item{\code{subnational_regions}}{Active Binding: Extracts unique admin1 and district combinations.
-Before Finish (\code{wizard_parts} still set, no \code{countdown_data} yet), falls back to the raw
-Admin sheet's own \code{first_admin_level}/\code{district} columns -- this is what lets Map
-Survey/Map Shapefile show the real admin1 list mid-wizard, per the wizard redesign's own
-requirement that mapping happens "against the admin1 from admin sheet."}
+    \item{\code{subnational_regions}}{Active Binding: Gets the unique admin level 1 and district combinations, a data
+frame with columns \code{adminlevel_1} and \code{district}. While the Load Data wizard's sheets are not yet merged
+(\code{wizard_parts} set, no \code{countdown_data}), they come from the admin sheet's \code{first_admin_level} and
+\code{district} columns. \code{NULL} when neither gives any.}
 
-\item{\code{country}}{Active Binding: Gets the text string representing the focal country. Readonly.
-Before Finish, falls back to \code{wizard_country} -- a best-effort, non-aborting resolution
-(\code{resolve_country_best_effort()}, 0_import_load_data.R) computed right after upload, since
-the real, validated \code{country} attribute only exists once \code{merge_and_standardize()}'s
-\code{match_country()} call has actually run. The genuine validation (is there cleanly one
-country value at all) stays \code{check_single_country()}'s job, surfaced at the Data Quality
-step -- this fallback's only job is unblocking everything else that needs a country before
-Finish (the header badge, national-rate/survey defaults, the bundled shapefile lookup).}
+    \item{\code{country}}{Active Binding: Gets the name of the dataset's country. Readonly. While the Load Data
+wizard's sheets are not yet merged (no \code{countdown_data}), it is the country stored with
+\code{set_wizard_country()}, which is \code{NULL} when the country could not be worked out.}
 
-\item{\code{country_iso}}{Active Binding: Gets the 3-letter ISO code for the country. Readonly.
-Same pre-Finish fallback as \code{country} above.}
+    \item{\code{country_iso}}{Active Binding: Gets the 3-letter ISO code for the country. Readonly. While the Load
+Data wizard's sheets are not yet merged, it is the code stored with \code{set_wizard_country()}, which is
+\code{NULL} when the country could not be worked out.}
 
-\item{\code{wizard_parts}}{Active Binding: Gets the Load Data wizard's own in-progress,
-not-yet-merged sheets (\code{load_excel_parts()}'s result) -- \code{NULL} once Finish has merged them
-into \code{countdown_data}, or for any cache that was never in wizard mode to begin with.}
+    \item{\code{wizard_parts}}{Active Binding: Gets the sheets of an upload that the Load Data wizard has read but
+not yet merged (the result of \code{load_excel_parts()}). \code{NULL} once they are merged into \code{countdown_data}
+and cleared, and for a dataset that was not loaded through the wizard.}
 
-\item{\code{quality_confirmed}}{Active Binding: \code{TRUE} once this cache's data finished the Load Data
-wizard with its quality checks passed (set once, at Finish -- see \code{set_quality_confirmed()}
-below) -- persisted with everything else in the \code{.rds}, so it survives a resume. \code{FALSE} for
-a cache still mid-wizard, and for any cache built outside the wizard entirely.}
+    \item{\code{quality_confirmed}}{Active Binding: \code{TRUE} once the data has finished the Load Data wizard with its
+quality checks passed (see \code{set_quality_confirmed()}). It is saved with the dataset. \code{FALSE} while the
+wizard is in progress, and for a dataset built outside the wizard.}
 
-\item{\code{wizard_quality_results}}{Active Binding: Gets the frozen, pre-merge quality-check
-snapshot taken at Finish (\code{NULL} before Finish, and for any cache that never went through
-the wizard) -- see \code{set_wizard_quality_results()}'s own comment for why this exists and what
-reads it (\code{run_all_quality_checks()}).}
+    \item{\code{wizard_quality_results}}{Active Binding: Gets the quality check results stored when the Load Data
+wizard finished (see \code{set_wizard_quality_results()}), which \code{run_all_quality_checks()} returns once the
+wizard's sheets are cleared. \code{NULL} before that, and for a dataset that did not go through the wizard.}
 
-\item{\code{adjusted_data}}{Active Binding: Gets countdown data with K-factors applied. Adjusts automatically if flags are met.}
+    \item{\code{adjusted_data}}{Active Binding: Gets countdown data with K-factors applied. Adjusts automatically if flags are met.}
 
-\item{\code{data_with_excluded_years}}{Active Binding: Raw data filtered to remove user-excluded years. Readonly.
-\code{NULL} before Finish (no \code{countdown_data} yet, mid-wizard) -- "Remove Years" is a separate,
-post-Finish page, not something the wizard itself needs a pre-merge equivalent for.}
+    \item{\code{data_with_excluded_years}}{Active Binding: Raw data without the years in \code{excluded_years}. Readonly.
+\code{NULL} when there is no \code{countdown_data} yet (the Load Data wizard has not finished).}
 
-\item{\code{performance_threshold}}{Active Binding: Gets the integer threshold used for DQA success checks.}
+    \item{\code{performance_threshold}}{Active Binding: Gets the integer threshold used for DQA success checks.}
 
-\item{\code{excluded_years}}{Active Binding: Gets the numeric vector of years blocked from modeling.}
+    \item{\code{excluded_years}}{Active Binding: Gets the numeric vector of years blocked from modeling.}
 
-\item{\code{k_factors}}{Active Binding: Gets the named vector of numeric adjustment ratios.}
+    \item{\code{k_factors}}{Active Binding: Gets the named vector of numeric adjustment ratios.}
 
-\item{\code{adjustment_settings}}{Active Binding: The Data Adjustment page's settings (see \code{\link[=adjust_service_data]{adjust_service_data()}}); a
-dataset saved before they existed gets them from its \code{k_factors} and \code{excluded_years}.}
+    \item{\code{adjustment_settings}}{Active Binding: The Data Adjustment page's settings (see \code{\link[=adjust_service_data]{adjust_service_data()}}).
+When none are stored, they are made from \code{k_factors} and \code{excluded_years}.}
 
-\item{\code{adjusted_flag}}{Active Binding: Gets boolean representing if adjustments are active.}
+    \item{\code{adjusted_flag}}{Active Binding: Gets boolean representing if adjustments are active.}
 
-\item{\code{derivation_population}}{Active Binding: Gets the string indicating the origin population indicator.}
+    \item{\code{derivation_population}}{Active Binding: Gets the string indicating the origin population indicator.}
 
-\item{\code{reporting_rate_national}}{Active Binding: Gets the cached national reporting rate dataset.}
+    \item{\code{reporting_rate_national}}{Active Binding: Gets the cached national reporting rate dataset.}
 
-\item{\code{reporting_rate_admin1}}{Active Binding: Gets the cached region-level reporting rate dataset.}
+    \item{\code{reporting_rate_admin1}}{Active Binding: Gets the cached region-level reporting rate dataset.}
 
-\item{\code{reporting_rate_district}}{Active Binding: Gets the cached district-level reporting rate dataset.}
+    \item{\code{reporting_rate_district}}{Active Binding: Gets the cached district-level reporting rate dataset.}
 
-\item{\code{district_reporting_rate}}{Active Binding: Gets percentage of districts passing the reporting threshold.}
+    \item{\code{district_reporting_rate}}{Active Binding: Gets percentage of districts passing the reporting threshold.}
 
-\item{\code{completeness_national}}{Active Binding: Gets non-missing values percentage at national level.}
+    \item{\code{completeness_national}}{Active Binding: Gets non-missing values percentage at national level.}
 
-\item{\code{completeness_admin1}}{Active Binding: Gets non-missing values percentage at region level.}
+    \item{\code{completeness_admin1}}{Active Binding: Gets non-missing values percentage at region level.}
 
-\item{\code{completeness_district}}{Active Binding: Gets non-missing values percentage at district level.}
+    \item{\code{completeness_district}}{Active Binding: Gets non-missing values percentage at district level.}
 
-\item{\code{district_completeness}}{Active Binding: Gets \% of districts passing completeness thresholds.}
+    \item{\code{district_completeness}}{Active Binding: Gets \% of districts passing completeness thresholds.}
 
-\item{\code{outliers_national}}{Active Binding: Gets percentage of non-outlier values at national level.}
+    \item{\code{outliers_national}}{Active Binding: Gets percentage of non-outlier values at national level.}
 
-\item{\code{outliers_admin1}}{Active Binding: Gets percentage of non-outlier values at region level.}
+    \item{\code{outliers_admin1}}{Active Binding: Gets percentage of non-outlier values at region level.}
 
-\item{\code{outliers_district}}{Active Binding: Gets percentage of non-outlier values at district level.}
+    \item{\code{outliers_district}}{Active Binding: Gets percentage of non-outlier values at district level.}
 
-\item{\code{district_outliers_summary}}{Active Binding: Gets \% of districts passing outlier safety checks.}
+    \item{\code{district_outliers_summary}}{Active Binding: Gets \% of districts passing outlier safety checks.}
 
-\item{\code{list_outlier_units}}{Active Binding: Generates a table of facilities identified as severe outliers.}
+    \item{\code{list_outlier_units}}{Active Binding: Generates a table of facilities identified as severe outliers.}
 
-\item{\code{ratios_summary}}{Active Binding: Summarizes adequacy ratios (like ANC1/Penta1) over time.}
+    \item{\code{ratios_summary}}{Active Binding: Summarizes adequacy ratios (like ANC1/Penta1) over time.}
 
-\item{\code{adequacy_ratios}}{Active Binding: Calculates district-by-district chronological indicator consistency.}
+    \item{\code{adequacy_ratios}}{Active Binding: Calculates district-by-district chronological indicator consistency.}
 
-\item{\code{overall_score}}{Active Binding: Merges DQA tables to formulate the master health score grade.}
+    \item{\code{overall_score}}{Active Binding: Merges DQA tables to formulate the master health score grade.}
 
-\item{\code{denominator_metrics}}{Active Binding: Compiles demographic targets from DHIS2 and UN data.}
+    \item{\code{denominator_metrics}}{Active Binding: Compiles demographic targets from DHIS2 and UN data.}
 
-\item{\code{indicator_coverage_national}}{Active Binding: Gets national-level indicator coverage calculations.}
+    \item{\code{indicator_coverage_national}}{Active Binding: Gets national-level indicator coverage calculations.}
 
-\item{\code{indicator_coverage_admin1}}{Active Binding: Gets region-level indicator coverage calculations.}
+    \item{\code{indicator_coverage_admin1}}{Active Binding: Gets region-level indicator coverage calculations.}
 
-\item{\code{indicator_coverage_district}}{Active Binding: Gets district-level indicator coverage calculations.}
+    \item{\code{indicator_coverage_district}}{Active Binding: Gets district-level indicator coverage calculations.}
 
-\item{\code{survey_estimates}}{Active Binding: Extracts and formats targeted rates from the master survey.}
+    \item{\code{survey_estimates}}{Active Binding: Extracts and formats targeted rates from the master survey.}
 
-\item{\code{national_estimates}}{Active Binding: Fetches the configured national baseline estimates list.}
+    \item{\code{national_estimates}}{Active Binding: Fetches the configured national baseline estimates list.}
 
-\item{\code{admin1_estimates}}{Active Binding: Fetches merged regional estimates from survey mapping.}
+    \item{\code{admin1_estimates}}{Active Binding: Fetches merged regional estimates from survey mapping.}
 
-\item{\code{survey_years}}{Active Binding: Fetches a unique list of survey years available.}
+    \item{\code{survey_years}}{Active Binding: Fetches a unique list of survey years available.}
 
-\item{\code{survey_year}}{Active Binding: Fetches the anchor integer year used for survey calculations.}
+    \item{\code{survey_year}}{Active Binding: Fetches the anchor integer year used for survey calculations.}
 
-\item{\code{start_survey_year}}{Active Binding: Fetches the chronological starting boundary for models.}
+    \item{\code{start_survey_year}}{Active Binding: Fetches the chronological starting boundary for models.}
 
-\item{\code{denominator}}{Active Binding: Fetches standard analysis denominator.}
+    \item{\code{denominator}}{Active Binding: Fetches standard analysis denominator.}
 
-\item{\code{maternal_denominator}}{Active Binding: Fetches maternal-specific analysis denominator.}
+    \item{\code{maternal_denominator}}{Active Binding: Fetches maternal-specific analysis denominator.}
 
-\item{\code{selected_admin_level_1}}{Active Binding: Dashboard specific Region selection.}
+    \item{\code{selected_admin_level_1}}{Active Binding: Dashboard specific Region selection.}
 
-\item{\code{selected_district}}{Active Binding: Dashboard specific District selection.}
+    \item{\code{selected_district}}{Active Binding: Dashboard specific District selection.}
 
-\item{\code{mortality_mapping_years}}{Active Binding: Fetches years requested for mortality charts.}
+    \item{\code{mortality_mapping_years}}{Active Binding: Fetches years requested for mortality charts.}
 
-\item{\code{utilization_mapping_years}}{Active Binding: Fetches years requested for utilization charts.}
+    \item{\code{utilization_mapping_years}}{Active Binding: Fetches years requested for utilization charts.}
 
-\item{\code{mapping_years}}{Active Binding: Fetches years requested for standard map generation.}
+    \item{\code{mapping_years}}{Active Binding: Fetches years requested for standard map generation.}
 
-\item{\code{chart_options}}{Active Binding: every stored chart option, a named list of \code{\link[=cd_chart_options]{cd_chart_options()}} (read-only; use
+    \item{\code{chart_options}}{Active Binding: every stored chart option, a named list of \code{\link[=cd_chart_options]{cd_chart_options()}} (read-only; use
 \code{set_chart_options()} / \code{get_chart_options()}).}
 
-\item{\code{report_projects}}{Active Binding: the reports built in the report builder, a named list by id (read-only; use
+    \item{\code{report_projects}}{Active Binding: the reports built in the report builder, a named list by id (read-only; use
 \code{set_report_project()}).}
 
-\item{\code{report_assets}}{Active Binding: the pictures the reports use, a named list by id of \code{list(type, data)}
+    \item{\code{report_assets}}{Active Binding: the pictures the reports use, a named list by id of \code{list(type, data)}
 (read-only; use \code{set_report_asset()}).}
 
-\item{\code{graphs}}{Active Binding: the saved custom charts, a named list by id of their descriptions (read-only;
+    \item{\code{graphs}}{Active Binding: the saved custom charts, a named list by id of their descriptions (read-only;
 use \code{set_graph()}).}
 
-\item{\code{revision}}{Active Binding: a number that goes up each time a change to the dataset is saved, so another
+    \item{\code{revision}}{Active Binding: a number that goes up each time a change to the dataset is saved, so another
 process reading the same \code{.rds} (the AI's copy) knows to reload (read-only).}
 
-\item{\code{read_only}}{Active Binding: whether this cache never writes its \code{.rds} (read-only).}
+    \item{\code{read_only}}{Active Binding: whether this cache never writes its \code{.rds} (read-only).}
 
-\item{\code{report_themes}}{Active Binding: the themes made from Office files, a named list by id (read-only; use
+    \item{\code{report_themes}}{Active Binding: the themes made from Office files, a named list by id (read-only; use
 \code{set_report_theme()}).}
 
-\item{\code{fpet_data}}{Active Binding: Fetches FPET metrics (loads from global if missing).}
+    \item{\code{fpet_data}}{Active Binding: Fetches FPET metrics (the package's built-in data for the country when
+none was set).}
 
-\item{\code{un_estimates}}{Active Binding: Fetches demographic targets set by the UN.}
+    \item{\code{un_estimates}}{Active Binding: Fetches demographic targets set by the UN.}
 
-\item{\code{un_mortality_estimates}}{Active Binding: Fetches mortality targets set by the UN.}
+    \item{\code{un_mortality_estimates}}{Active Binding: Fetches mortality targets set by the UN.}
 
-\item{\code{wuenic_estimates}}{Active Binding: Fetches immunization estimates tracked by WHO.}
+    \item{\code{wuenic_estimates}}{Active Binding: Fetches immunization estimates tracked by WHO.}
 
-\item{\code{national_survey}}{Active Binding: Fetches overall national survey raw frame.}
+    \item{\code{national_survey}}{Active Binding: Fetches overall national survey raw frame.}
 
-\item{\code{regional_survey}}{Active Binding: Fetches regional survey raw frame.}
+    \item{\code{regional_survey}}{Active Binding: Fetches regional survey raw frame.}
 
-\item{\code{shapefile}}{Active Binding: Fetches the shapefile to use for this country -- a
-user-uploaded override (\code{set_shapefile()}) if one exists, otherwise the package-bundled
-default for \code{country_iso}, same override-with-fallback pattern as \code{regional_survey} above.
-\code{NULL} if \code{country_iso} isn't known yet (mid-wizard, before the admin sheet's country
-resolves) -- there's nothing to fetch a bundled shapefile FOR yet.}
+    \item{\code{shapefile}}{Active Binding: Fetches the shapefile for the country: the one uploaded with
+\code{set_shapefile()} when there is one, otherwise the package's built-in admin level 1 shapefile for
+\code{country_iso}. \code{NULL} when none was uploaded and \code{country_iso} is not known yet.}
 
-\item{\code{shapefile_name_field}}{Active Binding: Which column of \code{self$shapefile} holds admin-1
-names -- \code{"NAME_1"} (the bundled shapefile's own column) unless a user-uploaded one set a
-different field via \code{set_shapefile_name_field()}.}
+    \item{\code{shapefile_name_field}}{Active Binding: The column of \code{shapefile} that holds the admin level 1 names:
+\code{"NAME_1"} (the column of the built-in shapefiles) unless \code{set_shapefile_name_field()} set another.}
 
-\item{\code{wiq_survey}}{Active Binding: Fetches wealth inequality (WIQ) survey raw frame.}
+    \item{\code{wiq_survey}}{Active Binding: Fetches wealth inequality (WIQ) survey raw frame.}
 
-\item{\code{area_survey}}{Active Binding: Fetches area based (urban/rural) survey frame.}
+    \item{\code{area_survey}}{Active Binding: Fetches area based (urban/rural) survey frame.}
 
-\item{\code{education_survey}}{Active Binding: Fetches maternal education level survey frame.}
+    \item{\code{education_survey}}{Active Binding: Fetches maternal education level survey frame.}
 
-\item{\code{survey_mapping}}{Active Binding: Retrieves text mapping linking survey regions to raw regions.}
+    \item{\code{survey_mapping}}{Active Binding: Retrieves text mapping linking survey regions to raw regions.}
 
-\item{\code{map_mapping}}{Active Binding: Retrieves mapping linking map coordinates to raw regions.}
+    \item{\code{map_mapping}}{Active Binding: Retrieves mapping linking map coordinates to raw regions.}
 
-\item{\code{sector_national_estimates}}{Active Binding: Returns cache of national sector breakdown.}
+    \item{\code{sector_national_estimates}}{Active Binding: Returns cache of national sector breakdown.}
 
-\item{\code{sector_area_estimates}}{Active Binding: Returns cache of sub-area sector breakdown.}
+    \item{\code{sector_area_estimates}}{Active Binding: Returns cache of sub-area sector breakdown.}
 
-\item{\code{csection_national_estimates}}{Active Binding: Returns cached national csection estimates.}
+    \item{\code{csection_national_estimates}}{Active Binding: Returns cached national csection estimates.}
 
-\item{\code{csection_area_estimates}}{Active Binding: Returns cached sub-area csection estimates.}
+    \item{\code{csection_area_estimates}}{Active Binding: Returns cached sub-area csection estimates.}
 
-\item{\code{check_inequality_params}}{Active Binding: Returns boolean if data necessary for inequality calculations exists.}
+    \item{\code{check_inequality_params}}{Active Binding: Returns boolean if data necessary for inequality calculations exists.}
 
-\item{\code{check_coverage_params}}{Active Binding: Returns boolean if data necessary for coverage calculations exists.}
+    \item{\code{check_coverage_params}}{Active Binding: Returns boolean if data necessary for coverage calculations exists.}
 
-\item{\code{check_mortality_params}}{Active Binding: Returns boolean if data necessary for mortality calculations exists.}
+    \item{\code{check_mortality_params}}{Active Binding: Returns boolean if data necessary for mortality calculations exists.}
 
-\item{\code{check_sector_params}}{Active Binding: Returns boolean if data necessary for public/private sector calculations exists.}
+    \item{\code{check_sector_params}}{Active Binding: Returns boolean if data necessary for public/private sector calculations exists.}
 
-\item{\code{inequality_admin1}}{Active Binding: Automatically calculates and caches Admin1 inequality matrices.}
+    \item{\code{inequality_admin1}}{Active Binding: Automatically calculates and caches Admin level 1 inequality matrices.}
 
-\item{\code{inequality_district}}{Active Binding: Automatically calculates and caches District inequality matrices.}
+    \item{\code{inequality_district}}{Active Binding: Automatically calculates and caches District inequality matrices.}
 
-\item{\code{mortality_summary}}{Active Binding: Calculates mortality summaries combining live births and still births.}
+    \item{\code{adjustment_values}}{Active Binding: The yearly numbers as reported and after each step of the dataset's
+adjustment (completeness, outliers, missing values), for every indicator. Computed once and kept.}
 
-\item{\code{mortality_ratios}}{Active Binding: Calculates precise mortality ratios comparing internal data with UN estimates.}
+    \item{\code{mortality_summary}}{Active Binding: Calculates mortality summaries combining live births and still births.}
 
-\item{\code{service_utilization_national}}{Active Binding: Caches OPD/IPD utilizations summed to the National scale.}
+    \item{\code{mortality_ratios}}{Active Binding: Calculates precise mortality ratios comparing internal data with UN estimates.}
 
-\item{\code{service_utilization_admin1}}{Active Binding: Caches OPD/IPD utilizations parsed by Admin 1 level.}
+    \item{\code{service_utilization_national}}{Active Binding: Caches OPD/IPD utilizations summed to the National scale.}
 
-\item{\code{health_system_comparison}}{Active Binding: Summarizes health system efficiency linking resources to coverage.}
+    \item{\code{service_utilization_admin1}}{Active Binding: Caches OPD/IPD utilizations parsed at admin level 1.}
 
-\item{\code{health_system_metrics_national}}{Active Binding: Compiles core indicators (staff density, beds) at the National scale.}
+    \item{\code{health_system_comparison}}{Active Binding: Summarizes health system efficiency linking resources to coverage.}
 
-\item{\code{health_system_metrics_admin1}}{Active Binding: Compiles core indicators (staff density, beds) at the Admin 1 scale.}
+    \item{\code{health_system_metrics_national}}{Active Binding: Compiles core indicators (staff density, beds) at the National scale.}
 
-\item{\code{national_private_share}}{Active Binding: Returns baseline metrics regarding private sector operations (National).}
+    \item{\code{health_system_metrics_admin1}}{Active Binding: Compiles core indicators (staff density, beds) at the Admin level 1 scale.}
 
-\item{\code{area_private_share}}{Active Binding: Returns baseline metrics regarding private sector operations (Area/Region).
-Invalidate entirely (Usually triggered on initial data load)
-Invalidate downstream computations (Coverage, Mortality, etc.) derived from adjustments
-Invalidate Data Quality Cache
-Invalidate Denominator Cache
-Invalidate Coverage Cache (Automatically cascades to Inequality & Health Systems)
-Invalidate Inequality Cache
-Invalidate Mortality Cache
-Invalidate Utilization Cache
-Invalidate Health Systems Cache}
-}
-\if{html}{\out{</div>}}
+    \item{\code{national_private_share}}{Active Binding: Returns baseline metrics regarding private sector operations (National).}
+
+    \item{\code{area_private_share}}{Active Binding: Returns baseline metrics regarding private sector operations (Area/Region).}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-CacheConnection-new}{\code{CacheConnection$new()}}
-\item \href{#method-CacheConnection-load_from_disk}{\code{CacheConnection$load_from_disk()}}
-\item \href{#method-CacheConnection-save_to_disk}{\code{CacheConnection$save_to_disk()}}
-\item \href{#method-CacheConnection-adjust_data}{\code{CacheConnection$adjust_data()}}
-\item \href{#method-CacheConnection-calculate_indicator_coverage}{\code{CacheConnection$calculate_indicator_coverage()}}
-\item \href{#method-CacheConnection-calculate_inequality}{\code{CacheConnection$calculate_inequality()}}
-\item \href{#method-CacheConnection-calculate_coverage}{\code{CacheConnection$calculate_coverage()}}
-\item \href{#method-CacheConnection-generate_coverage_data}{\code{CacheConnection$generate_coverage_data()}}
-\item \href{#method-CacheConnection-get_mapping_data}{\code{CacheConnection$get_mapping_data()}}
-\item \href{#method-CacheConnection-lbr_mean}{\code{CacheConnection$lbr_mean()}}
-\item \href{#method-CacheConnection-summarise_completeness_ratio}{\code{CacheConnection$summarise_completeness_ratio()}}
-\item \href{#method-CacheConnection-filter_mortality_summary}{\code{CacheConnection$filter_mortality_summary()}}
-\item \href{#method-CacheConnection-compute_service_utilization}{\code{CacheConnection$compute_service_utilization()}}
-\item \href{#method-CacheConnection-filter_service_utilization}{\code{CacheConnection$filter_service_utilization()}}
-\item \href{#method-CacheConnection-prepare_mapping_service_utlization}{\code{CacheConnection$prepare_mapping_service_utlization()}}
-\item \href{#method-CacheConnection-get_denominator}{\code{CacheConnection$get_denominator()}}
-\item \href{#method-CacheConnection-decompose_change}{\code{CacheConnection$decompose_change()}}
-\item \href{#method-CacheConnection-denominator_comparison}{\code{CacheConnection$denominator_comparison()}}
-\item \href{#method-CacheConnection-reactive}{\code{CacheConnection$reactive()}}
-\item \href{#method-CacheConnection-set_language}{\code{CacheConnection$set_language()}}
-\item \href{#method-CacheConnection-set_cache_path}{\code{CacheConnection$set_cache_path()}}
-\item \href{#method-CacheConnection-set_countdown_data}{\code{CacheConnection$set_countdown_data()}}
-\item \href{#method-CacheConnection-set_wizard_parts}{\code{CacheConnection$set_wizard_parts()}}
-\item \href{#method-CacheConnection-clear_wizard_parts}{\code{CacheConnection$clear_wizard_parts()}}
-\item \href{#method-CacheConnection-set_wizard_country}{\code{CacheConnection$set_wizard_country()}}
-\item \href{#method-CacheConnection-set_quality_confirmed}{\code{CacheConnection$set_quality_confirmed()}}
-\item \href{#method-CacheConnection-set_wizard_quality_results}{\code{CacheConnection$set_wizard_quality_results()}}
-\item \href{#method-CacheConnection-set_adjusted_data}{\code{CacheConnection$set_adjusted_data()}}
-\item \href{#method-CacheConnection-set_performance_threshold}{\code{CacheConnection$set_performance_threshold()}}
-\item \href{#method-CacheConnection-set_excluded_years}{\code{CacheConnection$set_excluded_years()}}
-\item \href{#method-CacheConnection-set_adjustment_settings}{\code{CacheConnection$set_adjustment_settings()}}
-\item \href{#method-CacheConnection-set_k_factors}{\code{CacheConnection$set_k_factors()}}
-\item \href{#method-CacheConnection-set_adjusted_flag}{\code{CacheConnection$set_adjusted_flag()}}
-\item \href{#method-CacheConnection-set_survey_estimates}{\code{CacheConnection$set_survey_estimates()}}
-\item \href{#method-CacheConnection-set_derivation_population}{\code{CacheConnection$set_derivation_population()}}
-\item \href{#method-CacheConnection-set_national_estimates}{\code{CacheConnection$set_national_estimates()}}
-\item \href{#method-CacheConnection-set_survey_year}{\code{CacheConnection$set_survey_year()}}
-\item \href{#method-CacheConnection-clear_survey_year}{\code{CacheConnection$clear_survey_year()}}
-\item \href{#method-CacheConnection-set_start_survey_year}{\code{CacheConnection$set_start_survey_year()}}
-\item \href{#method-CacheConnection-set_denominator}{\code{CacheConnection$set_denominator()}}
-\item \href{#method-CacheConnection-set_maternal_denominator}{\code{CacheConnection$set_maternal_denominator()}}
-\item \href{#method-CacheConnection-set_selected_admin_level_1}{\code{CacheConnection$set_selected_admin_level_1()}}
-\item \href{#method-CacheConnection-set_selected_district}{\code{CacheConnection$set_selected_district()}}
-\item \href{#method-CacheConnection-set_mapping_years}{\code{CacheConnection$set_mapping_years()}}
-\item \href{#method-CacheConnection-set_chart_options}{\code{CacheConnection$set_chart_options()}}
-\item \href{#method-CacheConnection-set_report_project}{\code{CacheConnection$set_report_project()}}
-\item \href{#method-CacheConnection-set_graph}{\code{CacheConnection$set_graph()}}
-\item \href{#method-CacheConnection-set_report_asset}{\code{CacheConnection$set_report_asset()}}
-\item \href{#method-CacheConnection-set_report_theme}{\code{CacheConnection$set_report_theme()}}
-\item \href{#method-CacheConnection-get_chart_options}{\code{CacheConnection$get_chart_options()}}
-\item \href{#method-CacheConnection-reset_chart_options}{\code{CacheConnection$reset_chart_options()}}
-\item \href{#method-CacheConnection-set_mortality_mapping_years}{\code{CacheConnection$set_mortality_mapping_years()}}
-\item \href{#method-CacheConnection-set_utilization_mapping_years}{\code{CacheConnection$set_utilization_mapping_years()}}
-\item \href{#method-CacheConnection-set_fpet_data}{\code{CacheConnection$set_fpet_data()}}
-\item \href{#method-CacheConnection-set_un_estimates}{\code{CacheConnection$set_un_estimates()}}
-\item \href{#method-CacheConnection-clear_un_estimates}{\code{CacheConnection$clear_un_estimates()}}
-\item \href{#method-CacheConnection-set_un_mortality_estimates}{\code{CacheConnection$set_un_mortality_estimates()}}
-\item \href{#method-CacheConnection-clear_un_mortality_estimates}{\code{CacheConnection$clear_un_mortality_estimates()}}
-\item \href{#method-CacheConnection-set_wuenic_estimates}{\code{CacheConnection$set_wuenic_estimates()}}
-\item \href{#method-CacheConnection-clear_wuenic_estimates}{\code{CacheConnection$clear_wuenic_estimates()}}
-\item \href{#method-CacheConnection-set_national_survey}{\code{CacheConnection$set_national_survey()}}
-\item \href{#method-CacheConnection-clear_national_survey}{\code{CacheConnection$clear_national_survey()}}
-\item \href{#method-CacheConnection-set_regional_survey}{\code{CacheConnection$set_regional_survey()}}
-\item \href{#method-CacheConnection-clear_regional_survey}{\code{CacheConnection$clear_regional_survey()}}
-\item \href{#method-CacheConnection-set_shapefile}{\code{CacheConnection$set_shapefile()}}
-\item \href{#method-CacheConnection-clear_shapefile}{\code{CacheConnection$clear_shapefile()}}
-\item \href{#method-CacheConnection-set_shapefile_name_field}{\code{CacheConnection$set_shapefile_name_field()}}
-\item \href{#method-CacheConnection-set_wiq_survey}{\code{CacheConnection$set_wiq_survey()}}
-\item \href{#method-CacheConnection-clear_wiq_survey}{\code{CacheConnection$clear_wiq_survey()}}
-\item \href{#method-CacheConnection-set_area_survey}{\code{CacheConnection$set_area_survey()}}
-\item \href{#method-CacheConnection-clear_area_survey}{\code{CacheConnection$clear_area_survey()}}
-\item \href{#method-CacheConnection-set_education_survey}{\code{CacheConnection$set_education_survey()}}
-\item \href{#method-CacheConnection-clear_education_survey}{\code{CacheConnection$clear_education_survey()}}
-\item \href{#method-CacheConnection-set_survey_mapping}{\code{CacheConnection$set_survey_mapping()}}
-\item \href{#method-CacheConnection-clear_survey_mapping}{\code{CacheConnection$clear_survey_mapping()}}
-\item \href{#method-CacheConnection-set_map_mapping}{\code{CacheConnection$set_map_mapping()}}
-\item \href{#method-CacheConnection-clear_map_mapping}{\code{CacheConnection$clear_map_mapping()}}
-\item \href{#method-CacheConnection-is_default}{\code{CacheConnection$is_default()}}
-\item \href{#method-CacheConnection-set_sector_national_estimates}{\code{CacheConnection$set_sector_national_estimates()}}
-\item \href{#method-CacheConnection-set_sector_area_estimates}{\code{CacheConnection$set_sector_area_estimates()}}
-\item \href{#method-CacheConnection-set_csection_national_estimates}{\code{CacheConnection$set_csection_national_estimates()}}
-\item \href{#method-CacheConnection-set_csection_area_estimates}{\code{CacheConnection$set_csection_area_estimates()}}
-\item \href{#method-CacheConnection-calculate_reporting_rate}{\code{CacheConnection$calculate_reporting_rate()}}
-\item \href{#method-CacheConnection-calculate_district_reporting_rate}{\code{CacheConnection$calculate_district_reporting_rate()}}
-\item \href{#method-CacheConnection-calculate_completeness_summary}{\code{CacheConnection$calculate_completeness_summary()}}
-\item \href{#method-CacheConnection-calculate_district_completeness_summary}{\code{CacheConnection$calculate_district_completeness_summary()}}
-\item \href{#method-CacheConnection-list_missing_units}{\code{CacheConnection$list_missing_units()}}
-\item \href{#method-CacheConnection-calculate_outliers_summary}{\code{CacheConnection$calculate_outliers_summary()}}
-\item \href{#method-CacheConnection-calculate_district_outlier_summary}{\code{CacheConnection$calculate_district_outlier_summary()}}
-\item \href{#method-CacheConnection-calculate_ratios_and_adequacy}{\code{CacheConnection$calculate_ratios_and_adequacy()}}
-\item \href{#method-CacheConnection-check_population_service_collision}{\code{CacheConnection$check_population_service_collision()}}
-\item \href{#method-CacheConnection-check_indicator_emptiness}{\code{CacheConnection$check_indicator_emptiness()}}
-\item \href{#method-CacheConnection-check_survey_admin_names}{\code{CacheConnection$check_survey_admin_names()}}
-\item \href{#method-CacheConnection-check_shapefile_admin_names}{\code{CacheConnection$check_shapefile_admin_names()}}
-\item \href{#method-CacheConnection-calculate_overall_score}{\code{CacheConnection$calculate_overall_score()}}
-\item \href{#method-CacheConnection-calculate_service_dqa_summary}{\code{CacheConnection$calculate_service_dqa_summary()}}
-\item \href{#method-CacheConnection-generate_admin1_service_utilization}{\code{CacheConnection$generate_admin1_service_utilization()}}
-\item \href{#method-CacheConnection-generate_admin1_mch_curative_index}{\code{CacheConnection$generate_admin1_mch_curative_index()}}
-\item \href{#method-CacheConnection-get_filtered_coverage}{\code{CacheConnection$get_filtered_coverage()}}
-\item \href{#method-CacheConnection-get_filtered_inequality}{\code{CacheConnection$get_filtered_inequality()}}
-\item \href{#method-CacheConnection-get_filtered_mapping_data}{\code{CacheConnection$get_filtered_mapping_data()}}
-\item \href{#method-CacheConnection-get_base_indicator_coverage}{\code{CacheConnection$get_base_indicator_coverage()}}
-\item \href{#method-CacheConnection-get_filtered_threshold}{\code{CacheConnection$get_filtered_threshold()}}
-\item \href{#method-CacheConnection-calculate_derived_coverage}{\code{CacheConnection$calculate_derived_coverage()}}
-\item \href{#method-CacheConnection-get_high_performers}{\code{CacheConnection$get_high_performers()}}
-\item \href{#method-CacheConnection-get_regional_estimates}{\code{CacheConnection$get_regional_estimates()}}
-\item \href{#method-CacheConnection-generate_health_system_table}{\code{CacheConnection$generate_health_system_table()}}
-\item \href{#method-CacheConnection-generate_phc_scatter_data}{\code{CacheConnection$generate_phc_scatter_data()}}
-\item \href{#method-CacheConnection-generate_private_sector_data}{\code{CacheConnection$generate_private_sector_data()}}
-\item \href{#method-CacheConnection-get_bayes_model}{\code{CacheConnection$get_bayes_model()}}
-\item \href{#method-CacheConnection-bayes_model_key}{\code{CacheConnection$bayes_model_key()}}
-\item \href{#method-CacheConnection-bayes_model_cached}{\code{CacheConnection$bayes_model_cached()}}
-\item \href{#method-CacheConnection-bayes_model_inputs}{\code{CacheConnection$bayes_model_inputs()}}
-\item \href{#method-CacheConnection-keep_bayes_model}{\code{CacheConnection$keep_bayes_model()}}
-\item \href{#method-CacheConnection-bayes_estimates}{\code{CacheConnection$bayes_estimates()}}
-\item \href{#method-CacheConnection-clone}{\code{CacheConnection$clone()}}
-}
+  \itemize{
+    \item \href{#method-CacheConnection-initialize}{\code{CacheConnection$new()}}
+    \item \href{#method-CacheConnection-load_from_disk}{\code{CacheConnection$load_from_disk()}}
+    \item \href{#method-CacheConnection-save_to_disk}{\code{CacheConnection$save_to_disk()}}
+    \item \href{#method-CacheConnection-adjust_data}{\code{CacheConnection$adjust_data()}}
+    \item \href{#method-CacheConnection-calculate_indicator_coverage}{\code{CacheConnection$calculate_indicator_coverage()}}
+    \item \href{#method-CacheConnection-calculate_inequality}{\code{CacheConnection$calculate_inequality()}}
+    \item \href{#method-CacheConnection-calculate_coverage}{\code{CacheConnection$calculate_coverage()}}
+    \item \href{#method-CacheConnection-generate_coverage_data}{\code{CacheConnection$generate_coverage_data()}}
+    \item \href{#method-CacheConnection-get_mapping_data}{\code{CacheConnection$get_mapping_data()}}
+    \item \href{#method-CacheConnection-lbr_mean}{\code{CacheConnection$lbr_mean()}}
+    \item \href{#method-CacheConnection-summarise_completeness_ratio}{\code{CacheConnection$summarise_completeness_ratio()}}
+    \item \href{#method-CacheConnection-filter_mortality_summary}{\code{CacheConnection$filter_mortality_summary()}}
+    \item \href{#method-CacheConnection-compute_service_utilization}{\code{CacheConnection$compute_service_utilization()}}
+    \item \href{#method-CacheConnection-filter_service_utilization}{\code{CacheConnection$filter_service_utilization()}}
+    \item \href{#method-CacheConnection-prepare_mapping_service_utlization}{\code{CacheConnection$prepare_mapping_service_utlization()}}
+    \item \href{#method-CacheConnection-get_denominator}{\code{CacheConnection$get_denominator()}}
+    \item \href{#method-CacheConnection-decompose_change}{\code{CacheConnection$decompose_change()}}
+    \item \href{#method-CacheConnection-denominator_comparison}{\code{CacheConnection$denominator_comparison()}}
+    \item \href{#method-CacheConnection-reactive}{\code{CacheConnection$reactive()}}
+    \item \href{#method-CacheConnection-set_language}{\code{CacheConnection$set_language()}}
+    \item \href{#method-CacheConnection-set_cache_path}{\code{CacheConnection$set_cache_path()}}
+    \item \href{#method-CacheConnection-set_countdown_data}{\code{CacheConnection$set_countdown_data()}}
+    \item \href{#method-CacheConnection-set_wizard_parts}{\code{CacheConnection$set_wizard_parts()}}
+    \item \href{#method-CacheConnection-clear_wizard_parts}{\code{CacheConnection$clear_wizard_parts()}}
+    \item \href{#method-CacheConnection-set_wizard_country}{\code{CacheConnection$set_wizard_country()}}
+    \item \href{#method-CacheConnection-set_quality_confirmed}{\code{CacheConnection$set_quality_confirmed()}}
+    \item \href{#method-CacheConnection-set_wizard_quality_results}{\code{CacheConnection$set_wizard_quality_results()}}
+    \item \href{#method-CacheConnection-set_adjusted_data}{\code{CacheConnection$set_adjusted_data()}}
+    \item \href{#method-CacheConnection-set_performance_threshold}{\code{CacheConnection$set_performance_threshold()}}
+    \item \href{#method-CacheConnection-set_excluded_years}{\code{CacheConnection$set_excluded_years()}}
+    \item \href{#method-CacheConnection-set_adjustment_settings}{\code{CacheConnection$set_adjustment_settings()}}
+    \item \href{#method-CacheConnection-set_k_factors}{\code{CacheConnection$set_k_factors()}}
+    \item \href{#method-CacheConnection-set_adjusted_flag}{\code{CacheConnection$set_adjusted_flag()}}
+    \item \href{#method-CacheConnection-set_survey_estimates}{\code{CacheConnection$set_survey_estimates()}}
+    \item \href{#method-CacheConnection-set_derivation_population}{\code{CacheConnection$set_derivation_population()}}
+    \item \href{#method-CacheConnection-set_national_estimates}{\code{CacheConnection$set_national_estimates()}}
+    \item \href{#method-CacheConnection-set_survey_year}{\code{CacheConnection$set_survey_year()}}
+    \item \href{#method-CacheConnection-clear_survey_year}{\code{CacheConnection$clear_survey_year()}}
+    \item \href{#method-CacheConnection-set_start_survey_year}{\code{CacheConnection$set_start_survey_year()}}
+    \item \href{#method-CacheConnection-set_denominator}{\code{CacheConnection$set_denominator()}}
+    \item \href{#method-CacheConnection-set_maternal_denominator}{\code{CacheConnection$set_maternal_denominator()}}
+    \item \href{#method-CacheConnection-set_selected_admin_level_1}{\code{CacheConnection$set_selected_admin_level_1()}}
+    \item \href{#method-CacheConnection-set_selected_district}{\code{CacheConnection$set_selected_district()}}
+    \item \href{#method-CacheConnection-set_mapping_years}{\code{CacheConnection$set_mapping_years()}}
+    \item \href{#method-CacheConnection-set_chart_options}{\code{CacheConnection$set_chart_options()}}
+    \item \href{#method-CacheConnection-set_report_project}{\code{CacheConnection$set_report_project()}}
+    \item \href{#method-CacheConnection-set_graph}{\code{CacheConnection$set_graph()}}
+    \item \href{#method-CacheConnection-set_report_asset}{\code{CacheConnection$set_report_asset()}}
+    \item \href{#method-CacheConnection-set_report_theme}{\code{CacheConnection$set_report_theme()}}
+    \item \href{#method-CacheConnection-get_chart_options}{\code{CacheConnection$get_chart_options()}}
+    \item \href{#method-CacheConnection-reset_chart_options}{\code{CacheConnection$reset_chart_options()}}
+    \item \href{#method-CacheConnection-set_mortality_mapping_years}{\code{CacheConnection$set_mortality_mapping_years()}}
+    \item \href{#method-CacheConnection-set_utilization_mapping_years}{\code{CacheConnection$set_utilization_mapping_years()}}
+    \item \href{#method-CacheConnection-set_fpet_data}{\code{CacheConnection$set_fpet_data()}}
+    \item \href{#method-CacheConnection-set_un_estimates}{\code{CacheConnection$set_un_estimates()}}
+    \item \href{#method-CacheConnection-clear_un_estimates}{\code{CacheConnection$clear_un_estimates()}}
+    \item \href{#method-CacheConnection-set_un_mortality_estimates}{\code{CacheConnection$set_un_mortality_estimates()}}
+    \item \href{#method-CacheConnection-clear_un_mortality_estimates}{\code{CacheConnection$clear_un_mortality_estimates()}}
+    \item \href{#method-CacheConnection-set_wuenic_estimates}{\code{CacheConnection$set_wuenic_estimates()}}
+    \item \href{#method-CacheConnection-clear_wuenic_estimates}{\code{CacheConnection$clear_wuenic_estimates()}}
+    \item \href{#method-CacheConnection-set_national_survey}{\code{CacheConnection$set_national_survey()}}
+    \item \href{#method-CacheConnection-clear_national_survey}{\code{CacheConnection$clear_national_survey()}}
+    \item \href{#method-CacheConnection-set_regional_survey}{\code{CacheConnection$set_regional_survey()}}
+    \item \href{#method-CacheConnection-clear_regional_survey}{\code{CacheConnection$clear_regional_survey()}}
+    \item \href{#method-CacheConnection-set_shapefile}{\code{CacheConnection$set_shapefile()}}
+    \item \href{#method-CacheConnection-clear_shapefile}{\code{CacheConnection$clear_shapefile()}}
+    \item \href{#method-CacheConnection-set_shapefile_name_field}{\code{CacheConnection$set_shapefile_name_field()}}
+    \item \href{#method-CacheConnection-set_wiq_survey}{\code{CacheConnection$set_wiq_survey()}}
+    \item \href{#method-CacheConnection-clear_wiq_survey}{\code{CacheConnection$clear_wiq_survey()}}
+    \item \href{#method-CacheConnection-set_area_survey}{\code{CacheConnection$set_area_survey()}}
+    \item \href{#method-CacheConnection-clear_area_survey}{\code{CacheConnection$clear_area_survey()}}
+    \item \href{#method-CacheConnection-set_education_survey}{\code{CacheConnection$set_education_survey()}}
+    \item \href{#method-CacheConnection-clear_education_survey}{\code{CacheConnection$clear_education_survey()}}
+    \item \href{#method-CacheConnection-set_survey_mapping}{\code{CacheConnection$set_survey_mapping()}}
+    \item \href{#method-CacheConnection-clear_survey_mapping}{\code{CacheConnection$clear_survey_mapping()}}
+    \item \href{#method-CacheConnection-set_map_mapping}{\code{CacheConnection$set_map_mapping()}}
+    \item \href{#method-CacheConnection-clear_map_mapping}{\code{CacheConnection$clear_map_mapping()}}
+    \item \href{#method-CacheConnection-is_default}{\code{CacheConnection$is_default()}}
+    \item \href{#method-CacheConnection-set_sector_national_estimates}{\code{CacheConnection$set_sector_national_estimates()}}
+    \item \href{#method-CacheConnection-set_sector_area_estimates}{\code{CacheConnection$set_sector_area_estimates()}}
+    \item \href{#method-CacheConnection-set_csection_national_estimates}{\code{CacheConnection$set_csection_national_estimates()}}
+    \item \href{#method-CacheConnection-set_csection_area_estimates}{\code{CacheConnection$set_csection_area_estimates()}}
+    \item \href{#method-CacheConnection-calculate_reporting_rate}{\code{CacheConnection$calculate_reporting_rate()}}
+    \item \href{#method-CacheConnection-calculate_district_reporting_rate}{\code{CacheConnection$calculate_district_reporting_rate()}}
+    \item \href{#method-CacheConnection-calculate_completeness_summary}{\code{CacheConnection$calculate_completeness_summary()}}
+    \item \href{#method-CacheConnection-calculate_district_completeness_summary}{\code{CacheConnection$calculate_district_completeness_summary()}}
+    \item \href{#method-CacheConnection-list_missing_units}{\code{CacheConnection$list_missing_units()}}
+    \item \href{#method-CacheConnection-calculate_outliers_summary}{\code{CacheConnection$calculate_outliers_summary()}}
+    \item \href{#method-CacheConnection-calculate_district_outlier_summary}{\code{CacheConnection$calculate_district_outlier_summary()}}
+    \item \href{#method-CacheConnection-calculate_ratios_and_adequacy}{\code{CacheConnection$calculate_ratios_and_adequacy()}}
+    \item \href{#method-CacheConnection-check_population_service_collision}{\code{CacheConnection$check_population_service_collision()}}
+    \item \href{#method-CacheConnection-check_indicator_emptiness}{\code{CacheConnection$check_indicator_emptiness()}}
+    \item \href{#method-CacheConnection-check_survey_admin_names}{\code{CacheConnection$check_survey_admin_names()}}
+    \item \href{#method-CacheConnection-check_shapefile_admin_names}{\code{CacheConnection$check_shapefile_admin_names()}}
+    \item \href{#method-CacheConnection-calculate_overall_score}{\code{CacheConnection$calculate_overall_score()}}
+    \item \href{#method-CacheConnection-calculate_service_dqa_summary}{\code{CacheConnection$calculate_service_dqa_summary()}}
+    \item \href{#method-CacheConnection-generate_admin1_service_utilization}{\code{CacheConnection$generate_admin1_service_utilization()}}
+    \item \href{#method-CacheConnection-generate_admin1_mch_curative_index}{\code{CacheConnection$generate_admin1_mch_curative_index()}}
+    \item \href{#method-CacheConnection-get_filtered_coverage}{\code{CacheConnection$get_filtered_coverage()}}
+    \item \href{#method-CacheConnection-get_filtered_inequality}{\code{CacheConnection$get_filtered_inequality()}}
+    \item \href{#method-CacheConnection-get_filtered_mapping_data}{\code{CacheConnection$get_filtered_mapping_data()}}
+    \item \href{#method-CacheConnection-get_base_indicator_coverage}{\code{CacheConnection$get_base_indicator_coverage()}}
+    \item \href{#method-CacheConnection-get_filtered_threshold}{\code{CacheConnection$get_filtered_threshold()}}
+    \item \href{#method-CacheConnection-calculate_derived_coverage}{\code{CacheConnection$calculate_derived_coverage()}}
+    \item \href{#method-CacheConnection-get_high_performers}{\code{CacheConnection$get_high_performers()}}
+    \item \href{#method-CacheConnection-get_regional_estimates}{\code{CacheConnection$get_regional_estimates()}}
+    \item \href{#method-CacheConnection-generate_health_system_table}{\code{CacheConnection$generate_health_system_table()}}
+    \item \href{#method-CacheConnection-generate_phc_scatter_data}{\code{CacheConnection$generate_phc_scatter_data()}}
+    \item \href{#method-CacheConnection-generate_private_sector_data}{\code{CacheConnection$generate_private_sector_data()}}
+    \item \href{#method-CacheConnection-get_bayes_model}{\code{CacheConnection$get_bayes_model()}}
+    \item \href{#method-CacheConnection-bayes_model_key}{\code{CacheConnection$bayes_model_key()}}
+    \item \href{#method-CacheConnection-bayes_model_cached}{\code{CacheConnection$bayes_model_cached()}}
+    \item \href{#method-CacheConnection-bayes_model_inputs}{\code{CacheConnection$bayes_model_inputs()}}
+    \item \href{#method-CacheConnection-keep_bayes_model}{\code{CacheConnection$keep_bayes_model()}}
+    \item \href{#method-CacheConnection-bayes_estimates}{\code{CacheConnection$bayes_estimates()}}
+    \item \href{#method-CacheConnection-clone}{\code{CacheConnection$clone()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CacheConnection-new"></a>}}
-\if{latex}{\out{\hypertarget{method-CacheConnection-new}{}}}
-\subsection{Method \code{new()}}{
-Initialize a CacheConnection instance.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$new(
+\if{html}{\out{<a id="method-CacheConnection-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-CacheConnection-initialize}{}}}
+\subsection{\code{CacheConnection$new()}}{
+  Initialize a CacheConnection instance.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$new(
   rds_path = NULL,
   countdown_data = NULL,
   data_path = NULL,
   wizard_parts = NULL,
   read_only = FALSE
-)}\if{html}{\out{</div>}}
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{rds_path}}{Path to the RDS file to load state from (can be NULL).}
+      \item{\code{countdown_data}}{Countdown data of class \code{cd_data}.}
+      \item{\code{data_path}}{Path to the original source file \code{countdown_data} was
+built from (e.g. the picked \code{.xlsx}). The cache is kept at
+\verb{<dirname(data_path)>/<stem(data_path)>.rds}. If that file already
+exists, it is loaded and \code{countdown_data} is not used; otherwise it
+is created there.}
+      \item{\code{wizard_parts}}{A \code{load_excel_parts()} result (\code{list(parts, sheet_names, sheet_ids, ...)}):
+the sheets of an upload that the Load Data wizard has read and cleaned but not yet merged into
+a \code{cd_data} object. Use it instead of \code{rds_path} or \code{countdown_data}. Until
+\code{set_countdown_data()} is called, \code{countdown_data} is \code{NULL}, and \code{data_years} and
+\code{subnational_regions} are read from these sheets.}
+      \item{\code{read_only}}{\code{TRUE} never writes the cache back to its \code{.rds} (see \code{init_CacheConnection()}).}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{rds_path}}{Path to the RDS file to load state from (can be NULL).}
-
-\item{\code{countdown_data}}{Countdown data of class \code{cd_data}.}
-
-\item{\code{data_path}}{Path to the original source file \code{countdown_data} was
-built from (e.g. the picked \code{.xlsx}). The cache always lives at
-\verb{<dirname(data_path)>/<stem(data_path)>.rds} -- if that file already
-exists, it's loaded instead of \code{countdown_data} (the fresh parse is
-discarded); otherwise it's created there. This is the only place
-that decides the cache's location and load-vs-create behavior, so
-every caller gets the same behavior regardless of how they got here.}
-
-\item{\code{wizard_parts}}{A \code{load_excel_parts()} result (\code{list(parts, sheet_names, sheet_ids, ...)})
--- a third, mutually-exclusive mode alongside \code{rds_path}/\code{countdown_data}, for the Load Data
-wizard's own in-progress state (Phase 3 of the wizard redesign, apps/rmncah): the sheets
-have been read and cleaned but not yet merged/standardized into a real \code{cd_data} object, so
-there's no \code{countdown_data} yet -- see \code{wizard_parts}/\code{country}/\code{country_iso}'s own active
-bindings below for how the rest of the class degrades gracefully until \code{set_countdown_data()}
-is finally called (at Finish, once \code{merge_and_standardize()} has run).}
-
-\item{\code{read_only}}{\code{TRUE} never writes the cache back to its \code{.rds} (see \code{init_CacheConnection()}).}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-load_from_disk"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-load_from_disk}{}}}
-\subsection{Method \code{load_from_disk()}}{
-Load cached data from the designated RDS file on disk.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$load_from_disk()}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$load_from_disk()}}{
+  Load cached data from the designated RDS file on disk.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$load_from_disk()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-save_to_disk"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-save_to_disk}{}}}
-\subsection{Method \code{save_to_disk()}}{
-Save current in-memory state to the assigned RDS file, provided state has changed.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$save_to_disk()}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$save_to_disk()}}{
+  Save current in-memory state to the assigned RDS file, provided state has changed.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$save_to_disk()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-adjust_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-adjust_data}{}}}
-\subsection{Method \code{adjust_data()}}{
-Processes raw data into adjusted data with the adjustment settings (\code{adjustment_settings}: the
+\subsection{\code{CacheConnection$adjust_data()}}{
+  Processes raw data into adjusted data with the adjustment settings (\code{adjustment_settings}: the
 years and areas removed, each indicator's k, outlier and missing-value switches, everywhere or by area).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$adjust_data()}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$adjust_data()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-calculate_indicator_coverage"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_indicator_coverage}{}}}
-\subsection{Method \code{calculate_indicator_coverage()}}{
-Run indicator coverage calculation using stored models and parameters.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$calculate_indicator_coverage(
+\subsection{\code{CacheConnection$calculate_indicator_coverage()}}{
+  Run indicator coverage calculation using stored models and parameters.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$calculate_indicator_coverage(
   admin_level,
   region = NULL,
   show_district = TRUE
-)}\if{html}{\out{</div>}}
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{admin_level}}{Administrative level ("national", "adminlevel_1", or "district").}
+      \item{\code{region}}{Optional region filter.}
+      \item{\code{show_district}}{Logical. Whether to show the district column.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{admin_level}}{Administrative level ("national", "adminlevel_1", or "district").}
-
-\item{\code{region}}{Optional region filter.}
-
-\item{\code{show_district}}{Logical. Whether to show the district column.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-calculate_inequality"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_inequality}{}}}
-\subsection{Method \code{calculate_inequality()}}{
-Run inequality calculation using subnational coverage compared to reference data.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$calculate_inequality(admin_level, region = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$calculate_inequality()}}{
+  Run inequality calculation using subnational coverage compared to reference data.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$calculate_inequality(admin_level, region = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{admin_level}}{Administrative level ("adminlevel_1" or "district").}
+      \item{\code{region}}{Optional region filter.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{admin_level}}{Administrative level ("adminlevel_1" or "district").}
-
-\item{\code{region}}{Optional region filter.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-calculate_coverage"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_coverage}{}}}
-\subsection{Method \code{calculate_coverage()}}{
-Integrates immunization coverage data from DHIS2, Surveys, and WUENIC.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$calculate_coverage(admin_level, region = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$calculate_coverage()}}{
+  Integrates immunization coverage data from DHIS2, Surveys, and WUENIC.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$calculate_coverage(admin_level, region = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{admin_level}}{Administrative level ("national", "adminlevel_1", or "district").}
+      \item{\code{region}}{Optional region filter.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{admin_level}}{Administrative level ("national", "adminlevel_1", or "district").}
-
-\item{\code{region}}{Optional region filter.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-generate_coverage_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-generate_coverage_data}{}}}
-\subsection{Method \code{generate_coverage_data()}}{
-Generate Continuum of Care Coverage Data summary format.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$generate_coverage_data(admin_level, type, region = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$generate_coverage_data()}}{
+  Generate Continuum of Care Coverage Data summary format.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$generate_coverage_data(admin_level, type, region = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{admin_level}}{Character. The geographic level to calculate and shape.}
+      \item{\code{type}}{Character. The type of data to summarise ('maternal' or 'child').}
+      \item{\code{region}}{Character. Optional region filter.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{admin_level}}{Character. The geographic level to calculate and shape.}
-
-\item{\code{type}}{Character. The type of data to summarise ('maternal' or 'child').}
-
-\item{\code{region}}{Character. Optional region filter.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-get_mapping_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_mapping_data}{}}}
-\subsection{Method \code{get_mapping_data()}}{
-Formats base coverage data with spatial map coordinates for plotting.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_mapping_data(admin_level)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$get_mapping_data()}}{
+  Formats base coverage data with spatial map coordinates for plotting.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$get_mapping_data(admin_level)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{admin_level}}{Administrative level.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{admin_level}}{Administrative level.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-lbr_mean"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-lbr_mean}{}}}
-\subsection{Method \code{lbr_mean()}}{
-Retrieves the mean of institutional livebirths from the national coverage cache.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$lbr_mean()}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$lbr_mean()}}{
+  Retrieves the mean of institutional livebirths from the national coverage cache.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$lbr_mean()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-summarise_completeness_ratio"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-summarise_completeness_ratio}{}}}
-\subsection{Method \code{summarise_completeness_ratio()}}{
-Creates mortality completeness ratio summaries.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$summarise_completeness_ratio(indicator)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$summarise_completeness_ratio()}}{
+  Creates mortality completeness ratio summaries.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$summarise_completeness_ratio(indicator)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{indicator}}{Character. The indicator to generate the summary for.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{indicator}}{Character. The indicator to generate the summary for.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-filter_mortality_summary"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-filter_mortality_summary}{}}}
-\subsection{Method \code{filter_mortality_summary()}}{
-Returns the appropriate mortality summary based on the indicator type to plot.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$filter_mortality_summary(
+\subsection{\code{CacheConnection$filter_mortality_summary()}}{
+  Returns the appropriate mortality summary based on the indicator type to plot.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$filter_mortality_summary(
   indicator,
   map_years = NULL,
   palette = "Reds"
-)}\if{html}{\out{</div>}}
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{indicator}}{Character. Indicator name.}
+      \item{\code{map_years}}{Numeric vector. The years to include in a map.}
+      \item{\code{palette}}{Character. RColorBrewer sequential palette for the map.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{indicator}}{Character. Indicator name.}
-
-\item{\code{map_years}}{Numeric vector. The years to include in a map.}
-
-\item{\code{palette}}{Character. RColorBrewer sequential palette for the map.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-compute_service_utilization"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-compute_service_utilization}{}}}
-\subsection{Method \code{compute_service_utilization()}}{
-Computes service utilization for various indicators (OPD/IPD).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$compute_service_utilization(admin_level)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$compute_service_utilization()}}{
+  Computes service utilization for various indicators (OPD/IPD).
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$compute_service_utilization(admin_level)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{admin_level}}{The level to aggregate data at ("national", "adminlevel_1").}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{admin_level}}{The level to aggregate data at ("national", "adminlevel_1").}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-filter_service_utilization"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-filter_service_utilization}{}}}
-\subsection{Method \code{filter_service_utilization()}}{
-Filters service utilization data for a specific indicator and region.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$filter_service_utilization(
+\subsection{\code{CacheConnection$filter_service_utilization()}}{
+  Filters service utilization data for a specific indicator and region.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$filter_service_utilization(
   admin_level,
   indicator,
   region = NULL
-)}\if{html}{\out{</div>}}
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{admin_level}}{Administrative level.}
+      \item{\code{indicator}}{Character. Indicator name.}
+      \item{\code{region}}{Character. Optional region filter.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{admin_level}}{Administrative level.}
-
-\item{\code{indicator}}{Character. Indicator name.}
-
-\item{\code{region}}{Character. Optional region filter.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-prepare_mapping_service_utlization"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-prepare_mapping_service_utlization}{}}}
-\subsection{Method \code{prepare_mapping_service_utlization()}}{
-Prepares service utilization data mapping tables.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$prepare_mapping_service_utlization(
+\subsection{\code{CacheConnection$prepare_mapping_service_utlization()}}{
+  Prepares service utilization data mapping tables.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$prepare_mapping_service_utlization(
   indicator,
   map_years = NULL,
   palette = "Purples"
-)}\if{html}{\out{</div>}}
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{indicator}}{Character. Indicator name ('ipd', 'opd').}
+      \item{\code{map_years}}{Numeric vector. Years to include.}
+      \item{\code{palette}}{Character. RColorBrewer sequential palette for the map.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{indicator}}{Character. Indicator name ('ipd', 'opd').}
-
-\item{\code{map_years}}{Numeric vector. Years to include.}
-
-\item{\code{palette}}{Character. RColorBrewer sequential palette for the map.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-get_denominator"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_denominator}{}}}
-\subsection{Method \code{get_denominator()}}{
-Resolves the appropriate denominator column string based on the indicator category.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_denominator(indicator)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$get_denominator()}}{
+  Resolves the appropriate denominator column string based on the indicator category.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$get_denominator(indicator)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{indicator}}{Character. The indicator name.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{indicator}}{Character. The indicator name.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-decompose_change"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-decompose_change}{}}}
-\subsection{Method \code{decompose_change()}}{
-Which units drive a change in an indicator's coverage between two years: for each district (or
-region) its count and denominator in both years, its coverage change, and its contribution in percentage
-points to the change at the level above -- split into service delivery (its change in count) and its share of
-the denominator's change -- with its reporting rate, flagged when reporting was low or fell, since a drop may
-be missing reports rather than fewer services. Denominators are the ones the app's coverage uses (count /
-coverage), so the parts add up to the change the app shows.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$decompose_change(
+\subsection{\code{CacheConnection$decompose_change()}}{
+  Shows which units drive a change in an indicator's coverage between two years. For each district
+(or region) it gives the count and denominator in both years, the coverage change, and the unit's
+contribution in percentage points to the change at the level above. The contribution is split into service
+delivery (the change in count) and the unit's share of the denominator's change. Each unit also has its
+reporting rate, flagged when reporting was low or fell, since a drop may be missing reports rather than
+fewer services. Denominators are the ones the app's coverage uses (count / coverage), so the parts add up
+to the change the app shows.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$decompose_change(
   indicator,
   from_year,
   to_year,
   admin_level = c("district", "adminlevel_1"),
   region = NULL,
   denominator = NULL
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{indicator}}{Character. One indicator, e.g. \code{"anc4"}.}
-
-\item{\code{from_year, to_year}}{The two years to compare.}
-
-\item{\code{admin_level}}{\code{"district"} or \code{"adminlevel_1"}: the units to attribute the change to.}
-
-\item{\code{region}}{Optional first-level region(s): attribute a region's change to its districts.}
-
-\item{\code{denominator}}{Optional denominator source (\code{"dhis2"}, \code{"anc1"}, \code{"penta1"}, ...); by default the one
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{indicator}}{Character. One indicator, e.g. \code{"anc4"}.}
+      \item{\code{from_year, to_year}}{The two years to compare.}
+      \item{\code{admin_level}}{\code{"district"} or \code{"adminlevel_1"}: the units to attribute the change to.}
+      \item{\code{region}}{Optional first-level region(s): attribute a region's change to its districts.}
+      \item{\code{denominator}}{Optional denominator source (\code{"dhis2"}, \code{"anc1"}, \code{"penta1"}, ...); by default the one
 selected for the indicator (\code{get_denominator()}).}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A data frame, one row per unit, sorted by contribution (the units pulling the change most first):
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A data frame, one row per unit, sorted by contribution (the units pulling the change most first):
 \code{num_from}, \code{num_to}, \code{den_from}, \code{den_to}, \code{cov_from}, \code{cov_to}, \code{cov_change}, \code{contribution_service},
 \code{contribution_denominator}, \code{contribution}, \code{reporting_from}, \code{reporting_to}, \code{reporting_flag}; attribute
 \code{total} has the level above's coverage in both years and its change.
+  }
 }
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-denominator_comparison"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-denominator_comparison}{}}}
-\subsection{Method \code{denominator_comparison()}}{
-The Denominator Selection comparison as one tidy table: for each indicator and year, its coverage
+\subsection{\code{CacheConnection$denominator_comparison()}}{
+  The Denominator Selection comparison as one tidy table: for each indicator and year, its coverage
 under each of the six denominator options next to the survey estimate of that year, and how far apart they
 are. The same numbers as the Denominator Selection charts (\code{calculate_derived_coverage()}), one row per
 denominator, so the options can be compared without reshaping.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$denominator_comparison(
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$denominator_comparison(
   indicator = NULL,
   admin_level = c("national", "adminlevel_1", "district"),
   region = NULL
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{indicator}}{Character. One or more indicators, e.g. \code{c("penta3", "instlivebirths")}. By default the ones
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{indicator}}{Character. One or more indicators, e.g. \code{c("penta3", "instlivebirths")}. By default the ones
 the Denominator Selection page compares (Penta 3 and institutional live births; BCG and Measles 1 as well in
 the vaccine app).}
-
-\item{\code{admin_level}}{\code{"national"}, \code{"adminlevel_1"} or \code{"district"}.}
-
-\item{\code{region}}{Optional first-level region(s): only that region (or its districts).}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A data frame, one row per indicator x denominator x year (x region or district): \code{indicator},
+      \item{\code{admin_level}}{\code{"national"}, \code{"adminlevel_1"} or \code{"district"}.}
+      \item{\code{region}}{Optional first-level region(s): only that region (or its districts).}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A data frame, one row per indicator x denominator x year (x region or district): \code{indicator},
 \code{denominator} (id), \code{denominator_label}, \code{selected} (whether it is the denominator chosen for the indicator),
 \code{coverage}, \code{survey}, \code{survey_lower}, \code{survey_upper} (the survey estimate of that year and its bounds, when
 there is one), \code{difference} (coverage minus survey, percentage points) and \code{survey_year} (the base year the
 derived denominators start from).
+  }
 }
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-reactive"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-reactive}{}}}
-\subsection{Method \code{reactive()}}{
-Returns a reactive wrapper for use within Shiny applications.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$reactive()}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$reactive()}}{
+  Returns a reactive wrapper for use within Shiny applications.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$reactive()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_language"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_language}{}}}
-\subsection{Method \code{set_language()}}{
-Sets the UI Language.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_language(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_language()}}{
+  Sets the UI Language.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_language(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{A two-character language string.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{A two-character language string.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_cache_path"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_cache_path}{}}}
-\subsection{Method \code{set_cache_path()}}{
-Sets the caching RDS path and attempts a save to disk immediately.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_cache_path(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_cache_path()}}{
+  Sets the caching RDS path and attempts a save to disk immediately.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_cache_path(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Character string representing the file path.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Character string representing the file path.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_countdown_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_countdown_data}{}}}
-\subsection{Method \code{set_countdown_data()}}{
-Sets the core unadjusted countdown data. Wipes all derived caches.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_countdown_data(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_countdown_data()}}{
+  Sets the core unadjusted countdown data. Wipes all derived caches.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_countdown_data(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{A \code{cd_data} tibble.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{A \code{cd_data} tibble.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_wizard_parts"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_wizard_parts}{}}}
-\subsection{Method \code{set_wizard_parts()}}{
-Sets the Load Data wizard's own in-progress, not-yet-merged sheets
-(\code{load_excel_parts()}'s result). Called once, right after a fresh Excel/Stata upload, by
-\code{apps/rmncah}'s own \code{upload_box.R} -- see \code{wizard_parts}'s own active-binding comment for
-what this unblocks in the meantime, and \code{merge_and_standardize()}/Finish for where it's
-cleared.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_wizard_parts(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_wizard_parts()}}{
+  Stores the sheets of an upload that the Load Data wizard has read but not yet merged
+(the result of \code{load_excel_parts()}). \code{clear_wizard_parts()} removes them.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_wizard_parts(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{The list \code{load_excel_parts()} returns.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{The list \code{load_excel_parts()} returns.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-clear_wizard_parts"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-clear_wizard_parts}{}}}
-\subsection{Method \code{clear_wizard_parts()}}{
-Clears the wizard's in-progress parts/country state once Finish has actually
-merged them into real \code{countdown_data} -- called right after \code{set_countdown_data()} at
-Finish (\code{wizard_panels.R}). Not just tidiness: \code{run_all_quality_checks()} branches on
-whether \code{wizard_parts} is still set, so leaving it behind would keep routing a
-now-fully-merged cache through the pre-merge check path if the wizard's own Data Quality
-step (or edit mode) is ever revisited afterward.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$clear_wizard_parts()}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$clear_wizard_parts()}}{
+  Removes the wizard's unmerged sheets and the country stored with \code{set_wizard_country()}.
+Call it after \code{set_countdown_data()}, once the sheets have been merged into \code{countdown_data}.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$clear_wizard_parts()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_wizard_country"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_wizard_country}{}}}
-\subsection{Method \code{set_wizard_country()}}{
-Sets the wizard's best-effort, non-aborting country resolution -- see
-\code{country}/\code{country_iso}'s own active-binding comments for why this is separate from the
-real \code{check_single_country()} validation. Uses \code{update_field()} directly (not \code{setter()},
-which rejects \code{NULL}) since \code{value$country}/\code{value$country_iso} being \code{NULL} -- an
-ambiguous or unmatched admin sheet -- is itself a legitimate, expected result to store: the
-\code{country}/\code{country_iso} bindings need a real \code{NULL} back, not a stray \code{NA}, to keep matching
-the \code{is.null()} convention every other consumer already uses. Also runs
-\code{initialize_survey_estimates()} once a real \code{country_iso} is actually known -- the
-\code{initialize()}-time call the non-wizard branch gets was deliberately skipped for wizard mode
-(see that branch's own comment) precisely because it needed this to have already happened.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_wizard_country(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_wizard_country()}}{
+  Stores the country worked out from an upload before its sheets are merged, so that \code{country}
+and \code{country_iso} have a value in the meantime. Either element may be \code{NULL} when the country could not
+be worked out. When \code{country_iso} is given, the survey year, survey estimates and national rates are
+filled in from the package's built-in survey data for that country.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_wizard_country(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{A \code{list(country, country_iso)}, as \code{resolve_country_best_effort()} returns.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{A \code{list(country, country_iso)}, as \code{resolve_country_best_effort()} returns.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_quality_confirmed"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_quality_confirmed}{}}}
-\subsection{Method \code{set_quality_confirmed()}}{
-Marks this cache's data as having finished the Load Data wizard with its
-quality checks passed -- set once, at Finish, right before \code{set_cache_path()} writes it to
-disk. See \code{quality_confirmed}'s own active-binding comment for what reads this.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_quality_confirmed(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_quality_confirmed()}}{
+  Records whether the data finished the Load Data wizard with its quality checks passed
+(see \code{quality_confirmed}).
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_quality_confirmed(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Logical.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Logical.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_wizard_quality_results"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_wizard_quality_results}{}}}
-\subsection{Method \code{set_wizard_quality_results()}}{
-A permanent snapshot of \code{run_all_quality_checks()}'s own result, taken once at
-Finish -- right before \code{clear_wizard_parts()} (\code{wizard_panels.R}, apps/rmncah), while
-\code{wizard_parts} is still set, so this captures the exact pre-merge, per-sheet checks the user
-actually saw during the walkthrough. Exists because \code{clear_wizard_parts()}'s own removal of
-\code{wizard_parts} (deliberate -- see its own comment) means \code{run_all_quality_checks()} would
-otherwise silently fall through to the POST-merge check path (\code{.run_post_merge_quality_checks()})
-the moment Data Quality is revisited after Finish (a landing-page Edit link, or edit mode
-generally) -- a genuinely different set of checks, computed against the merged/standardized
-\code{countdown_data} instead of the original unmerged sheets, that can report different numbers
-than what was shown at upload time. Confirmed live: this is exactly the bug reported as
-"data quality is not giving the actual values given during the uploading". \code{wizard_parts}
-itself can't just be kept around instead -- it would grow stale the moment anything
-downstream (Remove Years, Data Adjustment) changes \code{countdown_data}, which this snapshot,
-frozen at the one moment it was genuinely accurate, doesn't have that problem.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_wizard_quality_results(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_wizard_quality_results()}}{
+  Stores the quality check results the Load Data wizard showed for the uploaded sheets (the
+result of \code{run_all_quality_checks()} while \code{wizard_parts} is set). They are kept after
+\code{clear_wizard_parts()}, so the Data Quality step shows the same results when it is opened again.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_wizard_quality_results(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{The list \code{run_all_quality_checks()} returns.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{The list \code{run_all_quality_checks()} returns.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_adjusted_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_adjusted_data}{}}}
-\subsection{Method \code{set_adjusted_data()}}{
-Sets custom adjusted data. Wipes downstream coverage/health system metrics.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_adjusted_data(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_adjusted_data()}}{
+  Sets custom adjusted data. Wipes downstream coverage/health system metrics.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_adjusted_data(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{A \code{cd_data} tibble.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{A \code{cd_data} tibble.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_performance_threshold"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_performance_threshold}{}}}
-\subsection{Method \code{set_performance_threshold()}}{
-Sets the performance threshold used for DQA score calculations.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_performance_threshold(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_performance_threshold()}}{
+  Sets the performance threshold used for DQA score calculations.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_performance_threshold(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Integer scalar (e.g., 90).}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Integer scalar (e.g., 90).}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_excluded_years"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_excluded_years}{}}}
-\subsection{Method \code{set_excluded_years()}}{
-Sets a list of years to manually exclude from modeling.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_excluded_years(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_excluded_years()}}{
+  Sets a list of years to manually exclude from modeling.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_excluded_years(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Numeric vector of years.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Numeric vector of years.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_adjustment_settings"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_adjustment_settings}{}}}
-\subsection{Method \code{set_adjustment_settings()}}{
-Sets the adjustment settings (see \code{\link[=adjust_service_data]{adjust_service_data()}}) the Data Adjustment page edits. Keeps
+\subsection{\code{CacheConnection$set_adjustment_settings()}}{
+  Sets the adjustment settings (see \code{\link[=adjust_service_data]{adjust_service_data()}}) the Data Adjustment page edits. Keeps
 \code{excluded_years} (its removed years) and \code{k_factors} (its k per group, everywhere) in step with them; the
 adjusted data is made again by \code{adjust_data()}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_adjustment_settings(value)}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_adjustment_settings(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{The settings list (\code{\link[=adjustment_settings_check]{adjustment_settings_check()}} tidies and validates it).}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{The settings list (\code{\link[=adjustment_settings_check]{adjustment_settings_check()}} tidies and validates it).}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_k_factors"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_k_factors}{}}}
-\subsection{Method \code{set_k_factors()}}{
-Sets the correction factors for under-reporting.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_k_factors(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_k_factors()}}{
+  Sets the correction factors for under-reporting.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_k_factors(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Named numeric vector of k-factors.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Named numeric vector of k-factors.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_adjusted_flag"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_adjusted_flag}{}}}
-\subsection{Method \code{set_adjusted_flag()}}{
-Toggles the adjusted flag status.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_adjusted_flag(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_adjusted_flag()}}{
+  Toggles the adjusted flag status.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_adjusted_flag(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Logical scalar.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Logical scalar.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_survey_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_survey_estimates}{}}}
-\subsection{Method \code{set_survey_estimates()}}{
-Manually overrides survey estimates. Clears coverage cache.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_survey_estimates(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_survey_estimates()}}{
+  Manually overrides survey estimates. Clears coverage cache.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_survey_estimates(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Named numeric vector.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Named numeric vector.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_derivation_population"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_derivation_population}{}}}
-\subsection{Method \code{set_derivation_population()}}{
-Sets the base derivation population indicator (e.g. totlivebirths_dhis2).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_derivation_population(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_derivation_population()}}{
+  Sets the base derivation population indicator (e.g. totlivebirths_dhis2).
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_derivation_population(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Character scalar.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Character scalar.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_national_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_national_estimates}{}}}
-\subsection{Method \code{set_national_estimates()}}{
-Sets list of explicit national estimates (nmr, pnmr, etc.).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_national_estimates(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_national_estimates()}}{
+  Sets list of explicit national estimates (nmr, pnmr, etc.).
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_national_estimates(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Named list.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Named list.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_survey_year"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_survey_year}{}}}
-\subsection{Method \code{set_survey_year()}}{
-Set integer year representing the source survey year.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_survey_year(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_survey_year()}}{
+  Set integer year representing the source survey year.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_survey_year(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Integer year.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Integer year.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-clear_survey_year"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-clear_survey_year}{}}}
-\subsection{Method \code{clear_survey_year()}}{
-Clears the survey year back to unset. See clear_un_estimates() for why this bypasses the
-public setter -- set_survey_year()'s own validation (is_scalar_integerish) rejects NULL outright, so
-there was no supported way to un-set an already-entered survey year (e.g. the user clearing the
-field by hand) until this.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$clear_survey_year()}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$clear_survey_year()}}{
+  Clears the survey year, so that \code{survey_year} is \code{NULL}. The tables computed from it are
+cleared as well.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$clear_survey_year()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_start_survey_year"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_start_survey_year}{}}}
-\subsection{Method \code{set_start_survey_year()}}{
-Set year the survey timeline begins filtering from.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_start_survey_year(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_start_survey_year()}}{
+  Set year the survey timeline begins filtering from.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_start_survey_year(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Integer year.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Integer year.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_denominator"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_denominator}{}}}
-\subsection{Method \code{set_denominator()}}{
-Set baseline denominator (e.g. penta1).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_denominator(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_denominator()}}{
+  Set baseline denominator (e.g. penta1).
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_denominator(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Character scalar.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Character scalar.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_maternal_denominator"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_maternal_denominator}{}}}
-\subsection{Method \code{set_maternal_denominator()}}{
-Set maternal specific baseline denominator (e.g. anc1).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_maternal_denominator(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_maternal_denominator()}}{
+  Set maternal specific baseline denominator (e.g. anc1).
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_maternal_denominator(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Character scalar.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Character scalar.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_selected_admin_level_1"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_selected_admin_level_1}{}}}
-\subsection{Method \code{set_selected_admin_level_1()}}{
-Sets the selected Region for targeted dashboard filtering.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_selected_admin_level_1(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_selected_admin_level_1()}}{
+  Sets the selected Region for targeted dashboard filtering.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_selected_admin_level_1(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Character scalar.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Character scalar.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_selected_district"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_selected_district}{}}}
-\subsection{Method \code{set_selected_district()}}{
-Sets the selected District for targeted dashboard filtering.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_selected_district(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_selected_district()}}{
+  Sets the selected District for targeted dashboard filtering.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_selected_district(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Character scalar.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Character scalar.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_mapping_years"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_mapping_years}{}}}
-\subsection{Method \code{set_mapping_years()}}{
-Sets mapping years for generic plots.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_mapping_years(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_mapping_years()}}{
+  Sets mapping years for generic plots.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_mapping_years(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Integer vector.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Integer vector.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_chart_options"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_chart_options}{}}}
-\subsection{Method \code{set_chart_options()}}{
-Stores what the user changed about how one chart (or, with \code{id = "default"}, every chart of this dataset)
+\subsection{\code{CacheConnection$set_chart_options()}}{
+  Stores what the user changed about how one chart (or, with \code{id = "default"}, every chart of this dataset)
 looks: text, legend, fonts, sizes. See \code{\link[=cd_chart_options]{cd_chart_options()}}. Saved with the dataset, so it survives reloads.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_chart_options(id, options)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{id}}{Character. A chart id, by convention \code{"<page>/<chart>"} (e.g. \code{"national_coverage/anc4"}), or \code{"default"}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_chart_options(id, options)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{id}}{Character. A chart id, by convention \code{"<page>/<chart>"} (e.g. \code{"national_coverage/anc4"}), or \code{"default"}
 for settings that apply to every chart (a font, a text scale).}
+      \item{\code{options}}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object (or a list of its fields). \code{NULL} removes what is stored for \code{id}.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    Invisibly, TRUE when something changed.
+  }
+}
 
-\item{\code{options}}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object (or a list of its fields). \code{NULL} removes what is stored for \code{id}.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisibly, TRUE when something changed.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_report_project"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_report_project}{}}}
-\subsection{Method \code{set_report_project()}}{
-Saves a report built in the report builder (see \code{\link[=export_report]{export_report()}}), or removes it.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_report_project(id, project)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_report_project()}}{
+  Saves a report built in the report builder (see \code{\link[=export_report]{export_report()}}), or removes it.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_report_project(id, project)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{id}}{Character. The report's id.}
+      \item{\code{project}}{A list: \code{name}, \code{design} and \code{blocks} (see \code{\link[=report_presets]{report_presets()}}), or \code{NULL} to remove the report.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{id}}{Character. The report's id.}
-
-\item{\code{project}}{A list: \code{name}, \code{design} and \code{blocks} (see \code{\link[=report_presets]{report_presets()}}), or \code{NULL} to remove the report.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_graph"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_graph}{}}}
-\subsection{Method \code{set_graph()}}{
-Saves a custom chart (report kind \code{custom_chart}: where its data comes from, transforms and a plot
-description -- see \code{datasuite.ui::report_validate_spec()}), or removes it. Saved graphs redraw from the
+\subsection{\code{CacheConnection$set_graph()}}{
+  Saves a custom chart (report kind \code{custom_chart}: where its data comes from, transforms and a plot
+description; see \code{datasuite.ui::report_validate_spec()}), or removes it. Saved graphs redraw from the
 data like every other chart and can be added to any report.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_graph(id, spec)}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_graph(id, spec)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{id}}{Character. The graph's id.}
+      \item{\code{spec}}{The chart's description, checked with \code{datasuite.ui::report_validate_spec()}, or \code{NULL} to remove it.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{id}}{Character. The graph's id.}
-
-\item{\code{spec}}{The chart's description, checked with \code{datasuite.ui::report_validate_spec()}, or \code{NULL} to remove it.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_report_asset"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_report_asset}{}}}
-\subsection{Method \code{set_report_asset()}}{
-Saves a picture used by the reports (a block's \code{src} is then \code{"asset:<id>"}), or removes it. Pictures
+\subsection{\code{CacheConnection$set_report_asset()}}{
+  Saves a picture used by the reports (a block's \code{src} is then \code{"asset:<id>"}), or removes it. Pictures
 are kept once in the dataset rather than inside each report; the Word file and the PDF embed their own copy.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_report_asset(id, asset)}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_report_asset(id, asset)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{id}}{Character. The picture's id.}
+      \item{\code{asset}}{A list: \code{type} (a MIME type such as \code{"image/png"}) and \code{data} (a raw vector), or \code{NULL} to remove it.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{id}}{Character. The picture's id.}
-
-\item{\code{asset}}{A list: \code{type} (a MIME type such as \code{"image/png"}) and \code{data} (a raw vector), or \code{NULL} to remove it.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_report_theme"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_report_theme}{}}}
-\subsection{Method \code{set_report_theme()}}{
-Saves a theme made from an Office file (see \code{\link[=report_theme_from_file]{report_theme_from_file()}}), or removes it. Its template
+\subsection{\code{CacheConnection$set_report_theme()}}{
+  Saves a theme made from an Office file (see \code{\link[=report_theme_from_file]{report_theme_from_file()}}), or removes it. Its template
 (the file itself) is kept as a report asset, \code{theme$template} being \code{"asset:<id>"}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_report_theme(id, theme)}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_report_theme(id, theme)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{id}}{Character. The theme's id.}
+      \item{\code{theme}}{A theme list, or \code{NULL} to remove it.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{id}}{Character. The theme's id.}
-
-\item{\code{theme}}{A theme list, or \code{NULL} to remove it.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-get_chart_options"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_chart_options}{}}}
-\subsection{Method \code{get_chart_options()}}{
-The chart options that apply to one chart: the dataset's \code{"default"} options with the chart's own on top.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_chart_options(id = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$get_chart_options()}}{
+  The chart options that apply to one chart: the dataset's \code{"default"} options with the chart's own on top.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$get_chart_options(id = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{id}}{Character. A chart id (see \code{set_chart_options()}), or \code{NULL} for the defaults alone.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A \code{\link[=cd_chart_options]{cd_chart_options()}} object (empty when nothing is stored).
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{id}}{Character. A chart id (see \code{set_chart_options()}), or \code{NULL} for the defaults alone.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A \code{\link[=cd_chart_options]{cd_chart_options()}} object (empty when nothing is stored).
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-reset_chart_options"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-reset_chart_options}{}}}
-\subsection{Method \code{reset_chart_options()}}{
-Forgets stored chart options.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$reset_chart_options(id = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$reset_chart_options()}}{
+  Forgets stored chart options.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$reset_chart_options(id = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{id}}{Character. The chart id to reset, or \code{NULL} to reset every chart and the defaults.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    Invisibly, TRUE when something changed.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{id}}{Character. The chart id to reset, or \code{NULL} to reset every chart and the defaults.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisibly, TRUE when something changed.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_mortality_mapping_years"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_mortality_mapping_years}{}}}
-\subsection{Method \code{set_mortality_mapping_years()}}{
-Sets mapping years explicitly for mortality dashboards.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_mortality_mapping_years(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_mortality_mapping_years()}}{
+  Sets mapping years explicitly for mortality dashboards.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_mortality_mapping_years(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Integer vector.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Integer vector.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_utilization_mapping_years"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_utilization_mapping_years}{}}}
-\subsection{Method \code{set_utilization_mapping_years()}}{
-Sets mapping years explicitly for utilization dashboards.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_utilization_mapping_years(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_utilization_mapping_years()}}{
+  Sets mapping years explicitly for utilization dashboards.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_utilization_mapping_years(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Integer vector.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Integer vector.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_fpet_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_fpet_data}{}}}
-\subsection{Method \code{set_fpet_data()}}{
-Sets the Family Planning Estimation Tool (FPET) dataset.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_fpet_data(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_fpet_data()}}{
+  Sets the Family Planning Estimation Tool (FPET) dataset.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_fpet_data(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Data frame.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Data frame.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_un_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_un_estimates}{}}}
-\subsection{Method \code{set_un_estimates()}}{
-Sets the official UN Demographic Estimates dataset. Clears denominators.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_un_estimates(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_un_estimates()}}{
+  Sets the official UN Demographic Estimates dataset. Clears denominators.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_un_estimates(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Data frame.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Data frame.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-clear_un_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-clear_un_estimates}{}}}
-\subsection{Method \code{clear_un_estimates()}}{
-Clears any uploaded UN Demographic Estimates override, reverting the un_estimates active
-binding to the package's own built-in default for the current country (its own \%||\% fallback). The
-public setter validates its input and rejects NULL outright, so this bypasses it via update_field()
-directly, the same way invalidate_cached_data() already resets other fields to NULL internally -- there
-was no supported way to undo an override before this.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$clear_un_estimates()}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$clear_un_estimates()}}{
+  Removes an uploaded UN Demographic Estimates dataset. \code{un_estimates} then returns the
+package's built-in estimates for the current country. The tables computed from the estimates are
+cleared.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$clear_un_estimates()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_un_mortality_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_un_mortality_estimates}{}}}
-\subsection{Method \code{set_un_mortality_estimates()}}{
-Sets the UN Mortality specific estimates dataset. Clears mortality cache.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_un_mortality_estimates(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_un_mortality_estimates()}}{
+  Sets the UN Mortality specific estimates dataset. Clears mortality cache.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_un_mortality_estimates(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Data frame.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Data frame.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-clear_un_mortality_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-clear_un_mortality_estimates}{}}}
-\subsection{Method \code{clear_un_mortality_estimates()}}{
-Clears any uploaded UN Mortality Estimates override, reverting to the package's built-in
-default for the current country. See clear_un_estimates() for why this bypasses the public setter.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$clear_un_mortality_estimates()}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$clear_un_mortality_estimates()}}{
+  Removes an uploaded UN Mortality Estimates dataset. \code{un_mortality_estimates} then returns
+the package's built-in estimates for the current country. The tables computed from the estimates are
+cleared.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$clear_un_mortality_estimates()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_wuenic_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_wuenic_estimates}{}}}
-\subsection{Method \code{set_wuenic_estimates()}}{
-Sets WUENIC estimates dataset. Clears coverage cache.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_wuenic_estimates(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_wuenic_estimates()}}{
+  Sets WUENIC estimates dataset. Clears coverage cache.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_wuenic_estimates(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Data frame.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Data frame.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-clear_wuenic_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-clear_wuenic_estimates}{}}}
-\subsection{Method \code{clear_wuenic_estimates()}}{
-Clears any uploaded WUENIC Estimates override, reverting to the package's built-in default
-for the current country. See clear_un_estimates() for why this bypasses the public setter.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$clear_wuenic_estimates()}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$clear_wuenic_estimates()}}{
+  Removes an uploaded WUENIC Estimates dataset. \code{wuenic_estimates} then returns the package's
+built-in estimates for the current country. The tables computed from the estimates are cleared.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$clear_wuenic_estimates()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_national_survey"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_national_survey}{}}}
-\subsection{Method \code{set_national_survey()}}{
-Sets overall national survey dataset and automatically extracts its estimates.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_national_survey(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_national_survey()}}{
+  Sets overall national survey dataset and automatically extracts its estimates.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_national_survey(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Data frame.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Data frame.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-clear_national_survey"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-clear_national_survey}{}}}
-\subsection{Method \code{clear_national_survey()}}{
-Clears an uploaded national survey override, reverting to the package's own
-built-in default. See clear_un_estimates() for why this bypasses the public setter -- unlike
-that one, this deliberately does NOT re-run extract_national_estimates_from_survey(): any
-national rate fields it already filled in are their own, separately edited values now, the
-same way clearing un_estimates never un-does anything it once fed into a downstream
-calculation either.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$clear_national_survey()}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$clear_national_survey()}}{
+  Removes an uploaded national survey. \code{national_survey} then returns the package's built-in
+survey data for the current country. The survey year, survey estimates and national rates that were
+taken from the removed survey are kept.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$clear_national_survey()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_regional_survey"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_regional_survey}{}}}
-\subsection{Method \code{set_regional_survey()}}{
-Sets the disaggregated regional survey dataset.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_regional_survey(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_regional_survey()}}{
+  Sets the disaggregated regional survey dataset.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_regional_survey(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Data frame.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Data frame.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-clear_regional_survey"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-clear_regional_survey}{}}}
-\subsection{Method \code{clear_regional_survey()}}{
-Clears an uploaded regional survey override, reverting to the package's own
-built-in default. See clear_un_estimates() for why this bypasses the public setter.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$clear_regional_survey()}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$clear_regional_survey()}}{
+  Removes an uploaded regional survey. \code{regional_survey} then returns the package's built-in
+survey data for the current country. The tables computed from the regional survey are cleared.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$clear_regional_survey()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_shapefile"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_shapefile}{}}}
-\subsection{Method \code{set_shapefile()}}{
-Sets a user-uploaded shapefile override, replacing the package-bundled default
-for the current country -- see \code{shapefile}'s own active-binding comment for the
-override-with-fallback pattern this mirrors (\code{regional_survey}, above).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_shapefile(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_shapefile()}}{
+  Sets an uploaded shapefile, used instead of the package's built-in shapefile for the
+current country.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_shapefile(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{An \code{sf} object (as \code{read_shapefile_folder()} returns).}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{An \code{sf} object (as \code{read_shapefile_folder()} returns).}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-clear_shapefile"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-clear_shapefile}{}}}
-\subsection{Method \code{clear_shapefile()}}{
-Clears an uploaded shapefile override, reverting to the package's built-in
+\subsection{\code{CacheConnection$clear_shapefile()}}{
+  Clears an uploaded shapefile override, reverting to the package's built-in
 default for the current country.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$clear_shapefile()}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$clear_shapefile()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_shapefile_name_field"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_shapefile_name_field}{}}}
-\subsection{Method \code{set_shapefile_name_field()}}{
-Sets which column of the uploaded shapefile holds admin-1 names -- a real
-uploaded shapefile won't necessarily use the bundled shapefile's own \code{NAME_1} convention, so
-\code{check_shapefile_admin_names()} needs to be told which one to use.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_shapefile_name_field(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_shapefile_name_field()}}{
+  Sets which column of the uploaded shapefile holds the admin level 1 names. Without it,
+\code{NAME_1} is used, the column of the built-in shapefiles. \code{check_shapefile_admin_names()} reads the
+names from this column.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_shapefile_name_field(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Character. A column name present in \code{self$shapefile}.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Character. A column name present in \code{self$shapefile}.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_wiq_survey"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_wiq_survey}{}}}
-\subsection{Method \code{set_wiq_survey()}}{
-Sets wealth quantile (WIQ) survey dataset.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_wiq_survey(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_wiq_survey()}}{
+  Sets wealth quantile (WIQ) survey dataset.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_wiq_survey(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Data frame.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Data frame.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-clear_wiq_survey"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-clear_wiq_survey}{}}}
-\subsection{Method \code{clear_wiq_survey()}}{
-Clears an uploaded WIQ survey override, reverting to the package's own built-in
-default (or NULL, for a country with no bundled equity default -- see the \code{wiq_survey} active
-binding). See clear_un_estimates() for why this bypasses the public setter.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$clear_wiq_survey()}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$clear_wiq_survey()}}{
+  Removes an uploaded wealth quintile (WIQ) survey. \code{wiq_survey} then returns the package's
+built-in survey data for the current country, which has no rows for a country without any.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$clear_wiq_survey()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_area_survey"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_area_survey}{}}}
-\subsection{Method \code{set_area_survey()}}{
-Sets area level (urban/rural) survey dataset.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_area_survey(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_area_survey()}}{
+  Sets area level (urban/rural) survey dataset.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_area_survey(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Data frame.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Data frame.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-clear_area_survey"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-clear_area_survey}{}}}
-\subsection{Method \code{clear_area_survey()}}{
-Clears an uploaded area survey override, reverting to the package's own built-in
-default. See clear_un_estimates() for why this bypasses the public setter.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$clear_area_survey()}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$clear_area_survey()}}{
+  Removes an uploaded area (urban/rural) survey. \code{area_survey} then returns the package's
+built-in survey data for the current country.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$clear_area_survey()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_education_survey"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_education_survey}{}}}
-\subsection{Method \code{set_education_survey()}}{
-Sets education level survey dataset.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_education_survey(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_education_survey()}}{
+  Sets education level survey dataset.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_education_survey(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Data frame.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Data frame.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-clear_education_survey"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-clear_education_survey}{}}}
-\subsection{Method \code{clear_education_survey()}}{
-Clears an uploaded education survey override, reverting to the package's own
-built-in default. See clear_un_estimates() for why this bypasses the public setter.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$clear_education_survey()}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$clear_education_survey()}}{
+  Removes an uploaded education survey. \code{education_survey} then returns the package's
+built-in survey data for the current country.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$clear_education_survey()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_survey_mapping"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_survey_mapping}{}}}
-\subsection{Method \code{set_survey_mapping()}}{
-Sets survey to countdown nomenclature mapping matrix.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_survey_mapping(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_survey_mapping()}}{
+  Sets survey to countdown nomenclature mapping matrix.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_survey_mapping(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Data frame.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Data frame.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-clear_survey_mapping"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-clear_survey_mapping}{}}}
-\subsection{Method \code{clear_survey_mapping()}}{
-Clears the survey region mapping back to "unmapped" -- unlike un_estimates/
-un_mortality_estimates/wuenic_estimates, this field has no package-bundled default to fall back to, so
-clearing it just means "ask the user to map again," not "use the built-in data."
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$clear_survey_mapping()}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$clear_survey_mapping()}}{
+  Removes the mapping between the survey's regions and the dataset's regions. There is no
+built-in mapping, so \code{survey_mapping} is \code{NULL} until a new one is set. The tables computed from the
+mapping are cleared.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$clear_survey_mapping()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_map_mapping"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_map_mapping}{}}}
-\subsection{Method \code{set_map_mapping()}}{
-Sets map coordinates to countdown nomenclature mapping matrix.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_map_mapping(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_map_mapping()}}{
+  Sets map coordinates to countdown nomenclature mapping matrix.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_map_mapping(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Data frame.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Data frame.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-clear_map_mapping"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-clear_map_mapping}{}}}
-\subsection{Method \code{clear_map_mapping()}}{
-Clears the map region mapping back to "unmapped" -- see clear_survey_mapping(), same
-reasoning (no package-bundled default for this field either).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$clear_map_mapping()}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$clear_map_mapping()}}{
+  Removes the mapping between the shapefile's regions and the dataset's regions. There is no
+built-in mapping, so \code{map_mapping} is \code{NULL} until a new one is set.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$clear_map_mapping()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-is_default"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-is_default}{}}}
-\subsection{Method \code{is_default()}}{
-Checks whether a data field is still at its built-in default -- i.e. the user has not
-uploaded an override (un_estimates/un_mortality_estimates/wuenic_estimates, each with a real
-package-bundled fallback) or made a mapping (survey_mapping/map_mapping, which have no default at all,
-so this is equivalent there to asking whether anything has been set). There was previously no way to
-ask this at all: the active bindings for the first three never return NULL once a country is set (they
-fall back to the bundled dataset instead), so app-layer code checking \code{is.null(cache$un_estimates)} to
-mean "nothing uploaded yet" was always structurally wrong -- this checks the underlying stored value
-directly, before any fallback is applied.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$is_default(field_name)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$is_default()}}{
+  Checks whether nothing has been set for a field. For a field with built-in data
+(\code{un_estimates}, \code{un_mortality_estimates}, \code{wuenic_estimates}) this means no dataset was uploaded, although
+the active binding still returns the built-in data. For a field without any (\code{survey_mapping},
+\code{map_mapping}) it means the field is empty.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$is_default(field_name)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{field_name}}{Character. The field to check (e.g. "un_estimates", "survey_mapping").}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    Logical. \code{TRUE} when nothing has been set for the field.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{field_name}}{Character. The field to check (e.g. "un_estimates", "survey_mapping").}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Logical. TRUE if nothing has been set for this field (so it's showing the built-in default, or
-is simply empty for a field with no default).
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_sector_national_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_sector_national_estimates}{}}}
-\subsection{Method \code{set_sector_national_estimates()}}{
-Set sector national estimates mapping.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_sector_national_estimates(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_sector_national_estimates()}}{
+  Set sector national estimates mapping.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_sector_national_estimates(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Data frame.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Data frame.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_sector_area_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_sector_area_estimates}{}}}
-\subsection{Method \code{set_sector_area_estimates()}}{
-Set sector area estimates mapping.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_sector_area_estimates(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_sector_area_estimates()}}{
+  Set sector area estimates mapping.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_sector_area_estimates(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Data frame.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Data frame.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_csection_national_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_csection_national_estimates}{}}}
-\subsection{Method \code{set_csection_national_estimates()}}{
-Set c-section national estimates mapping.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_csection_national_estimates(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_csection_national_estimates()}}{
+  Set c-section national estimates mapping.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_csection_national_estimates(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Data frame.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Data frame.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-set_csection_area_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-set_csection_area_estimates}{}}}
-\subsection{Method \code{set_csection_area_estimates()}}{
-Set c-section area estimates mapping.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$set_csection_area_estimates(value)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$set_csection_area_estimates()}}{
+  Set c-section area estimates mapping.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$set_csection_area_estimates(value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{Data frame.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Data frame.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-calculate_reporting_rate"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_reporting_rate}{}}}
-\subsection{Method \code{calculate_reporting_rate()}}{
-Wrapper to calculate average reporting rates from raw countdown data.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$calculate_reporting_rate(admin_level, region = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$calculate_reporting_rate()}}{
+  Wrapper to calculate average reporting rates from raw countdown data.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$calculate_reporting_rate(admin_level, region = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{admin_level}}{Administrative level ("national", "adminlevel_1", "district").}
+      \item{\code{region}}{Optional region filter.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{admin_level}}{Administrative level ("national", "adminlevel_1", "district").}
-
-\item{\code{region}}{Optional region filter.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-calculate_district_reporting_rate"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_district_reporting_rate}{}}}
-\subsection{Method \code{calculate_district_reporting_rate()}}{
-Wrapper to calculate proportion of districts meeting reporting thresholds.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$calculate_district_reporting_rate(region = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$calculate_district_reporting_rate()}}{
+  Wrapper to calculate proportion of districts meeting reporting thresholds.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$calculate_district_reporting_rate(region = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{region}}{Optional region filter.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{region}}{Optional region filter.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-calculate_completeness_summary"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_completeness_summary}{}}}
-\subsection{Method \code{calculate_completeness_summary()}}{
-Wrapper to calculate completeness proportions from raw countdown data.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$calculate_completeness_summary(admin_level, region = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$calculate_completeness_summary()}}{
+  Wrapper to calculate completeness proportions from raw countdown data.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$calculate_completeness_summary(admin_level, region = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{admin_level}}{Administrative level.}
+      \item{\code{region}}{Optional region filter.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{admin_level}}{Administrative level.}
-
-\item{\code{region}}{Optional region filter.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-calculate_district_completeness_summary"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_district_completeness_summary}{}}}
-\subsection{Method \code{calculate_district_completeness_summary()}}{
-Wrapper to calculate district level completeness details.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$calculate_district_completeness_summary(region = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$calculate_district_completeness_summary()}}{
+  Wrapper to calculate district level completeness details.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$calculate_district_completeness_summary(region = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{region}}{Optional region filter.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{region}}{Optional region filter.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-list_missing_units"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-list_missing_units}{}}}
-\subsection{Method \code{list_missing_units()}}{
-Locates missing/non-reporting facility units.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$list_missing_units(indicator, region = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$list_missing_units()}}{
+  Locates missing/non-reporting facility units.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$list_missing_units(indicator, region = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{indicator}}{Target indicator name.}
+      \item{\code{region}}{Optional region filter.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{indicator}}{Target indicator name.}
-
-\item{\code{region}}{Optional region filter.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-calculate_outliers_summary"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_outliers_summary}{}}}
-\subsection{Method \code{calculate_outliers_summary()}}{
-Identifies severe outliers across administrative levels using Hampel method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$calculate_outliers_summary(admin_level, region = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$calculate_outliers_summary()}}{
+  Identifies severe outliers across administrative levels using Hampel method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$calculate_outliers_summary(admin_level, region = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{admin_level}}{Administrative level.}
+      \item{\code{region}}{Optional region filter.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{admin_level}}{Administrative level.}
-
-\item{\code{region}}{Optional region filter.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-calculate_district_outlier_summary"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_district_outlier_summary}{}}}
-\subsection{Method \code{calculate_district_outlier_summary()}}{
-Flags percentage of districts with acceptable outlier variances.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$calculate_district_outlier_summary(region = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$calculate_district_outlier_summary()}}{
+  Flags percentage of districts with acceptable outlier variances.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$calculate_district_outlier_summary(region = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{region}}{Optional region filter.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{region}}{Optional region filter.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-calculate_ratios_and_adequacy"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_ratios_and_adequacy}{}}}
-\subsection{Method \code{calculate_ratios_and_adequacy()}}{
-Calculates adequacy ratios across chronological indicator sequences (e.g. Penta1 to Penta3).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$calculate_ratios_and_adequacy(region = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$calculate_ratios_and_adequacy()}}{
+  Calculates adequacy ratios across chronological indicator sequences (e.g. Penta1 to Penta3).
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$calculate_ratios_and_adequacy(region = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{region}}{Optional region filter.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{region}}{Optional region filter.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-check_population_service_collision"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-check_population_service_collision}{}}}
-\subsection{Method \code{check_population_service_collision()}}{
-Flags district-years where a service indicator looks mixed up with population data.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$check_population_service_collision()}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$check_population_service_collision()}}{
+  Flags district-years where a service indicator looks mixed up with population data.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$check_population_service_collision()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-check_indicator_emptiness"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-check_indicator_emptiness}{}}}
-\subsection{Method \code{check_indicator_emptiness()}}{
-Flags indicators that are entirely empty across the whole dataset.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$check_indicator_emptiness()}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$check_indicator_emptiness()}}{
+  Flags indicators that are entirely empty across the whole dataset.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$check_indicator_emptiness()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-check_survey_admin_names"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-check_survey_admin_names}{}}}
-\subsection{Method \code{check_survey_admin_names()}}{
-Matches survey \code{adminlevel_1} names against the dataset's own admin-1 names,
+\subsection{\code{CacheConnection$check_survey_admin_names()}}{
+  Matches survey \code{adminlevel_1} names against the dataset's own admin level 1 names,
 skipping names already resolved via \code{survey_mapping}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$check_survey_admin_names()}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$check_survey_admin_names()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-check_shapefile_admin_names"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-check_shapefile_admin_names}{}}}
-\subsection{Method \code{check_shapefile_admin_names()}}{
-Matches the shapefile's own admin-1 name column (\code{self$shapefile_name_field} --
-\code{self$shapefile}'s uploaded override if one exists, otherwise the bundled default) against
-the dataset's own admin-1 names, skipping names already resolved via \code{map_mapping}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$check_shapefile_admin_names()}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$check_shapefile_admin_names()}}{
+  Matches the shapefile's admin level 1 names (the \code{shapefile_name_field} column of
+\code{shapefile}) against the dataset's admin level 1 names, skipping names already resolved in \code{map_mapping}.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$check_shapefile_admin_names()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-calculate_overall_score"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_overall_score}{}}}
-\subsection{Method \code{calculate_overall_score()}}{
-Calculates the aggregate DQA overall score assessing reporting, completeness, and outliers.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$calculate_overall_score(
+\subsection{\code{CacheConnection$calculate_overall_score()}}{
+  Calculates the aggregate DQA overall score assessing reporting, completeness, and outliers.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$calculate_overall_score(
   admin_level = c("national", "adminlevel_1"),
   region = NULL,
   labels = NULL
-)}\if{html}{\out{</div>}}
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{admin_level}}{Administrative level ("national" or "adminlevel_1").}
+      \item{\code{region}}{Optional region name (required if admin_level is "adminlevel_1").}
+      \item{\code{labels}}{Optional custom display labels.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{admin_level}}{Administrative level ("national" or "adminlevel_1").}
-
-\item{\code{region}}{Optional region name (required if admin_level is "adminlevel_1").}
-
-\item{\code{labels}}{Optional custom display labels.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-calculate_service_dqa_summary"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_service_dqa_summary}{}}}
-\subsection{Method \code{calculate_service_dqa_summary()}}{
-Calculates Service DQA Summary comparing general reporting vs specific utilization metrics.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$calculate_service_dqa_summary(
+\subsection{\code{CacheConnection$calculate_service_dqa_summary()}}{
+  Calculates Service DQA Summary comparing general reporting vs specific utilization metrics.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$calculate_service_dqa_summary(
   admin_level = c("national", "adminlevel_1"),
   region = NULL,
   labels = NULL
-)}\if{html}{\out{</div>}}
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{admin_level}}{Administrative level ("national" or "adminlevel_1").}
+      \item{\code{region}}{Optional region name (required if admin_level is "adminlevel_1").}
+      \item{\code{labels}}{Optional custom labels.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{admin_level}}{Administrative level ("national" or "adminlevel_1").}
-
-\item{\code{region}}{Optional region name (required if admin_level is "adminlevel_1").}
-
-\item{\code{labels}}{Optional custom labels.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-generate_admin1_service_utilization"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-generate_admin1_service_utilization}{}}}
-\subsection{Method \code{generate_admin1_service_utilization()}}{
-Generates Service Utilization Admin 1 Data mapping format.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$generate_admin1_service_utilization(
+\subsection{\code{CacheConnection$generate_admin1_service_utilization()}}{
+  Generates Service Utilization Admin level 1 Data mapping format.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$generate_admin1_service_utilization(
   metric_type = c("opd", "ipd")
-)}\if{html}{\out{</div>}}
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{metric_type}}{Character. Either "opd" or "ipd".}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A tibble with class \code{cd_service_util_admin1}.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{metric_type}}{Character. Either "opd" or "ipd".}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A tibble with class \code{cd_service_util_admin1}.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-generate_admin1_mch_curative_index"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-generate_admin1_mch_curative_index}{}}}
-\subsection{Method \code{generate_admin1_mch_curative_index()}}{
-Formats Maternal Child Health vs Curative Index data for plotting.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$generate_admin1_mch_curative_index()}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$generate_admin1_mch_curative_index()}}{
+  Formats Maternal Child Health vs Curative Index data for plotting.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$generate_admin1_mch_curative_index()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-get_filtered_coverage"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_filtered_coverage}{}}}
-\subsection{Method \code{get_filtered_coverage()}}{
-Gets filtered coverage data isolating a specific indicator for charts.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_filtered_coverage(indicator, admin_level, region = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$get_filtered_coverage()}}{
+  Gets filtered coverage data isolating a specific indicator for charts.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$get_filtered_coverage(indicator, admin_level, region = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{indicator}}{Character. The target health indicator.}
+      \item{\code{admin_level}}{Character. Level of aggregation.}
+      \item{\code{region}}{Character. Optional region or district name.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{indicator}}{Character. The target health indicator.}
-
-\item{\code{admin_level}}{Character. Level of aggregation.}
-
-\item{\code{region}}{Character. Optional region or district name.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-get_filtered_inequality"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_filtered_inequality}{}}}
-\subsection{Method \code{get_filtered_inequality()}}{
-Gets filtered inequality data targeting a single indicator.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_filtered_inequality(indicator, admin_level, region = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$get_filtered_inequality()}}{
+  Gets filtered inequality data targeting a single indicator.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$get_filtered_inequality(indicator, admin_level, region = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{indicator}}{Character. The target health indicator.}
+      \item{\code{admin_level}}{Character. Level of aggregation.}
+      \item{\code{region}}{Character. Optional region filter.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{indicator}}{Character. The target health indicator.}
-
-\item{\code{admin_level}}{Character. Level of aggregation.}
-
-\item{\code{region}}{Character. Optional region filter.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-get_filtered_mapping_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_filtered_mapping_data}{}}}
-\subsection{Method \code{get_filtered_mapping_data()}}{
-Filters mapping spatial data focusing on a specific year and palette.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_filtered_mapping_data(
+\subsection{\code{CacheConnection$get_filtered_mapping_data()}}{
+  Filters mapping spatial data focusing on a specific year and palette.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$get_filtered_mapping_data(
   indicator,
   admin_level,
   palette,
   plot_year = NULL
-)}\if{html}{\out{</div>}}
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{indicator}}{Character. The target health indicator.}
+      \item{\code{admin_level}}{Character. Level of aggregation.}
+      \item{\code{palette}}{Character. Color palette for mapping.}
+      \item{\code{plot_year}}{Integer. Year to plot.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{indicator}}{Character. The target health indicator.}
-
-\item{\code{admin_level}}{Character. Level of aggregation.}
-
-\item{\code{palette}}{Character. Color palette for mapping.}
-
-\item{\code{plot_year}}{Integer. Year to plot.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-get_base_indicator_coverage"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_base_indicator_coverage}{}}}
-\subsection{Method \code{get_base_indicator_coverage()}}{
-Returns the base denominator and numerator metrics before survey interpolation.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_base_indicator_coverage(
+\subsection{\code{CacheConnection$get_base_indicator_coverage()}}{
+  Returns the base denominator and numerator metrics before survey interpolation.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$get_base_indicator_coverage(
   admin_level,
   region = NULL,
   show_district = TRUE
-)}\if{html}{\out{</div>}}
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{admin_level}}{Character. Level of aggregation.}
+      \item{\code{region}}{Character. Optional region filter.}
+      \item{\code{show_district}}{Optional. Whether to show the district column.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{admin_level}}{Character. Level of aggregation.}
-
-\item{\code{region}}{Character. Optional region filter.}
-
-\item{\code{show_district}}{Optional. Whether to show the district column.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-get_filtered_threshold"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_filtered_threshold}{}}}
-\subsection{Method \code{get_filtered_threshold()}}{
-Evaluates indicator data against set threshold benchmarks (e.g. 80\% coverage).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_filtered_threshold(indicator, target_unit, region = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$get_filtered_threshold()}}{
+  Evaluates indicator data against set threshold benchmarks (e.g. 80\% coverage).
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$get_filtered_threshold(indicator, target_unit, region = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{indicator}}{Character. The target health indicator group.}
+      \item{\code{target_unit}}{Character. Evaluated level ("district" or "adminlevel_1").}
+      \item{\code{region}}{Character. Optional region filter.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{indicator}}{Character. The target health indicator group.}
-
-\item{\code{target_unit}}{Character. Evaluated level ("district" or "adminlevel_1").}
-
-\item{\code{region}}{Character. Optional region filter.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-calculate_derived_coverage"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-calculate_derived_coverage}{}}}
-\subsection{Method \code{calculate_derived_coverage()}}{
-Derives specific complex coverage indicators based on basic survey data.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$calculate_derived_coverage(
+\subsection{\code{CacheConnection$calculate_derived_coverage()}}{
+  Derives specific complex coverage indicators based on basic survey data.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$calculate_derived_coverage(
   indicator,
   admin_level,
   region = NULL
-)}\if{html}{\out{</div>}}
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{indicator}}{Character. The target health indicator.}
+      \item{\code{admin_level}}{Character. Administrative level.}
+      \item{\code{region}}{Character. Optional region name.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{indicator}}{Character. The target health indicator.}
-
-\item{\code{admin_level}}{Character. Administrative level.}
-
-\item{\code{region}}{Character. Optional region name.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-get_high_performers"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_high_performers}{}}}
-\subsection{Method \code{get_high_performers()}}{
-Identifies regions/districts that exceed benchmark coverage thresholds.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_high_performers(indicator, admin_level, region = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$get_high_performers()}}{
+  Identifies regions/districts that exceed benchmark coverage thresholds.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$get_high_performers(indicator, admin_level, region = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{indicator}}{Character. The target health indicator.}
+      \item{\code{admin_level}}{Character. Level of aggregation.}
+      \item{\code{region}}{Character. Optional region filter.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{indicator}}{Character. The target health indicator.}
-
-\item{\code{admin_level}}{Character. Level of aggregation.}
-
-\item{\code{region}}{Character. Optional region filter.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-get_regional_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_regional_estimates}{}}}
-\subsection{Method \code{get_regional_estimates()}}{
-Substitutes national rates with regional estimates for a specific requested sub-region.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_regional_estimates(admin_level, region)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$get_regional_estimates()}}{
+  The rates for one region, from the survey files: the region's own mortality rates and survey
+coverage (its latest survey value of each, from \code{regional_survey}, read through \code{survey_mapping} so the
+region is named as in the data). A rate the region's surveys do not give keeps the national value; the
+national rates are returned whole only when no region is asked for or the region is not in the survey
+files (the result's \code{source} attribute says which: \code{"regional"} or \code{"national"}).
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$get_regional_estimates(
+  admin_level = c("adminlevel_1", "district"),
+  region = NULL
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{admin_level}}{Character. \code{"adminlevel_1"} when \code{region} is a region, \code{"district"} when it is a district
+(its region's rates are given).}
+      \item{\code{region}}{Character. The region's (or district's) name, as in the data. \code{NULL}: the national rates.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A list like \code{national_estimates} (proportions: \code{nmr}, \code{pnmr}, \code{sbr}, \code{twin_rate}, \code{preg_loss},
+\code{anc1}, \code{penta1}), with the region's other survey coverage values added when it has them.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{admin_level}}{Character. Level of aggregation.}
-
-\item{\code{region}}{Character. Region name.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-generate_health_system_table"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-generate_health_system_table}{}}}
-\subsection{Method \code{generate_health_system_table()}}{
-Generates a formatted table of core health system metrics.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$generate_health_system_table(labels = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$generate_health_system_table()}}{
+  Generates a formatted table of core health system metrics.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$generate_health_system_table(labels = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{labels}}{Character. Optional custom labels to use on the table headers.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{labels}}{Character. Optional custom labels to use on the table headers.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-generate_phc_scatter_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-generate_phc_scatter_data}{}}}
-\subsection{Method \code{generate_phc_scatter_data()}}{
-Prepares scatter plot data comparing Primary Health Care performance.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$generate_phc_scatter_data(indicator)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$generate_phc_scatter_data()}}{
+  Prepares scatter plot data comparing Primary Health Care performance.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$generate_phc_scatter_data(indicator)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{indicator}}{Character. The independent variable to plot ("ratio_fac_pop" or "ratio_hstaff_pop").}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{indicator}}{Character. The independent variable to plot ("ratio_fac_pop" or "ratio_hstaff_pop").}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-generate_private_sector_data"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-generate_private_sector_data}{}}}
-\subsection{Method \code{generate_private_sector_data()}}{
-Extracts private versus public sector ownership distributions.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$generate_private_sector_data(legend_labels = NULL)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$generate_private_sector_data()}}{
+  Extracts private versus public sector ownership distributions.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$generate_private_sector_data(legend_labels = NULL)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{legend_labels}}{Named list. Optional list to override default labels for Private, NGO, and Public.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{legend_labels}}{Named list. Optional list to override default labels for Private, NGO, and Public.}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-get_bayes_model"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-get_bayes_model}{}}}
-\subsection{Method \code{get_bayes_model()}}{
-Generates or retrieves a pre-calculated Bayesian mathematical model for an indicator.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$get_bayes_model(admin_level, indicator)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$get_bayes_model()}}{
+  Generates or retrieves a pre-calculated Bayesian mathematical model for an indicator.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$get_bayes_model(admin_level, indicator)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{admin_level}}{Administrative level ("national", "adminlevel_1").}
+      \item{\code{indicator}}{Character. Indicator name (e.g., 'penta3').}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{admin_level}}{Administrative level ("national", "adminlevel_1").}
-
-\item{\code{indicator}}{Character. Indicator name (e.g., 'penta3').}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-bayes_model_key"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-bayes_model_key}{}}}
-\subsection{Method \code{bayes_model_key()}}{
-The key a Bayesian model is kept under (its admin level, indicator and denominator).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$bayes_model_key(admin_level, indicator)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$bayes_model_key()}}{
+  The key a Bayesian model is kept under (its admin level, indicator and denominator).
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$bayes_model_key(admin_level, indicator)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{admin_level}}{Administrative level ("national", "adminlevel_1").}
+      \item{\code{indicator}}{Character. Indicator name (e.g., 'penta3').}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{admin_level}}{Administrative level ("national", "adminlevel_1").}
-
-\item{\code{indicator}}{Character. Indicator name (e.g., 'penta3').}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-bayes_model_cached"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-bayes_model_cached}{}}}
-\subsection{Method \code{bayes_model_cached()}}{
-The Bayesian model already made for an indicator (by \code{get_bayes_model()} or kept with
+\subsection{\code{CacheConnection$bayes_model_cached()}}{
+  The Bayesian model already made for an indicator (by \code{get_bayes_model()} or kept with
 \code{keep_bayes_model()}), or \code{NULL}: nothing is fitted.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$bayes_model_cached(admin_level, indicator)}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$bayes_model_cached(admin_level, indicator)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{admin_level}}{Administrative level ("national", "adminlevel_1").}
+      \item{\code{indicator}}{Character. Indicator name (e.g., 'penta3').}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{admin_level}}{Administrative level ("national", "adminlevel_1").}
-
-\item{\code{indicator}}{Character. Indicator name (e.g., 'penta3').}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-bayes_model_inputs"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-bayes_model_inputs}{}}}
-\subsection{Method \code{bayes_model_inputs()}}{
-What \code{\link[=generate_bayes_model]{generate_bayes_model()}} needs for an indicator, to fit it in another R process (a
+\subsection{\code{CacheConnection$bayes_model_inputs()}}{
+  What \code{\link[=generate_bayes_model]{generate_bayes_model()}} needs for an indicator, to fit it in another R process (a
 Shiny ExtendedTask, so the app is not frozen for the minutes a fit takes); its result is kept with
 \code{keep_bayes_model()} under \code{key}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$bayes_model_inputs(admin_level, indicator)}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$bayes_model_inputs(admin_level, indicator)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{admin_level}}{Administrative level ("national", "adminlevel_1").}
+      \item{\code{indicator}}{Character. Indicator name (e.g., 'penta3').}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A list: \code{key}, \code{coverage_data}, \code{overall_score}, \code{indicator}, \code{denominator}.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{admin_level}}{Administrative level ("national", "adminlevel_1").}
-
-\item{\code{indicator}}{Character. Indicator name (e.g., 'penta3').}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A list: \code{key}, \code{coverage_data}, \code{overall_score}, \code{indicator}, \code{denominator}.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-keep_bayes_model"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-keep_bayes_model}{}}}
-\subsection{Method \code{keep_bayes_model()}}{
-Keeps a Bayesian model fitted elsewhere (see \code{bayes_model_inputs()}).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$keep_bayes_model(key, model)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$keep_bayes_model()}}{
+  Keeps a Bayesian model fitted elsewhere (see \code{bayes_model_inputs()}).
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$keep_bayes_model(key, model)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{key}}{The key it was fitted for (\code{bayes_model_inputs()$key}).}
+      \item{\code{model}}{The model (\code{\link[=generate_bayes_model]{generate_bayes_model()}}'s result).}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{key}}{The key it was fitted for (\code{bayes_model_inputs()$key}).}
-
-\item{\code{model}}{The model (\code{\link[=generate_bayes_model]{generate_bayes_model()}}'s result).}
-}
-\if{html}{\out{</div>}}
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-bayes_estimates"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-bayes_estimates}{}}}
-\subsection{Method \code{bayes_estimates()}}{
-The estimates of the Bayesian models already fitted at an admin level, as one table
+\subsection{\code{CacheConnection$bayes_estimates()}}{
+  The estimates of the Bayesian models already fitted at an admin level, as one table
 (\code{\link[=bayes_model_estimates]{bayes_model_estimates()}} of each, with the denominator it was fitted for). Only the models for the
 denominators selected now, as the Bayesian pages show; nothing is fitted here.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$bayes_estimates(admin_level)}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$bayes_estimates(admin_level)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{admin_level}}{Administrative level ("national", "adminlevel_1").}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A tibble, or \code{NULL} when no model has been fitted at that level.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{admin_level}}{Administrative level ("national", "adminlevel_1").}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A tibble, or \code{NULL} when no model has been fitted at that level.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CacheConnection-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-CacheConnection-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CacheConnection$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{CacheConnection$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{CacheConnection$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }

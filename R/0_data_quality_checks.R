@@ -8,16 +8,18 @@
 # stopping at the first problem found -- see 0_import_load_data.R's own Tier A/Tier B call sites
 # for where each one is actually wired in.
 
-#' Format a cli-markup problem line into a plain string, right now, in the caller's own scope
+#' Format a cli message as plain text in the caller's scope
 #'
-#' Each `check_*()` function below builds its own message from LOCAL variables (the offending
-#' district names, the bad month strings, etc.) and must interpolate them immediately: if it
-#' returned the raw `"{.field {x}}"` template text instead, `run_quality_checks()`'s later
-#' `cd_abort()` call would try to glue-interpolate it in `cd_abort()`'s OWN calling
-#' environment, where `x` no longer exists (the check function that defined it has already
-#' returned) -- confirmed live, this is exactly the failure mode a first pass of this file hit.
+#' Interpolates `text` with the caller's variables and returns a plain string with no ANSI codes.
+#'
+#' @param text A string with cli inline markup.
+#' @param .envir The environment the markup is evaluated in.
+#' @return A character string.
 #' @noRd
 cd_fmt <- function(text, .envir = parent.frame()) {
+  # Each check formats its message here, while its local variables still exist. A raw template
+  # handed to run_quality_checks() would be interpolated by cd_abort() in an environment where
+  # those variables are gone.
   cli::cli_div(theme = cd_theme())
   # ansi_strip() -- confirmed live: cli::format_inline() can emit raw ANSI color escape codes (the
   # theme's own span.field/span.val colors, cd_theme() above) depending on the R session's own
@@ -31,8 +33,9 @@ cd_fmt <- function(text, .envir = parent.frame()) {
 #' Run several quality checks and abort once with every problem found
 #'
 #' @param checks A named list of zero-argument functions, each returning `NULL` (pass) or a
-#'   character vector of already-formatted problems (fail) -- see `cd_fmt()`.
+#'   character vector of problems already formatted with `cd_fmt()` (fail).
 #' @param call The calling environment, forwarded to `cd_abort()`.
+#' @return `NULL`, invisibly, when every check passes. Otherwise it aborts.
 #' @noRd
 run_quality_checks <- function(checks, call = caller_env()) {
   problems <- unlist(purrr::compact(purrr::map(checks, ~ .x())), use.names = TRUE)
@@ -44,19 +47,27 @@ run_quality_checks <- function(checks, call = caller_env()) {
 
 # --- Tier A: raw Admin_data sheet, before merge/standardize --------------------------------
 
-#' Check the Admin_data sheet has the columns every later step assumes exist
+#' Check that the Admin sheet has its required columns
 #'
-#' `first_admin_level`/`country` are only ever consumed via `any_of()` downstream (see
-#' `read_and_clean_sheet()`'s own `required_columns`, used only for `drop_na()`, and
-#' `standardize_data()`'s `rename(adminlevel_1 = any_of("first_admin_level"))`), so a sheet
-#' missing either column silently proceeds today with `adminlevel_1`/`country` never created,
-#' surfacing later as a confusing, unrelated error far from the actual cause. `district` isn't
-#' checked here -- it's already covered by `read_and_clean_sheet()`'s own key-column check.
+#' Checks that the Admin sheet has the `country` and `first_admin_level` columns. Run it on
+#' the sheet before the sheets are merged, so that a missing column is reported by name.
 #'
-#' @param admin_data The raw, cleaned Admin_data sheet (one `read_and_clean_sheet()` call's
-#'   output, before `merge_data()`).
+#' @param admin_data A data frame. The cleaned Admin sheet, before the sheets are merged (the
+#'   admin element of `load_excel_parts()$parts`).
+#' @return `NULL` if both columns are present. Otherwise a character vector of length one,
+#'   named `"x"`, with a message that lists the missing columns.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' sheets <- load_excel_parts(path)
+#' admin <- sheets$parts[[sheets$admin_sheet_name]]
+#' check_admin_columns(admin)
+#'
+#' # A sheet without its country column
+#' check_admin_columns(admin[setdiff(names(admin), "country")])
 #' @export
 check_admin_columns <- function(admin_data) {
+  # Later steps pick these two columns up with any_of(), so a sheet without them loads and then
+  # fails far from the cause. `district` is checked by read_and_clean_sheet().
   missing <- setdiff(c("country", "first_admin_level"), colnames(admin_data))
   if (length(missing) == 0) {
     return(NULL)
@@ -64,23 +75,35 @@ check_admin_columns <- function(admin_data) {
   c("x" = cd_fmt("The Admin_data sheet is missing column(s): {.field {paste(missing, collapse = ', ')}}."))
 }
 
-#' Check the sheets have every column the selected indicator group needs, before they are merged
+#' Check that the sheets have the columns an indicator group needs
 #'
-#' What `new_countdown()` stops on at Finish (`check_required_columns_exist()`), asked at the Data Quality step
-#' instead: the group's indicators, a reporting rate for each of its categories, and the population columns.
-#' It reads only the sheets' column names, as they will be once merged and standardized
-#' (`.standardized_column_names()`, which shares `standardize_data()`'s own list of renames), so a
-#' column the merge renames or computes is not reported as missing -- what kept this check out of the step
-#' before -- and what it reports is what Finish would.
+#' Checks the unmerged sheets for every column the indicator group requires: the group's
+#' indicators, a reporting rate for each of its categories, and the population columns. It
+#' reports the same missing columns that [new_countdown()] stops on, before the sheets are merged.
 #'
-#' Confirmed live on a workbook from the Data Extractor, whose Population sheet has no `Pop_growth_rate`:
-#' it passed every check, and Finish failed in `standardize_data()` with "`false` must be a vector, not
-#' `NULL`" in the first district.
+#' @details
+#' Only the column names are read. They are compared as they will be once the sheets are merged
+#' and standardized, so a column that standardization renames or computes is not reported as
+#' missing. The messages use the names the workbook uses.
 #'
-#' @param parts Named list of cleaned per-sheet tibbles.
-#' @param group The indicator group to check against. Default: the selected one (the wizard sets it at upload).
+#' @param parts A named list of cleaned per-sheet tibbles (`load_excel_parts()$parts`).
+#' @param group A string. The indicator group to check against. Default is the selected group.
+#' @return `NULL` if no required column is missing, or if the sheets have no columns. Otherwise
+#'   a character vector with up to three messages, each named `"x"`: one for the population
+#'   columns, one for the reporting rate columns and one for the indicator columns.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' sheets <- load_excel_parts(path)
+#' check_required_columns_presheet(sheets$parts, group = "rmncah")
+#'
+#' # A Population sheet without its growth rate column
+#' parts <- sheets$parts
+#' parts[[sheets$population_sheet_name]]$pop_growth_rate <- NULL
+#' check_required_columns_presheet(parts, group = "rmncah")
 #' @export
 check_required_columns_presheet <- function(parts, group = get_selected_group()) {
+  # A workbook whose Population sheet had no Pop_growth_rate passed every other check and then
+  # failed inside standardize_data(). This check names the column instead.
   column_names <- unique(unlist(lapply(parts, colnames), use.names = FALSE))
   if (length(column_names) == 0) {
     return(NULL)
@@ -92,17 +115,31 @@ check_required_columns_presheet <- function(parts, group = get_selected_group())
   describe_missing_columns(missing, group)
 }
 
-#' Check the Admin_data sheet names exactly one country
+#' Check that the Admin sheet names one country
 #'
-#' `new_countdown()` later does `distinct(country) %>% pull(country)` and passes the result
-#' straight to `match_country()`, which itself only handles a length-1 input gracefully (a longer
-#' vector aborts with a generic "contains multiple names" message, no detail on what the mixed
-#' values actually are). Catching it here, on the raw sheet, gives a specific, actionable message
-#' before any of the rest of the pipeline runs.
+#' Checks that the `country` column of the Admin sheet holds no more than one distinct value.
+#' A dataset must belong to one country, so run this before the sheets are merged to get a
+#' message that lists the values found.
 #'
-#' @param admin_data The raw, cleaned Admin_data sheet.
+#' @details
+#' Missing values are ignored. A sheet with no country value at all passes this check.
+#'
+#' @param admin_data A data frame. The cleaned Admin sheet, with a `country` column.
+#' @return `NULL` if the sheet has at most one country value. Otherwise a character vector of
+#'   length one, named `"x"`, with a message that lists the values.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' sheets <- load_excel_parts(path)
+#' admin <- sheets$parts[[sheets$admin_sheet_name]]
+#' check_single_country(admin)
+#'
+#' # A row that belongs to another country
+#' admin$country[1] <- "Uganda"
+#' check_single_country(admin)
 #' @export
 check_single_country <- function(admin_data) {
+  # new_countdown() passes the distinct country values to match_country(), which aborts on more
+  # than one value without saying what the values are.
   values <- admin_data %>%
     dplyr::distinct(.data$country) %>%
     dplyr::pull(.data$country)
@@ -115,16 +152,31 @@ check_single_country <- function(admin_data) {
 
 # --- Tier B: merged + standardized data, inside new_countdown() ----------------------------
 
-#' Check a district's admin-1 pairing and spelling are stable across years
+#' Check that districts are consistent across the dataset
 #'
-#' Flags a district that maps to more than one `adminlevel_1` value (case/whitespace-insensitive
-#' first, so a genuine typo isn't hidden by two spellings happening to normalize the same way),
-#' and separately flags a district that isn't present in every year the dataset otherwise covers
-#' (service-data districts are expected to be stable across years; a district appearing in some
-#' years but not others is much more often a rename/typo than a legitimate gap).
+#' Checks two things in the merged data: that each district belongs to one admin level 1 unit,
+#' and that each district appears in every year of the data. A district that fails either test
+#' has usually been renamed or misspelled in part of the workbook.
 #'
-#' @param .data The merged, standardized dataset (`countdown_data`-shaped: `district`,
-#'   `adminlevel_1`, `year` columns).
+#' @details
+#' Admin level 1 names are compared without regard to case or extra spaces, so `"North  East"`
+#' and `"north east"` count as the same unit. The years a district must appear in are all the
+#' distinct years in `.data`.
+#'
+#' @param .data A data frame. The merged and standardized dataset, with `district`,
+#'   `adminlevel_1` and `year` columns.
+#' @return `NULL` if no problem is found. Otherwise a character vector with one or two messages,
+#'   each named `"x"`: one that lists the districts with more than one admin level 1 name, and
+#'   one that lists the districts missing from at least one year.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' data <- load_data(path)
+#' check_district_consistency(data)
+#'
+#' # A district spelled differently in one year
+#' renamed <- data
+#' renamed$district[renamed$district == "Baringo" & renamed$year == 2023] <- "Baringo County"
+#' check_district_consistency(renamed)
 #' @export
 check_district_consistency <- function(.data) {
   pairs <- .data %>%
@@ -153,9 +205,24 @@ check_district_consistency <- function(.data) {
   if (length(problems) == 0) NULL else problems
 }
 
-#' Check every district-year has all 12 calendar months present
+#' Check that every district-year has all 12 months
 #'
-#' @param .data The merged, standardized dataset (`district`, `year`, `month` columns).
+#' Checks that each district has a row for every calendar month of every year it appears in.
+#' A missing month leaves a gap in the monthly series the analysis relies on.
+#'
+#' @param .data A data frame with `district`, `year` and `month` columns, where `month` holds
+#'   English month names. This is usually the merged and standardized dataset.
+#' @return `NULL` if no month is missing. Otherwise a character vector of length one, named
+#'   `"x"`, with a message that lists the missing months as `district year/month`. The message
+#'   lists the first 10 and gives a count of the rest.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' data <- load_data(path)
+#' check_month_presence(data)
+#'
+#' # One month of one district-year dropped
+#' gap <- data$district == "Baringo" & data$year == 2023 & data$month == "March"
+#' check_month_presence(data[!gap, ])
 #' @export
 check_month_presence <- function(.data) {
   district_years <- .data %>% dplyr::distinct(.data$district, .data$year)
@@ -174,19 +241,33 @@ check_month_presence <- function(.data) {
   c("x" = cd_fmt("Missing month(s): {.field {paste(shown, collapse = ', ')}}{more}."))
 }
 
-#' Check every row's month string parsed to a real calendar month
+#' Check that every month value is a recognized month
 #'
-#' `standardize_data()` turns any month string that doesn't match one of its 12 recognized
-#' patterns into `NA` silently (no warning, the row stays in the data) -- this surfaces that
-#' silently-dropped information instead of letting it pass unnoticed. Relies on `raw_month`
-#' (the pre-cleaning value `standardize_data()` now preserves specifically for this check); if
-#' `.data` doesn't have that column (e.g. a `.dta` master dataset, which skips
-#' `standardize_data()` entirely), this falls back to just checking for `NA` months with no
-#' detail on the original unparseable text.
+#' Checks the merged data for rows whose month could not be read as a calendar month, for
+#' example because of a typo or a month name in a language that is not supported. Such rows
+#' have a missing `month` and would otherwise stay in the data unnoticed.
 #'
-#' @param .data The merged, standardized dataset.
+#' @details
+#' A row is a problem when its `month` is `NA`. If `.data` has a `raw_month` column (the month
+#' text as it was in the workbook), the message lists the distinct unrecognized values. If it
+#' does not, as with a Stata master dataset, or if those values are all missing, the message
+#' gives the number of affected rows instead.
+#'
+#' @param .data A data frame. The merged and standardized dataset, with a `month` column and
+#'   optionally a `raw_month` column.
+#' @return `NULL` if every month is recognized, or if `.data` has no `month` column. Otherwise
+#'   a character vector of length one, named `"x"`, with the message.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' data <- load_data(path)
+#' check_month_validity(data)
+#'
+#' # Months that could not be read are missing after loading
+#' data$month[1:3] <- NA
+#' check_month_validity(data)
 #' @export
 check_month_validity <- function(.data) {
+  # standardize_data() turns an unrecognized month into NA without a warning and keeps the row.
   if (!"month" %in% colnames(.data)) {
     return(NULL)
   }
@@ -206,16 +287,29 @@ check_month_validity <- function(.data) {
 
 # --- Informational checks: CacheConnection methods, called on demand -----------------------
 
-#' Flag district-years where a service indicator looks like it was mixed up with population data
+#' Flag district-years where service births equal population births
 #'
-#' `instlivebirths` (institutional live births, a monthly service indicator) is expected to vary
-#' month to month; `live_births` (the Population_data sheet's own live-births figure) is joined
-#' in by `district`+`year` only, so it's constant across all 12 months of a given district-year.
-#' A district-year where `instlivebirths` is identical to `live_births` in every month is the
-#' signature of the two having been pasted into the wrong sheet.
+#' Finds district-years where the monthly institutional live births (`instlivebirths`) equal the
+#' annual population live births (`live_births`) in every month. Monthly counts normally vary,
+#' so this pattern suggests that population figures were entered in a service data sheet.
 #'
-#' @param .data The dataset (`countdown_data`-shaped).
-#' @return A tibble of flagged `district`/`year` rows, or a zero-row tibble if none found.
+#' @details
+#' Only months where both values are present are compared. A district-year is flagged when it
+#' has at least three such months and the two values are equal in all of them.
+#'
+#' @param .data A data frame. The merged dataset, with `district`, `year`, `instlivebirths` and
+#'   `live_births` columns.
+#' @return A tibble with columns `district` and `year`, one row per flagged district-year. It
+#'   has no rows if nothing is flagged or if `.data` lacks `instlivebirths` or `live_births`.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' data <- load_data(path)
+#' check_population_service_collision(data)
+#'
+#' # Annual population births entered as the monthly service figure
+#' copied <- data$district == "Baringo" & data$year == 2023
+#' data$instlivebirths[copied] <- data$live_births[copied]
+#' check_population_service_collision(data)
 #' @export
 check_population_service_collision <- function(.data) {
   if (!all(c("instlivebirths", "live_births") %in% colnames(.data))) {
@@ -232,16 +326,26 @@ check_population_service_collision <- function(.data) {
     dplyr::select("district", "year")
 }
 
-#' Flag indicators that are entirely empty across the whole dataset
+#' Flag indicators that have no data
 #'
-#' Same detector `standardize_data()` already uses for its own "empty columns" log line
-#' (`colSums(is.na(data)) == nrow(data)`, `0_import_load_data.R`), scoped to just the indicator
-#' columns for the currently-selected indicator group (`get_indicator_groups()`) rather than
-#' every column -- an admin/year/month/population column being "empty" isn't a data-quality
-#' signal the same way an indicator column being empty is.
+#' Finds the indicators of the selected indicator group whose column is missing in every row
+#' of the dataset. An indicator with no data cannot be analysed.
 #'
-#' @param .data The dataset (`countdown_data`-shaped).
-#' @return A character vector of indicator names that are 100% empty.
+#' @details
+#' Only indicator columns that are present in `.data` are examined. An indicator whose column
+#' is absent is not reported here.
+#'
+#' @param .data A data frame. The merged dataset, with one column per indicator.
+#' @return A character vector of the names of the empty indicators. It has length zero if
+#'   there are none.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' data <- load_data(path)
+#' check_indicator_emptiness(data)
+#'
+#' # An indicator that was never reported
+#' data$penta3 <- NA_real_
+#' check_indicator_emptiness(data)
 #' @export
 check_indicator_emptiness <- function(.data) {
   indicators <- unique(purrr::list_c(get_indicator_groups()))
@@ -280,9 +384,9 @@ match_admin_names <- function(names_to_check, known_names, threshold = 0.25) {
     return(dplyr::tibble(name = character(0), suggestion = character(0), distance = double(0)))
   }
 
-  # replace_special_chars() (0_import_load_data.R) strips accents (é/è/ê/à/ñ/etc.) the same way it
+  # replace_special_chars() (0_import_load_data.R) strips accents (e-acute, e-grave, n-tilde, etc.) the same way it
   # already does for month names -- without it, a genuinely identical region name that only
-  # differs by accent/case (confirmed live: a real dataset's "Oueme" vs its survey's "OUÉMÉ",
+  # differs by accent/case (confirmed live: a real dataset's "Oueme" vs its survey's "OUEME" written with accents,
   # Jaro-Winkler distance 0.267 -- just over the default threshold -- collapses to an exact 0 once
   # both are normalized the same way) reads as a false mismatch.
   normalize <- function(x) stringr::str_to_lower(replace_special_chars(x))
@@ -294,17 +398,33 @@ match_admin_names <- function(names_to_check, known_names, threshold = 0.25) {
     dplyr::filter(.data$distance >= threshold)
 }
 
-#' Flag dataset admin-1 names that have no matching survey region
+#' Flag admin level 1 names with no matching survey region
 #'
-#' Checked in this direction (not the other way around) because it's the dataset's own regions
-#' that need coverage: a region present in `countdown_data` but missing from the survey can't get
-#' a regional/equity estimate at all. A survey region with no dataset match is just unused data,
-#' not something that blocks anything.
+#' Finds the admin level 1 names in the dataset that have no close match among the regions of
+#' the regional survey. A dataset region without a survey match cannot get a regional or equity
+#' estimate.
 #'
-#' @param regional_survey The `regional_survey` data (has its own `adminlevel_1` column).
-#' @param countdown_data The dataset (`countdown_data`-shaped).
-#' @return A tibble of dataset admin-1 names with no survey match, each with its closest
-#'   suggestion (see `match_admin_names()`).
+#' @details
+#' Names are compared without regard to case or accents, using the Jaro-Winkler distance. A
+#' name is unmatched when its distance to the closest survey name is 0.25 or more. Survey
+#' regions that match no dataset name are not reported.
+#'
+#' @param regional_survey A data frame of regional survey data with an `adminlevel_1` column,
+#'   or `NULL`.
+#' @param countdown_data A data frame. The dataset, with an `adminlevel_1` column.
+#' @return A tibble with one row per unmatched dataset name and columns `name` (the dataset
+#'   name), `suggestion` (the closest survey name) and `distance` (the distance between them).
+#'   It has no rows if every name matches, or if `regional_survey` is `NULL` or has no
+#'   `adminlevel_1` column.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' cache <- load_cache_data(path)
+#' data <- cache$countdown_data
+#' check_survey_admin_names(cache$regional_survey, data)
+#'
+#' # A region the survey calls something else
+#' data$adminlevel_1[data$adminlevel_1 == "Coast"] <- "Pwani"
+#' check_survey_admin_names(cache$regional_survey, data)
 #' @export
 check_survey_admin_names <- function(regional_survey, countdown_data) {
   if (is.null(regional_survey) || !"adminlevel_1" %in% colnames(regional_survey)) {
@@ -313,21 +433,34 @@ check_survey_admin_names <- function(regional_survey, countdown_data) {
   match_admin_names(countdown_data$adminlevel_1, regional_survey$adminlevel_1)
 }
 
-#' Flag dataset admin-1 names that have no matching shapefile region
+#' Flag admin level 1 names with no matching shapefile region
 #'
-#' Same direction as `check_survey_admin_names()` and for the same reason: a dataset region with
-#' no shapefile match can't be shown on a map at all, which is the actual problem worth flagging --
-#' not a shapefile region with no dataset match, which is just an unused polygon.
+#' Finds the admin level 1 names in the dataset that have no close match among the regions of
+#' the shapefile. A dataset region without a shapefile match cannot be shown on a map.
 #'
-#' @param shapefile The country's shapefile (`sf` object -- either the package-bundled one, with its
-#'   own `NAME_1` column, see `get_country_shapefile()`, or a user-uploaded one via
-#'   `read_shapefile_folder()`, whose admin-1 name column is whatever `name_field` says).
-#' @param countdown_data The dataset (`countdown_data`-shaped).
-#' @param name_field Name of the column in `shapefile` holding admin-1 names. Default `"NAME_1"`,
-#'   matching the bundled shapefile -- a real uploaded one won't necessarily use that name, hence the
-#'   parameter (`CacheConnection$shapefile_name_field`, set when the user picks it at upload).
-#' @return A tibble of dataset admin-1 names with no shapefile match, each with its closest
-#'   suggestion (see `match_admin_names()`).
+#' @details
+#' Names are compared without regard to case or accents, using the Jaro-Winkler distance. A
+#' name is unmatched when its distance to the closest shapefile name is 0.25 or more. Shapefile
+#' regions that match no dataset name are not reported.
+#'
+#' @param shapefile An `sf` object, or `NULL`. The country's shapefile: the one bundled with
+#'   the package or one the user uploaded.
+#' @param countdown_data A data frame. The dataset, with an `adminlevel_1` column.
+#' @param name_field A string. The column of `shapefile` that holds the admin level 1 names.
+#'   Default is `"NAME_1"`, the column the bundled shapefiles use.
+#' @return A tibble with one row per unmatched dataset name and columns `name` (the dataset
+#'   name), `suggestion` (the closest shapefile name) and `distance` (the distance between
+#'   them). It has no rows if every name matches, or if `shapefile` is `NULL` or has no
+#'   `name_field` column.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' cache <- load_cache_data(path)
+#'
+#' # The bundled shapefile has the counties, the dataset's regions are the former provinces
+#' check_shapefile_admin_names(cache$shapefile, cache$countdown_data)
+#'
+#' # With no shapefile there is nothing to compare
+#' check_shapefile_admin_names(NULL, cache$countdown_data)
 #' @export
 check_shapefile_admin_names <- function(shapefile, countdown_data, name_field = "NAME_1") {
   if (is.null(shapefile) || !name_field %in% colnames(shapefile)) {
@@ -346,17 +479,31 @@ check_shapefile_admin_names <- function(shapefile, countdown_data, name_field = 
 # row that would have been silently dropped by merge_data()'s left-join-anchored-on-admin (the
 # original bug this whole redesign exists to fix) is checked BEFORE that drop can ever happen.
 
-#' Check districts match between the Admin sheet and every other sheet, both directions
+#' Check that districts match between the Admin sheet and the others
 #'
-#' The direct fix for the root problem this redesign exists for: `merge_data()` left-joins
-#' everything onto the Admin sheet, so a district that exists in Population_data/Service_data but
-#' not in Admin_data was silently dropped before any check ever ran against the merged result. This
-#' runs on unmerged `parts`, so nothing has been dropped yet.
+#' Compares the districts in the Admin sheet with the districts in all the other sheets, in
+#' both directions. Run it on the unmerged sheets: merging keeps only the districts of one
+#' sheet, so a district that is missing from that sheet would be dropped without notice.
 #'
-#' @param parts Named list of cleaned per-sheet tibbles (`load_excel_parts()$parts`).
-#' @param admin_sheet_name Name of the admin sheet within `parts`.
+#' @param parts A named list of cleaned per-sheet tibbles (`load_excel_parts()$parts`).
+#' @param admin_sheet_name A string. The name of the Admin sheet within `parts`.
+#' @return `NULL` if the districts match, or if the Admin sheet has no `district` column.
+#'   Otherwise a character vector with one or two messages, each named `"x"`: one that lists
+#'   the districts found in another sheet but not in the Admin sheet, each with the sheets it
+#'   was found in, and one that lists the Admin sheet districts found in no other sheet.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' sheets <- load_excel_parts(path)
+#' check_district_cross_sheet(sheets$parts, sheets$admin_sheet_name)
+#'
+#' # A district renamed in the Admin sheet only
+#' parts <- sheets$parts
+#' parts[[sheets$admin_sheet_name]]$district[1] <- "Baringo County"
+#' check_district_cross_sheet(parts, sheets$admin_sheet_name)
 #' @export
 check_district_cross_sheet <- function(parts, admin_sheet_name) {
+  # merge_data() left-joins onto one sheet, so a district absent from it is lost before any
+  # check on the merged data can see it.
   if (!"district" %in% colnames(parts[[admin_sheet_name]])) {
     return(NULL)
   }
@@ -385,16 +532,29 @@ check_district_cross_sheet <- function(parts, admin_sheet_name) {
   if (length(problems) == 0) NULL else problems
 }
 
-#' Check a district's admin-1 pairing is stable within the Admin sheet itself
+#' Check that each district has one admin level 1 name in the Admin sheet
 #'
-#' Pre-merge half of the old (still-existing, still used post-merge by `new_countdown()`'s Tier B)
-#' `check_district_consistency()` -- this half only ever needed the Admin sheet: a district's
-#' `adminlevel_1` pairing can only vary across the merged data if the Admin sheet itself lists that
-#' district more than once with different values, so checking the raw sheet directly loses no
-#' signal.
+#' Checks that no district is listed in the Admin sheet under more than one admin level 1 unit.
+#' This is the part of [check_district_consistency()] that can run before the sheets are merged.
 #'
-#' @param admin_data The raw Admin sheet (`parts[[admin_sheet_name]]`, pre-rename -- still has
-#'   `first_admin_level`, not `adminlevel_1`).
+#' @details
+#' Admin level 1 names are compared without regard to case or extra spaces.
+#'
+#' @param admin_data A data frame. The cleaned Admin sheet, before the sheets are merged, with
+#'   `district` and `first_admin_level` columns.
+#' @return `NULL` if every district has one admin level 1 name, or if the sheet lacks either
+#'   column. Otherwise a character vector of length one, named `"x"`, with a message that lists
+#'   the districts.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' sheets <- load_excel_parts(path)
+#' admin <- sheets$parts[[sheets$admin_sheet_name]]
+#' check_admin_pairing_consistency(admin)
+#'
+#' # The first district listed a second time, under another region
+#' again <- admin[1, ]
+#' again$first_admin_level <- "Western"
+#' check_admin_pairing_consistency(rbind(admin, again))
 #' @export
 check_admin_pairing_consistency <- function(admin_data) {
   if (!all(c("district", "first_admin_level") %in% colnames(admin_data))) {
@@ -415,12 +575,26 @@ check_admin_pairing_consistency <- function(admin_data) {
   c("x" = cd_fmt("District(s) with an inconsistent admin-1 name in the Admin sheet: {.field {paste(inconsistent, collapse = ', ')}}."))
 }
 
-#' Check every district appears in every year present in the Population sheet
+#' Check that every district has every year in the Population sheet
 #'
-#' Pre-merge half of the old `check_district_consistency()` -- district+year is the Population
-#' sheet's own natural grain, no merge needed.
+#' Checks that each district in the Population sheet has a row for every year the sheet
+#' covers. This is the part of [check_district_consistency()] that can run before the sheets
+#' are merged.
 #'
-#' @param population_data The raw Population sheet (`parts[[population_sheet_name]]`).
+#' @param population_data A data frame. The cleaned Population sheet, before the sheets are
+#'   merged, with `district` and `year` columns.
+#' @return `NULL` if every district appears in every year, or if the sheet lacks either column.
+#'   Otherwise a character vector of length one, named `"x"`, with a message that lists the
+#'   districts missing from at least one year.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' sheets <- load_excel_parts(path)
+#' population <- sheets$parts[[sheets$population_sheet_name]]
+#' check_district_year_completeness(population)
+#'
+#' # A district with no population row for one year
+#' gap <- population$district == "Baringo" & population$year == 2023
+#' check_district_year_completeness(population[!gap, ])
 #' @export
 check_district_year_completeness <- function(population_data) {
   if (!all(c("district", "year") %in% colnames(population_data))) {
@@ -439,22 +613,36 @@ check_district_year_completeness <- function(population_data) {
   c("x" = cd_fmt("District(s) missing from at least one year present elsewhere in the Population sheet: {.field {paste(incomplete, collapse = ', ')}}."))
 }
 
-#' Check the Admin sheet's single country value is actually a recognized country name, pre-merge
+#' Check that the country in the Admin sheet is recognized
 #'
-#' `check_single_country()` (Tier A, above) only catches more than one distinct value -- the
-#' genuinely-one-value-but-unrecognized case is `match_country()`'s job, which normally only runs
-#' at Finish (`merge_and_standardize()`'s `new_countdown()` call) under the deferred-merge design.
-#' Left uncaught pre-merge, a user could walk the entire wizard only to hit a hard abort on the very
-#' last step -- this surfaces the same problem at Data Quality instead, non-abortingly, same as
-#' every other check here.
+#' Checks that the country named in the Admin sheet is one the package supports. Run it before
+#' the sheets are merged to report an unrecognized country early. [new_countdown()] stops with
+#' an error on the same problem.
 #'
-#' Its counterpart, "every column the selected group needs is present", is
-#' `check_required_columns_presheet()`.
+#' @details
+#' The check applies only when the `country` column holds exactly one distinct value, ignoring
+#' missing values. More than one value is reported by [check_single_country()]. The name is
+#' recognized when it is close to a name in the package's list of countries.
 #'
-#' @param parts Named list of cleaned per-sheet tibbles.
-#' @param admin_sheet_name Name of the admin sheet within `parts`.
+#' @param parts A named list of cleaned per-sheet tibbles (`load_excel_parts()$parts`).
+#' @param admin_sheet_name A string. The name of the Admin sheet within `parts`.
+#' @return `NULL` if the country is recognized, if the Admin sheet has no `country` column, or
+#'   if the column does not hold exactly one value. Otherwise a character vector of length one,
+#'   named `"x"`, with a message that gives the unrecognized name.
+#' @seealso [check_required_columns_presheet()]
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' sheets <- load_excel_parts(path)
+#' check_country_recognized(sheets$parts, sheets$admin_sheet_name)
+#'
+#' # A country the package has no reference data for
+#' parts <- sheets$parts
+#' parts[[sheets$admin_sheet_name]]$country <- "Atlantis"
+#' check_country_recognized(parts, sheets$admin_sheet_name)
 #' @export
 check_country_recognized <- function(parts, admin_sheet_name) {
+  # match_country() otherwise runs only in new_countdown(), after the merge. Without this check
+  # an unrecognized country is reported on the last step of the Load Data wizard.
   admin_data <- parts[[admin_sheet_name]]
   if (!"country" %in% colnames(admin_data)) {
     return(NULL)
@@ -471,37 +659,74 @@ check_country_recognized <- function(parts, admin_sheet_name) {
   c("x" = cd_fmt("The country name {.val {values}} in {.field {admin_sheet_name}} is not recognized."))
 }
 
-#' Bind every service sheet together -- the union `check_month_presence()`/`check_indicator_emptiness()`
-#' need, without joining to anything else. A row-bind across same-shaped service sheets carries none
-#' of `merge_data()`'s row-dropping risk (it's a concat, not a join).
+#' Bind the service sheets into one data frame
+#'
+#' Stacks the rows of the service sheets without joining them to any other sheet, so no row is
+#' dropped.
 #' @noRd
 .bind_service_sheets <- function(parts, service_sheet_names) {
   dplyr::bind_rows(parts[intersect(service_sheet_names, names(parts))])
 }
 
-#' Check every district-year has all 12 calendar months present, pre-merge
+#' Check that every district-year has all 12 months, before merging
 #'
-#' Service sheets already carry `district`/`year`/`month` natively -- reuses `check_month_presence()`
-#' unchanged, just called against the row-bound service sheets instead of merged `countdown_data`.
+#' Runs [check_month_presence()] on the service sheets, stacked together, before the sheets
+#' are merged. A district-year passes when its 12 months are present across the service sheets
+#' taken together.
 #'
-#' @param parts Named list of cleaned per-sheet tibbles.
-#' @param service_sheet_names Names of the service-data sheets within `parts`.
+#' @param parts A named list of cleaned per-sheet tibbles (`load_excel_parts()$parts`).
+#' @param service_sheet_names A character vector. The names of the service data sheets within
+#'   `parts`.
+#' @return `NULL` if no month is missing. Otherwise a character vector of length one, named
+#'   `"x"`, with a message that lists the missing months as `district year/month`. The message
+#'   lists the first 10 and gives a count of the rest.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' sheets <- load_excel_parts(path)
+#' check_month_presence_presheet(sheets$parts, sheets$service_sheet_names)
+#'
+#' # March left out of every service sheet
+#' parts <- sheets$parts
+#' for (sheet in sheets$service_sheet_names) {
+#'   parts[[sheet]] <- parts[[sheet]][parts[[sheet]]$month != "March", ]
+#' }
+#' check_month_presence_presheet(parts, sheets$service_sheet_names)
 #' @export
 check_month_presence_presheet <- function(parts, service_sheet_names) {
   check_month_presence(.bind_service_sheets(parts, service_sheet_names))
 }
 
-#' Check every row's month string parses to a real calendar month, pre-merge
+#' Check that every month value is a recognized month, before merging
 #'
-#' `month` here is already normalized (`load_excel_parts()` does this on every sheet, before
-#' `merge_data()` ever runs -- see its own comment for why) -- `NA` means it genuinely didn't parse,
-#' no need to re-run `parse_month_name()` here. `raw_month` (preserved by that same normalization
-#' step) is what this reports, so a typo or different-language value shows up as the actual original
-#' text, not just `NA`.
+#' Checks the service sheets, before they are merged, for rows whose month could not be read
+#' as a calendar month, for example because of a typo or a month name in a language that is
+#' not supported.
+#'
+#' @details
+#' A row is a problem when its `month` is `NA`. If the sheets have a `raw_month` column (the
+#' month text as it was in the workbook, which [load_excel_parts()] keeps), the message lists
+#' the distinct unrecognized values. If they do not, or if those values are all missing, the
+#' message gives the number of affected rows instead.
 #'
 #' @inheritParams check_month_presence_presheet
+#' @return `NULL` if every month is recognized, or if the service sheets have no `month`
+#'   column. Otherwise a character vector of length one, named `"x"`, with the message.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' sheets <- load_excel_parts(path)
+#' check_month_validity_presheet(sheets$parts, sheets$service_sheet_names)
+#'
+#' # A month the workbook misspells is read as missing
+#' parts <- sheets$parts
+#' sheet <- sheets$service_sheet_names[1]
+#' typo <- parts[[sheet]]$month == "March"
+#' parts[[sheet]]$raw_month[typo] <- "Mrch"
+#' parts[[sheet]]$month[typo] <- NA
+#' check_month_validity_presheet(parts, sheets$service_sheet_names)
 #' @export
 check_month_validity_presheet <- function(parts, service_sheet_names) {
+  # load_excel_parts() has already parsed `month` on every sheet, so NA here means the value
+  # did not parse. There is no need to call parse_month_name() again.
   service_data <- .bind_service_sheets(parts, service_sheet_names)
   if (!"month" %in% colnames(service_data)) {
     return(NULL)
@@ -520,34 +745,53 @@ check_month_validity_presheet <- function(parts, service_sheet_names) {
   c("x" = cd_fmt("{n} row(s) have a missing or unrecognized month value."))
 }
 
-#' Flag indicators entirely empty across every service sheet, pre-merge
+#' Flag indicators that have no data, before merging
 #'
-#' Reuses `check_indicator_emptiness()` unchanged against the row-bound service sheets.
+#' Runs [check_indicator_emptiness()] on the service sheets, stacked together, before the
+#' sheets are merged. An indicator is flagged when it is missing in every row of every service
+#' sheet.
+#'
 #' @inheritParams check_month_presence_presheet
+#' @return A character vector of the names of the empty indicators. It has length zero if
+#'   there are none.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' sheets <- load_excel_parts(path)
+#' check_indicator_emptiness_presheet(sheets$parts, sheets$service_sheet_names)
 #' @export
 check_indicator_emptiness_presheet <- function(parts, service_sheet_names) {
   check_indicator_emptiness(.bind_service_sheets(parts, service_sheet_names))
 }
 
-#' Flag calendar months that different rows/sheets label with different raw text
+#' Flag months that are written in more than one way
 #'
-#' `load_excel_parts()` already normalizes every sheet's `month` column independently, before
-#' `merge_data()` ever runs -- so the merge itself no longer silently drops data over a raw-text
-#' join-key mismatch (a real, confirmed bug this fixes: one sheet labeling a year in French while
-#' its sibling sheets labeled the same year in English left every one of those sibling sheets'
-#' columns `NA` for that whole period). That fix is silent by design -- it makes the DATA correct,
-#' it doesn't tell the user anything was off. This check surfaces the underlying anomaly itself: more
-#' than one distinct `raw_month` string mapping to the same canonical calendar month is a real signal
-#' about how the file was put together (e.g. a historical import already translated to English,
-#' stitched together with a current year still in its original language) -- informational, not
-#' blocking, since the data is already handled correctly either way, but worth knowing.
+#' Finds the calendar months that the service sheets label with more than one text, for example
+#' `"January"` in one sheet and `"Janvier"` in another. The data loads correctly either way,
+#' because the month names are standardized. The result shows that the workbook mixes
+#' languages or spellings, which is worth knowing about how it was put together.
 #'
-#' @param parts Named list of cleaned per-sheet tibbles.
-#' @param service_sheet_names Names of the service-data sheets within `parts`.
-#' @return A tibble, one row per canonical month with more than one distinct raw text seen for it:
-#'   `month`, `variants` (the distinct `raw_month` strings observed, comma-separated).
+#' @param parts A named list of cleaned per-sheet tibbles (`load_excel_parts()$parts`).
+#' @param service_sheet_names A character vector. The names of the service data sheets within
+#'   `parts`.
+#' @return A tibble with one row per month that has more than one distinct original text, and
+#'   columns `month` (the standardized month name) and `variants` (the distinct original texts,
+#'   sorted and separated by commas). It has no rows if no month qualifies, or if the service
+#'   sheets lack a `month` or `raw_month` column.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' sheets <- load_excel_parts(path)
+#' check_month_language_consistency(sheets$parts, sheets$service_sheet_names)
+#'
+#' # One service sheet that names January in French
+#' parts <- sheets$parts
+#' sheet <- sheets$service_sheet_names[2]
+#' parts[[sheet]]$raw_month[parts[[sheet]]$month == "January"] <- "Janvier"
+#' check_month_language_consistency(parts, sheets$service_sheet_names)
 #' @export
 check_month_language_consistency <- function(parts, service_sheet_names) {
+  # load_excel_parts() standardizes `month` on each sheet before the merge, so a sheet in French
+  # beside sheets in English no longer loses data in the join. That fix is silent. This check
+  # reports the mix itself.
   service_data <- .bind_service_sheets(parts, service_sheet_names)
   if (!all(c("month", "raw_month") %in% colnames(service_data))) {
     return(dplyr::tibble(month = character(0), variants = character(0)))
@@ -560,18 +804,43 @@ check_month_language_consistency <- function(parts, service_sheet_names) {
     dplyr::select("month", "variants")
 }
 
-#' Flag district-years where a service indicator looks mixed up with population data, pre-merge
+#' Flag service births that equal population births, before merging
 #'
-#' `check_population_service_collision()` needs `instlivebirths` (service) and `live_births`
-#' (population) on the same rows -- pre-merge these live on different sheets, so this does a narrow,
-#' purpose-built `district`+`year` left join (service data is the left side -- every service row is
-#' kept regardless of whether a matching population row exists, unlike `merge_data()`'s
-#' admin-anchored join, so nothing is silently dropped here either) just to bring the two columns
-#' together for this one comparison, then delegates to the existing check.
+#' Runs [check_population_service_collision()] on the unmerged sheets. It finds district-years
+#' where the monthly institutional live births in the service sheets equal the annual live
+#' births in the Population sheet in every month, which suggests that population figures were
+#' entered in a service data sheet.
 #'
-#' @param parts Named list of cleaned per-sheet tibbles.
-#' @param population_sheet_name Name of the population sheet within `parts`.
-#' @param service_sheet_names Names of the service-data sheets within `parts`.
+#' @details
+#' The service sheets are stacked and the Population sheet's `live_births` is added to each
+#' service row by `district` and `year`. Every service row is kept. A district-year is flagged
+#' when it has at least three months with both values present and the two values are equal in
+#' all of them.
+#'
+#' @param parts A named list of cleaned per-sheet tibbles (`load_excel_parts()$parts`).
+#' @param population_sheet_name A string. The name of the Population sheet within `parts`.
+#' @param service_sheet_names A character vector. The names of the service data sheets within
+#'   `parts`.
+#' @return A tibble with columns `district` and `year`, one row per flagged district-year. It
+#'   has no rows if nothing is flagged, if the Population sheet lacks `district`, `year` or
+#'   `live_births`, or if the service sheets lack `instlivebirths`.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' sheets <- load_excel_parts(path)
+#' check_population_service_collision_presheet(
+#'   sheets$parts, sheets$population_sheet_name, sheets$service_sheet_names
+#' )
+#'
+#' # Baringo's 2023 population births entered in every month of the service sheet
+#' parts <- sheets$parts
+#' population <- parts[[sheets$population_sheet_name]]
+#' births <- population$live_births[population$district == "Baringo" & population$year == 2023]
+#' service <- parts[[sheets$service_sheet_names[1]]]
+#' service$instlivebirths[service$district == "Baringo" & service$year == 2023] <- births
+#' parts[[sheets$service_sheet_names[1]]] <- service
+#' check_population_service_collision_presheet(
+#'   parts, sheets$population_sheet_name, sheets$service_sheet_names
+#' )
 #' @export
 check_population_service_collision_presheet <- function(parts, population_sheet_name, service_sheet_names) {
   population_data <- parts[[population_sheet_name]]
@@ -589,20 +858,45 @@ check_population_service_collision_presheet <- function(parts, population_sheet_
   check_population_service_collision(joined)
 }
 
-#' Check that estimated population live births aren't lower than reported institutional counts
+#' Check that population live births are not below reported births
 #'
-#' Per district-year, `Population_data$live_births` (an annual estimate) should be at least as large
-#' as the sum of the service sheets' own institutional counts (`instlivebirths`, or `instdeliveries`
-#' if that's what the sheet has instead -- the spec names both interchangeably) across that
-#' district-year's months -- not every birth happens in a facility, so the population estimate being
-#' *lower* than what facilities alone reported is a real, actionable data problem, not just an
-#' interesting pattern. `margin` allows the population figure to fall a little short before flagging,
-#' since these are independent estimates, not the same count twice.
+#' Compares, for each district-year, the estimated live births in the Population sheet with
+#' the institutional births reported in the service sheets. Not every birth happens in a
+#' facility, so an estimate that is lower than what facilities reported points to a problem in
+#' one of the two figures.
 #'
-#' @param parts Named list of cleaned per-sheet tibbles.
-#' @param population_sheet_name Name of the population sheet within `parts`.
-#' @param service_sheet_names Names of the service-data sheets within `parts`.
-#' @param margin Fraction (0-1) of headroom allowed before flagging. Default `0.10` (10%).
+#' @details
+#' The reported figure is the sum over the months of a district-year of `instlivebirths`, or
+#' of `instdeliveries` if the service sheets have no `instlivebirths` column. A district-year
+#' is flagged when `live_births` is less than `(1 - margin)` times that sum. Only district-years
+#' that have both figures are compared.
+#'
+#' @param parts A named list of cleaned per-sheet tibbles (`load_excel_parts()$parts`).
+#' @param population_sheet_name A string. The name of the Population sheet within `parts`.
+#' @param service_sheet_names A character vector. The names of the service data sheets within
+#'   `parts`.
+#' @param margin A number between 0 and 1. The fraction by which the population figure may
+#'   fall short of the reported figure before it is flagged. Default is `0.10` (10%).
+#' @return `NULL` if no district-year is flagged, if the Population sheet lacks `district`,
+#'   `year` or `live_births`, or if the service sheets have neither births column. Otherwise a
+#'   character vector of length one, named `"x"`, with a message that lists the first 10 flagged
+#'   district-years and gives a count of the rest. Its `"rows"` attribute is a tibble of all the
+#'   flagged district-years, with columns `district`, `year`, `live_births` and
+#'   `total_delivered` (the reported sum).
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' sheets <- load_excel_parts(path)
+#' found <- check_population_vs_births(
+#'   sheets$parts, sheets$population_sheet_name, sheets$service_sheet_names
+#' )
+#' found
+#' attr(found, "rows")
+#'
+#' # Flag any shortfall, however small
+#' check_population_vs_births(
+#'   sheets$parts, sheets$population_sheet_name, sheets$service_sheet_names,
+#'   margin = 0
+#' )
 #' @export
 check_population_vs_births <- function(parts, population_sheet_name, service_sheet_names, margin = 0.10) {
   population_data <- parts[[population_sheet_name]]
@@ -681,14 +975,29 @@ check_population_vs_births <- function(parts, population_sheet_name, service_she
   cli::ansi_strip(as.character(unname(detail)))
 }
 
-#' Every data quality result as tables: a summary of the checks, and one row per issue
+#' Tabulate data quality results
 #'
-#' @param results What `run_all_quality_checks()` returns.
-#' @param labels Optional named character vector: a check's key (`names(results)`) to the name to show for
-#'   it (the wizard passes its translated ones). A check without one gets a plain English name.
-#' @return A list of two tibbles. `summary`: `check`, `severity`, `status` (`"passed"` or `"issue"`), `issues`
-#'   (how many). `issues`: `check`, `severity`, `issue`, one row for each thing a check found (each
-#'   district-year, each name, each sentence), with nothing shortened.
+#' Turns the results of [run_all_quality_checks()] into two tables: a summary with one row per
+#' check, and a list with one row per issue found.
+#'
+#' @param results A named list. What [run_all_quality_checks()] returns.
+#' @param labels An optional named character vector that maps a check's key (`names(results)`)
+#'   to the name to show for it, for example a translated name. A check without a label gets a
+#'   plain English name.
+#' @return A list of two tibbles. `summary` has columns `check`, `severity`, `status`
+#'   (`"passed"` or `"issue"`) and `issues` (the number of issues). `issues` has columns `check`,
+#'   `severity` and `issue`, with one row for each thing a check found (each district-year,
+#'   each name, each message) and nothing shortened.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' cache <- load_cache_data(path)
+#' results <- run_all_quality_checks(cache)
+#' tables <- quality_issues_table(results)
+#' tables$summary
+#' tables$issues
+#'
+#' # A check under a name of your own
+#' quality_issues_table(results, labels = c(indicator_emptiness = "Indicators without data"))$summary
 #' @export
 quality_issues_table <- function(results, labels = NULL) {
   label_of <- function(key) {
@@ -723,6 +1032,12 @@ quality_issues_table <- function(results, labels = NULL) {
 #' @inheritParams quality_issues_table
 #' @param path Where to write the `.xlsx`.
 #' @return `path`, invisibly.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' cache <- load_cache_data(path)
+#' results <- run_all_quality_checks(cache)
+#' file <- write_quality_issues(results, tempfile(fileext = ".xlsx"))
+#' openxlsx::read.xlsx(file, sheet = "Issues")
 #' @export
 write_quality_issues <- function(results, path, labels = NULL) {
   tables <- quality_issues_table(results, labels)
@@ -741,28 +1056,45 @@ write_quality_issues <- function(results, path, labels = NULL) {
 
 # --- Non-aborting aggregator: run everything against an already-loaded cache -----------------
 
-#' Run every non-structural quality check against an already-loaded cache, without aborting
+#' Run all data quality checks and report every result
 #'
-#' Counterpart to `run_quality_checks()` above (which collects several checks and aborts once if
-#' any fail -- the shape `new_countdown()`'s Tier B and `merge_and_standardize()`'s Tier A both need
-#' at load time). This one never aborts: it runs every non-structural check and returns a full
-#' report, for a caller that wants to show every result -- pass or fail -- rather than stop at the
-#' first problem. Built for the Load Data wizard's Data Quality step (apps/rmncah).
+#' Runs the data quality checks on the data held in a cache and returns the result of each
+#' one, whether it passed or not. It does not stop on a problem, so a caller can show the
+#' whole report.
 #'
-#' Branches on whether `cache` still holds unmerged wizard parts (`cache$wizard_parts`, set by
-#' `load_excel_parts()` + `CacheConnection$set_wizard_parts()` -- the normal case for a fresh
-#' Excel/Stata upload going through the wizard, Phase 3 of the Load Data wizard redesign) or already
-#' has merged `countdown_data` (a resumed `.rds`, edit mode, or any non-wizard caller) -- the
-#' pre-merge branch runs the sheet-scoped checks above, attributing problems to the specific sheet
-#' they came from; the post-merge branch is the original, unchanged set of checks against the fully
-#' merged data.
+#' @details
+#' Which checks run depends on what the cache holds:
+#' - If it holds unmerged sheets (`cache$wizard_parts`), the checks run on the separate sheets,
+#'   so a problem can be traced to the sheet it comes from.
+#' - Otherwise, if it holds results saved when the sheets were merged
+#'   (`cache$wizard_quality_results`), those saved results are returned and no check is run.
+#' - Otherwise the checks run on the merged dataset (`cache$countdown_data`). This set has
+#'   fewer checks than the one for unmerged sheets.
 #'
-#' @param cache A `CacheConnection` (or anything exposing `$wizard_parts`, `$countdown_data`,
-#'   `$check_survey_admin_names()`, `$check_shapefile_admin_names()` the same way).
-#' @return A named list, one entry per check: `list(ok, severity, detail)`. `severity` is one of
-#'   `"blocking"` (these gate progression past the Data Quality step), `"informational"` (shown,
-#'   never block), or `"mapping"` (survey/shapefile admin-name matches -- shown, never block, point
-#'   instead at the relevant mapping step).
+#' @param cache A `CacheConnection`, or an object with the same `wizard_parts`,
+#'   `wizard_quality_results` and `countdown_data` fields and `check_survey_admin_names()` and
+#'   `check_shapefile_admin_names()` methods.
+#' @return A named list with one element per check. Each element is a list with:
+#'   - `ok`: `TRUE` if the check passed.
+#'   - `severity`: `"blocking"` (the caller should not go on until the problem is fixed),
+#'     `"informational"` (shown, but does not block) or `"mapping"` (an admin level 1 name with
+#'     no match in the survey or the shapefile; shown, but does not block).
+#'   - `detail`: what the check returned, which is `NULL`, a character vector or a tibble,
+#'     depending on the check.
+#' @seealso [quality_issues_table()] and [write_quality_issues()] to tabulate or save the result.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#'
+#' # On a loaded dataset
+#' cache <- load_cache_data(path)
+#' results <- run_all_quality_checks(cache)
+#' names(results)
+#' results$indicator_emptiness
+#'
+#' # On the sheets of a workbook, before they are merged
+#' sheets <- load_excel_parts(path)
+#' results <- run_all_quality_checks(init_CacheConnection(wizard_parts = sheets))
+#' Filter(function(result) !result$ok, results)
 #' @export
 run_all_quality_checks <- function(cache) {
   if (!is.null(cache$wizard_parts)) {

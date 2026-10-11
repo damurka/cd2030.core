@@ -1,14 +1,25 @@
-#' Create Mortality Summary Object
+#' Create mortality summary object
 #'
-#' Combines national and admin1 summaries and formats as a custom class for plotting.
+#' Combines national and admin level 1 summaries and formats as a custom class for plotting.
 #'
 #' @param .data An object of class `cd_data`.
 #'
-#' @return A `cd_mortality_rare` tibble.
+#' @return A `cd_mortality_summary` tibble.
+#'
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' data <- load_data(path)
+#'
+#' mortality <- create_mortality_summary(data)
+#' mortality
+#'
+#' # the national rates
+#' mortality[mortality$adminlevel_1 == "National", c("year", "mmr_inst", "sbr_inst", "nn_inst")]
 #'
 #' @export
 create_mortality_summary <- function(.data) {
   check_cd_data(.data)
+  local_data_group(.data)
 
   scatter <- bind_rows(
     summarised_data(.data, 'adminlevel_1'),
@@ -23,7 +34,7 @@ create_mortality_summary <- function(.data) {
   )
 }
 
-#' Extract Latest Mortality Ratios for UN Comparison
+#' Extract latest mortality ratios for UN comparison
 #'
 #' Joins computed national mortality indicators with UN estimates, returns latest value per indicator.
 #'
@@ -32,10 +43,21 @@ create_mortality_summary <- function(.data) {
 #'
 #' @return A tibble of class `cd_mortality_ratio` with latest available values and UN means.
 #'
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' cache <- load_cache_data(path)
+#'
+#' mortality <- create_mortality_summary(cache$countdown_data)
+#' ratios <- create_mortality_ratios(mortality, cache$un_mortality_estimates)
+#' ratios
+#'
+#' # the institutional ratio against the UN estimate, by assumed completeness
+#' summarise_completeness_ratio(ratios, plot_type = "mmr")
+#'
 #' @export
 create_mortality_ratios <- function(.data, mortality_data) {
-  check_cd_class(.data, 'cd_mortality_summary')
-  check_un_mortality(mortality_data)
+  check_cd_mortality_summary(.data)
+  check_cd_un_mortality(mortality_data)
 
   un_national <- .data %>%
     filter(adminlevel_1 == 'National') %>%
@@ -58,14 +80,14 @@ create_mortality_ratios <- function(.data, mortality_data) {
     new_tibble(class = 'cd_mortality_ratio')
 }
 
-#' Filter and Prepare Mortality Rate Data for Mapping
+#' Select one mortality rate, ready to map
 #'
-#' Filters a `cd_mortality_summary` object by country, indicator, and year. Optionally joins
-#' subnational mapping data and renames geometry for spatial plotting.
+#' Selects one institutional mortality rate from a `cd_mortality_summary` object, optionally for
+#' given years, and joins the admin level 1 boundaries of the country so the result can be mapped.
 #'
 #' @param .data A `cd_mortality_summary` object created by [create_mortality_summary()].
-#' @param country_iso A character string. ISO3 code of the country.
-#' @param indicator Character. Mortality indicator to filter (`"mmr"` or `"sbr"`). Defaults to `"mmr"`.
+#' @param country_iso A character string. ISO3 code of the country, used to load its boundaries.
+#' @param indicator Character. Mortality indicator to select: `"mmr"`, `"sbr"` or `"nn"`. Defaults to `"mmr"`.
 #' @param plot_year Optional integer or vector of years to filter.
 #' @param subnational_map Optional. A data frame to join with the shapefile to add metadata.
 #' @param palette Character. RColorBrewer sequential palette for the map (default `"Reds"`).
@@ -73,15 +95,14 @@ create_mortality_ratios <- function(.data, mortality_data) {
 #' @return A tibble of class `cd_mortality_summary_filtered`, ready for geospatial plotting.
 #'
 #' @details
-#' This function:
-#' - Selects the specified mortality indicator (`mmr_inst` or `sbr_inst`)
-#' - Filters by `plot_year` if provided
-#' - Merges mortality rates with spatial geometry using internal or custom subnational mappings
-#' - Ensures geometry is correctly renamed for mapping (`geometry`)
+#' Selects the column of the mortality indicator (`mmr_inst`, `sbr_inst` or `nn_inst`) and keeps
+#' only `plot_year` when it is given. Joins the rates to the admin level 1 boundaries by unit name,
+#' or through `subnational_map` when the names in the data differ from those of the shapefile, and
+#' renames the geometry column to `geometry`.
 #'
 #' @examples
 #' \dontrun{
-#' filter_mortality_rate(
+#' select_mortality_summary(
 #'   mortality_data,
 #'   country_iso = "NGA",
 #'   indicator = "sbr",
@@ -90,10 +111,10 @@ create_mortality_ratios <- function(.data, mortality_data) {
 #' }
 #'
 #' @export
-filter_mortality_summary <- function(.data, country_iso, indicator = c('mmr', 'sbr', 'nn'), plot_year = NULL, subnational_map = NULL,
+select_mortality_summary <- function(.data, country_iso, indicator = c('mmr', 'sbr', 'nn'), plot_year = NULL, subnational_map = NULL,
                                      palette = c('Reds', 'Blues', 'Greens', 'Purples', 'YlGnBu')) {
 
-  check_cd_class(.data, expected_class = 'cd_mortality_summary')
+  check_cd_mortality_summary(.data)
   check_required(country_iso)
   indicator <- arg_match(indicator)
   indicator <- paste0(indicator, '_inst')
@@ -123,7 +144,7 @@ filter_mortality_summary <- function(.data, country_iso, indicator = c('mmr', 's
   )
 }
 
-#' Summarise Mortality and Birth Data by Administrative Level
+#' Summarise mortality and birth data by administrative level
 #'
 #' Aggregates key mortality and birth statistics by year and admin level,
 #' and computes key indicators like MMR, SBR, and neonatal death rate.
@@ -136,6 +157,7 @@ filter_mortality_summary <- function(.data, country_iso, indicator = c('mmr', 's
 #' @noRd
 summarised_data <- function(.data, admin_level = c('national', 'adminlevel_1', 'district')) {
   check_cd_data(.data)
+  local_data_group(.data)
   admin_level <- arg_match(admin_level)
   admin_level_col <- get_admin_columns(admin_level)
 
@@ -158,7 +180,7 @@ summarised_data <- function(.data, admin_level = c('national', 'adminlevel_1', '
     relocate(all_of(c(admin_level_col, 'year')))
 }
 
-#' Summarize Completeness-Adjusted Mortality Ratio
+#' Summarize completeness-adjusted mortality ratio
 #'
 #' Computes and summarizes adjusted mortality ratio estimates based on completeness
 #' correction factors for different completeness-to-incompleteness ratios (CI ratios).
@@ -222,74 +244,5 @@ summarise_completeness_ratio <- function(.data, plot_type = c('mmr', 'sbr', 'nn'
     data,
     class = 'cd_mortality_ratio_summarised',
     plot_type = plot_type
-  )
-}
-
-# Extract summary statistics from UN data using tidy logic
-extract_un_summary <- function(un_data) {
-  un_data %>%
-    pivot_longer(cols = -year, names_to = 'indicator', values_to = 'values') %>%
-    group_by(indicator) %>%
-    filter(!is.na(values)) %>%
-    slice_tail(n = 1) %>%
-    ungroup() %>%
-    mutate(
-      level = case_when(
-        str_detect(indicator, 'lb') ~ '::Lower bound of the estimate',
-        str_detect(indicator, 'ub') ~ '::Upper bound of the estimate',
-        .default = 'UN best estimate, 2020/2022'
-      ),
-      indicator = str_to_upper(str_remove(indicator, "_(lb|ub)$"))
-    ) %>%
-    arrange(year) %>%
-    pivot_wider(
-      names_from = c(indicator, year),
-      values_from = values,
-      names_glue = '{indicator}({year})'
-    )
-}
-
-aggregate_indicator <- function(.data, indicators) {
-  .data %>%
-    pivot_longer(cols = any_of(indicators), names_to = 'indicator', values_to = 'val') %>%
-    summarise(val = sum(val, na.rm = TRUE), .by = c(year, indicator)) %>%
-    pivot_wider(names_from = year, values_from = val) %>%
-    relocate(indicator)
-}
-
-
-
-derive_ratio <- function(.data, admin_level = c('national', 'adminlevel_1', 'district')) {
-  admin_level <- arg_match(admin_level)
-  admin_level_col <- get_admin_columns(admin_level)
-
-  summarised_data(dat, admin_level) %>%
-    select(all_of(admin_level_col), year, mmr_inst, sbr_inst, nn_inst, ratio_md_sb) %>%
-    pivot_longer(cols = -all_of(c(admin_level_col, 'year')), values_to = 'values', names_to = 'indicator') %>%
-    pivot_wider(names_from = year, values_from = values)
-}
-
-threshold_metric <- function(.data, admin_level = c('adminlevel_1', 'district')) {
-  admin_level <- arg_match(admin_level)
-
-  .data %>%
-    summarised_data(admin_level) %>%
-    summarise(
-      mmr_lowr = mean(mmr_low, na.rm = TRUE) * 100,
-      sbr_lowr = mean(sbr_low, na.rm = TRUE) * 100,
-      .by = year
-    ) %>%
-    pivot_longer(cols = -year, values_to = 'values', names_to = 'indicator') %>%
-    pivot_wider(names_from = year, values_from = values)
-}
-
-calculate_summary <- function(.data) {
-  check_cd_data(.data)
-
-  bind_rows(
-    # To add stillbirth rate for the latest year
-    aggregate_indicator(dat, c('instlivebirths', 'total_stillbirth', 'maternal_deaths', 'neonatal_deaths')),
-    derive_ratio(dat),
-    threshold_metric(dat)
   )
 }

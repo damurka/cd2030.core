@@ -1,4 +1,4 @@
-#' Reporting Rate Summary by Administrative Level
+#' Reporting rate summary by administrative level
 #'
 #' `calculate_average_reporting_rate()` computes the average reporting rate for
 #' each indicator by year and administrative level. For `adminlevel_1`, you can
@@ -24,6 +24,7 @@ calculate_average_reporting_rate <- function(.data,
   . = NULL
 
   check_cd_data(.data)
+  local_data_group(.data)
 
   admin_level <- arg_match(admin_level)
   admin_level_cols <- get_admin_columns(admin_level, region)
@@ -51,14 +52,14 @@ calculate_average_reporting_rate <- function(.data,
   )
 }
 
-#' District-Level Reporting Rates by Year
+#' District-level reporting rates by year
 #'
 #' `calculate_district_reporting_rate` Calculates the percentage of districts that
 #' meet or exceed a specified reporting rate threshold for each indicator, by year.
 #' Also computes a yearly average across all indicators.
 #'
 #' @param .data A tibble of class `cd_data`.
-#' @param threshold Minimum reporting rate (%) for a district to be considered
+#' @param threshold Numeric. The performance threshold: the minimum reporting rate (in percent) for a district to be considered
 #'   compliant. Default is 90.
 #' @param region Optional. Filter results for a specific region (admin level 1 name).
 #'
@@ -75,6 +76,7 @@ calculate_district_reporting_rate <- function(.data, threshold = .cd_method$data
   year <- district <- . <- NULL
 
   check_cd_data(.data)
+  local_data_group(.data)
 
   group_name <- get_indicator_group_names()
   indicators <- paste0(group_name[which(group_name != "ipd")], "_rr")

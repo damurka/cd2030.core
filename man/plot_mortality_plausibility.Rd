@@ -2,34 +2,52 @@
 % Please edit documentation in R/plot.mortality.R
 \name{plot_mortality_plausibility}
 \alias{plot_mortality_plausibility}
-\title{Plot Subnational Mortality Plausibility}
+\title{Plot subnational mortality plausibility}
 \usage{
 plot_mortality_plausibility(
   x,
   indicator = c("fresh_total_sb", "ratio_md_sb", "ratio_md_nd"),
   title = NULL,
-  y_axis = NULL,
-  x_axis = NULL,
-  note = NULL,
+  y_title = NULL,
+  x_title = NULL,
+  caption = NULL,
   legend_labels = NULL
 )
 }
 \arguments{
 \item{x}{A \code{cd_mortality_summary} object.}
 
-\item{indicator}{One of \code{"fresh_total_sb"}, \code{"ratio_md_sb"}, \code{"ratio_md_nd"}.}
+\item{indicator}{One of \code{"fresh_total_sb"} (fresh stillbirths as a percentage of all
+stillbirths), \code{"ratio_md_sb"} (stillbirths per maternal death) or \code{"ratio_md_nd"} (neonatal
+deaths per maternal death).}
 
 \item{title}{(Optional) Custom translated title.}
 
-\item{y_axis}{(Optional) Custom translated y-axis label.}
+\item{y_title}{(Optional) Custom translated y-axis label.}
 
-\item{x_axis}{(Optional) Custom translated x-axis label.}
+\item{x_title}{(Optional) Custom translated x-axis label.}
 
-\item{note}{(Optional) Custom translated footnote caption.}
+\item{caption}{(Optional) Custom translated footnote.}
 
 \item{legend_labels}{(Optional) A named list to override default legend labels (keys: 'median', 'plausible').}
 }
+\value{
+A \code{ggplot} object. The function stops with an error when \code{x} has no subnational values
+for the indicator.
+}
 \description{
-Generates subnational scatter plots with annual medians and plausible ranges
-as requested for the CAM 2026 subnational mortality analysis.
+Draws one institutional mortality indicator by year, with a point for each admin level 1 unit,
+the median of the units in each year and the range of values considered plausible for the
+indicator. Use it to see whether subnational values are realistic.
+}
+\examples{
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+cache$set_national_estimates(list(sbr = 0.02))
+cache$adjust_data()
+mortality <- cache$mortality_summary
+
+plot_mortality_plausibility(mortality, indicator = "fresh_total_sb")
+plot_mortality_plausibility(mortality, indicator = "ratio_md_sb", title = "Stillbirths per maternal death",
+                            x_title = "Year", legend_labels = list(median = "Median of the regions"))
+
 }

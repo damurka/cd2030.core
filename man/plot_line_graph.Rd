@@ -2,15 +2,15 @@
 % Please edit documentation in R/utils-plot-themes.R
 \name{plot_line_graph}
 \alias{plot_line_graph}
-\title{Plot Line Graph for Multiple Series with Dynamic Y-axis Scaling}
+\title{Plot a line graph of several series}
 \usage{
 plot_line_graph(
   .data,
   x,
   y_vars,
   title,
-  y_axis,
-  x_axis,
+  y_title,
+  x_title,
   legend_labels,
   hline = NULL,
   hline_style = "dashed",
@@ -27,9 +27,9 @@ plot_line_graph(
 
 \item{title}{Plot title.}
 
-\item{y_axis}{Label for the y-axis.}
+\item{y_title}{Label for the y-axis.}
 
-\item{x_axis}{Label for the x-axis.}
+\item{x_title}{Label for the x-axis.}
 
 \item{legend_labels}{Vector of labels for the legend (must match y_vars length).}
 
@@ -48,5 +48,21 @@ with \code{options}.}
 A ggplot object.
 }
 \description{
-Plot Line Graph for Multiple Series with Dynamic Y-axis Scaling
+Draws one line with points for each of several columns of a data frame against a shared x
+column, in the package's plot theme. The y axis is scaled to the data: it starts at zero when
+all values are positive and leaves some room above the highest value.
+}
+\examples{
+births <- data.frame(
+  year = 2019:2023,
+  un = c(1445, 1451, 1469, 1483, 1500),
+  dhis2 = c(1390, 1402, 1455, 1478, 1461)
+)
+plot_line_graph(births, x = "year", y_vars = c("un", "dhis2"), title = "Live births (thousands)",
+                y_title = "Live births", x_title = "Year", legend_labels = c("UN estimate", "DHIS2"))
+
+plot_line_graph(births, x = "year", y_vars = c("un", "dhis2"), title = "Live births (thousands)",
+                y_title = "Live births", x_title = "Year", legend_labels = c("UN estimate", "DHIS2"),
+                hline = 1500, legend_position = "right")
+
 }

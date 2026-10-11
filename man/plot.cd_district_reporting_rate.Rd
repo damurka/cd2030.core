@@ -2,16 +2,18 @@
 % Please edit documentation in R/plot.reporting_rate.R
 \name{plot.cd_district_reporting_rate}
 \alias{plot.cd_district_reporting_rate}
-\title{Plot District Reporting Rate Summary}
+\title{Plot district reporting rate summary}
 \usage{
 \method{plot}{cd_district_reporting_rate}(
   x,
-  title = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
-  caption = NULL,
   indicator_labels = NULL,
   facet_ncol = 3,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
   options = NULL
 )
@@ -20,27 +22,30 @@
 \item{x}{A \code{cd_district_reporting_rate} data frame containing reporting rate data,
 processed by \code{\link[=calculate_district_reporting_rate]{calculate_district_reporting_rate()}}.}
 
-\item{title}{Optional plot title. Defaults to a title that includes the
-reporting-rate threshold.}
-
-\item{x_axis, y_axis}{Optional x- and y-axis titles. By default the x axis
-has no title and the y axis is labelled with a percent sign.}
-
-\item{caption}{Optional plot caption. Defaults to a note stating the
-low-reporting threshold.}
-
 \item{indicator_labels}{Optional named character vector of panel titles,
 keyed by short indicator name (\code{anc}, \code{idelv}, \code{vacc}, \code{pnc}, \code{opd},
 \code{ipd}). Supplied entries replace the defaults.}
 
-\item{facet_ncol}{How many service-panel columns the facet grid uses (default 3, unchanged from before this
-param existed -- e.g. 4 services lay out 3-then-1). Additive: every existing caller keeps its current
-layout unless it explicitly asks for a different one.}
+\item{facet_ncol}{Integer. The number of columns the service panels are laid out in. Default is \code{3},
+so four services are drawn as a row of three and a row of one.}
 
-\item{...}{Additional parameters passed to the plotting function.}
+\item{title}{The chart's title.}
 
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{subtitle}{The line under the title.}
+
+\item{caption}{The note under the chart.}
+
+\item{x_title}{The title of the horizontal axis.}
+
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
 }
 \value{
 A ggplot object visualizing reporting rates across indicators and years.
@@ -52,9 +57,9 @@ a quick visual assessment of district-level reporting compliance across indicato
 like ANC, Institutional Delivery, PNC, Vaccination, OPD, and IPD.
 }
 \details{
-This function inverts reporting rate percentages to display the proportion of
-districts with rates below the threshold for each indicator (e.g., if a district
-achieves a 95\% rate, it shows as 5\% below threshold). Each indicator is visualized
+Inverts the percentages in \code{x} (the percentage of districts at or above the threshold) to
+display the percentage of districts with rates below the threshold for each indicator (e.g.,
+if 95\% of districts reach the threshold, 5\% are shown as below it). Each indicator is visualized
 in a separate panel with data grouped by year, providing an overview of performance
 trends over time.
 

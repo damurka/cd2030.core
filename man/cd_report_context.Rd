@@ -17,3 +17,11 @@ What the report builder (datasuite.ui) needs from a Countdown dataset: its chart
 look, the pictures and templates kept in it, its saved chart options, its fields (country, coverage values), years,
 regions and flag. Every report function accepts the dataset itself too (\code{\link[datasuite.ui:as_report_context]{datasuite.ui::as_report_context()}}).
 }
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+cache <- load_cache_data(path)
+
+context <- cd_report_context(cache)
+context$years()
+context$fields(NULL, "en")$country
+}

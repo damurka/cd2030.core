@@ -1,4 +1,4 @@
-#' Combine Immunization Coverage Data
+#' Combine immunization coverage data
 #'
 #' `calculate_coverage` integrates immunization coverage data from three sources:
 #' DHIS2 (District Health Information Software), survey-based estimates, and
@@ -82,9 +82,9 @@ calculate_coverage <- function(.data,
 }
 
 
-#' Filter and Reshape Coverage Data
+#' Select one indicator's coverage
 #'
-#' `filter_coverage` extracts specific coverage indicators and denominators from a
+#' `select_coverage` extracts specific coverage indicators and denominators from a
 #' combined coverage dataset, applies regional filtering, and reshapes the data
 #' for analysis and visualisation.
 #'
@@ -100,10 +100,10 @@ calculate_coverage <- function(.data,
 #'
 #' @examples
 #' \dontrun{
-#' filter_coverage(combined_data, c("penta3", "measles1"), "dhis2", "Central Province")
+#' select_coverage(combined_data, c("penta3", "measles1"), "dhis2", "Central Province")
 #' }
 #' @export
-filter_coverage <- function(.data,
+select_coverage <- function(.data,
                             indicator,
                             denominator = c("dhis2", "anc1", "penta1", "penta1derived", "anc1derived"),
                             region = NULL) {
@@ -230,7 +230,7 @@ check_district_column <- function(.data, admin_level, dhis2_data) {
   .data
 }
 
-#' Generate Coverage Data for Continuum of Care
+#' Generate coverage data for continuum of care
 #'
 #' @description 
 #' Processes and shapes raw coverage data into a clean, long format optimized for 
@@ -253,6 +253,16 @@ check_district_column <- function(.data, admin_level, dhis2_data) {
 #'   coverage values, categorized sources, and ordered indicators. Retains 
 #'   `admin_level` and `admin_col` attributes for downstream plotting.
 #'
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' cache <- load_cache_data(path)
+#' cache$set_national_estimates(list(sbr = 0.02))
+#' cache$adjust_data()
+#' coverage <- cache$calculate_coverage("national")
+#'
+#' generate_coverage_data(coverage, type = "maternal", denominator = "anc1")
+#' generate_coverage_data(coverage, type = "child", denominator = "penta1")
+#'
 #' @export
 generate_coverage_data <- function(.data,
                                    type = c('maternal', 'child'),
@@ -271,7 +281,7 @@ generate_coverage_data <- function(.data,
   terms <- if (type == 'maternal') {
     c("anc_1trimester", 'anc1', "anc4", "ideliv", "instlivebirths", "pnc48h")
   } else {
-    c('bcg', 'penta1', 'penta3', 'measles1', 'measle2')
+    c('bcg', 'penta1', 'penta3', 'measles1', 'measles2')
   }
   terms_regex <- paste(terms, collapse = '|')
 

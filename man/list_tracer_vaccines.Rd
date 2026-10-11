@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils-indicator-groups.R
 \name{list_tracer_vaccines}
 \alias{list_tracer_vaccines}
-\title{List Tracer Vaccines}
+\title{List tracer vaccines}
 \usage{
 list_tracer_vaccines()
 }
@@ -11,4 +11,11 @@ A character vector of tracer vaccines
 }
 \description{
 Returns a subset of vaccines used in tracer metrics
+}
+\examples{
+list_tracer_vaccines()
+
+# those the selected indicator group has
+intersect(list_tracer_vaccines(), get_all_indicators())
+
 }

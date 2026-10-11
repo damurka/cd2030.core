@@ -1,4 +1,4 @@
-#' Retrieve an Attribute or Abort with Error
+#' Retrieve an attribute or abort with error
 #'
 #' Safely retrieves a named attribute from an object. If the attribute is missing,
 #' raises an error with a clear message. Intended for internal use to enforce
@@ -25,7 +25,7 @@ attr_or_abort <- function(.data, attr_name) {
   value
 }
 
-#' Retrieve Attribute or Return NULL if Missing
+#' Retrieve attribute or return NULL if missing
 #'
 #' A safe variant of `attr_or_abort()` that returns `NULL` instead of throwing an error
 #' when the specified attribute does not exist.
@@ -47,27 +47,47 @@ attr_or_null <- function(.data, attr_name) {
   tryCatch(attr_or_abort(.data, attr_name), error = function(e) NULL)
 }
 
-#' Get Country Name
+#' Get country name
+#'
+#' Reads the name of the country a Countdown dataset is for. The name is stored with the data when
+#' it is loaded.
 #'
 #' @param .data A `cd_data` object
 #'
 #' @return The country name as a character string
 #'
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' data <- load_data(path)
+#'
+#' get_country_name(data)
+#'
 #' @export
 get_country_name <- function(.data) {
   check_cd_data(.data)
+  local_data_group(.data)
   attr_or_abort(.data, "country")
 }
 
-#' Get Country ISO3 Code
+#' Get country ISO3 code
+#'
+#' Reads the ISO3 code of the country a Countdown dataset is for. The code is stored with the data
+#' when it is loaded.
 #'
 #' @param .data A `cd_data` object
 #'
 #' @return The ISO3 country code as a character string
 #'
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' data <- load_data(path)
+#'
+#' get_country_iso3(data)
+#'
 #' @export
 get_country_iso3 <- function(.data) {
   check_cd_data(.data)
+  local_data_group(.data)
   attr_or_abort(.data, "iso3")
 }
 
@@ -79,6 +99,10 @@ get_country_iso3 <- function(.data) {
 #'   `"anc1"`. Always `FALSE` unless the selected group is `"rmncah"`.
 #'
 #' @return TRUE if and indicator is maternal
+#'
+#' @examples
+#' is_maternal_indicator("anc4")
+#' is_maternal_indicator(c("anc4", "ideliv", "penta3"))
 #'
 #' @export
 is_maternal_indicator <- function(indicator) {
@@ -94,12 +118,26 @@ is_maternal_indicator <- function(indicator) {
 # small helper
 `%||%` <- function(x, y) if (is.null(x)) y else x
 
-#' Get Population Denominator Column Based on Indicator Only
+#' Get the population column for an indicator and denominator
+#'
+#' Names the column that holds the target population of an indicator for a denominator option. The
+#' name is the indicator's target population followed by the denominator, for example
+#' `"totinftpenta_penta1"` for `penta3` with the `penta1` denominator.
 #'
 #' @param indicator Character scalar. Indicator name (e.g., 'penta1', 'measles1')
-#' @param denominator Character scalar. The denominator for the indicator
+#' @param denominator Character scalar. The denominator for the indicator: one of `"dhis2"`,
+#'   `"anc1"`, `"penta1"`, `"penta1derived"` or `"anc1derived"`.
 #'
-#' @return A string naming the corresponding population column
+#' @return A string naming the corresponding population column, or `NA` when the indicator has no
+#'   target population defined.
+#'
+#' @examples
+#' get_population_column("penta3", "penta1")
+#' get_population_column("anc4", "dhis2")
+#'
+#' # births are total births with the DHIS2 denominator, live births with the others
+#' get_population_column("bcg", "dhis2")
+#' get_population_column("bcg", "anc1")
 #'
 #' @export
 get_population_column <- function(indicator, denominator) {
@@ -122,7 +160,7 @@ get_population_column <- function(indicator, denominator) {
   return(paste(population, denominator, sep = "_"))
 }
 
-#' Determine Grouping Columns for Administrative Levels
+#' Determine grouping columns for administrative levels
 #'
 #' Returns the appropriate grouping column(s) based on the specified administrative level.
 #' If a region is specified and `admin_level = "adminlevel_1"`, districts are included to allow
@@ -165,7 +203,7 @@ get_admin_columns <- function(admin_level, region = NULL, show_district = TRUE) 
   )
 }
 
-#' Determine the Administrative Column to Use for Plotting
+#' Determine the administrative column to use for plotting
 #'
 #' Returns the appropriate administrative unit column to use on plots based on the selected
 #' administrative level and whether a region is specified. Used to decide whether to facet or

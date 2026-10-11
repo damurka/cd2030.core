@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils-quality_checks.R
 \name{robust_max}
 \alias{robust_max}
-\title{Robust Maximum Value Calculation}
+\title{Robust maximum value calculation}
 \usage{
 robust_max(x, fallback = NA)
 }

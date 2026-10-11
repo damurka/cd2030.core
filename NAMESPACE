@@ -42,19 +42,20 @@ S3method(print,cd_data)
 S3method(tbl_sum,cd_adjustment_values)
 S3method(tbl_sum,cd_average_reporting_rate)
 S3method(tbl_sum,cd_completeness_summary)
-S3method(tbl_sum,cd_district_completeness_summary)
 S3method(tbl_sum,cd_district_outliers_summary)
 S3method(tbl_sum,cd_district_ratios_summary)
 S3method(tbl_sum,cd_district_reporting_rate)
 S3method(tbl_sum,cd_indicator_coverage)
-S3method(tbl_sum,cd_national_denominators)
-S3method(tbl_sum,cd_outliers_summary)
+S3method(tbl_sum,cd_missing_district)
+S3method(tbl_sum,cd_outlier)
+S3method(tbl_sum,cd_population_metrics)
 S3method(tbl_sum,cd_ratios_summary)
 export(add_mad_med_columns)
 export(add_missing_column)
 export(add_outlier5std_column)
 export(adjust_service_data)
-export(adjustment_changes_server, adjustment_changes_ui, calculate_ratios_server, calculate_ratios_ui, cd_admin_level_choices, cd_admin_level_server)
+export(adjustment_changes_server)
+export(adjustment_changes_ui)
 export(adjustment_evidence)
 export(adjustment_settings_check)
 export(adjustment_settings_default)
@@ -64,7 +65,9 @@ export(adjustment_steps_used)
 export(apply_chart_options)
 export(as_chart_options)
 export(bayes_model_estimates)
-export(bayesian_page_server, bayesian_server, bayesian_ui, cd_bayes_indicators, cd_start_bayes_workers)
+export(bayesian_page_server)
+export(bayesian_server)
+export(bayesian_ui)
 export(cache_definition)
 export(cache_manifest)
 export(calculate_average_reporting_rate)
@@ -82,35 +85,86 @@ export(calculate_inequality)
 export(calculate_outliers_summary)
 export(calculate_overall_score)
 export(calculate_overall_score1)
+export(calculate_ratios_and_adequacy)
+export(calculate_ratios_server)
 export(calculate_ratios_summary)
+export(calculate_ratios_ui)
 export(calculate_threshold)
-export(cd_admin_level_ui, cd_admin_parts, cd_app, cd_cfg, cd_coverage_plot_server, cd_coverage_plot_toolbar_ui)
+export(cd_admin_level_choices)
+export(cd_admin_level_server)
+export(cd_admin_level_ui)
+export(cd_admin_parts)
+export(cd_app)
+export(cd_bayes_fit_task)
+export(cd_bayes_indicators)
 export(cd_bayes_install_command)
 export(cd_bayes_packages_missing)
+export(cd_cfg)
 export(cd_chart_catalog)
 export(cd_chart_id)
 export(cd_chart_options)
 export(cd_chart_type)
 export(cd_chartable_members)
-export(cd_coverage_plot_ui, cd_default_indicator_set, cd_default_indicators, cd_denominator_chip_keys, cd_denominator_choices, cd_denominator_options)
+export(cd_coverage_plot_server)
+export(cd_coverage_plot_toolbar_ui)
+export(cd_coverage_plot_ui)
 export(cd_custom_chart_data)
-export(cd_denominator_header, cd_palette_chip, cd_population_server, cd_population_ui, cd_rate_status_cell, cd_saved_copy_name)
+export(cd_default_indicator_set)
+export(cd_default_indicators)
+export(cd_denominator_chip_keys)
+export(cd_denominator_choices)
+export(cd_denominator_header)
 export(cd_denominator_labels)
-export(cd_denominator_row, cd_denominator_server, cd_denominator_ui, cd_has_maternal, cd_indicator_server, cd_indicator_ui)
+export(cd_denominator_options)
+export(cd_denominator_row)
+export(cd_denominator_server)
+export(cd_denominator_ui)
 export(cd_describe_columns)
 export(cd_dictionary)
 export(cd_finish_plot)
+export(cd_has_maternal)
+export(cd_indicator_server)
+export(cd_indicator_ui)
 export(cd_member_data)
 export(cd_methodology_defaults)
 export(cd_minimal_theme)
-export(cd_nav_denominators, cd_nav_national, cd_nav_quality, cd_nav_start, cd_nav_subnational, cd_only_denominators)
+export(cd_nav_denominators)
+export(cd_nav_national)
+export(cd_nav_quality)
+export(cd_nav_start)
+export(cd_nav_subnational)
+export(cd_only_denominators)
+export(cd_palette_chip)
+export(cd_population_server)
+export(cd_population_ui)
+export(cd_rate_status_cell)
 export(cd_report_context)
 export(cd_request_bayes_packages)
-export(cd_scope, cd_scope_filters, cd_scope_server, cd_scoped_page_server, cd_scoped_page_ui)
-export(cd_tabbed_charts_server, cd_tabbed_charts_ui, cd_table_server, cd_table_ui, cd_wizard_check_group)
-export(cd_table_card_server, cd_table_card_ui, cd_upload_data_server, cd_upload_data_ui)
-export(cd_wizard_config, cd_wizard_field_group, cd_wizard_indicator_group, cd_wizard_national_rate_fields, cd_wizard_rate_field, cd_wizard_survey_field)
-export(cd_years_input, cd_years_sync, compute_step_states, consistency_check_server, consistency_check_ui, consistency_pair_keys)
+export(cd_saved_copy_name)
+export(cd_scope)
+export(cd_scope_filters)
+export(cd_scope_server)
+export(cd_scoped_page_server)
+export(cd_scoped_page_ui)
+export(cd_start_bayes_workers)
+export(cd_tab_indicator)
+export(cd_tabbed_charts_server)
+export(cd_tabbed_charts_ui)
+export(cd_table_card_server)
+export(cd_table_card_ui)
+export(cd_table_server)
+export(cd_table_ui)
+export(cd_upload_data_server)
+export(cd_upload_data_ui)
+export(cd_wizard_check_group)
+export(cd_wizard_config)
+export(cd_wizard_field_group)
+export(cd_wizard_indicator_group)
+export(cd_wizard_national_rate_fields)
+export(cd_wizard_rate_field)
+export(cd_wizard_survey_field)
+export(cd_years_input)
+export(cd_years_sync)
 export(chart_facet_info)
 export(check_admin_columns)
 export(check_admin_pairing_consistency)
@@ -135,16 +189,35 @@ export(check_survey_admin_names)
 export(clean_error_message)
 export(compute_indicator_numerator)
 export(compute_service_utilization)
-export(consistency_pair_label, coverage_server, coverage_trends_server, coverage_trends_ui, coverage_ui, data_adjustment_server)
+export(compute_step_states)
+export(consistency_check_server)
+export(consistency_check_ui)
+export(consistency_pair_keys)
+export(consistency_pair_label)
+export(coverage_server)
+export(coverage_trends_server)
+export(coverage_trends_ui)
+export(coverage_ui)
 export(create_mortality_ratios)
 export(create_mortality_summary)
-export(data_adjustment_ui, data_completeness_server, data_completeness_ui, data_quality_server, data_quality_ui, den_indicators)
-export(denominator_assessment_server, denominator_assessment_ui, denominator_selection_server, denominator_selection_ui, equity_server, equity_ui)
+export(data_adjustment_server)
+export(data_adjustment_ui)
+export(data_completeness_server)
+export(data_completeness_ui)
+export(data_quality_server)
+export(data_quality_ui)
+export(den_indicators)
+export(denominator_assessment_server)
+export(denominator_assessment_ui)
+export(denominator_selection_server)
+export(denominator_selection_ui)
 export(detect_indicator_group)
 export(equiplot)
 export(equiplot_area)
 export(equiplot_education)
 export(equiplot_wealth)
+export(equity_server)
+export(equity_ui)
 export(export_deck)
 export(export_report)
 export(filter_adjustment_value)
@@ -182,9 +255,14 @@ export(get_national_rates)
 export(get_plot_admin_column)
 export(get_population_column)
 export(get_selected_group)
-export(inequality_server, inequality_ui, internal_consistency_server, internal_consistency_ui, introduction_server, introduction_ui)
+export(inequality_server)
+export(inequality_ui)
 export(init_CacheConnection)
+export(internal_consistency_server)
+export(internal_consistency_ui)
 export(interpret)
+export(introduction_server)
+export(introduction_ui)
 export(is_maternal_indicator)
 export(list_indicator_groups)
 export(list_missing_units)
@@ -203,14 +281,32 @@ export(load_un_estimates)
 export(load_un_mortality_data)
 export(load_wuenic_data)
 export(local_cd_quiet)
-export(map_shapefile_server, map_shapefile_ui, map_survey_server, map_survey_ui, mapping_modal_server, mapping_modal_ui)
-export(mapping_provenance_banner, national_coverage_server, national_coverage_ui, national_inequality_server, national_inequality_ui, national_rates_required_fields)
+export(map_shapefile_server)
+export(map_shapefile_ui)
+export(map_survey_server)
+export(map_survey_ui)
+export(mapping_modal_server)
+export(mapping_modal_ui)
+export(mapping_provenance_banner)
 export(merge_and_standardize)
 export(merge_chart_options)
-export(national_rates_server, national_rates_ui, national_target_server, national_target_ui, nr_field, nr_group)
+export(national_coverage_server)
+export(national_coverage_ui)
+export(national_inequality_server)
+export(national_inequality_ui)
+export(national_rates_required_fields)
+export(national_rates_server)
+export(national_rates_ui)
+export(national_target_server)
+export(national_target_ui)
 export(new_countdown)
 export(notebook_data)
-export(outlier_detection_server, outlier_detection_ui, overall_score_server, overall_score_ui, push_upload_on_remount, reference_estimates_server)
+export(nr_field)
+export(nr_group)
+export(outlier_detection_server)
+export(outlier_detection_ui)
+export(overall_score_server)
+export(overall_score_ui)
 export(plot_comparison)
 export(plot_comparison_anc1_penta1)
 export(plot_comparison_opv1_opv3)
@@ -221,9 +317,11 @@ export(plot_national_health_metric)
 export(prepare_mapping_service_utlization)
 export(prepare_population_metrics)
 export(prepare_private_sector_plot_data)
+export(push_upload_on_remount)
 export(quality_issues_table)
 export(read_shapefile_folder)
-export(reference_estimates_ui, reporting_rate_server, reporting_rate_ui, restore_default_control)
+export(reference_estimates_server)
+export(reference_estimates_ui)
 export(register_indicator_group)
 export(render_report_block)
 export(report_asset_data_url)
@@ -248,26 +346,65 @@ export(report_slide_size)
 export(report_store_asset)
 export(report_theme_from_file)
 export(report_themes)
+export(reporting_rate_server)
+export(reporting_rate_ui)
 export(reset_indicator_group)
 export(resolve_chart_options)
 export(resolve_country_best_effort)
+export(restore_default_control)
 export(robust_max)
-export(rr_indicators, shapefile_step_server, shapefile_step_ui, step_map_mapping_complete, step_national_rates_complete, step_quality_complete)
+export(rr_indicators)
 export(run_all_quality_checks)
 export(save_data)
 export(save_dhis2_excel)
 export(save_dhis2_master_data)
 export(save_report_chart)
+export(select_adjustment_value)
+export(select_coverage)
+export(select_inequality)
+export(select_mapping_data)
+export(select_mortality_summary)
+export(select_service_utilization)
 export(set_selected_group)
+export(shapefile_step_server)
+export(shapefile_step_ui)
 export(slim_bayes_model)
-export(step_shapefile_complete, step_shapefile_touched, step_survey_files_complete, step_survey_mapping_complete, step_upload_complete, subnational_coverage_server)
-export(subnational_coverage_ui, subnational_denominator_server, subnational_denominator_ui, subnational_inequality_server, subnational_inequality_ui, subnational_mapping_server)
-export(subnational_mapping_ui, subnational_target_server, subnational_target_ui, survey_comparison_server, survey_comparison_ui, survey_estimates_required_fields)
+export(step_map_mapping_complete)
+export(step_national_rates_complete)
+export(step_quality_complete)
+export(step_shapefile_complete)
+export(step_shapefile_touched)
+export(step_survey_files_complete)
+export(step_survey_mapping_complete)
+export(step_upload_complete)
+export(subnational_coverage_server)
+export(subnational_coverage_ui)
+export(subnational_denominator_server)
+export(subnational_denominator_ui)
+export(subnational_inequality_server)
+export(subnational_inequality_ui)
+export(subnational_mapping_server)
+export(subnational_mapping_ui)
+export(subnational_target_server)
+export(subnational_target_ui)
 export(summarise_completeness_ratio)
-export(survey_fields, survey_upload_server, survey_upload_ui, target_server, target_ui, upload_box_server)
-export(upload_box_ui, wizard_fields, wizard_landing_server, wizard_landing_ui, wizard_step_defs, wizard_steps_server)
+export(survey_comparison_server)
+export(survey_comparison_ui)
+export(survey_estimates_required_fields)
+export(survey_fields)
+export(survey_upload_server)
+export(survey_upload_ui)
+export(target_server)
+export(target_ui)
+export(upload_box_server)
+export(upload_box_ui)
 export(with_cd_quiet)
 export(with_report_chart_options)
+export(wizard_fields)
+export(wizard_landing_server)
+export(wizard_landing_ui)
+export(wizard_step_defs)
+export(wizard_steps_server)
 export(wizard_steps_ui)
 export(write_quality_issues)
 import(datasuite.ui)
@@ -278,105 +415,128 @@ import(rlang)
 import(shiny)
 import(tidyr)
 importFrom(RColorBrewer,brewer.pal)
-importFrom(datasuite.ui,apply_chart_options)
-importFrom(datasuite.ui,as_chart_options)
-importFrom(datasuite.ui,cd_chart_options)
-importFrom(datasuite.ui,cd_chart_type)
-importFrom(datasuite.ui,chart_facet_info)
-importFrom(datasuite.ui,export_deck)
-importFrom(datasuite.ui,export_report)
-importFrom(datasuite.ui,merge_chart_options)
-importFrom(datasuite.ui,render_report_block)
-importFrom(datasuite.ui,report_asset_data_url)
-importFrom(datasuite.ui,report_block_size)
-importFrom(datasuite.ui,report_chart_fields)
-importFrom(datasuite.ui,report_converter)
-importFrom(datasuite.ui,report_deck_converter)
-importFrom(datasuite.ui,report_deck_layouts)
-importFrom(datasuite.ui,report_default_cover)
-importFrom(datasuite.ui,report_default_design)
-importFrom(datasuite.ui,report_field_catalog)
-importFrom(datasuite.ui,report_fields)
-importFrom(datasuite.ui,report_final_pages)
-importFrom(datasuite.ui,report_flag_file)
-importFrom(datasuite.ui,report_fonts)
-importFrom(datasuite.ui,report_page)
-importFrom(datasuite.ui,report_project_blocks)
-importFrom(datasuite.ui,report_resolve_block)
-importFrom(datasuite.ui,report_slide_size)
-importFrom(datasuite.ui,report_store_asset)
-importFrom(datasuite.ui,report_theme_from_file)
-importFrom(datasuite.ui,report_themes)
-importFrom(datasuite.ui,resolve_chart_options)
-importFrom(datasuite.ui,save_report_chart)
-importFrom(datasuite.ui,with_report_chart_options)
-importFrom(forcats,fct_inorder)
-importFrom(forcats,fct_reorder)
-importFrom(haven,as_factor)
-importFrom(haven,is.labelled)
-importFrom(haven,read_dta)
-importFrom(haven,write_dta)
+importFrom(datasuite.ui,
+  apply_chart_options,
+  as_chart_options,
+  cd_chart_options,
+  cd_chart_type,
+  chart_facet_info,
+  export_deck,
+  export_report,
+  merge_chart_options,
+  render_report_block,
+  report_asset_data_url,
+  report_block_size,
+  report_chart_fields,
+  report_converter,
+  report_deck_converter,
+  report_deck_layouts,
+  report_default_cover,
+  report_default_design,
+  report_field_catalog,
+  report_fields,
+  report_final_pages,
+  report_flag_file,
+  report_fonts,
+  report_page,
+  report_project_blocks,
+  report_resolve_block,
+  report_slide_size,
+  report_store_asset,
+  report_theme_from_file,
+  report_themes,
+  resolve_chart_options,
+  save_report_chart,
+  with_report_chart_options
+)
+importFrom(forcats,
+  fct_inorder,
+  fct_reorder
+)
+importFrom(haven,
+  as_factor,
+  is.labelled,
+  read_dta,
+  write_dta
+)
 importFrom(htmltools,HTML)
-importFrom(lubridate,month)
-importFrom(lubridate,year)
-importFrom(lubridate,ym)
-importFrom(lubridate,ymd)
-importFrom(openxlsx,addStyle)
-importFrom(openxlsx,addWorksheet)
-importFrom(openxlsx,createStyle)
-importFrom(openxlsx,createWorkbook)
-importFrom(openxlsx,freezePane)
-importFrom(openxlsx,groupRows)
-importFrom(openxlsx,mergeCells)
-importFrom(openxlsx,saveWorkbook)
-importFrom(openxlsx,setColWidths)
-importFrom(openxlsx,setRowHeights)
-importFrom(openxlsx,writeData)
-importFrom(purrr,compact)
-importFrom(purrr,imap)
-importFrom(purrr,imap_chr)
-importFrom(purrr,imap_dfc)
-importFrom(purrr,keep)
-importFrom(purrr,list_c)
-importFrom(purrr,list_merge)
-importFrom(purrr,map)
-importFrom(purrr,map2_dbl)
-importFrom(purrr,map_chr)
-importFrom(purrr,map_df)
-importFrom(purrr,map_int)
-importFrom(purrr,map_lgl)
-importFrom(purrr,pwalk)
-importFrom(purrr,reduce)
-importFrom(purrr,set_names)
-importFrom(purrr,walk)
-importFrom(reactable,colDef)
-importFrom(reactable,reactable)
-importFrom(reactable,reactableOutput)
-importFrom(reactable,renderReactable)
+importFrom(later,later)
+importFrom(lubridate,
+  month,
+  year,
+  ym,
+  ymd
+)
+importFrom(openxlsx,
+  addStyle,
+  addWorksheet,
+  createStyle,
+  createWorkbook,
+  freezePane,
+  groupRows,
+  mergeCells,
+  saveWorkbook,
+  setColWidths,
+  setRowHeights,
+  writeData
+)
+importFrom(purrr,
+  compact,
+  imap,
+  imap_chr,
+  imap_dfc,
+  keep,
+  list_c,
+  list_merge,
+  map,
+  map2_dbl,
+  map_chr,
+  map_df,
+  map_int,
+  map_lgl,
+  pwalk,
+  reduce,
+  set_names,
+  walk
+)
+importFrom(reactable,
+  colDef,
+  reactable,
+  reactableOutput,
+  renderReactable
+)
 importFrom(readr,read_csv)
-importFrom(readxl,excel_sheets)
-importFrom(readxl,read_excel)
-importFrom(stats,as.formula)
-importFrom(stats,lm)
-importFrom(stats,median)
-importFrom(stats,na.omit)
-importFrom(stats,quantile)
-importFrom(stats,reorder)
-importFrom(stats,setNames)
-importFrom(stringr,fixed)
-importFrom(stringr,str_detect)
-importFrom(stringr,str_ends)
-importFrom(stringr,str_extract)
-importFrom(stringr,str_glue)
-importFrom(stringr,str_glue_data)
-importFrom(stringr,str_remove)
-importFrom(stringr,str_replace)
-importFrom(stringr,str_replace_all)
-importFrom(stringr,str_split)
-importFrom(stringr,str_starts)
-importFrom(stringr,str_to_lower)
-importFrom(stringr,str_to_title)
-importFrom(stringr,str_to_upper)
-importFrom(tibble,new_tibble)
-importFrom(tibble,tbl_sum)
+importFrom(readxl,
+  excel_sheets,
+  read_excel
+)
+importFrom(stats,
+  as.formula,
+  lm,
+  median,
+  na.omit,
+  quantile,
+  reorder,
+  setNames
+)
+importFrom(stringr,
+  fixed,
+  str_detect,
+  str_ends,
+  str_extract,
+  str_glue,
+  str_glue_data,
+  str_remove,
+  str_replace,
+  str_replace_all,
+  str_split,
+  str_starts,
+  str_to_lower,
+  str_to_title,
+  str_to_upper
+)
+importFrom(tibble,
+  new_tibble,
+  tbl_sum
+)
 importFrom(utils,modifyList)

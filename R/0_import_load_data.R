@@ -60,14 +60,12 @@
 #' )
 #' }
 #'
-#' @param validate Logical. Whether to run Tier B quality checks (district-name
-#'   consistency, missing months, unrecognized months -- see
-#'   `R/0_data_quality_checks.R`) as part of loading. Default `TRUE`, matching
-#'   the pipeline's long-standing behavior. `FALSE` lets a file with data-quality
-#'   problems (as opposed to *structural* ones -- Tier A, e.g. a missing admin
-#'   column -- which always run regardless) load anyway, for a caller that wants
-#'   to run those checks itself later, progressively, against the already-loaded
-#'   data (see `run_all_quality_checks()`) rather than as an upfront hard stop.
+#' @param validate Logical. Whether to stop with an error when the merged data
+#'   fails a data quality check: [check_district_consistency()],
+#'   [check_month_presence()] or [check_month_validity()]. Default is `TRUE`.
+#'   With `FALSE` a file that has such problems still loads, so the caller can
+#'   run the checks later with [run_all_quality_checks()]. Structural checks,
+#'   such as a missing Admin sheet column, always run.
 #' @export
 load_data <- function(path,
                       indicator_group = c('auto', 'vaccine', 'rmncah', 'custom'),
@@ -195,36 +193,65 @@ load_cache_data <- function(path,
   # Determine file extension and load accordingly
   ext <- tools::file_ext(path)
   if (str_to_lower(ext) != 'dta') {
-    cd_abort(
-      "x" = "Unsupported file format: please provide a DTA file."
-    )
+    cd_abort(c("x" = "Unsupported file format: please provide a DTA file."))
   }
 
   out <- read_dta(path) %>%
     mutate(across(where(is.labelled), ~ as_factor(.x)))
 
+  # Months as the rest of the package has them (an ordered factor of the English names), as a workbook's are.
+  # A Stata file gives them as a labelled value, text or a number; left as that, the check that every month is
+  # there could not compare them (a file written by save_data() could not be read back).
+  if ("month" %in% names(out)) {
+    month <- out$month
+    parsed <- if (is.numeric(month)) {
+      factor(month.name[ifelse(month %in% 1:12, month, NA)], levels = month.name, ordered = TRUE)
+    } else {
+      parse_month_name(as.character(month))
+    }
+    # only when every month was understood: otherwise the values are kept for the checks to report
+    if (!any(is.na(parsed) & !is.na(month))) out$month <- parsed
+  }
+
   new_countdown(out, indicator_group = indicator_group, profile = profile, profile_name = profile_name, validate = validate)
 }
 
-#' Read & clean every Countdown 2030 Excel sheet, without merging them
+#' Read and clean the sheets of a Countdown 2030 workbook
 #'
-#' Split out of what used to be the front half of `.load_excel_data()` (Phase 3 of the Load Data
-#' wizard redesign, `apps/rmncah`): reads and cleans every sheet, keyed by sheet name, and returns
-#' them SEPARATE -- no `merge_data()`/`standardize_data()`/`new_countdown()` here. This is what lets
-#' the wizard run its Data Quality checks per-sheet (which sheet a problem actually came from, not
-#' just "somewhere in the merged data") BEFORE committing to a merge. The only things that still
-#' abort immediately, unconditionally, here: the sheets named don't exist at all, or a sheet is
-#' missing the join-key columns `read_and_clean_sheet()` itself requires (district/year/month) --
-#' both are "there is nothing coherent to even display per-sheet" failures, not a data-QUALITY
-#' finding the way a missing indicator column or a district name mismatch is (see
-#' `merge_and_standardize()`'s own Tier A checks, and `0_data_quality_checks.R`'s new per-sheet
-#' checks, for where those now live instead).
+#' Reads and cleans each sheet of a Countdown 2030 Excel workbook and returns the sheets
+#' separately, without merging them. Use it to run data quality checks on each sheet before
+#' the merge, then pass the result to [merge_and_standardize()] to finish loading.
 #'
+#' @details
+#' Month names are standardized to English on every sheet that has a `month` column, and the
+#' original text is kept in a `raw_month` column. The sheets can then be joined on `month` even
+#' if they name the months in different languages.
+#'
+#' The function stops with an error if a named sheet is not in the workbook, if a sheet is
+#' empty, or if a sheet lacks its key columns (`district` for the Admin sheet, `district` and
+#' `year` for the Population sheet, and `district`, `year` and `month` for the others). Other
+#' problems with the data are left to the data quality checks.
+#'
+#' @param path Path to an `.xlsx` or `.xls` file.
 #' @inheritParams load_data
-#' @return A list: `parts` (named list of cleaned per-sheet tibbles), `sheet_names`, `sheet_ids`,
-#'   `admin_sheet_name`, `population_sheet_name`, `reporting_sheet_name`, `service_sheet_names`,
-#'   `path`, `start_year` -- everything `merge_and_standardize()` needs to finish the job later,
-#'   and everything the wizard's own per-sheet quality checks need in the meantime.
+#' @return A list with these elements:
+#'   - `parts`: a named list of cleaned tibbles, one per sheet, named by sheet.
+#'   - `sheet_names`: a character vector of the sheet names, in the order the sheets are merged.
+#'   - `sheet_ids`: a named list of the key columns of the Admin sheet, the Population sheet
+#'     and (as `service_data`) every other sheet.
+#'   - `admin_sheet_name`, `population_sheet_name`, `reporting_sheet_name`,
+#'     `service_sheet_names`: the sheet names used, with defaults filled in.
+#'   - `path`, `start_year`: the arguments as given.
+#' @seealso [merge_and_standardize()], [run_all_quality_checks()]
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' sheets <- load_excel_parts(path)
+#' names(sheets$parts)
+#' sheets$service_sheet_names
+#' sheets$parts[[sheets$population_sheet_name]]
+#'
+#' # Month names are in English, the workbook's own text is kept beside them
+#' unique(sheets$parts[[sheets$service_sheet_names[1]]][c("month", "raw_month")])
 #' @export
 load_excel_parts <- function(path,
                              start_year = NULL,
@@ -311,32 +338,40 @@ load_excel_parts <- function(path,
   )
 }
 
-#' Merge and standardize an already-`load_excel_parts()`-ed set of sheets
+#' Merge and standardize sheets read by `load_excel_parts()`
 #'
-#' The back half of what used to be `.load_excel_data()`: the Tier A structural checks (admin
-#' columns present, exactly one country), `merge_data()` + `standardize_data()`, then
-#' `new_countdown()` for group resolution and the Tier B quality gate. Kept as a fail-fast backstop
-#' even for a caller (the Load Data wizard) that already ran these same Tier A checks non-abortingly,
-#' earlier, against the same `parts` -- the same defense-in-depth every other blocking check in this
-#' pipeline already has between its wizard-facing non-aborting form and its abort-on-call one.
+#' Merges the separate sheets returned by [load_excel_parts()] into one dataset, standardizes
+#' its columns and returns it as a `cd_data` tibble. This is the second half of loading an
+#' Excel workbook.
 #'
-#' @param parts_result The list returned by `load_excel_parts()`.
-#' Exported (not `@noRd`) because the Load Data wizard's own Finish action
-#' (`apps/rmncah/ui/wizard_panels.R`) calls this directly, across the package boundary, once
-#' `step_quality_complete()` is satisfied -- it's not purely an internal implementation detail of
-#' `.load_excel_data()` any more.
+#' @details
+#' Before merging, the function stops with an error if the Admin sheet fails
+#' [check_admin_columns()] or [check_single_country()]. The merged data then goes to
+#' [new_countdown()], which resolves the indicator group and, when `validate` is `TRUE`, stops
+#' on a data quality problem.
 #'
+#' @param parts_result A list. What [load_excel_parts()] returns.
 #' @inheritParams load_data
 #' @param profile_name Optional. The resolved profile (indicator group) name,
 #'   used when resolving the indicator group (for example with
 #'   `indicator_group = "custom"`). Default is `NULL`.
 #' @return A tibble of class `cd_data`.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' sheets <- load_excel_parts(path)
+#' data <- merge_and_standardize(sheets)
+#' data
+#'
+#' # Load even if a data quality check fails, to run the checks afterwards
+#' data <- merge_and_standardize(sheets, validate = FALSE)
 #' @export
 merge_and_standardize <- function(parts_result,
                                   indicator_group = c('auto', 'vaccine', 'rmncah', 'custom'),
                                   profile = NULL,
                                   profile_name = NULL,
                                   validate = TRUE) {
+  # The two Admin sheet checks below run here even when the caller (the Load Data wizard) has
+  # already run them without aborting, as a backstop.
   indicator_group <- arg_match(indicator_group)
 
   parts <- parts_result$parts
@@ -455,7 +490,7 @@ new_countdown <- function(
       month_validity = function() check_month_validity(.data)
     ))
   }
-  .data <- .data %>% select(-any_of("raw_month"))
+  .data <- .data %>% select(-starts_with("raw_month"))
 
   set_selected_group(resolved_group)
 
@@ -487,8 +522,8 @@ new_countdown <- function(
 #' @param sheet_name A string. Name of the sheet to read and clean.
 #' @param sheet_ids A named list specifying the columns for duplicate checks
 #'   for each sheet.
-#' @param start_year An integer. The minimum year to filter the data (default is
-#'   2019).
+#' @param start_year An integer. The minimum year to keep. Default is `NULL`
+#'   (keep every year).
 #' @param call The call environment for error handling (default is the caller's
 #'   environment).
 #'
@@ -563,7 +598,8 @@ read_and_clean_sheet <- function(path, sheet_name, sheet_ids, start_year = NULL,
     }
   }
 
-  data <- data %>% filter(if_all(matches("year"), ~ is.null(start_year) || .x >= start_year))
+  # (`||` was given the whole year column here, so any start_year stopped the load)
+  if (!is.null(start_year)) data <- data %>% filter(if_all(matches("year"), ~ .x >= start_year))
 
   if (nrow(data) == 0 || ncol(data) == 0) {
     cd_abort(c("x" = "Sheet {.arg {sheet_name}} is empty."), call = call)
@@ -583,7 +619,7 @@ read_and_clean_sheet <- function(path, sheet_name, sheet_ids, start_year = NULL,
   return(data)
 }
 
-#' Merge Data Frames
+#' Merge data frames
 #'
 #' `merge_data` merges a list of cleaned data frames by performing a series of
 #' left joins using specified key columns. It ensures a consistent data structure
@@ -641,9 +677,8 @@ merge_data <- function(.data, sheet_names, sheet_ids, call = caller_env()) {
 
 #' Parse free-text month values into a standardized, ordered month factor
 #'
-#' Shared by `standardize_data()` (post-merge) and the wizard's own pre-merge
-#' `check_month_validity_presheet()` (`0_data_quality_checks.R`) -- one place for the
-#' French/Portuguese/English/abbreviation matching so the two can never drift apart.
+#' Recognizes English, French and Portuguese month names and their abbreviations. Used by
+#' `load_excel_parts()` and `standardize_data()`, so both read months the same way.
 #'
 #' @param month Character vector of raw month values.
 #' @return An ordered `factor(levels = month.name)`; `NA` for anything unrecognized.
@@ -667,7 +702,7 @@ parse_month_name <- function(month) {
   )
 }
 
-#' Data Preparation
+#' Data preparation
 #'
 #' `standardize_data` standardizes and cleans a merged data frame by performing
 #' multiple transformations such as column standardization, reporting rate
@@ -689,7 +724,7 @@ parse_month_name <- function(month) {
 #'    `_reporting_rate`, computes the reporting rate as `(received / expected) * 100`
 #'    if missing and if `expected` is not zero.
 #' 4. **Rounding Numeric Columns**: Rounds selected numeric columns, including
-#'    those ending in `_rate`, to one decimal place.
+#'    those ending in `_rate`, to whole numbers.
 #' 5. **Population Growth Rate**: Calculates annual population growth rate per
 #'    district, storing the mean growth rate in `pop_growth_rate`.
 #' 6. **Dropping Columns**: Drops intermediary columns such as `_reporting_received`
@@ -819,7 +854,7 @@ standardize_data <- function(.data, call = caller_env()) {
         }
       ),
 
-      # Round selected columns and all columns ending with "_rate" to one decimal place
+      # Round selected columns and all columns ending with "_rate" to whole numbers
       across(
         any_of(c(
           ends_with("_rate"), "total_population", "population_under_5years",
@@ -859,7 +894,7 @@ standardize_data <- function(.data, call = caller_env()) {
   return(data)
 }
 
-#' Replace Special Characters in Text
+#' Replace special characters in text
 #'
 #' `replace_special_chars` replaces special characters in a text string with
 #' their standard ASCII equivalents, helping to normalize text containing
@@ -899,34 +934,35 @@ replace_special_chars <- function(text) {
 }
 
 
-#' Match Country to Closest Dataset Entry
+#' Find the country a name refers to
 #'
-#' This function matches a given country name to the closest match in a dataset,
-#' considering both the `country` and `alternate` name columns. It utilizes the
-#' Jaro-Winkler string distance method to find the best match.
+#' Looks a country name up among the countries the package has reference data for (the
+#' `countries` table) and returns that country. Stops with an error when the name is not one of
+#' them, or could be more than one.
 #'
-#' @param country A character string representing the country name to match.
-#' @param call Caller Enviroment
+#' @details
+#' Names are compared without regard to case, accents, punctuation or words such as "Republic
+#' of". A name is matched, in this order:
 #'
-#' @return A data frame containing the closest match with columns `country`,
-#' `countrycode`, `iso3`, and `iso2`. If no close match is found, a suggestion
-#' string is returned.
+#' 1. to a country it names exactly: one of the country's names in the table (in English,
+#'    French or Portuguese), a name it is also known by (`.cd_country_aliases`), or its ISO3
+#'    code;
+#' 2. to the one country whose name starts with it, as whole words ("Burkina" for Burkina Faso);
+#' 3. to the one country it is a misspelling of: one letter wrong, missing, added or swapped
+#'    with its neighbour in a name of five letters or more, two in a name of nine or more.
 #'
-#' @details The function calculates string distances using the Jaro-Winkler method
-#' for the `country` and `alternate` columns in the `countries` dataset. It selects
-#' the closest match based on the minimum distance values and checks if the match
-#' is within a predefined threshold (0.25).
+#' A name that is another country's (`.cd_country_others`: Sudan, Republic of the Congo) is not
+#' matched, and neither is a misspelling that fits two countries equally (Nigeria and Niger).
+#' The error then names the countries it is closest to.
 #'
-#' @examples
-#' # Example usage:
-#' # Assuming `countries` is a data frame with columns `country`, `alternate`, `countrycode`, `iso3`, and `iso2`.
-#' matched_result <- match_country("USA")
+#' @param country_name A string. The country's name or ISO3 code.
+#' @param call The environment of the calling function, for the error message.
+#'
+#' @return A one-row data frame of the `countries` table with the columns `alternate` (the
+#'   country's name as the package shows it) and `iso3`.
 #'
 #' @noRd
 match_country <- function(country_name, call = caller_call()) {
-  country = alternate = country_dist = alternate_dist = total_dist = countrycode =
-    iso3 = iso2 = NULL
-
   check_required(country_name)
 
   if (!is_scalar_character(country_name)) {
@@ -935,64 +971,120 @@ match_country <- function(country_name, call = caller_call()) {
     )
   }
 
-  # Check if input is non-empty and valid
-  if (!is.character(country_name) || nchar(country_name) < 3) {
+  key <- .cd_country_key(country_name)
+  if (is.na(key) || nchar(key) < 3) {
     cd_abort(
       c("x" = "Please provide a valid country name as a string.")
     )
   }
 
-  # Calculate string distances for both 'country' and 'alternate' columns
-  distances <- countries %>%
-    mutate(
-      country_dist = map2_dbl(
-        tolower(country_name),
-        tolower(country),
-        ~ {
-          # Split the compound country name on the pipe
-          parts <- str_split(.y, "\\|")[[1]] %>% trimws()
-          # Compute the distance from the candidate to each variant and take the minimum
-          min(stringdist::stringdist(.x, parts, method = "jw"))
-        }
-      )
-    )
-
-  # Select the single closest match based on combined distance
-  closest_match <- distances %>%
-    arrange(country_dist) %>%
-    slice(1) # Always take the first row after sorting by total distance
-
-  # Get the minimum distance values for 'country' and 'alternate' columns
-  min_country_dist <- min(closest_match$country_dist, na.rm = TRUE)
-
-  # Check if the closest match is within acceptable thresholds
-  if (min_country_dist < 0.25) {
-    return(closest_match %>% select(alternate, iso3))
-  } else {
-    suggestion <- closest_match$alternate[1]
-    cd_abort(
-      c(
-        "x" = "The country in the document is not supported",
-        "!" = paste("Did you mean:", suggestion, "?")
-      )
-    )
+  names_of <- .cd_country_names()
+  found <- character()
+  if (!.cd_country_plain(country_name) %in% .cd_country_plain(.cd_country_others)) {
+    # 1. the name itself
+    found <- unique(names_of$iso3[names_of$key == key])
+    # 2. the first words of one country's name
+    if (length(found) != 1) {
+      found <- unique(names_of$iso3[startsWith(names_of$key, paste0(key, " "))])
+    }
+    # 3. a misspelling: the longer the name, the more letters may be wrong
+    if (length(found) != 1) {
+      allowed <- if (nchar(key) >= 9) 2 else if (nchar(key) >= 5) 1 else 0
+      edits <- stringdist::stringdist(key, names_of$key, method = "osa")
+      closest <- tapply(edits, names_of$iso3, min)
+      found <- names(closest)[closest <= allowed & closest == min(closest)]
+    }
   }
+  if (length(found) == 1) {
+    return(countries[countries$iso3 == found, c("alternate", "iso3")])
+  }
+
+  # Not matched: the countries the name is closest to, when it is close to any
+  close <- found
+  if (!length(close)) {
+    distance <- tapply(stringdist::stringdist(key, names_of$key, method = "jw", p = 0.1), names_of$iso3, min)
+    close <- names(distance)[distance < 0.15 & distance == min(distance)]
+  }
+  suggestion <- countries$alternate[match(close, countries$iso3)]
+  cd_abort(
+    c(
+      "x" = "The country {.val {country_name}} is not one of the {nrow(countries)} countries with reference data.",
+      if (length(suggestion)) c("!" = "Did you mean {.or {.val {suggestion}}}?")
+    )
+  )
 }
 
-#' Best-effort, non-aborting country resolution from a raw Admin sheet
+# Names a country is also written as, beside those in the `countries` table (by ISO3 code).
+.cd_country_aliases <- list(
+  CAF = c("RCA", "Centrafrique"),
+  CIV = c("Ivory Coast"),
+  COD = c("RDC", "RD Congo", "DR Congo", "Congo DRC", "Congo Kinshasa", "R\u00e9publique D\u00e9mocratique du Congo"),
+  CPV = c("Cape Verde", "Cap Vert"),
+  STP = c("Sao Tome")
+)
+
+# Names of countries without reference data that would otherwise be taken for one that has: the table gives
+# "Sudan" and "Congo" as names of South Sudan and of the Democratic Republic of the Congo.
+.cd_country_others <- c("Sudan", "Republic of the Sudan", "Republic of the Congo", "Republic of Congo", "Congo Republic",
+                        "Congo Brazzaville", "Equatorial Guinea", "Papua New Guinea", "French Guiana")
+
+# A name as it is compared: without case, accents or punctuation.
+.cd_country_plain <- function(x) {
+  x <- tolower(stringi::stri_trans_general(as.character(x), "Latin-ASCII"))
+  trimws(gsub("[^a-z0-9]+", " ", x))
+}
+
+# ... and without the words that say what kind of state it is, when something is left without them.
+.cd_country_key <- function(x) {
+  plain <- .cd_country_plain(x)
+  short <- trimws(gsub(" +", " ", gsub("\\b(republic|republique|republica|of|the|de|du|da|la|federal|kingdom|islamic|state)\\b", " ", plain)))
+  ifelse(nzchar(short), short, plain)
+}
+
+# Every name of every country in the `countries` table, as compared: `iso3`, `key`.
+.cd_country_names <- function() {
+  rows <- lapply(seq_len(nrow(countries)), function(i) {
+    iso3 <- countries$iso3[i]
+    names <- c(strsplit(countries$country[i], "|", fixed = TRUE)[[1]], countries$alternate[i], iso3, .cd_country_aliases[[iso3]])
+    # a name the table gives a country that is another country's own is left out ("Sudan"); "Congo" on its own
+    # stays the Democratic Republic's, as the table has it
+    names <- names[!.cd_country_plain(names) %in% .cd_country_plain(.cd_country_others)]
+    data.frame(iso3 = iso3, key = unique(.cd_country_key(names)))
+  })
+  names_of <- do.call(rbind, rows)
+  names_of[!is.na(names_of$key) & nzchar(names_of$key), ]
+}
+
+
+#' Find the country of an Admin sheet without raising an error
 #'
-#' A non-aborting wrapper around `match_country()`, used by the Load Data wizard (apps/rmncah) so
-#' `CacheConnection$country`/`$country_iso` have something real to return before Finish -- see those
-#' active bindings' own comments (`CacheConnection-class.R`) for why this is deliberately separate
-#' from `check_single_country()`'s real validation, which still runs (non-blockingly, at the Data
-#' Quality step) regardless: this function's only job is not leaving `country`/`country_iso` `NULL`
-#' for the entire wizard just because `match_country()` would abort on anything ambiguous.
+#' Looks up the country named in the Admin sheet and returns its name and ISO3 code. Unlike
+#' the lookup in [new_countdown()], it does not stop with an error when the country cannot be
+#' resolved. Use it to show the country before the sheets are merged.
 #'
-#' @param admin_data The raw Admin sheet (`parts[[admin_sheet_name]]`).
-#' @return `list(country, country_iso)` -- both `NULL` if the admin sheet's own `country` column
-#'   doesn't resolve to exactly one confident match.
+#' @details
+#' The country is resolved only when the `country` column holds exactly one distinct value,
+#' ignoring missing values, and that value is close to a name in the package's list of
+#' countries. This function does not validate the sheet. Use [check_single_country()] and
+#' [check_country_recognized()] for that.
+#'
+#' @param admin_data A data frame. The cleaned Admin sheet, before the sheets are merged.
+#' @return A list with two elements: `country` (the country's name as the package spells it)
+#'   and `country_iso` (its ISO3 code), both strings. Both are `NULL` if the sheet has no
+#'   `country` column or the country cannot be resolved.
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' sheets <- load_excel_parts(path)
+#' admin <- sheets$parts[[sheets$admin_sheet_name]]
+#' resolve_country_best_effort(admin)
+#'
+#' # Nothing is returned, and no error raised, for a country that is not recognized
+#' admin$country <- "Atlantis"
+#' resolve_country_best_effort(admin)
 #' @export
 resolve_country_best_effort <- function(admin_data) {
+  # The Load Data wizard needs a country and ISO code to show before the merge. match_country()
+  # aborts on anything ambiguous, which would leave both NULL for the whole wizard.
   if (!"country" %in% colnames(admin_data)) {
     return(list(country = NULL, country_iso = NULL))
   }
@@ -1008,26 +1100,32 @@ resolve_country_best_effort <- function(admin_data) {
   list(country = result$alternate, country_iso = as.character(result$iso3))
 }
 
-#' Generate a simple, stable-within-one-load synthetic key per admin-1 region
+#' Generate a key for each admin level 1 unit
 #'
-#' The Load Data wizard's own Finish step (Phase 3 of the wizard redesign, apps/rmncah) needs a key
-#' that consistently identifies the same admin-1 region across three separately-built tables
-#' (`countdown_data`, `survey_mapping`, `map_mapping`) -- there's no real ISO-3166-2 code available
-#' for sub-national regions in general, so this is intentionally arbitrary, not a real-world
-#' identifier: `sort(unique(...))` the dataset's own admin-1 names and number them off. Applied once,
-#' from one canonical source (the dataset's own `adminlevel_1` values), then joined onto the other
-#' two tables by name -- consistency across all three is structural (the same join key everywhere),
-#' not something that can drift.
+#' Gives each distinct admin level 1 name a short key, so that the same unit can be identified
+#' in several tables (for example the dataset, the survey mapping and the map mapping). Generate
+#' the keys once from the dataset's names, then join them to the other tables by name.
 #'
-#' Deliberately NOT stable across separate future re-uploads of the same country's data (e.g. next
-#' month's file) -- purely alphabetical, regenerated fresh every time this is called. Nothing
-#' downstream needs cross-session stability for this key today; if that's ever needed, it's a
-#' materially different feature (a persisted, append-only name-to-key lookup table), not this.
+#' @details
+#' The keys are arbitrary: the distinct names are sorted and numbered in that order. They are
+#' not standard codes, and they are not stable between datasets. A dataset with a different set
+#' of names can give a different key to the same unit. Missing names get no key.
 #'
-#' @param admin1_names Character vector of admin-1 names (typically `countdown_data$adminlevel_1`).
-#' @return A tibble with one row per distinct name: `adminlevel_1`, `admin1_key` (`"A1-001"`, ...).
+#' @param admin1_names A character vector of admin level 1 names, usually the `adminlevel_1`
+#'   column of the dataset.
+#' @return A tibble with one row per distinct name, sorted by name, and columns `adminlevel_1`
+#'   (the name) and `admin1_key` (the key: `"A1-001"`, `"A1-002"` and so on).
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' data <- load_data(path)
+#' generate_admin1_keys(data$adminlevel_1)
+#'
+#' # Repeated and missing names get no key of their own
+#' generate_admin1_keys(c("Western", "Coast", "Western", NA))
 #' @export
 generate_admin1_keys <- function(admin1_names) {
+  # Sub-national units have no standard code available in general, so the key is made up here.
+  # Nothing needs it to be stable across uploads. That would take a saved name-to-key table.
   distinct_names <- sort(unique(stats::na.omit(admin1_names)))
   tibble::tibble(
     adminlevel_1 = distinct_names,

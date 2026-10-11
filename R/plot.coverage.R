@@ -1,25 +1,43 @@
-#' Plot National Coverage Data
+#' Plot national coverage data
 #'
-#' This function generates a line plot to visualize immunization coverage
+#' Generates a line plot to visualize immunization coverage
 #' data across years, allowing comparison between different estimates (e.g., DHIS2
 #' estimates, WUENIC estimates, and Survey estimates).
 #'
 #' @param x A data frame of type `cd_coverage_filtered`, containing year-wise
 #'   coverage data for the specified indicator.
-#' @param title (Optional) A scalar character string to override the default plot title. Defaults to `NULL`.
-#' @param x_axis (Optional) A scalar character string to override the default x-axis label. Defaults to `NULL`.
-#' @param y_axis (Optional) A scalar character string to override the default y-axis label. Defaults to `NULL`.
-#' @param caption (Optional) A scalar character string to override the default denominator caption. Defaults to `NULL`.
-#' @param labels (Optional) A named list or vector to override the legend keys for translation.
+#' @inheritParams cd_plot_arguments
+#' @param legend_labels (Optional) A named list or vector to override the legend keys for translation.
 #'   Valid keys: `dhis2`, `wuenic`, `survey`, `ci`. Defaults to `NULL`.
-#' @param ... Chart options by name (see [cd_chart_options()]); other arguments are ignored.
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes the user changed. Applied last, so it wins over
-#'   `title` and the other arguments above. Any chart option can also be given by name in `...`.
 #'
 #' @return A `ggplot` object displaying a line plot of the coverage data.
 #'
+#' @examples
+#' cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#' cache$set_national_estimates(list(sbr = 0.02))
+#' cache$adjust_data()
+#' coverage <- cache$get_filtered_coverage("penta3", "national")
+#'
+#' plot(coverage)
+#' plot(coverage, title = "Penta3 coverage, Kenya", y_title = "Coverage (%)",
+#'      legend_labels = list(dhis2 = "Facility data", survey = "Household surveys"))
+#'
 #' @export
-plot.cd_coverage_filtered <- function(x, title = NULL, x_axis = NULL, y_axis = NULL, caption = NULL, labels = NULL, ..., options = NULL) {
+plot.cd_coverage_filtered <- function(x,
+                                      title = NULL,
+                                      subtitle = NULL,
+                                      caption = NULL,
+                                      x_title = NULL,
+                                      y_title = NULL,
+                                      legend_title = NULL,
+                                      ...,
+                                      legend_labels = NULL,
+                                      options = NULL) {
+  .cd_draw(.plot_cd_coverage_filtered_impl, x, list(legend_labels = legend_labels), ..., options = options)
+}
+
+.plot_cd_coverage_filtered_impl <- function(x, title = NULL, x_title = NULL, y_title = NULL, caption = NULL, legend_labels = NULL, ...) {
+  labels <- legend_labels
   estimates = year = value = `Survey estimates` = `DHIS2 estimate` = `WUENIC estimates` =
     `95% CI LL` = `95% CI UL` = NULL
 
@@ -33,16 +51,16 @@ plot.cd_coverage_filtered <- function(x, title = NULL, x_axis = NULL, y_axis = N
   }
 
   if (!is.null(title) && !is_scalar_character(title)) {
-    cd_abort("x" = "{.arg title} must be a scalar character or NULL.")
+    cd_abort(c("x" = "{.arg title} must be a scalar character or NULL."))
   }
-  if (!is.null(x_axis) && !is_scalar_character(x_axis)) {
-    cd_abort("x" = "{.arg x_axis} must be a scalar character or NULL.")
+  if (!is.null(x_title) && !is_scalar_character(x_title)) {
+    cd_abort(c("x" = "{.arg x_title} must be a scalar character or NULL."))
   }
-  if (!is.null(y_axis) && !is_scalar_character(y_axis)) {
-    cd_abort("x" = "{.arg y_axis} must be a scalar character or NULL.")
+  if (!is.null(y_title) && !is_scalar_character(y_title)) {
+    cd_abort(c("x" = "{.arg y_title} must be a scalar character or NULL."))
   }
   if (!is.null(caption) && !is_scalar_character(caption)) {
-    cd_abort("x" = "{.arg caption} must be a scalar character or NULL.")
+    cd_abort(c("x" = "{.arg caption} must be a scalar character or NULL."))
   }
 
   # 1. Resolve Final Plot Text
@@ -54,8 +72,8 @@ plot.cd_coverage_filtered <- function(x, title = NULL, x_axis = NULL, y_axis = N
   }
 
   final_title <- title %||% default_title
-  final_x_axis <- x_axis %||% "Year"
-  final_y_axis <- y_axis %||% "Coverage (%)"
+  final_x_axis <- x_title %||% "Year"
+  final_y_axis <- y_title %||% "Coverage (%)"
   final_caption <- caption %||% paste0("Denominators derived from ", denominator, " estimates")
 
   # 2. Setup Legend Labels for Translation
@@ -134,17 +152,17 @@ plot.cd_coverage_filtered <- function(x, title = NULL, x_axis = NULL, y_axis = N
     scale_color_manual(values = legend_colors, name = NULL) +
     cd_plot_theme(
       title = final_title,
-      x_axis = final_x_axis,
-      y_axis = final_y_axis,
+      x_title = final_x_axis,
+      y_title = final_y_axis,
       caption = final_caption
     ) +
     cd_dashed_grid_theme()
 
-  cd_finish_plot(plot, options, ..., .source = x)
+  plot
 }
 
 
-#' Plot Coverage by Region
+#' Plot coverage by region
 #'
 #' Generates a bar chart comparing indicator coverage across regions, highlighting
 #' a specific region and categorizing performance as lower, average, or higher.
@@ -154,24 +172,47 @@ plot.cd_coverage_filtered <- function(x, title = NULL, x_axis = NULL, y_axis = N
 #' @param denominator Character string specifying the denominator ('penta1', 'anc1', 'dhis2', 'penta1derived', 'anc1derived').
 #' @param year Integer representing the year to plot.
 #' @param region Character string for the specific region to highlight in yellow.
-#' @param title (Optional) Scalar character for a custom plot title.
-#' @param x_axis (Optional) Scalar character for a custom x-axis label.
-#' @param y_axis (Optional) Scalar character for a custom y-axis label.
-#' @param caption (Optional) Scalar character for a custom plot caption.
-#' @param labels (Optional) Named list to override the default category labels
+#' @inheritParams cd_plot_arguments
+#' @param legend_labels (Optional) Named list to override the default category labels
 #'   (e.g., `list(lower = "Low", average = "Avg", higher = "High")`).
-#' @param ... Additional arguments.
 #'
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-#'   arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in `...`.
+#'
+#' @return A `ggplot` object with the chart options applied: one bar per unit for the selected year,
+#'   ordered by coverage and coloured by category (the lower, middle and upper third of the values).
+#'
+#' @examples
+#' cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#' cache$set_national_estimates(list(sbr = 0.02))
+#' cache$adjust_data()
+#' coverage <- cache$calculate_coverage("adminlevel_1")
+#'
+#' # `region` is the unit drawn in yellow
+#' plot(coverage, indicator = "penta3", denominator = "penta1", year = 2023, region = "Nairobi")
+#' plot(coverage, indicator = "penta3", denominator = "penta1", year = 2023, region = "Nairobi",
+#'      title = "Penta3 coverage by region, 2023", y_title = "Coverage (%)",
+#'      legend_labels = list(lower = "Lowest third", average = "Middle third", higher = "Highest third"))
+#'
 #' @export
-plot.cd_coverage <- function(x, indicator = NULL, denominator = NULL, year = NULL, region = NULL,
-                             title = NULL, x_axis = NULL, y_axis = NULL, caption = NULL, labels = NULL, ..., options = NULL) {
-  cd_finish_plot(.plot_cd_coverage_impl(x, indicator = indicator, denominator = denominator, year = year, region = region, title = title, x_axis = x_axis, y_axis = y_axis, caption = caption, labels = labels, ...), options, ..., .source = x)
+plot.cd_coverage <- function(x,
+                             indicator = NULL,
+                             denominator = NULL,
+                             year = NULL,
+                             region = NULL,
+                             title = NULL,
+                             subtitle = NULL,
+                             caption = NULL,
+                             x_title = NULL,
+                             y_title = NULL,
+                             legend_title = NULL,
+                             ...,
+                             legend_labels = NULL,
+                             options = NULL) {
+  .cd_draw(.plot_cd_coverage_impl, x, list(indicator = indicator, denominator = denominator, year = year, region = region, legend_labels = legend_labels), ..., options = options)
 }
 
 .plot_cd_coverage_impl <- function(x, indicator = NULL, denominator = NULL, year = NULL, region = NULL,
-                             title = NULL, x_axis = NULL, y_axis = NULL, caption = NULL, labels = NULL, ...) {
+                             title = NULL, x_title = NULL, y_title = NULL, caption = NULL, legend_labels = NULL, ...) {
+  labels <- legend_labels
 
   # 1. Input Validation
   check_required(region)
@@ -183,11 +224,11 @@ plot.cd_coverage <- function(x, indicator = NULL, denominator = NULL, year = NUL
   if (!is.null(title) && !is_scalar_character(title)) {
     cd_abort(c("x" = "{.arg title} must be a scalar character or NULL."))
   }
-  if (!is.null(x_axis) && !is_scalar_character(x_axis)) {
-    cd_abort(c("x" = "{.arg x_axis} must be a scalar character or NULL."))
+  if (!is.null(x_title) && !is_scalar_character(x_title)) {
+    cd_abort(c("x" = "{.arg x_title} must be a scalar character or NULL."))
   }
-  if (!is.null(y_axis) && !is_scalar_character(y_axis)) {
-    cd_abort(c("x" = "{.arg y_axis} must be a scalar character or NULL."))
+  if (!is.null(y_title) && !is_scalar_character(y_title)) {
+    cd_abort(c("x" = "{.arg y_title} must be a scalar character or NULL."))
   }
   if (!is.null(caption) && !is_scalar_character(caption)) {
     cd_abort(c("x" = "{.arg caption} must be a scalar character or NULL."))
@@ -216,8 +257,8 @@ plot.cd_coverage <- function(x, indicator = NULL, denominator = NULL, year = NUL
   default_title <- str_glue("{indicator_pretty} immunization, by region, {selected_year} (HMIS)")
 
   final_title <- title %||% default_title
-  final_x_axis <- x_axis %||% NULL
-  final_y_axis <- y_axis %||% NULL
+  final_x_axis <- x_title %||% NULL
+  final_y_axis <- y_title %||% NULL
   final_caption <- caption %||% NULL
 
   # 3. Map Colors to the Dynamic Labels
@@ -284,8 +325,8 @@ plot.cd_coverage <- function(x, indicator = NULL, denominator = NULL, year = NUL
     scale_y_continuous(limits = c(0, 105), expand = c(0, 0)) +
     cd_plot_theme(
       title = final_title,
-      x_axis = final_x_axis,
-      y_axis = final_y_axis,
+      x_title = final_x_axis,
+      y_title = final_y_axis,
       caption = final_caption
     ) +
     theme(

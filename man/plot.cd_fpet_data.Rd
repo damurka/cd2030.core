@@ -2,15 +2,17 @@
 % Please edit documentation in R/3_generate_fpet_summary.R
 \name{plot.cd_fpet_data}
 \alias{plot.cd_fpet_data}
-\title{Plot Family Planning Estimation Tool (FPET) Data}
+\title{Plot family planning estimation tool (FPET) data}
 \usage{
 \method{plot}{cd_fpet_data}(
   x,
-  title = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
-  caption = NULL,
   indicator_labels = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
   options = NULL
 )
@@ -18,22 +20,43 @@
 \arguments{
 \item{x}{An object of class \code{cd_fpet_data}.}
 
-\item{title}{(Optional) Custom translated title.}
-
-\item{x_axis}{(Optional) Custom translated x-axis label.}
-
-\item{y_axis}{(Optional) Custom translated y-axis label.}
-
-\item{caption}{(Optional) Custom translated caption.}
-
 \item{indicator_labels}{(Optional) A named list mapping raw indicator names to translated legend labels.}
 
-\item{...}{Additional arguments.}
+\item{title}{The chart's title.}
 
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{subtitle}{The line under the title.}
+
+\item{caption}{The note under the chart.}
+
+\item{x_title}{The title of the horizontal axis.}
+
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
+}
+\value{
+A \code{ggplot} object with the chart options applied: one line per indicator by year, with a
+shaded band for the credible interval.
 }
 \description{
 Generates a line and ribbon plot for FPET indicators (e.g., mCPR, Demand Satisfied)
 displaying median estimates and 95\% credible intervals.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+cache <- load_cache_data(path)
+fpet <- cache$fpet_data
+
+plot(fpet)
+plot(
+  fpet,
+  indicator_labels = list(prevalence = "Modern contraceptive prevalence", demand = "Demand satisfied"),
+  title = "Family planning in Kenya"
+)
 }

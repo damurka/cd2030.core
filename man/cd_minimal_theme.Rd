@@ -22,7 +22,7 @@ vertical major lines, for horizontal bars and dot plots), \code{"y"} (only the h
 A ggplot2 theme.
 }
 \description{
-\code{\link[ggplot2:ggtheme]{ggplot2::theme_minimal()}} with a choice of grid lines, for the apps' light charts (cd2030.pooled's charts, the
+\code{\link[ggplot2:theme_minimal]{ggplot2::theme_minimal()}} with a choice of grid lines, for the apps' light charts (cd2030.pooled's charts, the
 subnational coverage dot plot and heat map).
 }
 \examples{

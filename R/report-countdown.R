@@ -13,7 +13,6 @@
 .rb_in <- function(x, lang = "en") datasuite.ui::report_in(x, lang)
 .rb_heading <- function(text, level = 1) datasuite.ui::report_heading(text, level)
 .rb_text <- function(text) datasuite.ui::report_paragraph(text)
-.rb_note <- function(text) datasuite.ui::report_note(text)
 .rb_break <- function() datasuite.ui::report_page_break()
 .rb_chart <- function(...) datasuite.ui::report_chart(...)
 .rb_table <- function(kind, ...) datasuite.ui::report_table(kind, ...)
@@ -35,6 +34,13 @@
 #'   a character vector, or `NULL` when the kind has no indicator), `levels`, `variants` (named character vector or
 #'   `NULL`), `year` (whether a year is chosen), `regional` (whether it is drawn for one region) and `groups` (the
 #'   indicator groups it is for).
+#' @examples
+#' kinds <- report_block_kinds("rmncah")
+#' head(names(kinds))
+#' str(kinds$reporting_rate)
+#'
+#' # the kinds the vaccine group does not have
+#' setdiff(names(kinds), names(report_block_kinds("vaccine")))
 #' @export
 report_block_kinds <- function(group = get_selected_group()) {
   kinds <- .rb_all_kinds()
@@ -141,10 +147,10 @@ report_block_kinds <- function(group = get_selected_group()) {
       plot(
         cache$get_filtered_coverage(ind, level, region = region),
         title = paste(where, name, t("lbl_rb_coverage_estimates", "coverage estimates")),
-        x_axis = t("title_global_year", "Year"),
-        y_axis = paste0(name, " (%)"),
+        x_title = t("title_global_year", "Year"),
+        y_title = paste0(name, " (%)"),
         caption = paste0(t("lbl_rb_denominators_from", "Denominators derived from"), " ", denom),
-        labels = coverage_labels
+        legend_labels = coverage_labels
       )
     },
     continuum = plot(
@@ -156,7 +162,7 @@ report_block_kinds <- function(group = get_selected_group()) {
       },
       title = t("title_cov_profile", "Coverage profile"),
       subtitle = t("subtitle_cov_profile", ""),
-      y_axis = t("opt_coverage", "Coverage (%)"),
+      y_title = t("opt_coverage", "Coverage (%)"),
       source_labels = list(facility = t("lbl_src_facility", "Facility (DHIS2)"), survey = t("lbl_src_survey", "Survey"),
                            wuenic = t("lbl_src_wuenic", "WUENIC"))
     ),
@@ -164,7 +170,7 @@ report_block_kinds <- function(group = get_selected_group()) {
       ind <- if (ind %in% c("anc4", "instlivebirths", "vaccine", "dropout")) ind else "anc4"
       plot(cache$get_filtered_threshold(ind, "district"),
            title = paste(.rb_ind_name(i18n, ind), t("lbl_rb_districts_target", "- districts reaching the target")),
-           y_axis = t("lbl_axis_y_pct_subnat", "Districts (%)"), legend_title = t("title_global_year", "Year"))
+           y_title = t("lbl_axis_y_pct_subnat", "Districts (%)"), legend_title = t("title_global_year", "Year"))
     },
     coverage_table = .rb_coverage_table(cache, i18n),
     inequality = .rb_draw_ni_inequality(cache, b, i18n),
@@ -186,7 +192,7 @@ report_block_kinds <- function(group = get_selected_group()) {
       title <- gsub("{year}", year, gsub("{indicator}", name, title, fixed = TRUE), fixed = TRUE)
       plot(cache$calculate_coverage("adminlevel_1"), ind, denominator = cache$get_denominator(ind), year = year,
            region = region, title = title,
-           labels = list(lower = t("plt_regcov_lower", "Lower than average"), average = t("plt_regcov_average", "Average"),
+           legend_labels = list(lower = t("plt_regcov_lower", "Lower than average"), average = t("plt_regcov_average", "Average"),
                          higher = t("plt_regcov_higher", "Higher than average")))
     },
     district_table = .rb_district_table(cache, region, b$year %||% latest, i18n),
@@ -204,21 +210,21 @@ report_block_kinds <- function(group = get_selected_group()) {
     consistency = .rb_draw_dq_consistency(cache, b, i18n),
     service_utilization = {
       v <- b$variant %||% "opd"
-      su_labels <- switch(
+      su_text <- switch(
         v,
-        opd = list(title = t("plt_su_title_opd", "OPD per person per year"), y_axis = t("plt_su_ylab_opd", "OPD Utilization Trends"),
-                   y1 = t("plt_su_under5", "Under-5"), y2 = t("plt_su_all_ages", "All ages")),
+        opd = list(title = t("plt_su_title_opd", "OPD per person per year"), y_title = t("plt_su_ylab_opd", "OPD Utilization Trends")),
         ipd = list(title = t("plt_su_title_ipd", "IPD admissions"),
-                   y_axis = t("plt_su_ylab_ipd", "Mean # of IPD admissions per 100 persons"),
-                   y1 = t("plt_su_under5", "Under-5"), y2 = t("plt_su_all_ages", "All ages")),
+                   y_title = t("plt_su_ylab_ipd", "Mean # of IPD admissions per 100 persons")),
         list()
       )
-      su_labels$x_axis <- t("title_global_year", "Year")
-      plot(cache$filter_service_utilization("national", v), labels = su_labels)
+      su_series <- if (v %in% c("opd", "ipd")) list(y1 = t("plt_su_under5", "Under-5"), y2 = t("plt_su_all_ages", "All ages"))
+      plot(cache$filter_service_utilization("national", v), title = su_text$title, y_title = su_text$y_title,
+           x_title = t("title_global_year", "Year"), legend_labels = su_series)
     },
-    mch_index = plot(cache$generate_admin1_mch_curative_index(), labels = list(
+    mch_index = plot(cache$generate_admin1_mch_curative_index(),
       title = t("lbl_mch_curative_title", "Preventive and curative care"),
-      x_axis = t("lbl_mch_prev_index_x", "Preventive index"), y_axis = t("lbl_curative_index_y", "Curative index"),
+      x_title = t("lbl_mch_prev_index_x", "Preventive index"), y_title = t("lbl_curative_index_y", "Curative index"),
+      quad_labels = list(
       q_top_left = t("lbl_quad_low_prev_high_cur", "Low preventive, high curative"),
       q_top_right = t("lbl_quad_high_prev_high_cur", "High preventive, high curative"),
       q_bottom_left = t("lbl_quad_low_prev_low_cur", "Low preventive, low curative"),
@@ -231,18 +237,18 @@ report_block_kinds <- function(group = get_selected_group()) {
       map_labels <- switch(
         v,
         mmr_inst = list(title = t("plt_mort_map_title_mmr_inst", "Institutional MMR by Region"),
-                        legend = t("plt_mort_map_legend_mmr_inst", "Institutional MMR per 100,000 livebirths")),
+                        legend_title = t("plt_mort_map_legend_mmr_inst", "Institutional MMR per 100,000 livebirths")),
         sbr_inst = list(title = t("plt_mort_map_title_sbr_inst", "Institutional SBR by Region"),
-                        legend = t("plt_mort_map_legend_sbr_inst", "Institutional SBR per 1000")),
+                        legend_title = t("plt_mort_map_legend_sbr_inst", "Institutional SBR per 1000")),
         NULL
       )
-      plot(d, labels = map_labels)
+      plot(d, title = map_labels$title, legend_title = map_labels$legend_title)
     },
     mortality_plausibility = plot_mortality_plausibility(
       cache$mortality_summary, indicator = "ratio_md_sb",
       title = t("title_ratio_md_sb", "Stillbirths per maternal death"),
-      y_axis = t("ylab_ratio_md_sb", "Stillbirths per maternal death"), x_axis = t("title_global_year", "Year"),
-      note = t("note_ratio_md_sb", ""),
+      y_title = t("ylab_ratio_md_sb", "Stillbirths per maternal death"), x_title = t("title_global_year", "Year"),
+      caption = t("note_ratio_md_sb", ""),
       legend_labels = list(median = t("lbl_median", "Median"), plausible = t("lbl_plausible", "Plausible range"))
     ),
     mortality_ratio = {
@@ -251,37 +257,37 @@ report_block_kinds <- function(group = get_selected_group()) {
       un <- function(key, fallback) gsub("{type}", type, t(key, fallback), fixed = TRUE)
       ratio_labels <- if (v == "sbr") {
         list(title = t("plt_mort_compl_title_sbr", "Completeness of facility stillbirth reporting (%), based on UN stillbirth estimates and community to institutional ratio"),
-             x_axis = t("plt_mort_compl_x_sbr", "Ratio Community SBR to Institutional SBR"),
-             y_axis = t("plt_mort_compl_y_sbr", "Completeness stillbirth reporting by facilities (%)"))
+             x_title = t("plt_mort_compl_x_sbr", "Ratio Community SBR to Institutional SBR"),
+             y_title = t("plt_mort_compl_y_sbr", "Completeness stillbirth reporting by facilities (%)"))
       } else {
         list(title = t("plt_mort_compl_title_mmr", "Completeness of facility maternal death reporting (%), based on UN MMR estimates and community to institutional ratio"),
-             x_axis = t("plt_mort_compl_x_mmr", "Ratio Community MMR to Institutional MMR"),
-             y_axis = t("plt_mort_compl_y_mmr", "Completeness maternal deaths reporting by facilities (%)"))
+             x_title = t("plt_mort_compl_x_mmr", "Ratio Community MMR to Institutional MMR"),
+             y_title = t("plt_mort_compl_y_mmr", "Completeness maternal deaths reporting by facilities (%)"))
       }
-      ratio_labels$lower <- un("plt_mort_un_lower", "UN {type} lower bound")
-      ratio_labels$best <- un("plt_mort_un_best", "UN {type} best estimate")
-      ratio_labels$upper <- un("plt_mort_un_upper", "UN {type} upper bound")
-      plot(cache$summarise_completeness_ratio(v), labels = ratio_labels)
+      plot(cache$summarise_completeness_ratio(v), title = ratio_labels$title, x_title = ratio_labels$x_title, y_title = ratio_labels$y_title,
+           legend_labels = list(lower = un("plt_mort_un_lower", "UN {type} lower bound"), best = un("plt_mort_un_best", "UN {type} best estimate"),
+                                upper = un("plt_mort_un_upper", "UN {type} upper bound")))
     },
     health_system_table = .rb_health_system_table(cache, latest, i18n),
     health_system_region = {
       v <- b$variant %||% "ratio_fac_pop"
       plot(cache$health_system_metrics_admin1, indicator = v, national_value = cache$health_system_metrics_national[[v]],
-           title = t(paste0("title_metric_", v), v), x_axis = t(paste0("xlab_metric_", v), v), legend_labels = benchmark_labels)
+           title = t(paste0("title_metric_", v), v), x_title = t(paste0("xlab_metric_", v), v), legend_labels = benchmark_labels)
     },
     phc_scatter = {
       v <- b$variant %||% "ratio_fac_pop"
       plot(cache$generate_phc_scatter_data(indicator = v),
-           title = t(paste0("title_scatter_", v), v), x_axis = t(paste0("xlab_", v), v), y_axis = t("ylab_phc_scatter", "Service outputs"),
+           title = t(paste0("title_scatter_", v), v), x_title = t(paste0("xlab_", v), v), y_title = t("ylab_phc_scatter", "Service outputs"),
            quad_labels = list(high_high = t(paste0("lbl_hh_", v), ""), low_high = t(paste0("lbl_lh_", v), ""),
                               high_low = t(paste0("lbl_hl_", v), ""), low_low = t(paste0("lbl_ll_", v), "")))
     },
     private_share = plot(
       if (identical(b$variant, "area")) cache$area_private_share else cache$national_private_share,
-      labels = list(public = t("lbl_public", "Public"), private = t("lbl_private", "Private"), share = t("plt_ps_share", "Priv. share = "),
-                    careany = t("plt_ps_careany", "Careseeking for child illness"), csection = t("plt_ps_csection", "C-section"),
-                    ideliv = t("plt_ps_ideliv", "Institutional delivery"),
-                    rural = t("lbl_equity_area_rural", "Rural"), urban = t("lbl_equity_area_urban", "Urban"))
+      legend_labels = list(public = t("lbl_public", "Public"), private = t("lbl_private", "Private")),
+      indicator_labels = list(careany = t("plt_ps_careany", "Careseeking for child illness"), csection = t("plt_ps_csection", "C-section"),
+                              ideliv = t("plt_ps_ideliv", "Institutional delivery")),
+      area_labels = list(rural = t("lbl_equity_area_rural", "Rural"), urban = t("lbl_equity_area_urban", "Urban")),
+      share_label = t("plt_ps_share", "Priv. share = ")
     ),
     {
       # kinds added by the standard report files draw with .rb_draw_<kind>()
@@ -384,6 +390,14 @@ report_block_kinds <- function(group = get_selected_group()) {
 #' @return A named list of reports in the order of the analysis, each `list(name, description, kind, design, cover,
 #'   blocks)` for a document (`kind = "document"`), or `list(name, description, kind = "deck", design, cover, slides)`
 #'   for a slide deck (see [export_deck()]). [report_project_blocks()] gives the blocks of either.
+#' @examples
+#' presets <- report_presets(lang = "en", group = "rmncah")
+#' names(presets)
+#' presets$mortality$name
+#' length(presets$mortality$blocks)
+#'
+#' # the vaccine group's reports, named in French
+#' vapply(report_presets("fr", group = "vaccine"), function(p) p$name, character(1))
 #' @export
 report_presets <- function(lang = "en", group = get_selected_group()) {
   lang <- if (lang %in% c("en", "fr", "pt")) lang else "en"
@@ -476,6 +490,13 @@ report_presets <- function(lang = "en", group = get_selected_group()) {
 #' regions and flag. Every report function accepts the dataset itself too ([datasuite.ui::as_report_context()]).
 #' @param cache A [CacheConnection].
 #' @return A report context ([datasuite.ui::report_context()]).
+#' @examples
+#' path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+#' cache <- load_cache_data(path)
+#'
+#' context <- cd_report_context(cache)
+#' context$years()
+#' context$fields(NULL, "en")$country
 #' @export
 cd_report_context <- function(cache) {
   datasuite.ui::report_context(
@@ -489,7 +510,7 @@ cd_report_context <- function(cache) {
     chart_options = function() cache$chart_options %||% list(),
     fields = function(project, lang) .cd_report_field_values(cache),
     years = function() cache$data_years,
-    regions = function() cache$subnational_regions$adminlevel_1,
+    regions = function() unique(cache$subnational_regions$adminlevel_1),
     flag = function() datasuite.ui::report_flag_file(tryCatch(cache$country_iso, error = function(e) NULL))
   )
 }

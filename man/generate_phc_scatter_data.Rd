@@ -2,7 +2,7 @@
 % Please edit documentation in R/7_health_systems.R
 \name{generate_phc_scatter_data}
 \alias{generate_phc_scatter_data}
-\title{Generate PHC Performance Scatter Data}
+\title{Generate PHC performance scatter data}
 \usage{
 generate_phc_scatter_data(
   .data,
@@ -10,10 +10,31 @@ generate_phc_scatter_data(
 )
 }
 \arguments{
-\item{.data}{Data frame containing subnational health indicators.}
+\item{.data}{A \code{cd_health_system_metric} object, as returned by
+\code{\link[=calculate_health_system_metrics]{calculate_health_system_metrics()}} with \code{admin_level = "adminlevel_1"}.}
 
 \item{x_indicator}{Independent variable ('ratio_fac_pop' or 'ratio_hstaff_pop').}
 }
+\value{
+A tibble of class \code{cd_phc_scatter} with one row per admin level 1 unit and the columns
+\code{adminlevel_1}, the column named by \code{x_indicator}, \code{service_coverage} and \code{is_outlier} (\code{TRUE}
+when \code{service_coverage} is below the first quartile or above the third quartile). The
+attribute \code{indicator} holds \code{x_indicator}.
+}
 \description{
-Generate PHC Performance Scatter Data
+Pairs a health system input (facility density or health workforce density) with a service
+coverage index for each admin level 1 unit, for \code{\link[=plot.cd_phc_scatter]{plot.cd_phc_scatter()}}. The service coverage
+index is the mean of the MCH preventive services index and the curative services index.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+metrics <- calculate_health_system_metrics(data, admin_level = "adminlevel_1")
+
+generate_phc_scatter_data(metrics, x_indicator = "ratio_fac_pop")
+
+# against the density of health workers
+workforce <- generate_phc_scatter_data(metrics, x_indicator = "ratio_hstaff_pop")
+plot(workforce)
+
 }

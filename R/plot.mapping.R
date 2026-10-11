@@ -1,23 +1,18 @@
-#' Plot Subnational Coverage Maps by Indicator
+#' Plot subnational coverage maps by indicator
 #'
 #' Creates a faceted `ggplot2` map showing subnational coverage levels of a health indicator,
 #' colored using a gradient palette. Coverage values are drawn from a `cd_mapping_filtered`
 #' object, typically filtered for a specific indicator and denominator.
 #'
-#' @param x A `cd_mapping_filtered` object. Created using [filter_mapping_data()], and must
+#' @param x A `cd_mapping_filtered` object. Created using [select_mapping_data()], and must
 #'   include spatial geometry and metadata attributes (`indicator`, `palette`, `column`).
-#' @param title (Optional) A scalar character string to override the default plot title. Defaults to `NULL`.
-#' @param caption (Optional) A scalar character string to override the default plot caption. Defaults to `NULL`.
-#' @param legend (Optional) A scalar character string to override the default legend title. Defaults to `NULL`.
-#' @param ... Chart options by name (see [cd_chart_options()]); other arguments are ignored.
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes the user changed. Applied last, so it wins over
-#'   `title` and the other arguments above. Any chart option can also be given by name in `...`.
+#' @inheritParams cd_plot_arguments
 #'
 #' @return A `ggplot` object visualizing the spatial distribution of the selected indicator by region and year.
 #'
 #' @examples
 #' \dontrun{
-#' # Assuming `map_data` is filtered with filter_mapping_data()
+#' # Assuming `map_data` is filtered with select_mapping_data()
 #' plot(
 #'   map_data,
 #'   title = "Penta 1 Coverage by Region",
@@ -26,10 +21,22 @@
 #' )
 #' }
 #'
-#' @seealso [filter_mapping_data()], [get_mapping_data()]
+#' @seealso [select_mapping_data()], [get_mapping_data()]
 #'
 #' @export
-plot.cd_mapping_filtered <- function(x, title = NULL, caption = NULL, legend = NULL, ..., options = NULL) {
+plot.cd_mapping_filtered <- function(x,
+                                     title = NULL,
+                                     subtitle = NULL,
+                                     caption = NULL,
+                                     x_title = NULL,
+                                     y_title = NULL,
+                                     legend_title = NULL,
+                                     ...,
+                                     options = NULL) {
+  .cd_draw(.plot_cd_mapping_filtered_impl, x, list(), ..., options = options)
+}
+
+.plot_cd_mapping_filtered_impl <- function(x, title = NULL, caption = NULL, legend_title = NULL, ...) {
   year = NULL
 
   indicator <- attr_or_abort(x, 'indicator')
@@ -38,13 +45,13 @@ plot.cd_mapping_filtered <- function(x, title = NULL, caption = NULL, legend = N
 
   # Validate scalar character inputs for custom labels
   if (!is.null(title) && !is_scalar_character(title)) {
-    cd_abort("x" = "{.arg title} must be a scalar character or NULL.")
+    cd_abort(c("x" = "{.arg title} must be a scalar character or NULL."))
   }
   if (!is.null(caption) && !is_scalar_character(caption)) {
-    cd_abort("x" = "{.arg caption} must be a scalar character or NULL.")
+    cd_abort(c("x" = "{.arg caption} must be a scalar character or NULL."))
   }
-  if (!is.null(legend) && !is_scalar_character(legend)) {
-    cd_abort("x" = "{.arg legend} must be a scalar character or NULL.")
+  if (!is.null(legend_title) && !is_scalar_character(legend_title)) {
+    cd_abort(c("x" = "{.arg legend_title} must be a scalar character or NULL."))
   }
 
   # Setup Default Labels
@@ -55,7 +62,7 @@ plot.cd_mapping_filtered <- function(x, title = NULL, caption = NULL, legend = N
 
   final_title <- title %||% paste("Distribution of", indicator_pretty, "by Regions")
   final_caption <- caption %||% "Data Source: DHIS-2 analysis"
-  final_legend_title <- legend %||% "Coverage (%)"
+  final_legend_title <- legend_title %||% "Coverage (%)"
 
   p <- x %>%
     .cd_as_map() %>%
@@ -66,11 +73,11 @@ plot.cd_mapping_filtered <- function(x, title = NULL, caption = NULL, legend = N
       scale_fill_gradientn(colors = RColorBrewer::brewer.pal(7, palette)) +
       cd_plot_theme(
         title = final_title,
-        legend = final_legend_title,
+        legend_title = final_legend_title,
         caption = final_caption
       ) +
       cd_map_theme() +
       theme(legend.text = element_text(size = 10), legend.key.width = unit(2, "cm"))
 
-  cd_finish_plot(p, options, ..., .source = x)
+  p
 }

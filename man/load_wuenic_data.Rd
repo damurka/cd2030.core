@@ -2,7 +2,7 @@
 % Please edit documentation in R/1_load_survey_data.R
 \name{load_wuenic_data}
 \alias{load_wuenic_data}
-\title{Load WUENIC Immunization Data}
+\title{Load WUENIC immunization data}
 \usage{
 load_wuenic_data(path = NULL, .data = NULL, country_iso)
 }
@@ -19,4 +19,11 @@ A tibble of class \code{cd_wuenic_data}.
 \description{
 Loads and processes WUENIC estimates, computes dropout and zero-dose indicators,
 and standardizes naming conventions.
+}
+\examples{
+\dontrun{
+wuenic <- load_wuenic_data(path = "wuenic.dta", country_iso = "KEN")
+wuenic[c("year", "cov_penta3_wuenic", "cov_dropout_penta13_wuenic")]
+cache$set_wuenic_estimates(wuenic)
+}
 }

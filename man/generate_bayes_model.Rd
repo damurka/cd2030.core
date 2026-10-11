@@ -2,7 +2,7 @@
 % Please edit documentation in R/3_baye_model.R
 \name{generate_bayes_model}
 \alias{generate_bayes_model}
-\title{Generate Bayesian Coverage Model Object}
+\title{Generate Bayesian coverage model object}
 \usage{
 generate_bayes_model(
   coverage_data,
@@ -23,10 +23,36 @@ generate_bayes_model(
 
 \item{keep_samples}{Whether the model keeps the sampler's draws and the compiled Stan model (\code{samples},
 \code{stan_model}). Default \code{FALSE}: the charts and \code{\link[=bayes_model_estimates]{bayes_model_estimates()}} read the summary of the draws, which is
-kept either way, and without the draws a model is some 30 KB (national) to 170 KB (sub-national) where it was
-13 MB to 41 MB. A model that size was brought back from the worker that fitted it, kept in the dataset and
-written to its file with every later change, each of which held the app up for seconds.}
+kept either way, and a model without the draws is much smaller (tens to hundreds of KB
+instead of tens of MB), so it is quicker to save and to pass between processes.}
+}
+\value{
+An object of class \code{cd_bayes_model}: the fitted model returned by
+\code{bayescoveragedeploy::fit_local_model()} (a list, with its \code{posteriors} summary), without \code{samples} and
+\code{stan_model} unless \code{keep_samples = TRUE}. It carries the attributes \code{indicator}, \code{model_indicator} (the
+name the model uses for the indicator), \code{iso} and \code{is_national}.
 }
 \description{
-Generate Bayesian Coverage Model Object
+Fits a Bayesian coverage model for one indicator, combining the survey estimates and the routine
+(DHIS2) coverage in \code{coverage_data} with the yearly data quality score in \code{overall_score}. The
+model is national or sub-national (admin level 1), following the admin level of \code{coverage_data}.
+}
+\examples{
+\dontrun{
+# needs the Bayesian model packages (see cd_bayes_packages_missing()); a fit takes minutes
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+cache <- load_cache_data(path)
+cache$set_national_estimates(list(sbr = 0.02))
+cache$adjust_data()
+
+model <- generate_bayes_model(
+  coverage_data = cache$calculate_coverage("national"),
+  overall_score = cache$overall_score,
+  indicator = "penta3",
+  denominator = "penta1"
+)
+bayes_model_estimates(model)
+plot(model)
+}
+
 }

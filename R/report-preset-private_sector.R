@@ -41,5 +41,5 @@
     legend_labels = list(Private = t("lbl_private", "Private"), NGO = t("lbl_ngo", "NGO"), Public = t("lbl_public", "Public"))
   )
   plot(data, title = t("title_private_sector_graph", "Ownership of health facilities (DHIS2)"),
-       x_axis = t("xlab_private_sector", ""), y_axis = t("ylab_private_sector", "Percent of facilities"))
+       x_title = t("xlab_private_sector", ""), y_title = t("ylab_private_sector", "Percent of facilities"))
 }

@@ -2,19 +2,41 @@
 % Please edit documentation in R/0_data_quality_checks.R
 \name{check_month_validity_presheet}
 \alias{check_month_validity_presheet}
-\title{Check every row's month string parses to a real calendar month, pre-merge}
+\title{Check that every month value is a recognized month, before merging}
 \usage{
 check_month_validity_presheet(parts, service_sheet_names)
 }
 \arguments{
-\item{parts}{Named list of cleaned per-sheet tibbles.}
+\item{parts}{A named list of cleaned per-sheet tibbles (\code{load_excel_parts()$parts}).}
 
-\item{service_sheet_names}{Names of the service-data sheets within \code{parts}.}
+\item{service_sheet_names}{A character vector. The names of the service data sheets within
+\code{parts}.}
+}
+\value{
+\code{NULL} if every month is recognized, or if the service sheets have no \code{month}
+column. Otherwise a character vector of length one, named \code{"x"}, with the message.
 }
 \description{
-\code{month} here is already normalized (\code{load_excel_parts()} does this on every sheet, before
-\code{merge_data()} ever runs -- see its own comment for why) -- \code{NA} means it genuinely didn't parse,
-no need to re-run \code{parse_month_name()} here. \code{raw_month} (preserved by that same normalization
-step) is what this reports, so a typo or different-language value shows up as the actual original
-text, not just \code{NA}.
+Checks the service sheets, before they are merged, for rows whose month could not be read
+as a calendar month, for example because of a typo or a month name in a language that is
+not supported.
+}
+\details{
+A row is a problem when its \code{month} is \code{NA}. If the sheets have a \code{raw_month} column (the
+month text as it was in the workbook, which \code{\link[=load_excel_parts]{load_excel_parts()}} keeps), the message lists
+the distinct unrecognized values. If they do not, or if those values are all missing, the
+message gives the number of affected rows instead.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+sheets <- load_excel_parts(path)
+check_month_validity_presheet(sheets$parts, sheets$service_sheet_names)
+
+# A month the workbook misspells is read as missing
+parts <- sheets$parts
+sheet <- sheets$service_sheet_names[1]
+typo <- parts[[sheet]]$month == "March"
+parts[[sheet]]$raw_month[typo] <- "Mrch"
+parts[[sheet]]$month[typo] <- NA
+check_month_validity_presheet(parts, sheets$service_sheet_names)
 }

@@ -2,18 +2,19 @@
 % Please edit documentation in R/plot.cd_coverage_selected.R
 \name{plot.cd_coverage_selected}
 \alias{plot.cd_coverage_selected}
-\title{Plot S3 method for Coverage Data}
+\title{Plot S3 method for coverage data}
 \usage{
 \method{plot}{cd_coverage_selected}(
   x,
   type = NULL,
-  title = NULL,
-  subtitle = NULL,
-  x_axis = NULL,
-  y_axis = NULL,
-  fill_label = NULL,
   source_labels = NULL,
   indicator_labels = NULL,
+  title = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
   options = NULL
 )
@@ -23,26 +24,50 @@
 
 \item{type}{"profile" or "gap" (for national), "dot" or "heatmap" (for subnational).}
 
-\item{title}{(Optional) Custom translated title.}
-
-\item{subtitle}{(Optional) Custom translated subtitle.}
-
-\item{x_axis}{(Optional) Custom translated x-axis label.}
-
-\item{y_axis}{(Optional) Custom translated y-axis label.}
-
-\item{fill_label}{(Optional) Custom translated legend title (for Heatmap).}
-
 \item{source_labels}{(Optional) Named list to translate 'facility', 'survey', 'wuenic'.}
 
 \item{indicator_labels}{(Optional) Named list to translate indicator names (e.g. 'anc4').}
 
-\item{...}{Chart options (see \code{\link[=cd_chart_options]{cd_chart_options()}}) given by name, applied as
-with \code{options}.}
+\item{title}{The chart's title.}
 
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{subtitle}{The line under the title.}
+
+\item{caption}{The note under the chart.}
+
+\item{x_title}{The title of the horizontal axis.}
+
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
+
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
+}
+\value{
+A \code{ggplot} object with the chart options applied. Which chart it is depends on \code{type}
+and on the admin level of \code{x}.
 }
 \description{
-Plot S3 method for Coverage Data
+Draws the latest coverage of a set of indicators. National data, or the data of one region, is
+drawn as a profile (bars by indicator and source) or as the gap between the facility and the
+survey estimate. Subnational data is drawn as dots by unit, one panel per indicator, or as a
+heatmap of units by indicator.
+}
+\examples{
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+cache$set_national_estimates(list(sbr = 0.02))
+cache$adjust_data()
+
+# national: a profile of the indicators, or the gap between facility data and the survey
+national <- cache$generate_coverage_data("national", "maternal")
+plot(national, type = "profile")
+plot(national, type = "gap", title = "Facility data against the survey", legend_position = "bottom")
+
+# by region: a heatmap (or "dot")
+regions <- cache$generate_coverage_data("adminlevel_1", "child")
+plot(regions, type = "heatmap", legend_title = "Coverage (\%)")
+
 }

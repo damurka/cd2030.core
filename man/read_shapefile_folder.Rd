@@ -13,13 +13,23 @@ read_shapefile_folder(files_df, call = caller_env())
 }
 \value{
 The uploaded shapefile as a valid \code{sf} object, reprojected to EPSG:4326. Column names are
-exactly as uploaded -- no forced rename to \code{NAME_1}, since a real shapefile won't necessarily
-use that name (see \code{check_shapefile_admin_names()}'s own \code{name_field} parameter).
+exactly as uploaded: the column holding the unit names is not renamed to \code{NAME_1}.
 }
 \description{
-Takes the same \code{name}/\code{datapath} shape a Shiny multi-file/folder \code{fileInput()} already produces
-(\code{apps/rmncah}'s \code{cdDirectoryUpload()}/\code{input$directory_select}) -- Shiny scatters each uploaded
-file into its own randomly-named temp subdirectory, but \code{sf::st_read()} needs a shapefile's
-\code{.shp}/\code{.dbf}/\code{.shx}/\code{.prj} parts physically colocated with their original basenames, so this
-reassembles them into one fresh temp directory first.
+Reads a shapefile from the files of an uploaded folder, as a Shiny multi-file or folder
+\code{fileInput()} gives them: a data frame with each file's original \code{name} and the \code{datapath} it
+was saved to. The \code{.shp}, \code{.dbf}, \code{.shx} and \code{.prj} files are all required; they are copied
+under their original names into one temporary directory and read from there. Other files are
+ignored.
+}
+\examples{
+\dontrun{
+# in a Shiny server, for fileInput("shapefile", "Shapefile", multiple = TRUE) in the page
+boundaries <- read_shapefile_folder(input$shapefile)
+
+# outside Shiny: the parts of a shapefile kept in one folder
+parts <- list.files("boundaries", full.names = TRUE)
+boundaries <- read_shapefile_folder(data.frame(name = basename(parts), datapath = parts))
+names(boundaries)
+}
 }

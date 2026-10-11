@@ -2,7 +2,7 @@
 % Please edit documentation in R/methodology-defaults.R
 \name{cd_methodology_defaults}
 \alias{cd_methodology_defaults}
-\title{The Constants of the Countdown Methodology}
+\title{The constants of the Countdown methodology}
 \usage{
 cd_methodology_defaults(group = c("all", "rmncah", "vaccine"))
 }

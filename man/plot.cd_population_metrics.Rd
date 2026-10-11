@@ -2,16 +2,19 @@
 % Please edit documentation in R/plot.population_metrics.R
 \name{plot.cd_population_metrics}
 \alias{plot.cd_population_metrics}
-\title{Plot National Population or Births Metrics}
+\title{Plot national population or births metrics}
 \usage{
 \method{plot}{cd_population_metrics}(
   x,
   metric = c("population", "births", "under1"),
   title = NULL,
-  x_label = NULL,
-  y_label = NULL,
-  legend_labels = NULL,
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
+  legend_labels = NULL,
   options = NULL
 )
 }
@@ -25,11 +28,20 @@
 \item \strong{'under1'}: Population under 1 year of age (in thousands).
 }}
 
-\item{title}{Optional. A custom title for the plot. If \code{NULL}, a default title based on the metric is used.}
+\item{title}{The chart's title.}
 
-\item{x_label}{Optional. Custom label for the x-axis. Defaults to "Year".}
+\item{subtitle}{The line under the title.}
 
-\item{y_label}{Optional. Custom label for the y-axis. Defaults to "population".}
+\item{caption}{The note under the chart.}
+
+\item{x_title}{The title of the horizontal axis.}
+
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
 
 \item{legend_labels}{Optional. A character vector of custom labels for the legend items.
 Must match the number of lines plotted for the selected metric:
@@ -39,10 +51,8 @@ Must match the number of lines plotted for the selected metric:
 \item 'under1': 2 labels
 }}
 
-\item{...}{Additional arguments passed to the plotting function.}
-
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes a user changed. Applied last, so it wins over the
-arguments above; the plot's own defaults are used for whatever it does not set. Any chart option can also be given by name in \code{...}.}
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
 }
 \value{
 A ggplot object.
@@ -62,4 +72,15 @@ with United Nations (UN) estimates.
 \item \strong{Births}: Compares \code{un_births} vs \code{totlivebirths_dhis2} vs \code{totbirths_dhis2}.
 \item \strong{Under 1}: Compares \code{un_under1} vs \code{totunder1_dhis2}.
 }
+}
+\examples{
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+cache$set_national_estimates(list(sbr = 0.02))
+cache$adjust_data()
+population <- cache$denominator_metrics
+
+plot(population, metric = "population")
+plot(population, metric = "births", title = "Births: DHIS2 and the UN", y_title = "Thousands",
+     legend_labels = c("UN live births", "DHIS2 live births", "DHIS2 births"))
+
 }

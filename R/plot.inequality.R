@@ -1,26 +1,42 @@
-#' Plot Subnational Health Coverage Analysis
+#' Plot subnational health coverage analysis
 #'
 #' Generates a plot to visualize health coverage data across subnational units,
 #' distinguishing between the national mean and subnational coverage. The Mean
 #' Absolute Difference to the Mean (MADM) is displayed as an indicator on the
 #' y-axis.
 #'
-#' @param x A `cd_inequality_filtered` object returned by [filter_inequality()].
-#' @param title (Optional) A scalar character string to override the default plot title. Defaults to `NULL`.
-#' @param subtitle (Optional) A scalar character string to override the default plot subtitle. Defaults to `NULL`.
-#' @param x_axis (Optional) A scalar character string to override the default x-axis label. Defaults to `NULL`.
-#' @param y_axis (Optional) A scalar character string to override the default y-axis label. Defaults to `NULL`.
-#' @param caption (Optional) A scalar character string to override the default denominator caption. Defaults to `NULL`.
+#' @param x A `cd_inequality_filtered` object returned by [select_inequality()].
+#' @inheritParams cd_plot_arguments
 #' @param legend_labels (Optional) A named list or vector to override the legend keys and MADM label for translation.
 #'   Valid keys: `subnational`, `national`, `madm`. Defaults to `NULL`.
-#' @param ... Chart options by name (see [cd_chart_options()]); other arguments are ignored.
-#' @param options (Optional) A [cd_chart_options()] object: text, legend, fonts and sizes the user changed. Applied last, so it wins over
-#'   `title` and the other arguments above. Any chart option can also be given by name in `...`.
 #'
 #' @return A `ggplot` object displaying the subnational health coverage plot.
 #'
+#' @examples
+#' cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+#' cache$set_national_estimates(list(sbr = 0.02))
+#' cache$adjust_data()
+#' inequality <- cache$get_filtered_inequality("penta3", "adminlevel_1")
+#'
+#' plot(inequality)
+#' plot(inequality, title = "Penta3 coverage by region", y_title = "Coverage (%)",
+#'      legend_labels = list(subnational = "Regions", national = "Kenya"))
+#'
 #' @export
-plot.cd_inequality_filtered <- function(x, title = NULL, subtitle = NULL, x_axis = NULL, y_axis = NULL, caption = NULL, legend_labels = NULL, ..., options = NULL) {
+plot.cd_inequality_filtered <- function(x,
+                                        title = NULL,
+                                        subtitle = NULL,
+                                        caption = NULL,
+                                        x_title = NULL,
+                                        y_title = NULL,
+                                        legend_title = NULL,
+                                        ...,
+                                        legend_labels = NULL,
+                                        options = NULL) {
+  .cd_draw(.plot_cd_inequality_filtered_impl, x, list(legend_labels = legend_labels), ..., options = options)
+}
+
+.plot_cd_inequality_filtered_impl <- function(x, title = NULL, subtitle = NULL, x_title = NULL, y_title = NULL, caption = NULL, legend_labels = NULL, ...) {
   year = nat = madm = NULL
 
   admin_level <- attr_or_abort(x, "admin_level")
@@ -30,19 +46,19 @@ plot.cd_inequality_filtered <- function(x, title = NULL, subtitle = NULL, x_axis
 
   # Validate scalar character inputs for custom labels
   if (!is.null(title) && !is_scalar_character(title)) {
-    cd_abort("x" = "{.arg title} must be a scalar character or NULL.")
+    cd_abort(c("x" = "{.arg title} must be a scalar character or NULL."))
   }
   if (!is.null(subtitle) && !is_scalar_character(subtitle)) {
-    cd_abort("x" = "{.arg subtitle} must be a scalar character or NULL.")
+    cd_abort(c("x" = "{.arg subtitle} must be a scalar character or NULL."))
   }
-  if (!is.null(x_axis) && !is_scalar_character(x_axis)) {
-    cd_abort("x" = "{.arg x_axis} must be a scalar character or NULL.")
+  if (!is.null(x_title) && !is_scalar_character(x_title)) {
+    cd_abort(c("x" = "{.arg x_title} must be a scalar character or NULL."))
   }
-  if (!is.null(y_axis) && !is_scalar_character(y_axis)) {
-    cd_abort("x" = "{.arg y_axis} must be a scalar character or NULL.")
+  if (!is.null(y_title) && !is_scalar_character(y_title)) {
+    cd_abort(c("x" = "{.arg y_title} must be a scalar character or NULL."))
   }
   if (!is.null(caption) && !is_scalar_character(caption)) {
-    cd_abort("x" = "{.arg caption} must be a scalar character or NULL.")
+    cd_abort(c("x" = "{.arg caption} must be a scalar character or NULL."))
   }
 
   # 1. Resolve Default Texts
@@ -89,8 +105,8 @@ plot.cd_inequality_filtered <- function(x, title = NULL, subtitle = NULL, x_axis
   final_title <- title %||% default_title
   final_subtitle <- subtitle %||% default_subtitle
   final_caption <- caption %||% default_caption
-  final_x_axis <- x_axis %||% "Year"
-  final_y_axis <- y_axis %||% default_y_axis
+  final_x_axis <- x_title %||% "Year"
+  final_y_axis <- y_title %||% default_y_axis
 
   # 3. Handle Legend Labels
   default_legend <- list(
@@ -134,8 +150,8 @@ plot.cd_inequality_filtered <- function(x, title = NULL, subtitle = NULL, x_axis
     scale_color_manual(values = set_names(.cd_palette$subnational_national, c(lbl_subnat, lbl_nat))) +
     cd_plot_theme(
       title = final_title,
-      y_axis = final_y_axis,
-      x_axis = final_x_axis,
+      y_title = final_y_axis,
+      x_title = final_x_axis,
       subtitle = final_subtitle,
       caption = final_caption
     ) +
@@ -149,5 +165,5 @@ plot.cd_inequality_filtered <- function(x, title = NULL, subtitle = NULL, x_axis
       legend.background = element_blank()
     )
 
-  cd_finish_plot(p, options, ..., .source = x)
+  p
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/2_denominators_calculate_indicator_coverage.R
 \name{calculate_indicator_coverage}
 \alias{calculate_indicator_coverage}
-\title{Calculate Health Coverage Indicators}
+\title{Calculate health coverage indicators}
 \usage{
 calculate_indicator_coverage(
   .data,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils-indicator-groups.R
 \name{list_vaccine_indicators}
 \alias{list_vaccine_indicators}
-\title{List All Vaccine and Related Coverage Indicators}
+\title{List all vaccine and related coverage indicators}
 \usage{
 list_vaccine_indicators()
 }

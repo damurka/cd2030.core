@@ -2,16 +2,19 @@
 % Please edit documentation in R/plot.derived_coverage.R
 \name{plot.cd_derived_coverage}
 \alias{plot.cd_derived_coverage}
-\title{Plot Derived vs Traditional Coverage Over Time}
+\title{Plot derived vs traditional coverage over time}
 \usage{
 \method{plot}{cd_derived_coverage}(
   x,
   type = c("bar", "trend"),
   title = NULL,
-  x_label = NULL,
-  y_label = NULL,
-  legend_labels = list(),
+  subtitle = NULL,
+  caption = NULL,
+  x_title = NULL,
+  y_title = NULL,
+  legend_title = NULL,
   ...,
+  legend_labels = list(),
   options = NULL
 )
 }
@@ -21,25 +24,43 @@
 \item{type}{A character string specifying the plot type: \code{"bar"} or \code{"trend"}.
 \code{"trend"} can only be applied nationally or to a specific region. Defaults to \code{"bar"}.}
 
-\item{title}{(Optional) A scalar character string to override the default plot title. Defaults to \code{NULL}.}
+\item{title}{The chart's title.}
 
-\item{x_label}{(Optional) A scalar character string to override the default x-axis label. Defaults to \code{NULL}.}
+\item{subtitle}{The line under the title.}
 
-\item{y_label}{(Optional) A scalar character string to override the default y-axis label. Defaults to \code{NULL}.}
+\item{caption}{The note under the chart.}
+
+\item{x_title}{The title of the horizontal axis.}
+
+\item{y_title}{The title of the vertical axis.}
+
+\item{legend_title}{The title of the legend.}
+
+\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
+colours. Other arguments are ignored.}
 
 \item{legend_labels}{(Optional) A named list of character strings to override specific
 default legend labels (e.g., \code{list(penta1derived = "Custom Penta1")}).}
 
-\item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}); other arguments are ignored.}
-
-\item{options}{(Optional) A \code{\link[=cd_chart_options]{cd_chart_options()}} object: text, legend, fonts and sizes the user changed. Applied last, so it wins over
-\code{title} and the other arguments above. Any chart option can also be given by name in \code{...}.}
+\item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
+charts. Applied after the text arguments, so a text it holds wins over them.}
 }
 \value{
 A \code{ggplot} object showing coverage trends over time.
 }
 \description{
-This function generates a line plot comparing traditional (\code{coverage_old})
+Generates a line plot comparing traditional (\code{coverage_old})
 and derived (\code{coverage_new}) coverage estimates over time for a single indicator.
 It supports both national and subnational views.
+}
+\examples{
+cache <- load_cache_data(system.file("extdata", "kenya.xlsx", package = "cd2030.core"))
+cache$set_national_estimates(list(sbr = 0.02))
+cache$adjust_data()
+derived <- cache$calculate_derived_coverage("penta3", "national")
+
+plot(derived)
+plot(derived, type = "trend", title = "Penta3: usual and derived denominators",
+     y_title = "Coverage (\%)", legend_position = "bottom")
+
 }

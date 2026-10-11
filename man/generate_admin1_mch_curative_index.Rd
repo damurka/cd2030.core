@@ -2,16 +2,27 @@
 % Please edit documentation in R/6_service_utilization.R
 \name{generate_admin1_mch_curative_index}
 \alias{generate_admin1_mch_curative_index}
-\title{Generate MCH vs Curative Index Data}
+\title{Generate MCH vs curative index data}
 \usage{
 generate_admin1_mch_curative_index(service_utilization)
 }
 \arguments{
-\item{service_utilization}{Dataframe containing admin1 service utilization.}
+\item{service_utilization}{Dataframe containing admin level 1 service utilization.}
 }
 \value{
 A tibble with class \code{cd_mch_curative_index}.
 }
 \description{
-Generate MCH vs Curative Index Data
+Keeps the latest year of subnational service utilization data and its two service indices: the
+MCH preventive services index and the curative services index. The result is ready for
+\code{\link[=plot.cd_mch_curative_index]{plot.cd_mch_curative_index()}}.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+data <- load_data(path)
+utilization <- compute_service_utilization(data, admin_level = "adminlevel_1")
+
+index <- generate_admin1_mch_curative_index(utilization)
+index
+plot(index)
 }

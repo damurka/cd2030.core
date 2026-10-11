@@ -2,28 +2,36 @@
 % Please edit documentation in R/0_data_quality_checks.R
 \name{check_month_language_consistency}
 \alias{check_month_language_consistency}
-\title{Flag calendar months that different rows/sheets label with different raw text}
+\title{Flag months that are written in more than one way}
 \usage{
 check_month_language_consistency(parts, service_sheet_names)
 }
 \arguments{
-\item{parts}{Named list of cleaned per-sheet tibbles.}
+\item{parts}{A named list of cleaned per-sheet tibbles (\code{load_excel_parts()$parts}).}
 
-\item{service_sheet_names}{Names of the service-data sheets within \code{parts}.}
+\item{service_sheet_names}{A character vector. The names of the service data sheets within
+\code{parts}.}
 }
 \value{
-A tibble, one row per canonical month with more than one distinct raw text seen for it:
-\code{month}, \code{variants} (the distinct \code{raw_month} strings observed, comma-separated).
+A tibble with one row per month that has more than one distinct original text, and
+columns \code{month} (the standardized month name) and \code{variants} (the distinct original texts,
+sorted and separated by commas). It has no rows if no month qualifies, or if the service
+sheets lack a \code{month} or \code{raw_month} column.
 }
 \description{
-\code{load_excel_parts()} already normalizes every sheet's \code{month} column independently, before
-\code{merge_data()} ever runs -- so the merge itself no longer silently drops data over a raw-text
-join-key mismatch (a real, confirmed bug this fixes: one sheet labeling a year in French while
-its sibling sheets labeled the same year in English left every one of those sibling sheets'
-columns \code{NA} for that whole period). That fix is silent by design -- it makes the DATA correct,
-it doesn't tell the user anything was off. This check surfaces the underlying anomaly itself: more
-than one distinct \code{raw_month} string mapping to the same canonical calendar month is a real signal
-about how the file was put together (e.g. a historical import already translated to English,
-stitched together with a current year still in its original language) -- informational, not
-blocking, since the data is already handled correctly either way, but worth knowing.
+Finds the calendar months that the service sheets label with more than one text, for example
+\code{"January"} in one sheet and \code{"Janvier"} in another. The data loads correctly either way,
+because the month names are standardized. The result shows that the workbook mixes
+languages or spellings, which is worth knowing about how it was put together.
+}
+\examples{
+path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+sheets <- load_excel_parts(path)
+check_month_language_consistency(sheets$parts, sheets$service_sheet_names)
+
+# One service sheet that names January in French
+parts <- sheets$parts
+sheet <- sheets$service_sheet_names[2]
+parts[[sheet]]$raw_month[parts[[sheet]]$month == "January"] <- "Janvier"
+check_month_language_consistency(parts, sheets$service_sheet_names)
 }
