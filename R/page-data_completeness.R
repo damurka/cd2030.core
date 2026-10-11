@@ -195,7 +195,8 @@ data_completeness_server <- function(id, cache, i18n, active = reactive(TRUE)) {
             title = str_glue(i18n$t(title)),
             x_title = admin_level,
             y_title = i18n$t(if (!is.null(indicator)) "title_global_year" else "title_global_indicator"),
-            legend_title = i18n$t("lbl_leg_complete_heatmap")
+            legend_title = i18n$t("lbl_leg_complete_heatmap"),
+            indicator_labels = cd_indicator_labels(i18n)
           )
         },
         excel_write_fun = function(wb, d) {

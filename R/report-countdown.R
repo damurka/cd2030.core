@@ -103,6 +103,11 @@ report_block_kinds <- function(group = get_selected_group()) {
   )
 }
 
+# Every indicator's name in the report's language, by code: what a chart names its indicators with
+.rb_ind_names <- function(i18n, indicators = get_all_indicators()) {
+  stats::setNames(vapply(indicators, function(i) as.character(.rb_ind_name(i18n, i)), character(1)), indicators)
+}
+
 .rb_ind_name <- function(i18n, indicator) .rb_t(i18n, paste0("opt_", indicator), indicator)
 
 # The denominator options' labels as a report shows them (`t(key, fallback)`): the data dictionary's keys and labels.

@@ -575,24 +575,17 @@ plot.cd_phc_scatter <- function(x,
 
   # 2. The SINGLE ggplot Block
   ggplot(x, aes(x = !!sym(x_indicator), y = service_coverage)) +
-    geom_point(size = 3, color = "#2c7fb8") +
+    # the quadrants (medians), as on the preventive against curative chart: under the points
+    .cd_quadrants(med_x, med_y, top_left = default_quads$low_high, top_right = default_quads$high_high,
+                  bottom_left = default_quads$low_low, bottom_right = default_quads$high_low) +
+    geom_point(size = 3, colour = "steelblue4") +
 
-    # Median lines
-    geom_vline(xintercept = med_x, linetype = "longdash", color = "red") +
-    geom_hline(yintercept = med_y, linetype = "longdash", color = "red") +
-    
-    # Outlier Labels (force text color to black)
-    ggrepel::geom_text_repel(data = outliers, aes(label = adminlevel_1), size = 3, color = "black") +
-    
-    # Quadrant annotations using the list
-    annotate("text", x = med_x * 1.5, y = med_y * 1.5, label = default_quads$high_high, size = 3) +
-    annotate("text", x = med_x * 0.5, y = med_y * 1.5, label = default_quads$low_high,  size = 3) +
-    annotate("text", x = med_x * 1.5, y = med_y * 0.5, label = default_quads$high_low,  size = 3) +
-    annotate("text", x = med_x * 0.5, y = med_y * 0.5, label = default_quads$low_low,   size = 3) +
-    
-    # Axes
+    # the units far from the others, named
+    ggrepel::geom_text_repel(data = outliers, aes(label = adminlevel_1), size = 3.5, colour = "grey15") +
+
+    # room above and below for the texts in the corners
     scale_x_continuous(limits = c(0, NA), expand = expansion(mult = c(0, 0.15))) +
-    scale_y_continuous(limits = c(0, NA), expand = expansion(mult = c(0, 0.05))) +
+    scale_y_continuous(limits = c(0, NA), expand = expansion(mult = c(0, 0.15))) +
     
     # Theming
     cd_plot_theme(

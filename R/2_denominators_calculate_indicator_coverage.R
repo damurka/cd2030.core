@@ -205,6 +205,10 @@ ensure_cols <- function(df) {
   all = list(
     anc1 = c("anc1", "preg"),
     instlivebirths = c("instlivebirths", "lbirths"),
+    # the deliveries in facilities over the deliveries. It had no coverage: charts and reports asking for the coverage
+    # of `ideliv` were given an empty column ("Column cov_ideliv_anc1 not found"), since the one computed is
+    # `instdeliveries`, below
+    ideliv = c("ideliv", "deliv"),
     # the live births in facilities over the deliveries, as in Stata (not the deliveries in facilities)
     instdeliveries = c("instlivebirths", "deliv"),
     bcg = c("bcg", "lbirths"),

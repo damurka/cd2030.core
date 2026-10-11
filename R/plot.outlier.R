@@ -12,6 +12,8 @@
 #'    for `"region"` view.
 #' @param threshold Numeric. Upper cut-off (in percent) of the middle colour
 #'   band; values above it are shown as good. Default is `90`.
+#' @param indicator_labels (Optional) A named vector or list, indicator code -> label, for the axis that names
+#'   indicators (see [cd_indicator_labels()], which gives them translated). By default the English labels.
 #' @inheritParams cd_plot_arguments
 #'
 #' @details
@@ -38,8 +40,11 @@ plot.cd_outlier <- function(x,
                             y_title = NULL,
                             legend_title = NULL,
                             ...,
+                            indicator_labels = NULL,
                             options = NULL) {
-  .cd_draw(.plot_cd_outlier_impl, x, list(selection_type = selection_type, indicator = indicator, threshold = threshold), ..., options = options)
+  .cd_draw(.plot_cd_outlier_impl, x,
+           list(selection_type = selection_type, indicator = indicator, threshold = threshold, indicator_labels = indicator_labels),
+           ..., options = options)
 }
 
 .plot_cd_outlier_impl <- function(x,
@@ -50,6 +55,7 @@ plot.cd_outlier <- function(x,
                             x_title = NULL,
                             y_title = NULL,
                             legend_title = NULL,
+                            indicator_labels = NULL,
                             ...) {
   check_scalar_integerish(threshold)
 
@@ -162,6 +168,7 @@ plot.cd_outlier <- function(x,
         x_title = plot_x,
         y_title = plot_y,
         legend_title = plot_leg,
+        labels = indicator_labels
       )
     } else {
       column_name <- paste0(indicator, "_outlier5std")
@@ -181,7 +188,8 @@ plot.cd_outlier <- function(x,
         title = plot_title,
         x_title = plot_x,
         y_title = plot_y,
-        legend_title = plot_leg
+        legend_title = plot_leg,
+        labels = indicator_labels
       )
     }
   }

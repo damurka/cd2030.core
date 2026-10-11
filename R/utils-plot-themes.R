@@ -274,7 +274,7 @@ cd_bar_theme <- function(title = NULL, x_title = NULL, y_title = NULL, legend_ti
 .cd_palette <- list(
   # a value against a threshold, worst first: below the lower cut, between the cuts, at or above the threshold (the
   # data quality heat maps and bars; see .cd_category_fill())
-  traffic_light = c("red", "orange", "forestgreen"),
+  traffic_light = c("#D73027", "#FDAE61", "#1A9850"),
   # one colour per year, for bars dodged by year (see cd_year_colours())
   years = c("darkgreen", "darkgoldenrod3", "firebrick4", "springgreen3", "darkolivegreen3", "steelblue2"),
   # the same for the district reporting-rate bars
@@ -387,7 +387,8 @@ cd_categorized_heatmap <- function(data,
                                    y_title = NULL,
                                    legend_title = NULL,
                                    reverse = FALSE,
-                                   text_size = 4) {
+                                   text_size = NULL,
+                                   labels = NULL) {
   check_scalar_integerish(threshold)
 
   colors <- .cd_palette$traffic_light
@@ -413,17 +414,28 @@ cd_categorized_heatmap <- function(data,
       )
     )
 
+  # the numbers get smaller as the columns get many, and are read on any of the three colours
+  columns <- length(unique(dt[[x_col]]))
+  text_size <- text_size %||% if (columns > 24) 2.8 else if (columns > 14) 3.3 else 4
+  # not wrapped: the names on the horizontal axis are slanted, and those on the vertical one have a row each
+  axis_labels <- .cd_axis_labels(labels, width = Inf)
+  # an axis with no title given is named for what it holds, not after the column
+  axis_name <- function(column) {
+    switch(column, adminlevel_1 = "Admin level 1", district = "District", indicator = "Indicator", year = "Year", column)
+  }
+
   ggplot(dt, aes(x = !!sym(x_col), y = !!sym(y_col), fill = color_category)) +
-    geom_tile(color = "white", show.legend = TRUE) +
-    geom_text(aes(label = .value_round), color = "black", size = text_size, vjust = 0.5) +
+    geom_tile(color = "white", linewidth = 0.6, show.legend = TRUE) +
+    geom_text(aes(label = .value_round, colour = color_category), size = text_size, vjust = 0.5, show.legend = FALSE) +
     .cd_category_fill(lvl, colors) +
-    scale_x_discrete(expand = expansion(mult = 0)) +
-    scale_y_discrete(expand = expansion(mult = 0)) +
+    scale_colour_manual(values = set_names(.cd_text_on(colors), lvl), guide = "none") +
+    scale_x_discrete(expand = expansion(mult = 0), labels = axis_labels) +
+    scale_y_discrete(expand = expansion(mult = 0), labels = axis_labels) +
     cd_heatmap_theme(
       title = title,
-      x_title = x_title %||% x_col,
-      y_title = y_title %||% y_col,
-      legend_title = legend_title %||% paste0(value_col, " Category")
+      x_title = x_title %||% axis_name(x_col),
+      y_title = y_title %||% axis_name(y_col),
+      legend_title = legend_title %||% if (reverse) "Missing (%)" else "Percent (%)"
     )
 }
 
@@ -435,4 +447,42 @@ ggplot_add.cd_chart_options_reapply <- function(object, plot, ...) {
   plot <- apply_chart_options(plot, options)
   attr(plot, "cd_chart_options") <- options
   plot
+}
+
+# The four quadrants of a scatter chart, cut at `x_mid` and `y_mid` (the medians): a faint tint on the quadrant that
+# is high on both axes and on the one that is low on both, the two dashed lines, and a text in each corner. One look
+# for every such chart. The layers go under the points: add them to the plot before the points are drawn.
+.cd_quadrants <- function(x_mid, y_mid, top_left, top_right, bottom_left, bottom_right) {
+  corner <- function(x, y, label, hjust, vjust) {
+    annotate("text", x = x, y = y, label = label, hjust = hjust, vjust = vjust, size = 3.6, fontface = "bold",
+             colour = "grey35", lineheight = 0.95)
+  }
+  list(
+    annotate("rect", xmin = x_mid, xmax = Inf, ymin = y_mid, ymax = Inf, fill = "#1a9850", alpha = 0.07),
+    annotate("rect", xmin = -Inf, xmax = x_mid, ymin = -Inf, ymax = y_mid, fill = "#d73027", alpha = 0.07),
+    geom_vline(xintercept = x_mid, linetype = "dashed", colour = "grey45", linewidth = 0.4),
+    geom_hline(yintercept = y_mid, linetype = "dashed", colour = "grey45", linewidth = 0.4),
+    corner(-Inf, Inf, top_left, -0.05, 1.3),
+    corner(Inf, Inf, top_right, 1.05, 1.3),
+    corner(-Inf, -Inf, bottom_left, -0.05, -0.3),
+    corner(Inf, -Inf, bottom_right, 1.05, -0.3)
+  )
+}
+
+# The labels of a discrete axis that holds indicator codes: each code's label (cd_indicator_labels(), or the labels
+# given, a named vector or list code -> label), wrapped. A value that is not a code (a region, a year) stays as it is.
+.cd_axis_labels <- function(labels = NULL, width = 18) {
+  known <- cd_indicator_labels()
+  if (length(labels)) known[names(labels)] <- unlist(labels)
+  function(values) {
+    values <- as.character(values)
+    out <- ifelse(values %in% names(known), unname(known[values]), values)
+    if (is.finite(width)) stringr::str_wrap(out, width) else out
+  }
+}
+
+# The colour of a text drawn on each of `fills`: black on a light fill, white on a dark one.
+.cd_text_on <- function(fills) {
+  rgb <- grDevices::col2rgb(fills)
+  ifelse(0.299 * rgb[1, ] + 0.587 * rgb[2, ] + 0.114 * rgb[3, ] > 150, "grey10", "white")
 }

@@ -61,11 +61,12 @@ plot.cd_coverage_selected <- function(x,
   
   # --- 1. Apply Indicator Translations Safely ---
   # This translates the text without breaking the underlying factor order!
-  if (!is.null(indicator_labels)) {
-    lvl <- levels(x$indicator)
-    new_lvl <- sapply(lvl, function(l) if (!is.null(indicator_labels[[l]])) indicator_labels[[l]] else l)
-    levels(x$indicator) <- new_lvl
-  }
+  # Every indicator has a label: the one given, or the package's own (cd_indicator_labels()). An indicator a
+  # caller's list left out was drawn under its code ("anc1").
+  lvl <- levels(x$indicator)
+  known <- cd_indicator_labels(indicators = lvl)
+  given <- as.list(indicator_labels)
+  levels(x$indicator) <- vapply(lvl, function(l) as.character(given[[l]] %||% known[[l]]), character(1))
 
   # --- 2. Setup Source Legend Overrides ---
   default_src <- list(facility = "Facility", survey = "Survey", wuenic = "WUENIC")
@@ -138,12 +139,20 @@ plot.cd_coverage_selected <- function(x,
       t_title <- title %||% paste0("Subnational continuum heatmap (", latest_yr, ")")
       t_fill  <- legend_title %||% "Coverage"
       
+      steps <- c("#D73027", "#FC8D59", "#FFFFBF", "#91CF60", "#1A9850")
+      band <- function(v) cut(v, c(-Inf, 20, 40, 60, 80, Inf), labels = FALSE, right = FALSE)
+      x$.text_colour <- ifelse(is.na(x$value), "grey40", .cd_text_on(steps)[band(x$value)])
+
       ggplot(x, aes(x = indicator, y = fct_reorder(!!sym(admin_col), value, .fun = mean, na.rm = TRUE), fill = value)) +
-        # Added color and linewidth to create clean grid lines between the tiles
-        geom_tile(color = "white", linewidth = 0.5) +
+        # white lines between the tiles, and each tile's value on it
+        geom_tile(color = "white", linewidth = 0.6) +
+        geom_text(aes(label = ifelse(is.na(value), "", round(value)), colour = .text_colour), size = 3.3) +
+        scale_colour_identity() +
+        scale_x_discrete(labels = function(v) stringr::str_wrap(v, 14), expand = expansion(mult = 0)) +
+        scale_y_discrete(expand = expansion(mult = 0)) +
         scale_fill_stepsn(
           # 5 colors transitioning from Green to Red
-          colours = c("#d73027", "#fc8d59", "#ffffbf", "#91cf60", "#1a9850"),
+          colours = steps,
           # 20% step thresholds separating the 5 colors
           breaks = c(20, 40, 60, 80),                                
           limits = c(0, 100), 
@@ -153,7 +162,9 @@ plot.cd_coverage_selected <- function(x,
         labs(title = t_title, x = x_title, y = y_title, fill = t_fill) +
         # no grid lines, so the tile borders stand out sharply
         cd_minimal_theme(base_size = 10, grid = "none") +
-        theme(axis.text.x = element_text(angle = 30, hjust = 1))
+        # the indicators' names are wrapped, so they are read level
+        theme(axis.text.x = element_text(angle = 0, hjust = 0.5, lineheight = 0.9), axis.ticks = element_blank(),
+              legend.key.height = unit(1.1, "cm"))
     }
   }
 }

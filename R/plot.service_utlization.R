@@ -320,21 +320,13 @@ plot.cd_mch_curative_index <- function(x,
   
   # 4. Generate Plot
   ggplot(x, aes(x = mch_prev_services_index, y = curative_services_index)) +
+    # the quadrants (medians), under the points: the same on every chart that has them (.cd_quadrants())
+    .cd_quadrants(x_mid, y_mid, top_left = q_tl, top_right = q_tr, bottom_left = q_bl, bottom_right = q_br) +
     geom_point(size = 3, colour = "steelblue4") +
-    
-    # Quadrant lines
-    geom_vline(xintercept = x_mid, linetype = "dashed", colour = "grey40") +
-    geom_hline(yintercept = y_mid, linetype = "dashed", colour = "grey40") +
-    
+
     # Label only selected regions
-    geom_text(data = labels_data, aes(label = adminlevel_1), nudge_x = 0.08, size = 4) +
-    
-    # Quadrant labels (Anchored to the absolute corners of the plot)
-    annotate("text", x = -Inf, y = Inf,  label = q_tl, hjust = -0.05, vjust = 1.2, size = 4, fontface = "bold", color = "grey30") +
-    annotate("text", x = Inf,  y = Inf,  label = q_tr, hjust = 1.05,  vjust = 1.2, size = 4, fontface = "bold", color = "grey30") +
-    annotate("text", x = -Inf, y = -Inf, label = q_bl, hjust = -0.05, vjust = -0.2, size = 4, fontface = "bold", color = "grey30") +
-    annotate("text", x = Inf,  y = -Inf, label = q_br, hjust = 1.05,  vjust = -0.2, size = 4, fontface = "bold", color = "grey30") +
-    
+    geom_text(data = labels_data, aes(label = adminlevel_1), nudge_x = 0.08, size = 3.5, colour = "grey15") +
+
     scale_x_continuous(limits = c(0, NA), expand = expansion(mult = c(0, 0.15))) +
     scale_y_continuous(limits = c(0, NA), expand = expansion(mult = c(0, 0.15))) +
     

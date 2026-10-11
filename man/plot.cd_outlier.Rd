@@ -16,6 +16,7 @@
   y_title = NULL,
   legend_title = NULL,
   ...,
+  indicator_labels = NULL,
   options = NULL
 )
 }
@@ -49,6 +50,9 @@ band; values above it are shown as good. Default is \code{90}.}
 
 \item{...}{Chart options by name (see \code{\link[=cd_chart_options]{cd_chart_options()}}): background, fonts, sizes, axes, grid, legend,
 colours. Other arguments are ignored.}
+
+\item{indicator_labels}{(Optional) A named vector or list, indicator code -> label, for the axis that names
+indicators (see \code{\link[=cd_indicator_labels]{cd_indicator_labels()}}, which gives them translated). By default the English labels.}
 
 \item{options}{A \code{\link[=cd_chart_options]{cd_chart_options()}} object or a list of chart options: a look made once, to give to several
 charts. Applied after the text arguments, so a text it holds wins over them.}

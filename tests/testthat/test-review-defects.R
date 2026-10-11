@@ -150,3 +150,66 @@ test_that("a table card with a year control downloads the year it shows", {
     }
   )
 })
+
+test_that("institutional deliveries have a coverage of their own, beside the live births per delivery", {
+  defs <- .cd_coverage_exprs("penta1", "rmncah")
+  expect_identical(deparse(defs$cov_ideliv_penta1), "100 * ideliv/totdeliv_penta1")
+  expect_identical(deparse(defs$cov_instdeliveries_penta1), "100 * instlivebirths/totdeliv_penta1")
+  path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+  skip_if(identical(path, ""), "kenya.xlsx fixture not found")
+  cache <- suppressMessages(load_cache_data(path))
+  cache$set_national_estimates(list(sbr = 0.02))
+  suppressMessages(cache$adjust_data())
+  coverage <- cache$indicator_coverage_national
+  expect_true(all(c("cov_ideliv_dhis2", "cov_ideliv_penta1", "cov_instdeliveries_penta1") %in% names(coverage)))
+  expect_false(anyNA(coverage$cov_ideliv_penta1))
+  # what asks for the coverage of `ideliv` gets it (it was an empty row, with a warning)
+  shown <- cache$get_filtered_coverage("ideliv", "national")
+  expect_false(all(is.na(unlist(shown[1, -1]))))
+})
+
+test_that("charts name indicators by their labels, not their codes", {
+  expect_identical(unname(cd_indicator_labels(indicators = c("anc1", "penta3", "nothing_known"))), c("ANC 1", "Pentavalent 3", "nothing_known"))
+  french <- list(t = function(key) if (key == "opt_anc1") "CPN 1" else key)
+  expect_identical(cd_indicator_labels(french, c("anc1", "penta3")), c(anc1 = "CPN 1", penta3 = "Pentavalent 3"))
+
+  path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+  skip_if(identical(path, ""), "kenya.xlsx fixture not found")
+  data <- suppressMessages(load_data(path))
+  axis_text <- function(p) {
+    built <- ggplot2::ggplot_build(p)
+    unlist(lapply(built$layout$panel_params[[1]][c("x", "y")], function(a) a$get_labels()))
+  }
+  shown <- axis_text(plot(calculate_completeness_summary(data, "adminlevel_1")))
+  expect_true(all(c("ANC 1", "Pentavalent 3", "Institutional Deliveries") %in% shown))
+  expect_false(any(c("anc1", "penta3", "ideliv") %in% shown))
+  shown <- axis_text(plot(calculate_outliers_summary(data, "adminlevel_1"), "heat_map"))
+  expect_true("ANC 1" %in% shown)
+  # the labels a page gives (translated) are used
+  shown <- axis_text(plot(calculate_completeness_summary(data, "adminlevel_1"), indicator_labels = c(anc1 = "CPN 1")))
+  expect_true("CPN 1" %in% shown)
+
+  cache <- suppressMessages(load_cache_data(path))
+  cache$set_national_estimates(list(sbr = 0.02))
+  suppressMessages(cache$adjust_data())
+  continuum <- cache$generate_coverage_data("adminlevel_1", "maternal")
+  shown <- axis_text(plot(continuum, type = "heatmap", indicator_labels = list(anc4 = "Four visits")))
+  expect_true(all(c("ANC 1", "Four visits") %in% gsub("\n", " ", shown)))
+  expect_false("anc1" %in% shown)
+})
+
+test_that("the two charts with quadrants draw them the same way", {
+  path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+  skip_if(identical(path, ""), "kenya.xlsx fixture not found")
+  skip_if_not_installed("ggrepel")
+  cache <- suppressMessages(load_cache_data(path))
+  suppressMessages(cache$adjust_data())
+  geoms <- function(p) unname(vapply(p$layers, function(l) class(l$geom)[[1]], character(1)))
+  quadrants <- c("GeomRect", "GeomRect", "GeomVline", "GeomHline", "GeomText", "GeomText", "GeomText", "GeomText")
+  phc <- plot(cache$generate_phc_scatter_data(indicator = "ratio_hstaff_pop"), quad_labels = list(high_high = "Both high"))
+  mch <- plot(cache$generate_admin1_mch_curative_index())
+  expect_identical(geoms(phc)[1:8], quadrants)
+  expect_identical(geoms(mch)[1:8], quadrants)
+  # the high-high text is in the top right corner
+  expect_identical(phc$layers[[6]]$aes_params$label, "Both high")
+})

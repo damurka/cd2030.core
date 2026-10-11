@@ -11,6 +11,8 @@
 #'   Default is `"heat_map"`.
 #' @param indicator Optional. One of the supported indicators (`'opv1'`, `'penta3'`, etc.)
 #'   to visualize in the plot. If `NULL` all indicators will be shown.
+#' @param indicator_labels (Optional) A named vector or list, indicator code -> label, for the axis that names
+#'   indicators (see [cd_indicator_labels()], which gives them translated). By default the English labels.
 #' @inheritParams cd_plot_arguments
 #'
 #' @return A `ggplot` object: a heat map or a faceted line chart, depending on `plot_type`.
@@ -32,8 +34,10 @@ plot.cd_completeness_summary <- function(x,
                                          y_title = NULL,
                                          legend_title = NULL,
                                          ...,
+                                         indicator_labels = NULL,
                                          options = NULL) {
-  .cd_draw(.plot_cd_completeness_summary_impl, x, list(plot_type = plot_type, indicator = indicator), ..., options = options)
+  .cd_draw(.plot_cd_completeness_summary_impl, x,
+           list(plot_type = plot_type, indicator = indicator, indicator_labels = indicator_labels), ..., options = options)
 }
 
 .plot_cd_completeness_summary_impl <- function(x,
@@ -43,6 +47,7 @@ plot.cd_completeness_summary <- function(x,
                                          x_title = NULL,
                                          y_title = NULL,
                                          legend_title = NULL,
+                                         indicator_labels = NULL,
                                          ...) {
   plot_type <- arg_match(plot_type)
   threshold <- attr_or_abort(x, "threshold")
@@ -108,7 +113,8 @@ plot.cd_completeness_summary <- function(x,
         y_title = plot_y,
         legend_title = plot_leg,
         title = plot_title,
-        reverse = TRUE
+        reverse = TRUE,
+        labels = indicator_labels
       )
     } else {
       hm <- d %>%
@@ -126,7 +132,8 @@ plot.cd_completeness_summary <- function(x,
         y_title = plot_y,
         legend_title = plot_leg,
         title = plot_title,
-        reverse = TRUE
+        reverse = TRUE,
+        labels = indicator_labels
       )
     }
   } else {

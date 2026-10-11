@@ -335,6 +335,7 @@ reference:
       - cd_describe_columns
       - notebook_data
       - cd_denominator_labels
+      - cd_indicator_labels
       - cd_methodology_defaults
 
   - title: "App: building an app"

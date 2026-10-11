@@ -197,6 +197,20 @@
   vector stopped it); `get_national_rates()` returns its table visibly; `cd_bayes_install_command()` returns nothing
   when nothing is missing (it gave `install.packages(c(""), ...)`); the FPET text says "decreased by 0.005", not
   "decreased by -0.005 points"; a report's list of regions has each region once.
+* Institutional deliveries have a coverage: `cov_ideliv_*`, the deliveries in facilities over the deliveries. There was
+  none, so every chart, map and report asking for the coverage of `ideliv` was drawn empty ("Column cov_ideliv_anc1
+  not found"): the column that existed is `cov_instdeliveries_*`, which is the live births in facilities over the
+  deliveries (Stata's column). It is kept, and labelled for what it is ("Institutional Live Births per Delivery").
+* Charts name indicators by their labels, not their codes. The heat maps of missing values and of outliers showed
+  `anc_1trimester`, `bcg`, `instlivebirths`...; the continuum heat map showed `anc1` for an indicator its caller had
+  not listed. `cd_indicator_labels()` gives the labels (translated with a translator), the two heat maps take
+  `indicator_labels`, and the pages and reports give them the app's language.
+* The heat maps read better: softer red, amber and green, numbers that stay readable on each colour and get smaller
+  as the columns get many, axes titled for what they hold ("Indicator", "Admin level 1"), and on the continuum heat
+  map each tile's value and the indicators' names level and wrapped.
+* The PHC performance chart draws its quadrants as the preventive against curative chart does: a text in each corner
+  (it was placed at half and one and a half times the median, over the points), dashed median lines, and a faint tint
+  on the quadrant high on both axes and on the one low on both.
 
 # cd2030.core 1.3.10
 

@@ -45,8 +45,9 @@
   zerodose = "Zero-dose", undervax = "Under-vaccinated", dropout_penta13 = "Penta 1 to Penta 3 Dropout",
   dropout_penta1mcv1 = "Penta 1 to Measles 1 Dropout", dropout_penta3mcv1 = "Penta 3 to Measles 1 Dropout",
   dropout_measles12 = "Measles 1 to Measles 2 Dropout",
-  # a coverage name for ideliv's coverage (cov_instdeliveries_*)
-  instdeliveries = "Institutional Deliveries"
+  # cov_instdeliveries_*: the live births in facilities over the deliveries (Stata's column). The deliveries in
+  # facilities over the deliveries are cov_ideliv_*.
+  instdeliveries = "Institutional Live Births per Delivery"
 )
 .cd_dict_computed <- c("zerodose", "undervax", "dropout_penta13", "dropout_penta1mcv1", "dropout_penta3mcv1",
                        "dropout_measles12")
@@ -284,4 +285,29 @@ cd_describe_columns <- function(names) {
     }
   }
   unknown
+}
+
+#' The indicators' labels
+#'
+#' Gives the display label of each indicator, keyed by its code (`anc1` -> "ANC 1"). Charts use
+#' it to name indicators on an axis, in place of the column names. With a translator the labels
+#' are translated (the key of an indicator is `opt_<code>`); a label that has no translation
+#' stays in English, and a code the package does not know is returned as it is.
+#'
+#' @param i18n Optional translator (`i18n$t(key)`); without it, the English labels.
+#' @param indicators Which indicators, in this order. Default: every indicator the package knows.
+#' @return A named character vector, code -> label.
+#' @examples
+#' cd_indicator_labels(indicators = c("anc1", "penta3", "instlivebirths"))
+#' @export
+cd_indicator_labels <- function(i18n = NULL, indicators = names(.cd_dict_indicator_labels)) {
+  indicators <- as.character(indicators)
+  english <- unname(.cd_dict_indicator_labels[indicators])
+  english[is.na(english)] <- indicators[is.na(english)]
+  labels <- if (is.null(i18n)) english else vapply(seq_along(indicators), function(i) {
+    key <- paste0("opt_", indicators[[i]])
+    out <- tryCatch(i18n$t(key), error = function(e) NULL)
+    if (is.character(out) && length(out) == 1 && nzchar(out) && !identical(out, key)) out else english[[i]]
+  }, character(1))
+  stats::setNames(labels, indicators)
 }

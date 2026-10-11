@@ -136,7 +136,8 @@
     title <- if (is.null(region)) t("plt_title_complete_heatmap_all", "Average reporting missingness (%) by {admin_level}")
              else t("plt_title_complete_heatmap_all_reg", "Average reporting missingness (%) by {admin_level} in {region}")
     plot(d, plot_type = "heat_map", indicator = NULL, title = fill(title), x_title = admin_level,
-         y_title = t("title_global_indicator", "Indicator"), legend_title = t("lbl_leg_complete_heatmap", "Missingness (%)"))
+         y_title = t("title_global_indicator", "Indicator"), legend_title = t("lbl_leg_complete_heatmap", "Missingness (%)"),
+         indicator_labels = .rb_ind_names(i18n))
   } else {
     title <- if (is.null(region)) t("plt_title_complete_heatmap_one", "Proportion of missing reports (%) for {indicator} by year and {admin_level}")
              else t("plt_title_complete_heatmap_one_reg", "Proportion of missing reports (%) for {indicator} by year and {admin_level} in {region}")
@@ -180,7 +181,8 @@
                     x_title = admin_level, y_title = t("title_global_year", "Year"), legend_title = legend_title),
     all_indicators = plot(d, selection_type = "heat_map", indicator = NULL, threshold = threshold,
                           title = paste0(fill(t("plt_title_outlier_heatmap_all", "Average percent non-outliers by {admin_level}")), where),
-                          x_title = admin_level, y_title = t("title_global_indicator", "Indicator"), legend_title = legend_title),
+                          x_title = admin_level, y_title = t("title_global_indicator", "Indicator"), legend_title = legend_title,
+                          indicator_labels = .rb_ind_names(i18n)),
     by_unit = plot(d, selection_type = "region", indicator = ind, threshold = threshold,
                    title = paste0(fill(t("plt_title_outlier_region", "Percent non-outliers by year and {admin_level}")), " - ", indicator, where),
                    x_title = t("title_global_year", "Year"), y_title = legend_title, legend_title = legend_title),
