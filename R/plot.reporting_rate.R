@@ -135,7 +135,9 @@ plot.cd_average_reporting_rate <- function(x,
       .cd_category_fill(lvl) +
       scale_x_discrete(expand = expansion(mult = 0)) +
       scale_y_discrete(expand = expansion(mult = 0)) +
-      geom_text(aes(label = !!sym(indicator)), color = "black", size = 4, vjust = 0.5) +
+      # each number in the colour that reads on its tile, as on the other heat maps (it was black on all three)
+      geom_text(aes(label = !!sym(indicator), colour = color_category), size = 4, vjust = 0.5, show.legend = FALSE) +
+      scale_colour_manual(values = set_names(.cd_text_on(.cd_palette$traffic_light), lvl), guide = "none") +
       cd_heatmap_theme(
         title = plot_title,
         x_title = plot_x,

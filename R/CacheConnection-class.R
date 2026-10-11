@@ -607,6 +607,13 @@ CacheConnection <- R6::R6Class(
       factors <- if (get_selected_group() == "vaccine") vacc_factors else c(vacc_factors, "opd")
 
       if (private$setter("k_factors", value, ~ is.numeric(.x) && all(factors %in% names(.x)))) {
+        # the settings the Data Adjustment page edits, when the dataset has them stored, follow: they are what
+        # adjust_data() and the page read, and they kept the k they had (the new k was not used)
+        stored <- private$getter("adjustment_settings")
+        if (!is.null(stored)) {
+          stored$everywhere$group_k <- utils::modifyList(as.list(stored$everywhere$group_k), as.list(value))
+          private$setter("adjustment_settings", adjustment_settings_check(stored), is.list)
+        }
         private$update_field("adjusted_data", NULL)
         private$changed("adjusted_data")
       }

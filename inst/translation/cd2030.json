@@ -1879,6 +1879,18 @@
       "pt": "Denominadores derivados de estimativas de CPN1"
     },
     {
+      "key": "plt_caption_equity_anc1derived",
+      "en": "Denominators derived from ANC1 estimates with population growth",
+      "fr": "Dénominateurs dérivés des estimations de CPN1 avec la croissance de la population",
+      "pt": "Denominadores derivados de estimativas de CPN1 com o crescimento populacional"
+    },
+    {
+      "key": "plt_caption_equity_penta1derived",
+      "en": "Denominators derived from Penta 1 estimates with population growth",
+      "fr": "Dénominateurs dérivés des estimations de Penta 1 avec la croissance de la population",
+      "pt": "Denominadores derivados de estimativas de Penta 1 com o crescimento populacional"
+    },
+    {
       "key": "plt_caption_equity_penta1",
       "en": "Denominators derived from Penta 1 estimates",
       "fr": "Dénominateurs dérivés des estimations de Penta 1",
@@ -2069,6 +2081,30 @@
       "en": "ANC 1",
       "fr": "CPN 1",
       "pt": "CPN 1"
+    },
+    {
+      "key": "lbl_consist_ratio_opv1_opv3",
+      "en": "Ratio OPV1 / OPV3",
+      "fr": "Rapport VPO1 / VPO3",
+      "pt": "Razão VOP1 / VOP3"
+    },
+    {
+      "key": "lbl_score_range_opv1_opv3",
+      "en": "% district with OPV1/OPV3 in expected range",
+      "fr": "% de districts avec VPO1/VPO3 dans la plage attendue",
+      "pt": "% de distritos com VOP1/VOP3 no intervalo esperado"
+    },
+    {
+      "key": "opt_instdeliveries",
+      "en": "Institutional Live Births per Delivery",
+      "fr": "Naissances vivantes en établissement par accouchement",
+      "pt": "Nados vivos em unidades de saúde por parto"
+    },
+    {
+      "key": "msg_select_indicator",
+      "en": "Select an indicator to see this chart.",
+      "fr": "Sélectionnez un indicateur pour afficher ce graphique.",
+      "pt": "Selecione um indicador para ver este gráfico."
     },
     {
       "key": "opt_instlivebirths",

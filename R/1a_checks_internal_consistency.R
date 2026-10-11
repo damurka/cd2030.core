@@ -70,7 +70,7 @@ plot_comparison.cd_data <- function(
   # Calculate R-squared values by year
   r_squared_value <- data_filtered %>%
     summarize(
-      r_squared = round(summary(stats::lm(stats::as.formula(paste(y_var, "~", x_var)), data = cur_data()))$r.squared, 4),
+      r_squared = round(summary(stats::lm(stats::as.formula(paste(y_var, "~", x_var)), data = pick(everything())))$r.squared, 4),
       .by = year
     ) %>%
     mutate(label = paste0("R\u00b2 = ", r_squared))
@@ -102,7 +102,7 @@ plot_comparison.cd_data <- function(
     geom_point(aes(colour = "district"), size = 1.5) +
     geom_smooth(aes(color = "linear_fit"), method = "lm", formula = y ~ x, linetype = "solid", se = FALSE, linewidth = 0.8) +
     geom_segment(aes(x = min_x, y = min_x, xend = max_x, yend = max_x, colour = "diagonale"),
-      linetype = "dashed", size = 0.8
+      linetype = "dashed", linewidth = 0.8
     ) +
     facet_wrap(~year, scales = "free_y", ncol = 3) +
     geom_text(

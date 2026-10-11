@@ -141,13 +141,14 @@ plot.cd_coverage_selected <- function(x,
       
       steps <- c("#D73027", "#FC8D59", "#FFFFBF", "#91CF60", "#1A9850")
       band <- function(v) cut(v, c(-Inf, 20, 40, 60, 80, Inf), labels = FALSE, right = FALSE)
-      x$.text_colour <- ifelse(is.na(x$value), "grey40", .cd_text_on(steps)[band(x$value)])
+      # each number in the colour that reads on its tile: given as it is, not through a scale (an identity scale
+      # has no legend, and the app's customize panel, listing a chart's legend, failed on it: datasuite.ui 0.5.0)
+      text_colour <- ifelse(is.na(x$value), "grey40", .cd_text_on(steps)[band(x$value)])
 
       ggplot(x, aes(x = indicator, y = fct_reorder(!!sym(admin_col), value, .fun = mean, na.rm = TRUE), fill = value)) +
         # white lines between the tiles, and each tile's value on it
         geom_tile(color = "white", linewidth = 0.6) +
-        geom_text(aes(label = ifelse(is.na(value), "", round(value)), colour = .data$.text_colour), size = 3.3) +
-        scale_colour_identity() +
+        geom_text(aes(label = ifelse(is.na(value), "", round(value))), colour = text_colour, size = 3.3) +
         scale_x_discrete(labels = function(v) stringr::str_wrap(v, 14), expand = expansion(mult = 0)) +
         scale_y_discrete(expand = expansion(mult = 0)) +
         scale_fill_stepsn(

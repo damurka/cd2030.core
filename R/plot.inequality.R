@@ -117,7 +117,9 @@ plot.cd_inequality_filtered <- function(x,
     madm = "MADM"
   )
 
-  user_labels <- if (is.null(legend_labels)) list() else as.list(legend_labels)
+  # a label given as NULL keeps the chart's own: modifyList() would take the entry away, and the colours then had
+  # one name too few ("The size of `nm` (2) must be compatible with the size of `x` (3)", 1.4.1 with no region chosen)
+  user_labels <- Filter(Negate(is.null), as.list(legend_labels))
   final_legend <- utils::modifyList(default_legend, user_labels)
 
   lbl_subnat <- final_legend$subnational

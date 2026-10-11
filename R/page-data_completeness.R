@@ -217,7 +217,8 @@ data_completeness_server <- function(id, cache, i18n, active = reactive(TRUE)) {
         plot_data = completeness_districts,
         plot_filename = reactive("completeness_district"),
         plot_fun = function(d) {
-          req(indicator())
+          # with every indicator chosen there is no one chart to draw: say so (req() left the loader turning for ever)
+          validate(need(nzchar(indicator() %||% ""), i18n$t("msg_select_indicator")))
           indicator <- if (!is.null(indicator()) || nzchar(indicator())) i18n$t(paste0("opt_", indicator())) else NULL
           plot(
             d,
@@ -236,7 +237,8 @@ data_completeness_server <- function(id, cache, i18n, active = reactive(TRUE)) {
         plot_data = completeness_summary,
         plot_filename = reactive("completeness_linegraph"),
         plot_fun = function(d) {
-          req(indicator())
+          # with every indicator chosen there is no one chart to draw: say so (req() left the loader turning for ever)
+          validate(need(nzchar(indicator() %||% ""), i18n$t("msg_select_indicator")))
           indicator <- if (!is.null(indicator()) || nzchar(indicator())) i18n$t(paste0("opt_", indicator())) else NULL
           admin_level <- i18n$t(if (is.null(region())) paste0("opt_", admin_level()) else "opt_district")
           plot(

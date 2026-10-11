@@ -339,3 +339,75 @@ test_that("the formatted tables share one look, and the data tables one way of w
   expect_identical(table$x$tag$attribs$defaultPageSize %||% 10, 10)
   expect_false(.cd_reactable(data.frame(year = 2021:2023, n = 1:3), sortable = FALSE, paginate = FALSE)$x$tag$attribs$pagination)
 })
+
+test_that("the regional continuum heat map is drawn by the app's chart server", {
+  regions <- rep(c("North", "South", "East"), each = 2)
+  x <- tibble::new_tibble(
+    tibble::tibble(adminlevel_1 = regions, year = 2023, name = "x", value = c(15, 95, 45, 70, NA, 55),
+                   source = factor("facility"), indicator = factor(rep(c("anc1", "anc4"), 3), levels = c("anc1", "anc4"))),
+    class = "cd_coverage_selected", admin_level = "adminlevel_1", region = NULL
+  )
+  p <- plot(x, type = "heatmap")
+  # the numbers are coloured to read on their tiles, without a scale: a scale that has no legend stopped the app
+  # listing the chart's legend ("subscript out of bounds", 1.4.0 and 1.4.1 on datasuite.ui 0.5.0)
+  expect_false(any(vapply(p$scales$scales, function(s) "colour" %in% s$aesthetics, logical(1))))
+  text <- ggplot2::ggplot_build(p)$data[[2]]
+  expect_true(all(text$colour %in% c("white", "grey10", "grey40")))
+  expect_setequal(unique(text$colour), c("white", "grey10", "grey40"))
+  entries <- datasuite.ui:::cd_chart_entries(p)
+  expect_length(entries$legend, 0)
+  expect_length(entries$categories, 2)
+})
+
+test_that("the inequality chart is drawn with no region chosen, as the page asks for it", {
+  path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+  skip_if(identical(path, ""), "kenya.xlsx fixture not found")
+  cache <- suppressMessages(load_cache_data(path))
+  cache$set_national_estimates(list(sbr = 0.02))
+  suppressMessages(cache$adjust_data())
+  x <- cache$get_filtered_inequality("instlivebirths", "adminlevel_1")
+  # the page gives the region's label only when a region is chosen: NULL otherwise
+  p <- plot(x, legend_labels = list(subnational = "Districts", national = "National coverage", region = NULL))
+  expect_s3_class(p, "ggplot")
+  expect_no_error(ggplot2::ggplot_build(p))
+  expect_no_error(ggplot2::ggplot_build(plot(x)))
+})
+
+test_that("the reporting rate heat map writes each number in the colour that reads on its tile", {
+  x <- tibble::new_tibble(
+    tibble::tibble(adminlevel_1 = rep(c("North", "South", "East"), 2), year = rep(2022:2023, each = 3), anc_rr = c(50, 80, 95, 60, 85, 99)),
+    class = "cd_average_reporting_rate", admin_level = "adminlevel_1", region = NULL
+  )
+  text <- ggplot2::ggplot_build(plot(x, plot_type = "heat_map", indicator = "anc_rr"))$data[[2]]
+  fills <- ggplot2::ggplot_build(plot(x, plot_type = "heat_map", indicator = "anc_rr"))$data[[1]]$fill
+  expect_identical(text$colour, unname(.cd_text_on(fills)))
+  expect_gt(length(unique(text$colour)), 1)
+})
+
+test_that("k factors set on a dataset are the ones its adjustment settings hold, and come back from the file", {
+  path <- system.file("extdata", "kenya.xlsx", package = "cd2030.core")
+  skip_if(identical(path, ""), "kenya.xlsx fixture not found")
+  file <- withr::local_tempfile(fileext = ".rds")
+  cache <- suppressMessages(load_cache_data(path))
+  settings <- cache$adjustment_settings
+  settings$everywhere$group_k$anc <- 0.5
+  cache$set_adjustment_settings(settings)   # now stored, as the Data Adjustment page stores them
+  expect_identical(cache$k_factors[["anc"]], 0.5)
+  k <- cache$k_factors
+  k[["vacc"]] <- 0.75
+  cache$set_k_factors(k)                    # the settings kept the k they had: adjust_data() did not use the new one
+  expect_identical(cache$adjustment_settings$everywhere$group_k$vacc, 0.75)
+  expect_identical(cache$adjustment_settings$everywhere$group_k$anc, 0.5)
+})
+
+test_that("the consistency check and its chart use nothing deprecated, and the app's own labels are translated", {
+  file <- testthat::test_path("..", "..", "R", "1a_checks_internal_consistency.R")
+  if (file.exists(file)) {   # the source is not there when the installed package is tested
+    source <- paste(readLines(file, warn = FALSE), collapse = " ")
+    expect_false(grepl("cur_data()", source, fixed = TRUE))
+    expect_false(grepl("\"dashed\", size", source, fixed = TRUE))
+  }
+  keys <- vapply(jsonlite::fromJSON(system.file("translation", "cd2030.json", package = "cd2030.core"), simplifyVector = FALSE)$translation, function(t) t$key, character(1))
+  expect_true(all(c("lbl_consist_ratio_opv1_opv3", "lbl_score_range_opv1_opv3", "opt_instdeliveries", "msg_select_indicator") %in% keys))
+  expect_identical(anyDuplicated(keys), 0L)
+})

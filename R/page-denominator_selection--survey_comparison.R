@@ -26,7 +26,9 @@ survey_comparison_ui <- function(id, i18n) {
   cd_tabbed_charts_ui(ns("panel"),
               i18n,
               "title_coverage_national",
-              uiInput = function(pid, toolbar_inline = FALSE) uiOutput(NS(pid)("slot")),
+              # the slot has the chart's loader until it has decided what it holds: that waits for the coverage to be
+              # worked out, and the card was blank meanwhile
+              uiInput = function(pid, toolbar_inline = FALSE) cd_spinner(uiOutput(NS(pid)("slot")), min_height = 400),
               indicators = cd_cfg("survey_comp_indicators"),
               showCustom = FALSE
   )
