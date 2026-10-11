@@ -146,7 +146,7 @@ plot.cd_coverage_selected <- function(x,
       ggplot(x, aes(x = indicator, y = fct_reorder(!!sym(admin_col), value, .fun = mean, na.rm = TRUE), fill = value)) +
         # white lines between the tiles, and each tile's value on it
         geom_tile(color = "white", linewidth = 0.6) +
-        geom_text(aes(label = ifelse(is.na(value), "", round(value)), colour = .text_colour), size = 3.3) +
+        geom_text(aes(label = ifelse(is.na(value), "", round(value)), colour = .data$.text_colour), size = 3.3) +
         scale_colour_identity() +
         scale_x_discrete(labels = function(v) stringr::str_wrap(v, 14), expand = expansion(mult = 0)) +
         scale_y_discrete(expand = expansion(mult = 0)) +
