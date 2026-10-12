@@ -187,8 +187,7 @@ plot.cd_private_sector_plot_data <- function(x,
       common_plot_elements +
       theme(
         panel.spacing.x = unit(0.5, "lines"), # Adjust space between facets for visual separation
-        strip.background = element_rect(fill = "grey95", color = "grey95"), # Background for facet labels
-        strip.text = element_text(face = "bold", size = 10) # Styling for facet titles
+        strip.background = element_rect(fill = "grey95", color = "grey95") # Background for facet labels
       )
   }
 

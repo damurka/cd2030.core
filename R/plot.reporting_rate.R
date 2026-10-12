@@ -136,7 +136,7 @@ plot.cd_average_reporting_rate <- function(x,
       scale_x_discrete(expand = expansion(mult = 0)) +
       scale_y_discrete(expand = expansion(mult = 0)) +
       # each number in the colour that reads on its tile, as on the other heat maps (it was black on all three)
-      geom_text(aes(label = !!sym(indicator), colour = color_category), size = 4, vjust = 0.5, show.legend = FALSE) +
+      geom_text(aes(label = !!sym(indicator), colour = color_category), size = .cd_type$label, vjust = 0.5, show.legend = FALSE) +
       scale_colour_manual(values = set_names(.cd_text_on(.cd_palette$traffic_light), lvl), guide = "none") +
       cd_heatmap_theme(
         title = plot_title,
@@ -264,7 +264,7 @@ plot.cd_district_reporting_rate <- function(x,
     # Create the plot with facet_wrap
     ggplot(aes(x = as.factor(year), y = value, fill = as.factor(year))) +
     geom_col(position = "dodge") +
-    geom_text(aes(label = round(value, 0)), position = position_dodge(width = 0.9), vjust = -1.5, color = "black", size = 3) +
+    geom_text(aes(label = round(value, 0)), position = position_dodge(width = 0.9), vjust = -1.5, color = "black", size = .cd_type$label_small) +
     facet_wrap(~title, scales = "free_y", ncol = facet_ncol) +
     scale_fill_manual(values = colors) +
     scale_y_continuous(

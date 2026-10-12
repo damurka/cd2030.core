@@ -76,7 +76,7 @@ plot.cd_mortality_summary <- function(x,
     geom_text(
       data = national,
       aes(x = year, y = !!sym(indicator), label = round(!!sym(indicator), 1)),
-      color = 'black', vjust = -0.5, hjust = -0.1, size = 3
+      color = 'black', vjust = -0.5, hjust = -0.1, size = .cd_type$label_small
     ) +
     scale_y_continuous(limits = limits, breaks = breaks, expand = expansion(mult = c(0, 0.05))) +
     scale_color_manual(values = set_names(.cd_palette$regions_national, c(lbl_regions, label)), breaks = c(label, lbl_regions)) +
@@ -168,7 +168,7 @@ plot.cd_mortality_ratio_summarised <- function(x,
     ggplot(aes(x = ciratio, y = rat, colour = name)) +
     geom_line(linewidth = 2) +
     geom_point(size = 13) +
-    geom_text(aes(label = rat), color = "black", size = 4) +
+    geom_text(aes(label = rat), color = "black", size = .cd_type$label) +
     scale_y_continuous(limits = c(0, max_y), breaks = scales::pretty_breaks(n = 10), expand = expansion(mult = c(0,0.05))) +
     cd_plot_theme(
       title = label_values$title,
@@ -240,7 +240,7 @@ plot.cd_mortality_summary_filtered <- function(x,
       ) +
       cd_plot_theme(title = title) +
       cd_map_theme() +
-      theme(legend.key.size = unit(6, "mm"), legend.text = element_text(size = 9))
+      theme(legend.key.size = unit(6, "mm"))
 }
 
 #' Plot subnational mortality plausibility
@@ -369,8 +369,8 @@ plot_mortality_plausibility <- function(x,
       title = t_title, x_title = t_x, y_title = t_y, caption = t_note
     ) +
     theme(
-      plot.title = element_text(face = "bold", hjust = 0.5, margin = margin(b = 15)),
-      plot.caption = element_text(hjust = 0, size = 9, color = "black", margin = margin(t = 15)),
+      plot.title = element_text(margin = margin(b = 15)),
+      plot.caption = element_text(margin = margin(t = 15)),
       legend.position = "bottom",
       legend.title = element_blank(),
       panel.grid.minor.x = element_blank(),

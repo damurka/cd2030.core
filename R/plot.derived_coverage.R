@@ -193,7 +193,7 @@ plot.cd_derived_coverage <- function(x,
       
       ggplot(data, aes(x = method_lbl, y = coverage_value)) +
         geom_col(aes(color = lbl_facility), fill = "darkgoldenrod3", width = 0.6) +
-        geom_text(aes(label = round(coverage_value, 1)), vjust = -0.5, size = 4, color = "black") +
+        geom_text(aes(label = round(coverage_value, 1)), vjust = -0.5, size = .cd_type$label, color = "black") +
         geom_hline(aes(yintercept = survey_val, color = lbl_survey), linewidth = 1, na.rm = TRUE) +
         geom_hline(yintercept = survey_ll, color = "darkgreen", linetype = "dashed", alpha = 0.5, na.rm = TRUE) +
         geom_hline(yintercept = survey_ul, color = "darkgreen", linetype = "dashed", alpha = 0.5, na.rm = TRUE) +

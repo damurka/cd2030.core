@@ -163,7 +163,7 @@ plot.cd_service_utilization_prepared <- function(x,
     cd_plot_theme(title = title) +
     labs(title = title) +
     cd_map_theme() +
-    theme(legend.key.size = unit(6, "mm"), legend.text = element_text(size = 9))
+    theme(legend.key.size = unit(6, "mm"))
 }
 
 #' Plot S3 method for service utilization at admin level 1
@@ -245,7 +245,7 @@ plot.cd_service_utilization_admin1 <- function(x,
     geom_col(width = 0.8) +
     geom_text(aes(label = round(!!x_value, 1)), 
               hjust = -0.2, 
-              size = 3) +
+              size = .cd_type$label_small) +
     scale_fill_manual(values = fill_colors) +
     cd_plot_theme(
       title = title,
@@ -325,7 +325,7 @@ plot.cd_mch_curative_index <- function(x,
     geom_point(size = 3, colour = "steelblue4") +
 
     # Label only selected regions
-    geom_text(data = labels_data, aes(label = adminlevel_1), nudge_x = 0.08, size = 3.5, colour = "grey15") +
+    geom_text(data = labels_data, aes(label = adminlevel_1), nudge_x = 0.08, size = .cd_type$label, colour = "grey15") +
 
     scale_x_continuous(limits = c(0, NA), expand = expansion(mult = c(0, 0.15))) +
     scale_y_continuous(limits = c(0, NA), expand = expansion(mult = c(0, 0.15))) +

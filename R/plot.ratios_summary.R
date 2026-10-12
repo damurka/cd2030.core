@@ -104,6 +104,5 @@ plot.cd_ratios_summary <- function(x,
       x_title = plot_x,
       y_title = plot_y
     ) +
-    cd_dashed_grid_theme(x = FALSE) +
-    theme(plot.title = element_text(size = 14, hjust = 0.5))
+    cd_dashed_grid_theme(x = FALSE)
 }

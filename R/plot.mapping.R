@@ -77,7 +77,7 @@ plot.cd_mapping_filtered <- function(x,
         caption = final_caption
       ) +
       cd_map_theme() +
-      theme(legend.text = element_text(size = 10), legend.key.width = unit(2, "cm"))
+      theme(legend.key.width = unit(2, "cm"))
 
   p
 }

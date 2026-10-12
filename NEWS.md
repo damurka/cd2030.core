@@ -1,3 +1,16 @@
+# cd2030.core 1.4.4
+
+* The charts are written in one scale of text sizes. A chart set its own: a title of 16 points beside axis titles
+  of 16, a legend of 13 on one chart and 9 on another, a title bold on some charts and plain on others, and twenty
+  sizes for the numbers drawn on bars, tiles and points. Now every chart has a bold, centred title of 15 points, a
+  subtitle and axis titles of 12, axis and legend text of 11, bold panel names of 11, a caption of 10, and two
+  sizes for the text drawn on it. No chart sets a size of its own.
+* A report's charts have the same proportions, from the report's base size, and the same bold title and panel
+  names, so a chart on a page and the same chart in a report read as one. The title alone stays the size of the
+  axis titles: a report's chart is narrow, and a long title any larger ran off its edge.
+* `cd_type_scale()` gives the scale, for a chart drawn outside the package. `cd_minimal_theme()` uses it: its
+  `base_size` now makes every text larger or smaller by the same ratio.
+
 # cd2030.core 1.4.3
 
 * Requires datasuite.ui 0.5.2: the Reports page lists the dataset's reports and the standard reports again, and the builder has its kinds of

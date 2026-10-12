@@ -222,7 +222,7 @@ plot.cd_missing_district <- function(x,
     geom_text(
       aes(label = paste0(round(!!sym(paste0("mis_", indicator)), 0), "%")),
       vjust = -0.3,
-      size = 4
+      size = .cd_type$label
     ) +
     scale_y_continuous(limits = c(0, NA), expand = expansion(mult = c(0, 0.1))) +
     cd_plot_theme(

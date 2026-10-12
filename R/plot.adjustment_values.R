@@ -159,7 +159,7 @@ plot.cd_adjustment_values_filtered <- function(x,
       ggplot(changes, aes(x = year, y = change, fill = step)) +
         geom_hline(yintercept = 0, colour = "grey40") +
         geom_col(position = dodge, width = 0.75) +
-        geom_text(aes(label = label, vjust = ifelse(change >= 0, -0.4, 1.3)), position = dodge, size = 3) +
+        geom_text(aes(label = label, vjust = ifelse(change >= 0, -0.4, 1.3)), position = dodge, size = .cd_type$label_small) +
         scale_y_continuous(labels = scales::number_format(), expand = ggplot2::expansion(mult = 0.12)) +
         scale_fill_manual(values = .cd_palette$adjustment_steps[c("completeness", "outliers", "missing")],
                           labels = unlist(step_labels[c("completeness", "outliers", "missing")]), name = NULL, drop = FALSE) +

@@ -423,7 +423,7 @@ plot.cd_bayes_model <- function(x,
         geom_line(data = country, aes(x = .data$year, y = .data$value), inherit.aes = FALSE, linetype = "dashed", colour = "grey30") +
         geom_point(data = country, aes(x = .data$year, y = .data$value), inherit.aes = FALSE, shape = 18, size = 3, colour = "grey30") +
         geom_text(data = last, aes(x = .data$year, y = .data$value, label = labels$national), inherit.aes = FALSE,
-                  hjust = 0, nudge_x = 0.3, size = 3.2, colour = "grey30")
+                  hjust = 0, nudge_x = 0.3, size = .cd_type$label_small, colour = "grey30")
     }
   }
   if (!is_national && !is.null(year)) {

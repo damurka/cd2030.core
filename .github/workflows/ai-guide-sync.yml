@@ -14,6 +14,9 @@ name: AI guide sync
 # version and generatedAt change with every release, so there is always one to review).
 # It needs the repository secret DATASUITE_DOCS_TOKEN: a fine-grained token with Contents and Pull requests
 # read/write on aphrcwaro/datasuite-docs. The two jobs are independent: one failing does not stop the other.
+#
+# A job whose secret is not set is skipped, with a notice saying so (the first job looks): without it the
+# checkout of the other repository failed ("Input required and not supplied: token") and every release was red.
 
 on:
   push:
@@ -24,7 +27,23 @@ permissions:
   contents: read
 
 jobs:
+  tokens:
+    runs-on: ubuntu-latest
+    outputs:
+      analytics: ${{ steps.have.outputs.analytics }}
+      docs: ${{ steps.have.outputs.docs }}
+    steps:
+      - id: have
+        env:
+          ANALYTICS: ${{ secrets.COUNTDOWN_ANALYTICS_TOKEN }}
+          DOCS: ${{ secrets.DATASUITE_DOCS_TOKEN }}
+        run: |
+          if [ -n "$ANALYTICS" ]; then echo "analytics=true" >> "$GITHUB_OUTPUT"; else echo "::notice::COUNTDOWN_ANALYTICS_TOKEN is not set: the AI guides are not synced."; fi
+          if [ -n "$DOCS" ]; then echo "docs=true" >> "$GITHUB_OUTPUT"; else echo "::notice::DATASUITE_DOCS_TOKEN is not set: the methodology constants are not synced."; fi
+
   sync:
+    needs: tokens
+    if: needs.tokens.outputs.analytics == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -61,6 +80,8 @@ jobs:
             come in with `status: "draft"` -- review their group and question, then set `status: "reviewed"`.
 
   methodology-docs:
+    needs: tokens
+    if: needs.tokens.outputs.docs == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7

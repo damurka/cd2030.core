@@ -133,7 +133,7 @@ plot.cd_coverage_selected <- function(x,
         facet_wrap(~indicator, scales = "free_y", ncol = 2) +
         scale_x_continuous(limits = c(0, 105), labels = scales::label_number(suffix = "%")) +
         labs(title = t_title, x = t_x, y = y_title) +
-        cd_minimal_theme(base_size = 8)
+        cd_minimal_theme()
 
     } else if (type == "heatmap") {
       t_title <- title %||% paste0("Subnational continuum heatmap (", latest_yr, ")")
@@ -148,7 +148,7 @@ plot.cd_coverage_selected <- function(x,
       ggplot(x, aes(x = indicator, y = fct_reorder(!!sym(admin_col), value, .fun = mean, na.rm = TRUE), fill = value)) +
         # white lines between the tiles, and each tile's value on it
         geom_tile(color = "white", linewidth = 0.6) +
-        geom_text(aes(label = ifelse(is.na(value), "", round(value))), colour = text_colour, size = 3.3) +
+        geom_text(aes(label = ifelse(is.na(value), "", round(value))), colour = text_colour, size = .cd_type$label) +
         scale_x_discrete(labels = function(v) stringr::str_wrap(v, 14), expand = expansion(mult = 0)) +
         scale_y_discrete(expand = expansion(mult = 0)) +
         scale_fill_stepsn(
@@ -162,7 +162,7 @@ plot.cd_coverage_selected <- function(x,
         ) +
         labs(title = t_title, x = x_title, y = y_title, fill = t_fill) +
         # no grid lines, so the tile borders stand out sharply
-        cd_minimal_theme(base_size = 10, grid = "none") +
+        cd_minimal_theme(grid = "none") +
         # the indicators' names are wrapped, so they are read level
         theme(axis.text.x = element_text(angle = 0, hjust = 0.5, lineheight = 0.9), axis.ticks = element_blank(),
               legend.key.height = unit(1.1, "cm"))

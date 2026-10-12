@@ -149,7 +149,7 @@ plot.cd_outlier <- function(x,
         axis.ticks = element_blank(),
         strip.background = element_blank(),
         strip.placement = "outside",
-        legend.title = element_text(size = 13)
+        legend.title = element_text(size = .cd_type$legend)
       )
   } else if (selection_type == "heat_map") {
     if (is.null(indicator)) {
@@ -331,7 +331,6 @@ plot.cd_outlier_list <- function(x,
     ) +
     theme(
       axis.text.x = element_text(angle = 45, hjust = 1),
-      plot.title = element_text(hjust = 0.5, size = 16),
-      legend.title = element_text(size = 13)
+      legend.title = element_text(size = .cd_type$legend)
     )
 }

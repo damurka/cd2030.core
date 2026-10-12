@@ -1,3 +1,49 @@
+# ---- one type scale ---------------------------------------------------------------------------------------------
+# The sizes of the text of every chart on the pages, in one place, so the charts read as one family: a chart sets
+# no size of its own. In points, but for the text drawn on a chart (a number on a bar or a tile, a name beside a
+# point), which geom_text() sizes in millimetres. A report gives its charts cd_report_theme(), whose sizes are in
+# the same proportions from the report's own base size. The font is the device's sans serif (Arial on Windows): a
+# report's charts are drawn in the report's font, and a chart's own options (font_family, text_scale) still apply.
+.cd_type <- list(
+  title = 15,        # the chart's title (bold, centred)
+  subtitle = 12,
+  axis_title = 12,
+  axis_text = 11,
+  legend = 11,       # a legend's entries and its title
+  strip = 11,        # the name above each panel (bold)
+  caption = 10,
+  label = 3.5,       # text drawn on the chart
+  label_small = 3    # the same where there is much of it (a number on each of many bars)
+)
+
+#' The sizes of the text of a chart
+#'
+#' The one scale the charts of the Countdown apps are written in, for a chart drawn outside the package that is to
+#' look like them.
+#'
+#' @return A named list: `title`, `subtitle`, `axis_title`, `axis_text`, `legend`, `strip` and `caption` in points
+#'   (for [ggplot2::element_text()]); `label` and `label_small` in millimetres (the `size` of
+#'   [ggplot2::geom_text()]).
+#' @examples
+#' cd_type_scale()$title
+#' @export
+cd_type_scale <- function() .cd_type
+
+# The scale as a theme: the size and weight of each text. `scale` multiplies the sizes.
+.cd_type_theme <- function(scale = 1) {
+  size <- function(name) .cd_type[[name]] * scale
+  theme(
+    plot.title = element_text(size = size("title"), face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = size("subtitle"), hjust = 0.5),
+    plot.caption = element_text(size = size("caption"), hjust = 0),
+    axis.title = element_text(size = size("axis_title")),
+    axis.text = element_text(size = size("axis_text")),
+    legend.text = element_text(size = size("legend")),
+    legend.title = element_text(size = size("legend")),
+    strip.text = element_text(size = size("strip"), face = "bold")
+  )
+}
+
 cd_plot_theme <- function(title = NULL, subtitle = NULL, x_title = NULL, y_title = NULL, legend_title = NULL, caption = NULL) {
   list(
     labs(
@@ -8,22 +54,16 @@ cd_plot_theme <- function(title = NULL, subtitle = NULL, x_title = NULL, y_title
       caption = caption,
       fill = legend_title
     ),
+    .cd_type_theme(),
     theme(
       panel.background = element_blank(),
       panel.border = element_rect(color = "black", fill = NA, linewidth = 0.5),
       legend.background = element_rect(color = "black", linewidth = 0.5),
       legend.position = "bottom",
       legend.title = element_blank(),
-      legend.text = element_text(size = 13),
-      legend.key.size = unit(8, "mm"),
+      legend.key.size = unit(7, "mm"),
       legend.box.spacing = unit(0.5, "cm"),
-      plot.title = element_text(size = 16, hjust = 0.5),
-      plot.subtitle = element_text(size = 12, hjust = 0.5),
-      plot.caption = element_text(size = 12, hjust = 0),
-      axis.text = element_text(size = 12),
-      axis.title = element_text(size = 16),
-      strip.background = element_blank(),
-      strip.text = element_text(size = 12)
+      strip.background = element_blank()
     )
   )
 }
@@ -73,7 +113,8 @@ cd_report_theme <- function(base_size = 10, base_family = "",
 
   half_line <- base_size / 2
   small_rel <- 0.85
-  small_size <- base_size * small_rel
+  # the sizes of the pages' charts (.cd_type), in the same proportions, from the report's base size (its axis titles)
+  type <- function(name) .cd_type[[name]] * base_size / .cd_type$axis_title
   theme_bw(
     base_size = base_size,
     base_family = base_family,
@@ -87,7 +128,7 @@ cd_report_theme <- function(base_size = 10, base_family = "",
       ),
       rect = element_rect(
         fill = NA, colour = "black",
-        size = base_rect_size, linetype = 1
+        linewidth = base_rect_size, linetype = 1
       ),
       text = element_text(
         family = base_family, face = "plain",
@@ -98,40 +139,42 @@ cd_report_theme <- function(base_size = 10, base_family = "",
       axis.line = element_line(colour = "black", linewidth = base_line_size),
       axis.line.x = element_line(colour = "black", linewidth = base_line_size),
       axis.line.y = element_line(colour = "black", linewidth = base_line_size),
-      axis.text = element_text(size = small_size),
+      axis.text = element_text(size = type("axis_text")),
       axis.text.x = element_text(margin = margin(t = small_rel / 2), vjust = 1),
       axis.text.y = element_text(margin = margin(r = small_rel / 2), hjust = 1),
       # no tick marks, as the charts on the app's pages have none: the axis lines and the labels are enough. A
       # chart's own "Tick marks" option (cd_chart_options(axis_ticks = TRUE)) still draws them for that chart.
       axis.ticks = element_blank(),
-      axis.title = element_text(size = base_size),
+      axis.title = element_text(size = type("axis_title")),
       axis.title.x = element_text(margin = margin(t = half_line)),
       axis.title.y = element_text(angle = 90L, margin = margin(r = half_line)),
       legend.key = element_rect(fill = "white", colour = NA),
       legend.key.size = unit(0.8, "lines"),
       legend.background = element_rect(fill = alpha("white", 0)), # Transparent background
       legend.position = "bottom", # or "bottom"
-      legend.text = element_text(size = small_size),
-      legend.title = element_text(size = small_size),
+      legend.text = element_text(size = type("legend")),
+      legend.title = element_text(size = type("legend")),
       panel.background = element_blank(),
       panel.border = element_rect(color = "black", fill = NA, linewidth = 0.8),
       panel.grid = element_blank(),
 
       # plot.background = element_rect(fill = NA, colour = NA),
+      # the title is bold as on a page, but no larger than the axis titles: a report's chart is narrow (a column of
+      # the page), and a long title at the page's proportion ran off its edge
       plot.title = element_text(
-        size = base_size, hjust = 0.5,
+        size = base_size, face = "bold", hjust = 0.5,
         margin = margin(b = half_line)
       ),
       plot.subtitle = element_text(
-        size = base_size * 0.95, hjust = 0.5,
+        size = type("subtitle"), hjust = 0.5,
         margin = margin(b = half_line)
       ),
       plot.caption = element_text(
-        size = small_size, hjust = 0,
+        size = type("caption"), hjust = 0,
         margin = margin(t = half_line)
       ),
       strip.background = element_blank(),
-      strip.text = element_text(colour = "black", size = small_size)
+      strip.text = element_text(colour = "black", size = type("strip"), face = "bold")
     )
 }
 
@@ -244,7 +287,7 @@ cd_heatmap_theme <- function(title = NULL, x_title = NULL, y_title = NULL, legen
       axis.text.x = element_text(angle = 45, hjust = 1),
       axis.ticks = element_blank(),
       axis.ticks.length = unit(0, "pt"),
-      legend.title = element_text(size = 13)
+      legend.title = element_text(size = .cd_type$legend)
     )
   )
 }
@@ -260,9 +303,7 @@ cd_bar_theme <- function(title = NULL, x_title = NULL, y_title = NULL, legend_ti
     theme(
       panel.grid.major = element_line(colour = "gray95"),
       axis.ticks = element_blank(),
-      plot.title = element_text(face = "bold"),
-      axis.title = element_text(face = "bold"),
-      legend.title = element_text(face = "bold")
+      legend.title = element_text(size = .cd_type$legend)
     )
   )
 }
@@ -321,12 +362,11 @@ cd_map_theme <- function() {
     panel.border = element_blank(),
     panel.spacing = unit(1, "lines"),
     legend.background = element_blank(),
-    legend.title = element_text(size = 11),
+    legend.title = element_text(size = .cd_type$legend),
     axis.text = element_blank(),
     axis.ticks = element_blank(),
     axis.title = element_blank(),
     axis.line = element_blank(),
-    strip.text = element_text(size = 12, face = "bold"),
     aspect.ratio = 1
   )
 }
@@ -346,7 +386,8 @@ cd_map_theme <- function() {
 #' [ggplot2::theme_minimal()] with a choice of grid lines, for the apps' light charts (cd2030.pooled's charts, the
 #' subnational coverage dot plot and heat map).
 #'
-#' @param base_size The base font size, in points.
+#' @param base_size The base font size, in points. The default is the size the charts of the apps are written in
+#'   (see [cd_type_scale()]): another size makes every text of the chart larger or smaller by the same ratio.
 #' @param grid Which grid lines to keep: `"all"` (the theme's own), `"major"` (no minor lines), `"x"` (only the
 #'   vertical major lines, for horizontal bars and dot plots), `"y"` (only the horizontal major lines) or `"none"`.
 #' @param grid_colour The colour of the lines `"x"` or `"y"` keeps, or `NULL` for the theme's own.
@@ -360,7 +401,8 @@ cd_map_theme <- function() {
 #' @export
 cd_minimal_theme <- function(base_size = 11, grid = c("all", "major", "x", "y", "none"), grid_colour = NULL) {
   grid <- arg_match(grid)
-  out <- theme_minimal(base_size = base_size)
+  # the same sizes of text as every other chart (theme_minimal() has its own proportions)
+  out <- theme_minimal(base_size = base_size) + .cd_type_theme(scale = base_size / 11)
   # the lines kept along one axis, in their own colour if one is given
   only <- function(kept, dropped) {
     elements <- list(panel.grid.minor = element_blank())
@@ -416,7 +458,7 @@ cd_categorized_heatmap <- function(data,
 
   # the numbers get smaller as the columns get many, and are read on any of the three colours
   columns <- length(unique(dt[[x_col]]))
-  text_size <- text_size %||% if (columns > 24) 2.8 else if (columns > 14) 3.3 else 4
+  text_size <- text_size %||% if (columns > 24) 2.8 else if (columns > 14) .cd_type$label_small else .cd_type$label
   # not wrapped: the names on the horizontal axis are slanted, and those on the vertical one have a row each
   axis_labels <- .cd_axis_labels(labels, width = Inf)
   # an axis with no title given is named for what it holds, not after the column
@@ -454,7 +496,7 @@ ggplot_add.cd_chart_options_reapply <- function(object, plot, ...) {
 # for every such chart. The layers go under the points: add them to the plot before the points are drawn.
 .cd_quadrants <- function(x_mid, y_mid, top_left, top_right, bottom_left, bottom_right) {
   corner <- function(x, y, label, hjust, vjust) {
-    annotate("text", x = x, y = y, label = label, hjust = hjust, vjust = vjust, size = 3.6, fontface = "bold",
+    annotate("text", x = x, y = y, label = label, hjust = hjust, vjust = vjust, size = .cd_type$label, fontface = "bold",
              colour = "grey35", lineheight = 0.95)
   }
   list(

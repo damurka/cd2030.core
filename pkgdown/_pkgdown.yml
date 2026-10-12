@@ -314,6 +314,7 @@ reference:
       - cd_chart_id
       - cd_finish_plot
       - cd_minimal_theme
+      - cd_type_scale
 
   - title: "The Countdown AI"
     desc: >

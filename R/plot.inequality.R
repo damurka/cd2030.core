@@ -146,7 +146,7 @@ plot.cd_inequality_filtered <- function(x,
     (if (has_region) geom_point(aes(x = year, y = .data$region_value, color = lbl_region), size = 3.2, shape = 18)) +
     geom_text(
       aes(x = year, y = second_last_break, label = round(madm, 2)),
-      color = "black", fontface = "bold", vjust = 0.5, size = 4
+      color = "black", fontface = "bold", vjust = 0.5, size = .cd_type$label
     ) +
     geom_hline(yintercept = 100, linetype = "dashed", color = "gray60") +
     scale_y_continuous(
@@ -169,8 +169,6 @@ plot.cd_inequality_filtered <- function(x,
     cd_dashed_grid_theme() +
     theme(
       panel.border = element_blank(),
-      plot.title = element_text(size = 16),
-      plot.subtitle = element_text(size = 12),
       axis.line = element_line(),
       legend.position = "right",
       legend.background = element_blank()

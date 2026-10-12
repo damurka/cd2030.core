@@ -411,3 +411,30 @@ test_that("the consistency check and its chart use nothing deprecated, and the a
   expect_true(all(c("lbl_consist_ratio_opv1_opv3", "lbl_score_range_opv1_opv3", "opt_instdeliveries", "msg_select_indicator") %in% keys))
   expect_identical(anyDuplicated(keys), 0L)
 })
+
+test_that("the charts are written in one scale of text sizes", {
+  scale <- cd_type_scale()
+  expect_named(scale, c("title", "subtitle", "axis_title", "axis_text", "legend", "strip", "caption", "label", "label_small"))
+  sizes <- function(theme) vapply(c("plot.title", "plot.subtitle", "axis.title", "axis.text", "legend.text", "strip.text", "plot.caption"), function(e) theme[[e]]$size, numeric(1))
+  page <- sizes(Reduce(`+`, Filter(function(part) inherits(part, "theme"), cd_plot_theme()), ggplot2::theme_grey()))
+  expect_equal(unname(page), unname(unlist(scale[c("title", "subtitle", "axis_title", "axis_text", "legend", "strip", "caption")])))
+  # the light charts, and a report's charts from the report's own base size, in the same proportions
+  expect_equal(unname(sizes(cd_minimal_theme())), unname(page))
+  expect_equal(unname(sizes(cd_minimal_theme(base_size = 22))), unname(page) * 2)
+  # (but the title, which is the size of the axis titles: a report's chart is narrow)
+  report <- sizes(.cd_report_theme_base(base_size = 10))
+  expect_equal(unname(report / report[["axis.title"]])[-1], unname(page / page[["axis.title"]])[-1])
+  expect_equal(report[["plot.title"]], 10)
+  expect_identical(.cd_report_theme_base()$plot.title$face, "bold")
+
+  # no chart sets a size of its own: a number in element_text(size = ), or on a text drawn on the chart
+  dir <- testthat::test_path("..", "..", "R")
+  skip_if_not(dir.exists(dir), "the source is not there when the installed package is tested")
+  for (file in setdiff(list.files(dir, "^(plot|chart|page|[0-9]).*[.]R$", full.names = TRUE), file.path(dir, "utils-plot-themes.R"))) {
+    lines <- readLines(file, warn = FALSE)
+    lines <- lines[!grepl("^\\s*#", lines)]
+    expect_false(any(grepl("element_text\\([^)]*size *= *[0-9]", lines)), info = basename(file))
+    text <- grep("geom_text|geom_label|annotate\\(\"text\"", lines, value = TRUE)
+    expect_false(any(grepl("[^a-z_]size *= *[0-9]", text)), info = basename(file))
+  }
+})

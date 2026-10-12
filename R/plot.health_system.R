@@ -126,11 +126,7 @@ plot.cd_health_system_comparison <- function(x,
         caption = final_caption
       ) +
       theme(
-        plot.title = element_text(face = "bold", hjust = 0.5),
-        plot.caption = element_text(size = 9, color = "gray40"),
-        axis.title.x = element_text(size = 11),
-        axis.title.y = element_text(size = 11),
-        axis.text = element_text(size = 10)
+        plot.caption = element_text(color = "gray40")
       )
 }
 
@@ -254,7 +250,7 @@ plot.cd_health_system_metric <- function(x,
   p <- plot_data %>%
     ggplot(aes(y = reorder(adminlevel_1, !!sym(indicator)), x = !!sym(indicator))) +
     geom_col(aes(fill = benchmark_flag)) +
-    geom_text(aes(label = round(!!sym(indicator), 1)), hjust = -0.1, size = 3) +
+    geom_text(aes(label = round(!!sym(indicator), 1)), hjust = -0.1, size = .cd_type$label_small) +
     scale_fill_manual(
       values = fill_colors,
       labels = function(x) unlist(default_leg[x]), 
@@ -299,9 +295,7 @@ plot.cd_health_system_metric <- function(x,
       y_title = t_y
     ) +
     theme(
-      plot.title = element_text(face = "bold", hjust = 0.5),
-      plot.caption = element_text(size = 9, color = "gray40"),
-      axis.text.y = element_text(size = 9),
+      plot.caption = element_text(color = "gray40"),
       legend.box = "horizontal",
       legend.position = "bottom"
     )
@@ -367,7 +361,7 @@ plot_national_health_metric <- function(.data, metric = c('performance', 'densit
     ggplot(aes(x = indicator, y =value)) +
     geom_col(fill = '#2c7fb8', width = 0.6) +
     coord_flip() +
-    geom_text(aes(label = sprintf("%.1f", value)), hjust = -0.1, size = 4) +
+    geom_text(aes(label = sprintf("%.1f", value)), hjust = -0.1, size = .cd_type$label) +
     scale_y_continuous(limits = limits, breaks = breaks, expand = expansion(mult = c(0, 0.1))) +
     cd_plot_theme(title = labels$title, y_title = NULL, x_title = NULL, caption = labels$caption)
 }
@@ -565,7 +559,7 @@ plot.cd_phc_scatter <- function(x,
     geom_point(size = 3, colour = "steelblue4") +
 
     # the units far from the others, named
-    ggrepel::geom_text_repel(data = outliers, aes(label = adminlevel_1), size = 3.5, colour = "grey15") +
+    ggrepel::geom_text_repel(data = outliers, aes(label = adminlevel_1), size = .cd_type$label, colour = "grey15") +
 
     # room above and below for the texts in the corners
     scale_x_continuous(limits = c(0, NA), expand = expansion(mult = c(0, 0.15))) +
@@ -644,7 +638,7 @@ plot.cd_private_sector <- function(x,
     geom_text(
       aes(label = round(share, 0)),
       position = position_stack(vjust = 0.5),
-      size = 4,
+      size = .cd_type$label,
       color = "black"
     ) +
     

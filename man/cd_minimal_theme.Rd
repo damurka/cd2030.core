@@ -11,7 +11,8 @@ cd_minimal_theme(
 )
 }
 \arguments{
-\item{base_size}{The base font size, in points.}
+\item{base_size}{The base font size, in points. The default is the size the charts of the apps are written in
+(see \code{\link[=cd_type_scale]{cd_type_scale()}}): another size makes every text of the chart larger or smaller by the same ratio.}
 
 \item{grid}{Which grid lines to keep: \code{"all"} (the theme's own), \code{"major"} (no minor lines), \code{"x"} (only the
 vertical major lines, for horizontal bars and dot plots), \code{"y"} (only the horizontal major lines) or \code{"none"}.}
