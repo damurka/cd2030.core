@@ -528,6 +528,8 @@ context; and the saved chart options every chart is finished with.
 - [`cd_finish_plot()`](cd_finish_plot.md) : Finish a plot: apply the
   chart options
 - [`cd_minimal_theme()`](cd_minimal_theme.md) : A minimal chart theme
+- [`cd_type_scale()`](cd_type_scale.md) : The sizes of the text of a
+  chart
 
 ## The Countdown AI
 

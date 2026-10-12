@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">cd2030.core</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.4.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,13 @@
       <small>Source: <a href="https://github.com/damurka/cd2030.core/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="1.4.4" id="cd2030core-144">cd2030.core 1.4.4<a class="anchor" aria-label="anchor" href="#cd2030core-144"></a></h2>
+<ul><li>The charts are written in one scale of text sizes. A chart set its own: a title of 16 points beside axis titles of 16, a legend of 13 on one chart and 9 on another, a title bold on some charts and plain on others, and twenty sizes for the numbers drawn on bars, tiles and points. Now every chart has a bold, centred title of 15 points, a subtitle and axis titles of 12, axis and legend text of 11, bold panel names of 11, a caption of 10, and two sizes for the text drawn on it. No chart sets a size of its own.</li>
+<li>A report’s charts have the same proportions, from the report’s base size, and the same bold title and panel names, so a chart on a page and the same chart in a report read as one. The title alone stays the size of the axis titles: a report’s chart is narrow, and a long title any larger ran off its edge.</li>
+<li>
+<code><a href="../reference/cd_type_scale.html">cd_type_scale()</a></code> gives the scale, for a chart drawn outside the package. <code><a href="../reference/cd_minimal_theme.html">cd_minimal_theme()</a></code> uses it: its <code>base_size</code> now makes every text larger or smaller by the same ratio.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.4.3" id="cd2030core-143">cd2030.core 1.4.3<a class="anchor" aria-label="anchor" href="#cd2030core-143"></a></h2>
 <ul><li>Requires datasuite.ui 0.5.2: the Reports page lists the dataset’s reports and the standard reports again, and the builder has its kinds of chart, its themes, years and regions. Since datasuite.ui 0.5.0 the page said “No reports yet” over a dataset that has reports, and often showed no standard reports.</li>

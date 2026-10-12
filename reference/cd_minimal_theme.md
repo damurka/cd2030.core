@@ -18,7 +18,10 @@ cd_minimal_theme(
 
 - base_size:
 
-  The base font size, in points.
+  The base font size, in points. The default is the size the charts of
+  the apps are written in (see [`cd_type_scale()`](cd_type_scale.md)):
+  another size makes every text of the chart larger or smaller by the
+  same ratio.
 
 - grid:
 
