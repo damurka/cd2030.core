@@ -10,10 +10,12 @@ name: AI guide sync
 #
 # The second job (methodology-docs) regenerates the methodology constants the DataSuite docs quote
 # (cd_methodology_defaults(), written by inst/scripts/export-methodology-defaults.R) into
-# src/data/methodology-defaults.json of aphrcwaro/datasuite-docs and opens a pull request there (the file's
-# version and generatedAt change with every release, so there is always one to review).
+# docs-site/src/data/methodology-defaults.json of damurka/datasuite-identity and opens a pull request there, against
+# main (the file's version and generatedAt change with every release, so there is always one to review). The docs
+# are that repository's docs-site/ (its deploy/README.md: "the source of truth for the docs"); they were the
+# standalone aphrcwaro/datasuite-docs, which is no longer what is built.
 # It needs the repository secret DATASUITE_DOCS_TOKEN: a fine-grained token with Contents and Pull requests
-# read/write on aphrcwaro/datasuite-docs. The two jobs are independent: one failing does not stop the other.
+# read/write on damurka/datasuite-identity. The two jobs are independent: one failing does not stop the other.
 #
 # A job whose secret is not set is skipped, with a notice saying so (the first job looks): without it the
 # checkout of the other repository failed ("Input required and not supplied: token") and every release was red.
@@ -89,9 +91,12 @@ jobs:
           path: cd2030.core
       - uses: actions/checkout@v7
         with:
-          repository: aphrcwaro/datasuite-docs
+          repository: damurka/datasuite-identity
+          ref: main
           token: ${{ secrets.DATASUITE_DOCS_TOKEN }}
-          path: datasuite-docs
+          path: datasuite-identity
+          # only the docs: the repository is large, and nothing else of it is read or changed
+          sparse-checkout: docs-site/src/data
       - uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
@@ -102,17 +107,18 @@ jobs:
           Rscript -e 'install.packages(c("datasuite.ui", "remotes", "jsonlite"), repos = c("https://damurka.r-universe.dev", "https://alkemalab.r-universe.dev", getOption("repos")))'
           Rscript -e 'remotes::install_local("cd2030.core", dependencies = TRUE, upgrade = "never", repos = c("https://damurka.r-universe.dev", "https://alkemalab.r-universe.dev", getOption("repos")))'
       - name: Regenerate the methodology constants
-        run: Rscript cd2030.core/inst/scripts/export-methodology-defaults.R datasuite-docs/src/data/methodology-defaults.json
+        run: Rscript cd2030.core/inst/scripts/export-methodology-defaults.R datasuite-identity/docs-site/src/data/methodology-defaults.json
       - name: Open a pull request
         uses: peter-evans/create-pull-request@v7
         with:
-          path: datasuite-docs
+          path: datasuite-identity
           token: ${{ secrets.DATASUITE_DOCS_TOKEN }}
+          base: main
           branch: methodology-defaults/cd2030.core-${{ github.ref_name }}
-          add-paths: src/data/methodology-defaults.json
+          add-paths: docs-site/src/data/methodology-defaults.json
           commit-message: "Update the methodology constants for cd2030.core ${{ github.ref_name }}"
           title: "Methodology constants for cd2030.core ${{ github.ref_name }}"
           body: |
-            Regenerated `src/data/methodology-defaults.json` from `cd_methodology_defaults()` in cd2030.core
+            Regenerated `docs-site/src/data/methodology-defaults.json` from `cd_methodology_defaults()` in cd2030.core
             ${{ github.ref_name }} (`inst/scripts/export-methodology-defaults.R`). These are the values the package
             runs with; check the pages that quote a changed value.
