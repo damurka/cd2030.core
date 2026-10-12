@@ -62,6 +62,9 @@ jobs:
       - name: System libraries (sf's udunits, GDAL, GEOS and PROJ; the CRAN binaries load them)
         run: sudo apt-get update -q && sudo apt-get install -y -q libudunits2-dev libgdal-dev libgeos-dev libproj-dev
       - name: Install this cd2030.core (and datasuite.ui from r-universe)
+        # DESCRIPTION's Remotes makes remotes ask GitHub's API about damurka/datasuite.ui: unsigned, a runner is refused
+        env:
+          GITHUB_PAT: ${{ github.token }}
         run: |
           Rscript -e 'install.packages(c("datasuite.ui", "remotes", "jsonlite"), repos = c("https://damurka.r-universe.dev", "https://alkemalab.r-universe.dev", getOption("repos")))'
           Rscript -e 'remotes::install_local("cd2030.core", dependencies = TRUE, upgrade = "never", repos = c("https://damurka.r-universe.dev", "https://alkemalab.r-universe.dev", getOption("repos")))'
@@ -103,6 +106,9 @@ jobs:
       - name: System libraries (sf's udunits, GDAL, GEOS and PROJ; the CRAN binaries load them)
         run: sudo apt-get update -q && sudo apt-get install -y -q libudunits2-dev libgdal-dev libgeos-dev libproj-dev
       - name: Install this cd2030.core (and datasuite.ui from r-universe)
+        # DESCRIPTION's Remotes makes remotes ask GitHub's API about damurka/datasuite.ui: unsigned, a runner is refused
+        env:
+          GITHUB_PAT: ${{ github.token }}
         run: |
           Rscript -e 'install.packages(c("datasuite.ui", "remotes", "jsonlite"), repos = c("https://damurka.r-universe.dev", "https://alkemalab.r-universe.dev", getOption("repos")))'
           Rscript -e 'remotes::install_local("cd2030.core", dependencies = TRUE, upgrade = "never", repos = c("https://damurka.r-universe.dev", "https://alkemalab.r-universe.dev", getOption("repos")))'
