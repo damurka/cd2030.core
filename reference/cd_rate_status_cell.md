@@ -71,7 +71,7 @@ reactable::colDef(cell = cd_rate_status_cell)
 #>         viewBox = "0 0 10 10", `aria-hidden` = "true", shape), 
 #>         .cd_table_number(value, "rate"))
 #> }
-#> <bytecode: 0x561a565253b8>
+#> <bytecode: 0x55aff4e86f00>
 #> <environment: namespace:cd2030.core>
 #> 
 #> attr(,"class")
