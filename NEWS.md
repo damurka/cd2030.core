@@ -1,3 +1,9 @@
+# cd2030.core 1.4.3
+
+* Requires datasuite.ui 0.5.2: the Reports page lists the dataset's reports and the standard reports again, and the builder has its kinds of
+  chart, its themes, years and regions. Since datasuite.ui 0.5.0 the page said "No reports yet" over a dataset that
+  has reports, and often showed no standard reports.
+
 # cd2030.core 1.4.2
 
 * National Coverage & Continuum: the heat map of the regions is drawn. Since 1.4.0 it showed "subscript out of
